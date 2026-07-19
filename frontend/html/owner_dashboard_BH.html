@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
+  <title>BlackHabit Dashboard</title>
+  <link rel="stylesheet" href="../css/owner_dashboard_BH.css" />
+</head>
+<body>
+  <div class="dashboard">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <img
+            src="https://github.com/damocles-24/IMAGES/blob/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png?raw=true"
+            alt="FoodConnect Logo"
+            class="brand-logo"
+          />
+          <div class="brand-text">
+            <h2><span class="food-text">Black</span><span class="connect-text">Habit</span></h2>
+            <p>Owner Panel</p>
+          </div>
+        </div>
+
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="dashboardSection">Dashboard</button>
+        <button class="nav-item" data-section="ordersSection">Orders</button>
+        <button class="nav-item" data-section="productsSection">Products</button>
+        <button class="nav-item" data-section="inventorySection">Inventory</button>
+<button class="nav-item" data-section="notificationsSection">
+  Notifications
+  <span class="sidebar-badge" id="sidebarNotificationBadge">0</span>
+</button>
+<button class="nav-item" data-section="logsSection">Activity Logs</button>
+        <button class="nav-item" data-section="reportsSection">Sales Report</button>
+        <button class="nav-item" data-section="usersSection">Users</button>
+        <button class="nav-item" data-section="settingsSection">Settings</button>
+        <button class="nav-item logout-btn" id="logoutBtn">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div>
+            <h1>Owner Dashboard</h1>
+            <p>Welcome back, Restaurant Owner</p>
+          </div>
+        </div>
+
+       <div class="topbar-right">
+    <div class="owner-profile">
+            <div class="owner-avatar">
+    <img
+        src="https://github.com/damocles-24/IMAGES/blob/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png?raw=true"
+        alt="BlackHabit Logo"
+    >
+</div>
+            <div>
+              <h4>Owner</h4>
+              <p>BlackHabit</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section id="dashboardSection" class="content-section active-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Sales</h3>
+            <p class="stat-value" id="salesToday">₱0</p>
+            <span>From completed orders</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p class="stat-value" id="totalOrders">0</p>
+            <span>All customer orders</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <p class="stat-value" id="pendingOrders">0</p>
+            <span>Needs action</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Total Products</h3>
+            <p class="stat-value" id="totalProducts">0</p>
+            <span>Current menu items</span>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Sales Overview</h2>
+              <select id="salesRange">
+                <option value="weekly">This Week</option>
+                <option value="monthly">This Month</option>
+              </select>
+            </div>
+
+            <div class="fake-chart" id="salesChart"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Low Stock Products</h2>
+            </div>
+            <div id="lowStockList" class="list-box"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Recent Orders</h2>
+            <button class="view-all-btn" data-target="ordersSection">View All</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ORDERS -->
+      <section id="ordersSection" class="content-section">
+        <div class="section-header">
+          <h2>Orders Management</h2>
+          <div class="section-actions">
+            <input type="text" id="orderSearch" placeholder="Search by customer or order ID" />
+            <select id="statusFilter">
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+   <section id="productsSection" class="content-section">
+  <div class="section-header">
+    <h2>Product Management</h2>
+  </div>
+
+  <div class="product-toolbar">
+    <button class="primary-btn" id="openAddProductModal">
+      + Add Product
+    </button>
+
+    <input type="text" id="productSearch" placeholder="Search product, category, variant...">
+
+    <select id="productCategoryFilter">
+      <option value="all">All Categories</option>
+    </select>
+
+    <select id="productSort">
+      <option value="newest">Newest</option>
+      <option value="oldest">Oldest</option>
+      <option value="name-az">Name A-Z</option>
+      <option value="name-za">Name Z-A</option>
+      <option value="price-low">Price Low to High</option>
+      <option value="price-high">Price High to Low</option>
+      <option value="stock-low">Stock Low to High</option>
+      <option value="stock-high">Stock High to Low</option>
+    </select>
+  </div>
+
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<section id="inventorySection" class="content-section">
+  <div class="section-header">
+    <h2>Inventory Management</h2>
+
+    <div class="section-actions inventory-actions">
+      <input type="text" id="inventorySearch" placeholder="Search product...">
+
+      <select id="inventoryFilter">
+        <option value="all">All Stock</option>
+        <option value="low">Low Stock</option>
+        <option value="out">Out of Stock</option>
+        <option value="available">Available</option>
+      </select>
+
+      <select id="inventoryCategoryFilter">
+        <option value="all">All Categories</option>
+      </select>
+    </div>
+  </div>
+
+    <div class="inventory-overview">
+
+    <div class="overview-item">
+        <span class="overview-icon">📦</span>
+        <div>
+            <h4 id="overviewTotalProducts">0</h4>
+            <p>Products</p>
+        </div>
+    </div>
+
+    <div class="overview-item">
+        <span class="overview-icon">🟢</span>
+        <div>
+            <h4 id="overviewAvailable">0</h4>
+            <p>In Stock</p>
+        </div>
+    </div>
+
+    <div class="overview-item">
+        <span class="overview-icon">🟡</span>
+        <div>
+            <h4 id="overviewLow">0</h4>
+            <p>Low Stock</p>
+        </div>
+    </div>
+
+    <div class="overview-item">
+        <span class="overview-icon">🔴</span>
+        <div>
+            <h4 id="overviewOut">0</h4>
+            <p>Out of Stock</p>
+        </div>
+    </div>
+
+</div>
+
+  <div class="panel">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Product</th>
+            <th>Variant</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="usersSection" class="content-section">
+  <div class="section-header">
+    <h2>User & Staff Management</h2>
+
+    <div class="section-actions">
+      <button class="primary-btn" id="openAddUserModal">+ Add User</button>
+    </div>
+  </div>
+
+  <div class="user-toolbar">
+    <input type="text" id="userSearch" placeholder="Search name or email...">
+
+    <select id="userRoleFilter">
+    <option value="all">All Roles</option>
+<option value="cashier">Cashier</option>
+<option value="kitchen_staff">Kitchen Staff</option>
+<option value="delivery_staff">Delivery Staff</option>
+    </select>
+
+    <select id="userStatusFilter">
+      <option value="all">All Status</option>
+      <option value="1">Active</option>
+      <option value="0">Inactive</option>
+    </select>
+  </div>
+
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Address</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="notificationsSection" class="content-section">
+  <div class="section-header">
+    <div>
+      <h2>Notifications <span id="notificationCount">(0)</span></h2>
+      <p>Monitor new orders, low stock, staff updates, and system alerts.</p>
+    </div>
+
+    <button class="primary-btn" id="clearNotificationsBtn">
+      Clear All
+    </button>
+  </div>
+
+  <div class="notifications-filter">
+    <button class="notification-filter-btn active" data-type="all">All</button>
+    <button class="notification-filter-btn" data-type="order">Orders</button>
+    <button class="notification-filter-btn" data-type="stock">Low Stock</button>
+    <button class="notification-filter-btn" data-type="staff">Staff</button>
+    <button class="notification-filter-btn" data-type="system">System</button>
+  </div>
+
+  <div class="notifications-list" id="notificationsList">
+    <div class="empty-notification">
+      <h3>No Notifications Yet</h3>
+      <p>Important restaurant updates will appear here.</p>
+    </div>
+  </div>
+</section>
+
+<section id="logsSection" class="content-section">
+  <div class="section-header">
+    <div>
+      <h2>Activity Logs</h2>
+      <p>Track staff actions, product changes, order updates, and system activities.</p>
+    </div>
+
+    <select id="logFilter">
+      <option value="all">All Activities</option>
+      <option value="order">Orders</option>
+      <option value="product">Products</option>
+      <option value="inventory">Inventory</option>
+      <option value="staff">Staff</option>
+      <option value="system">System</option>
+    </select>
+  </div>
+
+  <div class="logs-timeline" id="logsList">
+    <div class="empty-logs">
+      <h3>No Activity Logs Yet</h3>
+      <p>System activities will appear here.</p>
+    </div>
+  </div>
+</section>
+
+      <!-- REPORTS -->
+    <section id="reportsSection" class="content-section">
+  <div class="section-header">
+    <div>
+      <h2>Sales Report</h2>
+      <p>Analyze revenue, completed orders, cancelled orders, and best-selling items.</p>
+    </div>
+
+    <div class="section-actions">
+      <button class="primary-btn" id="exportPdfBtn">Export PDF</button>
+      <button class="primary-btn" id="exportExcelBtn">Export Excel</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Total Revenue</h3>
+      <p class="stat-value" id="reportTotalRevenue">₱0</p>
+      <span>From completed orders</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Completed Orders</h3>
+      <p class="stat-value" id="completedOrders">0</p>
+      <span>Successfully finished</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Cancelled Orders</h3>
+      <p class="stat-value" id="cancelledOrders">0</p>
+      <span>Orders not finished</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Average Order Value</h3>
+      <p class="stat-value" id="averageOrderValue">₱0</p>
+      <span>Average customer spend</span>
+    </div>
+  </div>
+
+  <div class="report-grid">
+    <div class="panel report-panel">
+      <div class="panel-header">
+        <h2>Sales Trend</h2>
+        <select id="reportSalesRange">
+          <option value="weekly">This Week</option>
+          <option value="monthly">This Month</option>
+        </select>
+      </div>
+
+      <div class="fake-chart" id="reportSalesChart"></div>
+    </div>
+
+    <div class="panel report-panel">
+      <div class="panel-header">
+        <h2>Best Seller</h2>
+      </div>
+
+      <div class="best-seller-card">
+        <div class="best-seller-icon">🏆</div>
+        <h3 id="bestSeller">-</h3>
+        <p>Top product based on completed orders</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-grid">
+    <div class="panel report-panel">
+      <div class="panel-header">
+        <h2>Best Selling Products</h2>
+      </div>
+
+      <div class="report-list" id="bestProductsList">
+        <p>No product sales yet.</p>
+      </div>
+    </div>
+
+    <div class="panel report-panel">
+      <div class="panel-header">
+        <h2>Best Categories</h2>
+      </div>
+
+      <div class="report-list" id="bestCategoriesList">
+        <p>No category sales yet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+        <!-- SETTINGS -->
+  <section id="settingsSection" class="content-section">
+  <div class="section-header">
+    <div>
+      <h2>Restaurant Settings</h2>
+      <p>Manage restaurant profile, delivery fee, and business availability.</p>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <div class="panel settings-card">
+      <div class="settings-card-header">
+        <h3>Restaurant Information</h3>
+        <p>Basic details shown to customers.</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Restaurant Name</label>
+          <input type="text" id="settingsRestaurantName">
+        </div>
+
+        <div class="form-group">
+          <label>Contact Number</label>
+          <input type="text" id="settingsContactNumber">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Address</label>
+          <input type="text" id="settingsAddress">
+        </div>
+
+        <div class="form-group">
+          <label>Opening Hours</label>
+          <input type="text" id="settingsOpeningHours" placeholder="8:00 AM - 10:00 PM">
+        </div>
+
+        <div class="form-group">
+          <label>Delivery Fee</label>
+          <input type="number" id="settingsDeliveryFee" min="0">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Business Status</label>
+          <select id="settingsBusinessStatus">
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+            <option value="Temporarily Unavailable">Temporarily Unavailable</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="primary-btn save-btn" id="saveSettingsBtn">
+        Save Settings
+      </button>
+    </div>
+  </div>
+</section>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Order Details</h3>
+        <button id="closeModal">✕</button>
+      </div>
+
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Product</h3>
+      <button id="closeAddProductModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" id="productName">
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" id="productCategory">
+      </div>
+
+               <div class="form-group">
+  <label>Variant / Size</label>
+  <input type="text" id="productSize" placeholder="Solo, Cheese, Regular, Large, Hot/Iced">
+</div>
+
+      <div class="form-group">
+        <label>Price</label>
+        <input type="number" id="productPrice">
+      </div>
+
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" id="productStock">
+      </div>
+
+      <button class="primary-btn" id="saveProductBtn">
+        Save Product
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="editProductModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Product</h3>
+      <button id="closeEditProductModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="editProductId">
+
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" id="editProductName">
+      </div>
+
+      <div class="form-group">
+  <label>Variant / Size</label>
+  <input type="text" id="editProductSize">
+</div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" id="editProductCategory">
+      </div>
+
+      <div class="form-group">
+        <label>Price</label>
+        <input type="number" id="editProductPrice">
+      </div>
+
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" id="editProductStock">
+      </div>
+
+      <button class="primary-btn" id="updateProductBtn">
+        Update Product
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTOCK MODAL -->
+<div class="modal-overlay" id="restockModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Product Quantity</h3>
+      <button id="closeRestockModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Select Product</label>
+
+        <select id="restockProduct"></select>
+      </div>
+
+      <div class="form-group">
+        <label>Quantity to Add</label>
+
+        <input type="number" id="restockQuantity">
+      </div>
+
+      <button class="primary-btn" id="saveRestockBtn">
+        Update Stock
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add User</h3>
+      <button id="closeAddUserModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="userFullName">
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="userEmail">
+      </div>
+
+      <div class="form-group">
+  <label>Contact Number</label>
+  <input
+  type="text"
+  id="userContactNumber"
+  inputmode="numeric"
+  maxlength="11"
+  pattern="[0-9]{11}"
+  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
+>
+</div>
+
+<div class="form-group">
+  <label>Address</label>
+  <input type="text" id="userAddress">
+</div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="userPassword">
+      </div>
+
+      <div class="form-group">
+  <label>Role</label>
+
+  <select id="userRole">
+    <option value="">Select Staff Role</option>
+    <option value="cashier">Cashier</option>
+    <option value="kitchen_staff">Kitchen Staff</option>
+    <option value="delivery_staff">Delivery Staff</option>
+  </select>
+</div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="userStatus">
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+      </div>
+
+      <button class="primary-btn" id="saveUserBtn">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit User</h3>
+      <button id="closeEditUserModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="editUserId">
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="editUserFullName">
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="editUserEmail">
+      </div>
+
+      <div class="form-group">
+  <label>Contact Number</label>
+  <input
+  type="text"
+  id="editUserContactNumber"
+  inputmode="numeric"
+  maxlength="11"
+  pattern="[0-9]{11}"
+  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
+>
+</div>
+
+<div class="form-group">
+  <label>Address</label>
+  <input type="text" id="editUserAddress">
+</div>
+
+      <div class="form-group">
+        <label>Role</label>
+       <select id="editUserRole">
+  <option value="">Select Staff Role</option>
+  <option value="owner">Owner</option>
+  <option value="cashier">Cashier</option>
+  <option value="kitchen_staff">Kitchen Staff</option>
+  <option value="delivery_staff">Delivery Staff</option>
+</select>
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="editUserStatus">
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+      </div>
+
+      <button class="primary-btn" id="updateUserBtn">Update User</button>
+    </div>
+  </div>
+</div>
+
+  <script src="../js/owner_dashboard_BH.js"></script>
+</body>
+</html>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    FoodConnect Admin & Delivery Coordinator
+  </title>
+
+      <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png">
+
+
+  <link
+    rel="stylesheet"
+    href="../css/admin.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+</head>
+
+<body>
+
+  <!-- =========================
+       ADMIN LOGIN
+  ========================== -->
+
+  <div
+  id="adminLoginView"
+  class="admin-login-view"
+>
+  <!-- =========================
+       FIRST ADMIN SETUP
+  ========================== -->
+
+  <div
+    id="adminSetupCard"
+    class="admin-login-card hidden"
+  >
+    <div class="admin-login-logo">
+      <i class="fa-solid fa-user-shield"></i>
+    </div>
+
+    <h1>Create Administrator</h1>
+
+    <p>
+      Set up the first FoodConnect platform administrator
+      and Delivery Coordinator account.
+    </p>
+
+    <form id="adminSetupForm">
+
+      <div class="admin-form-group">
+        <label for="setupFullName">
+          Full name
+        </label>
+
+        <input
+          type="text"
+          id="setupFullName"
+          autocomplete="name"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupEmail">
+          Email address
+        </label>
+
+        <input
+          type="email"
+          id="setupEmail"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupContactNumber">
+          Contact number
+        </label>
+
+        <input
+          type="tel"
+          id="setupContactNumber"
+          autocomplete="tel"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="setupPassword"
+          autocomplete="new-password"
+          required
+        >
+
+        <small class="form-help">
+          Use at least 8 characters with uppercase,
+          lowercase, and a number.
+        </small>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupConfirmPassword">
+          Confirm password
+        </label>
+
+        <input
+          type="password"
+          id="setupConfirmPassword"
+          autocomplete="new-password"
+          required
+        >
+      </div>
+
+      <p
+        id="adminSetupMessage"
+        class="form-message"
+      ></p>
+
+      <button
+        type="submit"
+        id="adminSetupButton"
+        class="primary-button"
+      >
+        Create Administrator Account
+      </button>
+
+    </form>
+  </div>
+
+  <!-- =========================
+     ADMIN ACCESS CODE
+========================== -->
+
+<div
+  id="adminAccessCard"
+  class="admin-login-card hidden"
+>
+  <div class="admin-login-logo">
+    <i class="fa-solid fa-lock"></i>
+  </div>
+
+  <h1>Administrator Access</h1>
+
+  <p>
+    Enter the private FoodConnect administrator
+    access code to continue.
+  </p>
+
+  <form id="adminAccessForm">
+
+    <div class="admin-form-group">
+      <label for="adminAccessCode">
+        Administrator Access Code
+      </label>
+
+      <input
+        type="password"
+        id="adminAccessCode"
+        placeholder="Enter administrator access code"
+        autocomplete="off"
+        maxlength="100"
+        required
+      >
+    </div>
+
+    <p
+      id="adminAccessMessage"
+      class="form-message"
+    ></p>
+
+    <button
+      type="submit"
+      id="adminAccessButton"
+      class="primary-button"
+    >
+      Continue
+    </button>
+
+  </form>
+</div>
+
+  <!-- =========================
+       NORMAL ADMIN LOGIN
+  ========================== -->
+
+  <div
+    id="adminLoginCard"
+    class="admin-login-card hidden"
+  >
+    <div class="admin-login-logo">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+
+    <h1>FoodConnect</h1>
+
+    <p>
+      Admin & Delivery Coordinator Portal
+    </p>
+
+    <form id="adminLoginForm">
+
+      <div class="admin-form-group">
+        <label for="adminEmail">
+          Admin email
+        </label>
+
+        <input
+          type="email"
+          id="adminEmail"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="adminPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="adminPassword"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <p
+        id="adminLoginMessage"
+        class="form-message"
+      ></p>
+
+      <button
+        type="submit"
+        id="adminLoginButton"
+        class="primary-button"
+      >
+        Login as Administrator
+      </button>
+
+    </form>
+  </div>
+</div>
+
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
+
+  <div
+    id="adminDashboard"
+    class="admin-dashboard hidden"
+  >
+
+    <aside
+      id="adminSidebar"
+      class="admin-sidebar"
+    >
+      <div class="sidebar-brand">
+        <div class="brand-symbol logo-brand">
+    <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png"
+        alt="FoodConnect"
+    >
+</div>
+
+        <div>
+          <strong>FoodConnect</strong>
+          <span>Admin & Coordinator</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+
+        <button
+          class="nav-item active"
+          data-section="overviewSection"
+        >
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Overview</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="applicationsSection"
+        >
+          <i class="fa-solid fa-store"></i>
+          <span>Restaurant Applications</span>
+
+          <span
+            id="submittedBadge"
+            class="nav-badge hidden"
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="restaurantsSection"
+        >
+          <i class="fa-solid fa-building"></i>
+          <span>Approved Restaurants</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="deliveryRequestsSection"
+        >
+          <i class="fa-solid fa-bell-concierge"></i>
+          <span>Delivery Requests</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="riderAssignmentSection"
+        >
+          <i class="fa-solid fa-motorcycle"></i>
+          <span>Rider Assignment</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="ridersSection"
+        >
+          <i class="fa-solid fa-users"></i>
+          <span>Third-Party Riders</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="deliveryMonitoringSection"
+        >
+          <i class="fa-solid fa-map-location-dot"></i>
+          <span>Delivery Monitoring</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="platformUsersSection"
+        >
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Platform Users</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="activityLogsSection"
+        >
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Activity Logs</span>
+        </button>
+
+      </nav>
+
+      <div class="sidebar-footer">
+        <button
+          type="button"
+          id="adminLogoutButton"
+          class="logout-button"
+        >
+          <i class="fa-solid fa-right-from-bracket"></i>
+          Log out
+        </button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-header">
+        <button
+          type="button"
+          id="sidebarToggle"
+          class="sidebar-toggle"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div>
+          <p class="header-label">
+            Platform Administration
+          </p>
+
+          <h1 id="pageTitle">
+            Overview
+          </h1>
+        </div>
+
+        <div class="admin-profile">
+        <div class="profile-avatar logo-avatar">
+    <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png"
+        alt="FoodConnect"
+    >
+</div>
+
+          <div>
+            <strong id="adminName">
+              Administrator
+            </strong>
+
+           <span>
+    Platform Administrator
+</span>
+
+<small>
+    Delivery Coordinator
+</small>
+          </div>
+        </div>
+      </header>
+
+      <div
+        id="dashboardMessage"
+        class="dashboard-message hidden"
+      ></div>
+
+      <!-- OVERVIEW -->
+
+      <section
+        id="overviewSection"
+        class="dashboard-section active"
+      >
+        <div class="summary-grid">
+
+          <article class="summary-card">
+            <div class="summary-icon orange">
+              <i class="fa-solid fa-file-circle-check"></i>
+            </div>
+
+            <div>
+              <span>Submitted Applications</span>
+              <strong id="submittedCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon green">
+              <i class="fa-solid fa-store"></i>
+            </div>
+
+            <div>
+              <span>Approved Restaurants</span>
+              <strong id="approvedCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon blue">
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+
+            <div>
+              <span>Active Delivery Requests</span>
+              <strong>0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon purple">
+              <i class="fa-solid fa-motorcycle"></i>
+            </div>
+
+            <div>
+              <span>Available Third-Party Riders</span>
+              <strong>0</strong>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="content-card">
+          <div class="card-heading">
+            <div>
+              <h2>Platform overview</h2>
+
+              <p>
+                Review restaurant applications and coordinate
+                FoodConnect deliveries from one dashboard.
+              </p>
+            </div>
+          </div>
+
+          <div class="empty-placeholder">
+            <i class="fa-solid fa-chart-line"></i>
+
+            <h3>Dashboard analytics</h3>
+
+            <p>
+              Sales, delivery, restaurant, and rider analytics
+              will appear here as the platform receives data.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESTAURANT APPLICATIONS -->
+
+      <section
+        id="applicationsSection"
+        class="dashboard-section"
+      >
+        <div class="content-card">
+
+          <div class="card-heading applications-heading">
+            <div>
+              <h2>Restaurant applications</h2>
+
+              <p>
+                Review restaurants applying to join FoodConnect.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="refreshApplicationsButton"
+              class="secondary-button"
+            >
+              <i class="fa-solid fa-rotate"></i>
+              Refresh
+            </button>
+          </div>
+
+          <div class="filter-bar">
+            <button
+              type="button"
+              class="status-filter active"
+              data-status="all"
+            >
+              All
+              <span id="allApplicationsCount">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="status-filter"
+              data-status="submitted"
+            >
+              Submitted
+              <span id="submittedApplicationsCount">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="status-filter"
+              data-status="draft"
+            >
+              Draft
+              <span id="draftApplicationsCount">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="status-filter"
+              data-status="approved"
+            >
+              Approved
+              <span id="approvedApplicationsCount">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="status-filter"
+              data-status="rejected"
+            >
+              Rejected
+              <span id="rejectedApplicationsCount">0</span>
+            </button>
+          </div>
+
+          <div
+            id="applicationsLoading"
+            class="table-loading"
+          >
+            Loading applications...
+          </div>
+
+          <div
+            id="applicationsEmpty"
+            class="empty-placeholder hidden"
+          >
+            <i class="fa-solid fa-folder-open"></i>
+
+            <h3>No applications found</h3>
+
+            <p>
+              Applications matching the selected status will
+              appear here.
+            </p>
+          </div>
+
+          <div
+            id="applicationsTableWrapper"
+            class="table-wrapper hidden"
+          >
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Restaurant</th>
+                  <th>Owner</th>
+                  <th>Cuisine</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="applicationsTableBody"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- PLACEHOLDER MODULES -->
+
+      <section
+        id="restaurantsSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-building"></i>
+          <h2>Approved Restaurants</h2>
+          <p>
+            Approved FoodConnect restaurants will be managed here.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="deliveryRequestsSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-bell-concierge"></i>
+          <h2>Delivery Requests</h2>
+          <p>
+            Restaurant requests for FoodConnect riders will appear here.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="riderAssignmentSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-motorcycle"></i>
+          <h2>Rider Assignment</h2>
+          <p>
+            Assign available third-party riders to restaurant orders.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="ridersSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-users"></i>
+          <h2>Third-Party Riders</h2>
+          <p>
+            Register, approve, activate, and monitor partner riders.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="deliveryMonitoringSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <h2>Delivery Monitoring</h2>
+          <p>
+            Monitor assigned, picked-up, and active deliveries.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="platformUsersSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-user-shield"></i>
+          <h2>Platform Users</h2>
+          <p>
+            Manage administrators, owners, customers, and riders.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="activityLogsSection"
+        class="dashboard-section"
+      >
+        <div class="content-card module-placeholder">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <h2>Activity Logs</h2>
+          <p>
+            Platform-level administrative and delivery activities.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- APPLICATION MODAL -->
+
+  <div
+    id="applicationModal"
+    class="modal-overlay hidden"
+  >
+    <div class="application-modal">
+
+      <button
+        type="button"
+        id="closeApplicationModal"
+        class="modal-close"
+      >
+        &times;
+      </button>
+
+      <div id="applicationModalContent"></div>
+
+    </div>
+  </div>
+
+  <script src="../js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Customer Account | FoodConnect</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/signup.css"
+    >
+</head>
+
+<body>
+
+<header class="auth-header">
+
+    <a
+        href="index.html"
+        class="auth-brand"
+        aria-label="Go to FoodConnect homepage"
+    >
+        <img
+            src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+            alt="FoodConnect Logo"
+        >
+
+        <strong>
+            <span class="brand-food">Food</span><span class="brand-connect">Connect</span>
+        </strong>
+    </a>
+
+    <a
+        href="index.html"
+        class="home-link"
+    >
+        <i class="fa-solid fa-arrow-left"></i>
+
+        <span>
+            Back to Homepage
+        </span>
+    </a>
+
+</header>
+
+<main class="auth-page">
+
+    <section class="auth-presentation">
+
+        <div class="presentation-content">
+
+            <span class="presentation-badge">
+
+                <i class="fa-solid fa-user-plus"></i>
+
+                Customer Registration
+
+            </span>
+
+            <h1>
+                Create your account and start ordering.
+            </h1>
+
+            <p class="presentation-description">
+                Join FoodConnect to discover local restaurants,
+                place convenient orders, and follow every order
+                from confirmation to completion.
+            </p>
+
+            <div class="presentation-features">
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-store"></i>
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Explore partner restaurants
+                        </h2>
+
+                        <p>
+                            Browse restaurant menus and discover
+                            meals available near you.
+                        </p>
+
+                    </div>
+
+                </article>
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Place orders easily
+                        </h2>
+
+                        <p>
+                            Choose delivery, take-out, or dine-in
+                            depending on the restaurant.
+                        </p>
+
+                    </div>
+
+                </article>
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Monitor order progress
+                        </h2>
+
+                        <p>
+                            Stay informed as the restaurant prepares
+                            and completes your order.
+                        </p>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+            <div class="customer-access-note">
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                <p>
+                    This registration page is for customer accounts.
+                    Restaurant owners must use the separate
+                    FoodConnect Partner Program.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="auth-form-section">
+
+        <div class="auth-card">
+
+            <div class="auth-card-header">
+
+                <span class="auth-card-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </span>
+
+                <div>
+
+                    <p class="auth-card-kicker">
+                        Customer Account
+                    </p>
+
+                    <h2>
+                        Create your account
+                    </h2>
+
+                    <p>
+                        Enter your information to join FoodConnect.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <form
+                id="signupForm"
+                novalidate
+            >
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Full Name
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="full_name"
+                            placeholder="Enter your complete name"
+                            autocomplete="name"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-regular fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email address"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <div class="input-wrapper password-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Create a password"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="password"
+                            aria-label="Show password"
+                        >
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="password-requirements">
+
+                        <p>
+                            Password requirements:
+                        </p>
+
+                        <span
+                            id="lengthRequirement"
+                            class="password-requirement"
+                        >
+                            <i class="fa-solid fa-circle"></i>
+                            At least 8 characters
+                        </span>
+
+                        <span
+                            id="letterRequirement"
+                            class="password-requirement"
+                        >
+                            <i class="fa-solid fa-circle"></i>
+                            Contains at least one letter
+                        </span>
+
+                        <span
+                            id="numberRequirement"
+                            class="password-requirement"
+                        >
+                            <i class="fa-solid fa-circle"></i>
+                            Contains at least one number
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="confirm-password">
+                        Confirm Password
+                    </label>
+
+                    <div class="input-wrapper password-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="confirm-password"
+                            name="confirm_password"
+                            placeholder="Repeat your password"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="confirm-password"
+                            aria-label="Show password"
+                        >
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                    <p
+                        id="passwordMatchMessage"
+                        class="password-match-message"
+                        aria-live="polite"
+                    ></p>
+
+                </div>
+
+                <label class="agreement-option">
+
+                    <input
+                        type="checkbox"
+                        id="agreement"
+                        required
+                    >
+
+                    <span class="custom-checkbox">
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    <span>
+                        I confirm that the information provided is correct
+                        and I agree to the FoodConnect account policies.
+                    </span>
+
+                </label>
+
+                <div
+                    id="signupMessage"
+                    class="form-message"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+                <button
+                    type="submit"
+                    id="signupSubmitButton"
+                    class="primary-button"
+                >
+
+                    <span class="button-label">
+                        Create Customer Account
+                    </span>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </button>
+
+            </form>
+
+            <div
+                id="signupSuccess"
+                class="signup-success hidden"
+            >
+
+                <span class="success-icon">
+                    <i class="fa-regular fa-envelope"></i>
+                </span>
+
+                <h3>
+                    Check your email
+                </h3>
+
+                <p>
+                    Your customer account was created successfully.
+                    Open the verification email sent by FoodConnect
+                    to activate your account.
+                </p>
+
+                <a
+                    href="login.html"
+                    class="secondary-button"
+                >
+                    Go to Customer Login
+                </a>
+
+                <button
+                    type="button"
+                    id="createAnotherAccount"
+                    class="text-action"
+                >
+                    Create another account
+                </button>
+
+            </div>
+
+            <div
+                id="loginPrompt"
+                class="login-prompt"
+            >
+
+                <span>
+                    Already have a customer account?
+                </span>
+
+                <a href="login.html">
+                    Log in
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="auth-footer">
+
+    <p>
+        © 2026
+        <span class="brand-food">Food</span><span class="brand-connect">Connect</span>.
+        Connecting customers and local restaurants.
+    </p>
+
+</footer>
+
+<script src="../js/signup.js?v=4"></script>
+
+</body>
+</html>

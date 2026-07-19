@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
+
+
+  <title>BlackHabit | Delivery Staff</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/delivery_dashboard_BH.css"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+</head>
+
+<body>
+
+  <div class="delivery-app">
+
+    <!-- HEADER -->
+    <header class="delivery-header">
+
+      <div class="brand-area">
+        <img
+          src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png"
+          alt="BlackHabit Logo"
+          class="delivery-logo"
+        />
+
+        <div>
+          <h1>BlackHabit</h1>
+          <p>Delivery Staff</p>
+        </div>
+      </div>
+
+      <button
+        class="logout-btn"
+        id="logoutBtn"
+        title="Logout"
+      >
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+
+    </header>
+
+    <!-- RIDER INFORMATION -->
+    <section class="rider-panel">
+
+      <div class="rider-avatar">
+        <i class="fa-solid fa-motorcycle"></i>
+      </div>
+
+      <div class="rider-info">
+        <span>Logged in as</span>
+        <h2 id="riderName">Delivery Staff</h2>
+        <p id="riderStatus">
+          Ready to receive deliveries
+        </p>
+      </div>
+
+      <button
+        class="refresh-btn"
+        id="refreshDeliveriesBtn"
+      >
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="delivery-summary">
+
+      <div class="summary-card">
+        <i class="fa-solid fa-box"></i>
+
+        <div>
+          <span>Assigned</span>
+          <strong id="assignedCount">0</strong>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <i class="fa-solid fa-person-biking"></i>
+
+        <div>
+          <span>Ongoing</span>
+          <strong id="ongoingCount">0</strong>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <i class="fa-solid fa-circle-check"></i>
+
+        <div>
+          <span>Completed</span>
+          <strong id="completedCount">0</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- FILTER TABS -->
+    <section class="delivery-tabs">
+
+      <button
+        class="delivery-tab active"
+        data-status="active"
+      >
+        Active
+      </button>
+
+      <button
+        class="delivery-tab"
+        data-status="completed"
+      >
+        Completed
+      </button>
+
+      <button
+        class="delivery-tab"
+        data-status="all"
+      >
+        All
+      </button>
+
+    </section>
+
+    <!-- DELIVERY LIST -->
+    <main class="delivery-content">
+
+      <div
+        class="delivery-list"
+        id="deliveryList"
+      >
+        <div class="delivery-empty-state">
+          <i class="fa-solid fa-motorcycle"></i>
+          <h3>No Deliveries Yet</h3>
+          <p>
+            Assigned delivery orders will appear here.
+          </p>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- DELIVERY DETAILS MODAL -->
+  <div
+    class="modal-overlay"
+    id="deliveryModal"
+  >
+
+    <div class="delivery-modal">
+
+      <div class="modal-header">
+
+        <div>
+          <h2>Delivery Details</h2>
+          <p id="deliveryModalSubtitle">
+            Customer and order information
+          </p>
+        </div>
+
+        <button
+          class="close-modal-btn"
+          id="closeDeliveryModal"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+      </div>
+
+      <div
+        class="modal-body"
+        id="deliveryModalBody"
+      >
+        <!-- Filled by JavaScript -->
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          class="secondary-btn"
+          id="closeDeliveryModalBtn"
+        >
+          Close
+        </button>
+
+        <div
+          class="delivery-actions"
+          id="deliveryActions"
+        >
+          <!-- Dynamic action buttons -->
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div
+    class="modal-overlay"
+    id="confirmModal"
+  >
+
+    <div class="confirm-modal">
+
+      <div class="confirm-icon">
+        <i class="fa-solid fa-circle-question"></i>
+      </div>
+
+      <h3 id="confirmTitle">
+        Confirm Action
+      </h3>
+
+      <p id="confirmMessage">
+        Are you sure?
+      </p>
+
+      <div class="confirm-actions">
+
+        <button
+          class="secondary-btn"
+          id="confirmCancelBtn"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="primary-btn"
+          id="confirmOkBtn"
+        >
+          Confirm
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TOASTS -->
+  <div
+    class="toast-container"
+    id="toastContainer"
+  ></div>
+
+  <script src="../js/delivery_dashboard_BH.js"></script>
+
+</body>
+</html>

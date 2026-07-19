@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Customer Login | FoodConnect</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/login.css"
+    >
+</head>
+
+<body>
+
+<header class="auth-header">
+
+    <a
+        href="index.html"
+        class="auth-brand"
+        aria-label="Go to FoodConnect homepage"
+    >
+        <img
+            src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+            alt="FoodConnect Logo"
+        >
+
+        <strong>
+            <span class="brand-food">Food</span><span class="brand-connect">Connect</span>
+        </strong>
+    </a>
+
+    <a
+        href="index.html"
+        class="home-link"
+    >
+        <i class="fa-solid fa-arrow-left"></i>
+
+        <span>
+            Back to Homepage
+        </span>
+    </a>
+
+</header>
+
+<main class="auth-page">
+
+    <section class="auth-presentation">
+
+        <div class="presentation-content">
+
+            <span class="presentation-badge">
+                <i class="fa-solid fa-bag-shopping"></i>
+                Customer Access
+            </span>
+
+            <h1>
+                Your favorite meals are just a few clicks away.
+            </h1>
+
+            <p class="presentation-description">
+                Log in to order from local restaurants, monitor your
+                active orders, and review your complete order history.
+            </p>
+
+            <div class="presentation-features">
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-store"></i>
+                    </span>
+
+                    <div>
+                        <h2>
+                            Discover local restaurants
+                        </h2>
+
+                        <p>
+                            Browse menus and order from FoodConnect
+                            partner restaurants.
+                        </p>
+                    </div>
+
+                </article>
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </span>
+
+                    <div>
+                        <h2>
+                            Track your orders
+                        </h2>
+
+                        <p>
+                            Follow your order status from confirmation
+                            until completion.
+                        </p>
+                    </div>
+
+                </article>
+
+                <article class="presentation-feature">
+
+                    <span class="feature-icon">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </span>
+
+                    <div>
+                        <h2>
+                            Access your order history
+                        </h2>
+
+                        <p>
+                            Review previous orders and receipts using
+                            your customer account.
+                        </p>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+    <section class="auth-form-section">
+
+        <div class="auth-card">
+
+            <div class="auth-card-header">
+
+                <span class="auth-card-icon">
+                    <i class="fa-solid fa-user"></i>
+                </span>
+
+                <div>
+
+                    <p class="auth-card-kicker">
+                        Customer Account
+                    </p>
+
+                    <h2 id="panelTitle">
+                        Welcome back
+                    </h2>
+
+                    <p id="panelDescription">
+                        Log in to continue ordering with FoodConnect.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- =========================
+                 CUSTOMER LOGIN
+                 ========================= -->
+
+            <div id="loginPanel">
+
+                <form
+                    id="loginForm"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-regular fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="Enter your email address"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <div class="label-row">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <button
+                                type="button"
+                                id="openForgot"
+                                class="text-button"
+                            >
+                                Forgot password?
+                            </button>
+
+                        </div>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="password"
+                                aria-label="Show password"
+                            >
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <label class="remember-option">
+
+                        <input
+                            type="checkbox"
+                            id="remember"
+                        >
+
+                        <span class="custom-checkbox">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+
+                        <span>
+                            Keep me signed in for 30 days
+                        </span>
+
+                    </label>
+
+                    <div
+                        id="loginMsg"
+                        class="form-message"
+                        role="alert"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        type="submit"
+                        id="loginSubmitButton"
+                        class="primary-button"
+                    >
+
+                        <span class="button-label">
+                            Log In
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+                </form>
+
+                <div
+                    id="verifyHelp"
+                    class="verification-help hidden"
+                >
+
+                    <span class="verification-icon">
+                        <i class="fa-regular fa-envelope"></i>
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Email verification required
+                        </strong>
+
+                        <p>
+                            Didn’t receive your verification message?
+                        </p>
+
+                        <button
+                            type="button"
+                            id="resendVerifyBtn"
+                            class="resend-btn"
+                        >
+                            Resend verification email
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="auth-separator">
+                    <span>
+                        New to FoodConnect?
+                    </span>
+                </div>
+
+                <a
+                    href="signup.html"
+                    class="secondary-button"
+                >
+                    Create a Customer Account
+                </a>
+
+                <p class="customer-note">
+                    This page is for customer accounts only.
+                </p>
+
+            </div>
+
+            <!-- =========================
+                 FORGOT PASSWORD
+                 ========================= -->
+
+            <div
+                id="forgotPanel"
+                class="hidden"
+            >
+
+                <form
+                    id="forgotForm"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="forgotEmail">
+                            Email Address
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-regular fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="forgotEmail"
+                                placeholder="Enter your registered email"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="forgotMsg"
+                        class="form-message"
+                        role="alert"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        type="submit"
+                        id="forgotSubmitButton"
+                        class="primary-button"
+                    >
+
+                        <span class="button-label">
+                            Send Reset Link
+                        </span>
+
+                        <i class="fa-regular fa-paper-plane"></i>
+
+                    </button>
+
+                </form>
+
+                <button
+                    type="button"
+                    id="backToLogin1"
+                    class="back-button"
+                >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back to Customer Login
+                </button>
+
+            </div>
+
+            <!-- =========================
+                 RESET PASSWORD
+                 ========================= -->
+
+            <div
+                id="resetPanel"
+                class="hidden"
+            >
+
+                <form
+                    id="resetForm"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="newPass">
+                            New Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="newPass"
+                                placeholder="Create a new password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="newPass"
+                                aria-label="Show password"
+                            >
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                        <small class="field-help">
+                            Use at least 8 characters.
+                        </small>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="confirmPass">
+                            Confirm New Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="confirmPass"
+                                placeholder="Repeat your new password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="confirmPass"
+                                aria-label="Show password"
+                            >
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="resetMsg"
+                        class="form-message"
+                        role="alert"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        type="submit"
+                        id="resetSubmitButton"
+                        class="primary-button"
+                    >
+
+                        <span class="button-label">
+                            Update Password
+                        </span>
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    </button>
+
+                </form>
+
+                <a
+                    href="login.html"
+                    id="backToLogin2"
+                    class="back-button"
+                >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back to Customer Login
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="auth-footer">
+
+    <p>
+        © 2026
+        <span class="brand-food">Food</span><span class="brand-connect">Connect</span>.
+        Connecting customers and local restaurants.
+    </p>
+
+</footer>
+
+<script src="../js/login.js?v=11"></script>
+
+</body>
+</html>

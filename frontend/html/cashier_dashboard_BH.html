@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
+
+  <title>BlackHabit | Cashier Dashboard</title>
+
+  <link rel="stylesheet" href="../css/cashier_dashboard_BH.css" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+</head>
+
+<body>
+  <div class="dashboard-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+           <img
+      src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png"
+      alt="BlackHabit Logo"
+      class="logo-img"
+    >
+        </div>
+
+        <div>
+          <h2>BlackHabit</h2>
+          <p>Cashier Panel</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="ordersSection">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Orders</span>
+        </button>
+
+        <button class="nav-item" data-section="notificationsSection">
+          <i class="fa-solid fa-bell"></i>
+          <span>Notifications</span>
+          <span id="cashierNotificationBadge" class="cashier-notification-badge">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div>
+          <h1>Cashier Dashboard</h1>
+          <p>Manage incoming customer orders</p>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="sound-btn" id="soundToggle" title="Toggle Notification Sound">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <div class="cashier-profile">
+            <i class="fa-solid fa-user"></i>
+            <span>Cashier</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ORDERS SECTION -->
+      <section class="content-section active" id="ordersSection">
+
+        <!-- SUMMARY CARDS -->
+       <div class="summary-cards">
+
+  <div class="summary-card">
+    <div>
+      <p>Order Received</p>
+      <h3 id="pendingCount">0</h3>
+    </div>
+
+    <i class="fa-solid fa-receipt"></i>
+  </div>
+
+  <div class="summary-card">
+    <div>
+      <p>Preparing</p>
+      <h3 id="preparingCount">0</h3>
+    </div>
+
+    <i class="fa-solid fa-kitchen-set"></i>
+  </div>
+
+  <div class="summary-card">
+    <div>
+      <p>Out for Delivery</p>
+      <h3 id="readyCount">0</h3>
+    </div>
+
+    <i class="fa-solid fa-motorcycle"></i>
+  </div>
+
+  <div class="summary-card">
+    <div>
+      <p>Picked Up by Customer</p>
+      <h3 id="completedCount">0</h3>
+    </div>
+
+    <i class="fa-solid fa-bag-shopping"></i>
+  </div>
+
+  <div class="summary-card">
+    <div>
+      <p>Cancelled</p>
+      <h3 id="cancelledCount">0</h3>
+    </div>
+
+    <i class="fa-solid fa-circle-xmark"></i>
+  </div>
+
+</div>
+
+        <!-- ORDER TOOLS -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2>Incoming Orders</h2>
+              <p>View and update customer order status</p>
+            </div>
+
+            <button class="refresh-btn" id="refreshOrdersBtn">
+              <i class="fa-solid fa-rotate"></i>
+              Refresh
+            </button>
+          </div>
+
+          <div class="order-tools">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                id="orderSearch"
+                placeholder="Search by order ID, customer, or contact..."
+              />
+            </div>
+
+        <select id="statusFilter">
+  <option value="all">All Status</option>
+  <option value="pending">Order Received</option>
+  <option value="preparing">Preparing</option>
+  <option value="out_for_delivery">Out for Delivery</option>
+  <option value="completed">Picked Up by Customer</option>
+  <option value="cancelled">Cancelled</option>
+</select>
+
+            <select id="orderTypeFilter">
+  <option value="all">All Order Types</option>
+  <option value="delivery">Delivery</option>
+  <option value="take-out">Take-out</option>
+  <option value="dine-in">Dine-in</option>
+</select>
+          </div>
+
+          <!-- STATUS TABS -->
+    <div class="status-tabs">
+  <button
+    class="status-tab active"
+    data-status="all"
+  >
+    All
+  </button>
+
+  <button
+    class="status-tab"
+    data-status="pending"
+  >
+    Order Received
+  </button>
+
+  <button
+    class="status-tab"
+    data-status="preparing"
+  >
+    Preparing
+  </button>
+
+  <button
+    class="status-tab"
+    data-status="out_for_delivery"
+  >
+    Out for Delivery
+  </button>
+
+  <button
+    class="status-tab"
+    data-status="completed"
+  >
+    Picked Up by Customer
+  </button>
+
+  <button
+    class="status-tab"
+    data-status="cancelled"
+  >
+    Cancelled
+  </button>
+</div>
+
+          <!-- ORDERS TABLE -->
+          <div class="table-wrapper">
+            <table class="orders-table">
+             <thead>
+  <tr>
+    <th>Queue No.</th>
+    <th>Order ID</th>
+    <th>Customer</th>
+    <th>Order Type</th>
+    <th>Payment</th>
+    <th>Total</th>
+    <th>Status</th>
+    <th>Date / Time</th>
+    <th>Action</th>
+  </tr>
+</thead>
+
+              <tbody id="ordersTableBody">
+                <tr>
+                  <td colspan="9" class="empty-message">
+                    No orders loaded yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS SECTION -->
+      <section class="content-section" id="notificationsSection">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2>Order Notifications</h2>
+              <p>New order alerts will appear here</p>
+            </div>
+          </div>
+
+          <div class="notifications-list" id="notificationsList">
+            <p class="empty-message">No notifications yet.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ORDER DETAILS MODAL -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2>Order Details</h2>
+          <p id="modalOrderSubtitle">Customer order information</p>
+        </div>
+
+        <button class="close-modal" id="closeModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" id="modalBody">
+        <!-- Filled by JavaScript -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-modal-btn" id="cancelModalBtn">Close</button>
+
+  <div class="modal-actions">
+
+  <button
+    class="status-action-btn receipt-btn"
+    id="printReceiptBtn"
+  >
+    <i class="fa-solid fa-receipt"></i>
+    Customer Receipt
+  </button>
+
+  <button
+    class="status-action-btn kitchen-ticket-btn"
+    id="printKitchenTicketBtn"
+  >
+    <i class="fa-solid fa-print"></i>
+    Kitchen Ticket
+  </button>
+
+  <button
+    class="status-action-btn preparing-btn"
+    id="markPreparingBtn"
+  >
+    Mark as Preparing
+  </button>
+
+  <button
+    class="status-action-btn ready-btn"
+    id="markReadyBtn"
+  >
+    Mark as Ready
+  </button>
+
+  <button
+    class="status-action-btn done-btn"
+    id="markCompletedBtn"
+  >
+    Mark as Completed
+  </button>
+
+  <button
+  class="status-action-btn assign-rider-btn"
+  id="assignRiderBtn"
+>
+  <i class="fa-solid fa-motorcycle"></i>
+  Assign Rider
+</button>
+
+  <button
+    class="status-action-btn cancel-btn"
+    id="markCancelledBtn"
+  >
+    Cancel Order
+  </button>
+
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<audio id="notificationSound" preload="auto">
+  <source src="../audio/notification.mp3" type="audio/mpeg" />
+</audio>
+
+<!-- CONFIRM ACTION MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <div class="confirm-icon">
+      <i class="fa-solid fa-circle-question"></i>
+    </div>
+
+    <h3 id="confirmTitle">Confirm Action</h3>
+    <p id="confirmMessage">Are you sure?</p>
+
+    <div class="confirm-actions">
+      <button class="confirm-cancel-btn" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-ok-btn" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- CASHIER CANCELLATION REASON MODAL -->
+<div class="modal-overlay" id="cancelReasonModal">
+  <div class="cancel-reason-modal">
+
+    <div class="modal-header">
+      <div>
+        <h2>Cancel Order</h2>
+        <p id="cancelReasonSubtitle">
+          Select the reason for cancelling this order.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-modal"
+        id="closeCancelReasonModal"
+        aria-label="Close cancellation modal"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="cancel-reason-body">
+
+      <div class="cancel-warning-box">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <div>
+          <strong>This action cannot be undone.</strong>
+          <p>
+            The order will be cancelled and its reserved stock
+            will be returned to inventory.
+          </p>
+        </div>
+      </div>
+
+      <fieldset class="cancel-reason-list">
+        <legend>Cancellation Reason</legend>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Item is unavailable"
+          />
+
+          <span>
+            <strong>Item is unavailable</strong>
+            <small>
+              One or more items cannot be prepared.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Insufficient stock"
+          />
+
+          <span>
+            <strong>Insufficient stock</strong>
+            <small>
+              The restaurant does not have enough inventory.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Unable to prepare the order"
+          />
+
+          <span>
+            <strong>Unable to prepare the order</strong>
+            <small>
+              The kitchen cannot complete the order.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Restaurant is closing"
+          />
+
+          <span>
+            <strong>Restaurant is closing</strong>
+            <small>
+              The order cannot be completed before closing.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Customer requested cancellation"
+          />
+
+          <span>
+            <strong>Customer requested cancellation</strong>
+            <small>
+              The customer directly requested the cancellation.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Invalid or incomplete order details"
+          />
+
+          <span>
+            <strong>Invalid or incomplete details</strong>
+            <small>
+              Important order information is missing or invalid.
+            </small>
+          </span>
+        </label>
+
+        <label class="cancel-reason-option">
+          <input
+            type="radio"
+            name="cashierCancellationReason"
+            value="Other"
+          />
+
+          <span>
+            <strong>Other reason</strong>
+            <small>
+              Enter a specific reason below.
+            </small>
+          </span>
+        </label>
+      </fieldset>
+
+      <div
+        class="cancel-other-reason"
+        id="cancelOtherReasonGroup"
+        hidden
+      >
+        <label for="cancelOtherReasonInput">
+          Specify the cancellation reason
+        </label>
+
+        <textarea
+          id="cancelOtherReasonInput"
+          maxlength="255"
+          rows="3"
+          placeholder="Enter the reason for cancelling this order..."
+        ></textarea>
+
+        <div class="cancel-character-count">
+          <span id="cancelReasonCharacterCount">0</span>/255
+        </div>
+      </div>
+
+      <p
+        class="cancel-reason-error"
+        id="cancelReasonError"
+        hidden
+      >
+        Please select a cancellation reason.
+      </p>
+    </div>
+
+    <div class="cancel-reason-footer">
+      <button
+        type="button"
+        class="confirm-cancel-btn"
+        id="backCancelReasonBtn"
+      >
+        Go Back
+      </button>
+
+      <button
+        type="button"
+        class="confirm-cancel-order-btn"
+        id="confirmCancelOrderBtn"
+        disabled
+      >
+        <i class="fa-solid fa-ban"></i>
+        Confirm Cancellation
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ASSIGN RIDER MODAL -->
+<div class="modal-overlay" id="assignRiderModal">
+  <div class="assign-rider-modal">
+
+    <div class="modal-header">
+      <div>
+        <h2>Assign Delivery Rider</h2>
+        <p id="assignRiderSubtitle">
+          Select an available restaurant rider
+        </p>
+      </div>
+
+      <button class="close-modal" id="closeAssignRiderModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="assign-rider-body">
+
+      <div class="assignment-order-summary" id="assignmentOrderSummary">
+        <!-- Filled by JavaScript -->
+      </div>
+
+      <div class="form-group">
+        <label for="riderSelect">Available Restaurant Rider</label>
+
+        <select id="riderSelect">
+          <option value="">Loading available riders...</option>
+        </select>
+
+        <small id="riderAvailabilityMessage">
+          Only active riders without an ongoing delivery are displayed.
+        </small>
+      </div>
+
+     <div class="assignment-fee-grid">
+
+  <div class="form-group">
+    <label for="deliveryFeeInput">
+      Customer Delivery Fee
+    </label>
+
+    <div class="currency-input">
+      <span>₱</span>
+
+      <input
+        type="number"
+        id="deliveryFeeInput"
+        min="0"
+        step="0.01"
+        value="0.00"
+      />
+    </div>
+
+    <small>
+      Amount charged to the customer for delivery.
+    </small>
+  </div>
+
+</div>
+
+        <div class="form-group">
+          <label for="riderPaymentInput">Rider Payment</label>
+
+          <div class="currency-input">
+            <span>₱</span>
+            <input
+              type="number"
+              id="riderPaymentInput"
+              min="0"
+              step="0.01"
+              value="0.00"
+            />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="assignment-note">
+        <i class="fa-solid fa-circle-info"></i>
+
+        <p>
+  This rider is an employee of BlackHabit. Rider salary or
+  compensation is handled directly by the restaurant.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="assign-rider-footer">
+      <button
+        class="confirm-cancel-btn"
+        id="cancelAssignRiderBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="confirm-ok-btn"
+        id="confirmAssignRiderBtn"
+      >
+        <i class="fa-solid fa-motorcycle"></i>
+        Assign Rider
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- NEW ORDER TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/cashier_dashboard_BH.js"></script>
+</body>
+</html>

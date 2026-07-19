@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/kej.png">
+
+    <title>Kej's Kitchen</title>
+<link rel="stylesheet" href="../css/kej.css"></head>
+<body>
+
+<header>
+  <div class="logo-section">
+    <img
+      src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/kej-Photoroom.png"
+      alt="Kej Logo"
+      class="logo-img"
+    >
+    <div class="brand-info">
+      <h1>Kej's Kitchen</h1>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <svg class="search-icon" id="searchBtn" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+
+    <input type="text" id="searchInput" placeholder="Search for food...">
+
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <div class="header-icons">
+
+     <a href="index.html">
+        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/home%20(1).png"
+             alt="Home" class="icon">
+    </a>
+    
+    <a href="#" class="cart-link" onclick="goToCart(); return false;">
+      <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/add-to-basket.png"
+        alt="Cart"
+        class="icon"
+      >
+    </a>
+
+    <div class="account-wrapper">
+      <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/profile-picture.png"
+        alt="User"
+        class="icon"
+        id="accountBtn"
+      >
+
+      <div class="account-dropdown" id="accountDropdown">
+        <p id="accountName">Guest</p>
+        <button id="goProfile">Account Settings</button>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+    <h2>Delicious Comfort Foods,<br><span class="highlight">Delivered Fast</span></h2>
+    <p>Your favorite comfort foods, made fresh and delivered to your door</p>
+</section>
+
+<!-- ================= MENU ================= -->
+ <section class="menu-section">
+        <h2>Our Menu</h2>
+
+        <!-- MAIN FILTERS -->
+        <div class="menu-filters">
+            <button class="filter-btn main-filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn main-filter-btn" data-filter="soup">Soup</button>
+            <button class="filter-btn main-filter-btn" data-filter="specialwithrice">Special With Rice</button>
+            <button class="filter-btn main-filter-btn" data-filter="pancit">Pancit</button>
+            <button class="filter-btn main-filter-btn" data-filter="wings">Wings</button>
+            <button class="filter-btn main-filter-btn" data-filter="takoyaki">Takoyaki</button>
+            <button class="filter-btn main-filter-btn" data-filter="friednoodles">Fried Noodles&Siomai</button>
+            <button class="filter-btn main-filter-btn" data-filter="pizza">Pizza</button>
+            <button class="filter-btn main-filter-btn" data-filter="burgersandwich">Burger & Sandwich</button>
+            <button class="filter-btn main-filter-btn" data-filter="fries">Fries</button>
+            <button class="filter-btn main-filter-btn" data-filter="sizzling">Sizzling</button>
+            <button class="filter-btn main-filter-btn" data-filter="silogmeal">SilogMeal</button>
+            <button class="filter-btn main-filter-btn" data-filter="sisig">Sisig</button>
+            <button class="filter-btn main-filter-btn" data-filter="3in1box">3 in 1Box</button>
+            <button class="filter-btn main-filter-btn" data-filter="b1t1">B1T1</button>
+            <button class="filter-btn main-filter-btn" data-filter="kejcombo">Kej's Combo</button>
+            <button class="filter-btn main-filter-btn" data-filter="budbod">BudBod</button>
+            <button class="filter-btn main-filter-btn" data-filter="dessert">Dessert</button>
+            <button class="filter-btn main-filter-btn" data-filter="groupmeal">Group Meal</button>
+            <button class="filter-btn main-filter-btn" data-filter="pancit2">Pancit</button>
+
+
+        </div>
+
+        
+
+        <!-- MENU GRID -->
+        <div class="menu-grid">
+
+            <!-- ================= Soup ================= -->
+            <div class="menu-item" data-category="soup">
+                <img src=" " alt="Bulalo">
+                <div class="menu-item-info">
+                    <h3>Bulalo</h3>
+                    <p class="price">₱180</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="soup">
+                <img src=" " alt="Sinigang Bagnet">
+                <div class="menu-item-info">
+                    <h3>Sinigang Bagnet</h3>
+                    <p class="price">₱180</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="soup">
+                <img src=" " alt="Sinigang Hipon">
+                <div class="menu-item-info">
+                    <h3>Sinigang Hipon</h3>
+                    <p class="price">₱180</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= Special Meal With Rice ================= -->
+            <div class="menu-item" data-category="specialwithrice">
+                <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=800&h=600&fit=crop" alt="Java Chips Frappe">
+                <div class="menu-item-info">
+                    <h3>Sizzling Buttered Shirmp</h3>
+                    <p class="price">₱180</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="specialwithrice">
+                <img src="https://images.unsplash.com/photo-1521305916504-4a1121188589?w=800&h=600&fit=crop" alt="Coffee Jelly Frappe">
+                <div class="menu-item-info">
+                    <h3>Sizzling Bagnet</h3>
+                    <p class="price">₱130</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="specialwithrice">
+                <img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&h=600&fit=crop" alt="Coffee Crumble Frappe">
+                <div class="menu-item-info">
+                    <h3>Binagoongan Bagnet</h3>
+                    <p class="price">₱130</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="specialwithrice">
+                <img src="https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=800&h=600&fit=crop" alt="Choco Delux Frappe">
+                <div class="menu-item-info">
+                    <h3>Chopsuey</h3>
+                    <p class="price">₱130</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="specialwithrice">
+                <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800&h=600&fit=crop" alt="Peanut Butter Cookie Frappe">
+                <div class="menu-item-info">
+                    <h3>Kare Kare</h3>
+                    <p class="price">₱130</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= Pancit ================= -->
+<div class="menu-item" data-category="pancit">
+    <img src="images/pancit-bihon.jpg" alt="Pancit Bihon">
+    <div class="menu-item-info">
+        <h3>Pancit Bihon</h3>
+
+        <label>Choose Size:</label>
+        <select class="pancit-size">
+            <option value="299">Regular - ₱299</option>
+            <option value="799">Family Size - ₱799</option>
+        </select>
+
+        <p class="price">₱299 - ₱799</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="pancit">
+    <img src="images/pancit-canton.jpg" alt="Pancit Canton">
+    <div class="menu-item-info">
+        <h3>Pancit Canton</h3>
+
+        <label>Choose Size:</label>
+        <select class="pancit-size">
+            <option value="320">Regular - ₱320</option>
+            <option value="849">Family Size - ₱849</option>
+        </select>
+
+        <p class="price">₱320 - ₱849</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="pancit">
+    <img src="images/pancit-mix.jpg" alt="Pancit Mix">
+    <div class="menu-item-info">
+        <h3>Pancit Mix</h3>
+                
+        <label>Choose Size:</label>
+        <select class="pancit-size">
+            <option value="350">Regular - ₱350</option>
+            <option value="889">Family Size - ₱889</option>
+        </select>
+
+        <p class="price">₱350 - ₱889</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+            <!-- ================= Wings ================= -->
+
+<!-- 2 pcs (fixed price) -->
+<div class="menu-item" data-category="wings">
+    <img src="images/wings-2pcs.jpg" alt="2 pcs Wings with Rice">
+    <div class="menu-item-info">
+        <h3>2 pcs with Rice</h3>
+        <p class="price">₱89</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<!-- 6 pcs -->
+<div class="menu-item" data-category="wings">
+    <img src="images/wings-6pcs.jpg" alt="6 pcs Wings">
+    <div class="menu-item-info">
+        <h3>6 pcs with Rice (1 Flavor)</h3>
+
+        <select class="wings-size">
+            <option value="150">Regular - ₱150</option>
+            <option value="160">Medium - ₱160</option>
+            <option value="170">Large - ₱170</option>
+        </select>
+
+        <p class="price">₱150 - ₱170</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<!-- 12 pcs -->
+<div class="menu-item" data-category="wings">
+    <img src="images/wings-12pcs.jpg" alt="12 pcs Wings">
+    <div class="menu-item-info">
+        <h3>12 pcs with Rice (3 Flavors)</h3>
+
+        <select class="wings-size">
+            <option value="290">Regular - ₱290</option>
+            <option value="310">Medium - ₱310</option>
+            <option value="330">Large - ₱330</option>
+        </select>
+
+        <p class="price">₱290 - ₱330</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<!-- 24 pcs -->
+<div class="menu-item" data-category="wings">
+    <img src="images/wings-24pcs.jpg" alt="24 pcs Wings">
+    <div class="menu-item-info">
+        <h3>24 pcs with 4 Rice (6 Flavors)</h3>
+
+        <select class="wings-size">
+            <option value="640">Regular - ₱640</option>
+            <option value="670">Medium - ₱670</option>
+            <option value="710">Large - ₱710</option>
+        </select>
+
+        <p class="price">₱640 - ₱710</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+            <!-- ================= Takoyaki ================= -->
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-cheese.jpg" alt="Cheese Takoyaki">
+    <div class="menu-item-info">
+        <h3>Cheese</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="55">5pcs - ₱55</option>
+            <option value="108">10pcs - ₱108</option>
+            <option value="165">15pcs - ₱165</option>
+        </select>
+
+        <p class="price">₱55 - ₱165</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-cheese-veggie.jpg" alt="Cheese N' Veggie Takoyaki">
+    <div class="menu-item-info">
+        <h3>Cheese N' Veggie</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="59">5pcs - ₱59</option>
+            <option value="116">10pcs - ₱116</option>
+            <option value="175">15pcs - ₱175</option>
+        </select>
+
+        <p class="price">₱59 - ₱175</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-octobits.jpg" alt="Cheese N' Octobits Takoyaki">
+    <div class="menu-item-info">
+        <h3>Cheese N' Octobits</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="65">5pcs - ₱65</option>
+            <option value="127">10pcs - ₱127</option>
+            <option value="195">15pcs - ₱195</option>
+        </select>
+
+        <p class="price">₱65 - ₱195</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-pork.jpg" alt="Cheese N' Pork Takoyaki">
+    <div class="menu-item-info">
+        <h3>Cheese N' Pork</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="65">5pcs - ₱65</option>
+            <option value="127">10pcs - ₱127</option>
+            <option value="195">15pcs - ₱195</option>
+        </select>
+
+        <p class="price">₱65 - ₱195</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-ham-cheese.jpg" alt="Ham N' Cheese Takoyaki">
+    <div class="menu-item-info">
+        <h3>Ham N' Cheese</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="65">5pcs - ₱65</option>
+            <option value="127">10pcs - ₱127</option>
+            <option value="195">15pcs - ₱195</option>
+        </select>
+
+        <p class="price">₱65 - ₱195</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="takoyaki">
+    <img src="images/takoyaki-bacon-cheese.jpg" alt="Bacon N' Cheese Takoyaki">
+    <div class="menu-item-info">
+        <h3>Bacon N' Cheese</h3>
+
+        <label>Choose Quantity:</label>
+        <select class="takoyaki-size">
+            <option value="65">5pcs - ₱65</option>
+            <option value="127">10pcs - ₱127</option>
+            <option value="195">15pcs - ₱195</option>
+        </select>
+
+        <p class="price">₱65 - ₱195</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+             <!-- ================= Fried Noodles & Siomai ================= -->
+            <div class="menu-item" data-category="friednoodles">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Fried Noodles(with Siomai)</h3>
+                    <p class="price">₱65</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="friednoodles">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Siomai(5pcs)</h3>
+                    <p class="price">₱49</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="friednoodles">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Siomai Rice</h3>
+                    <p class="price">₱59</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= Pizza ================= -->
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Ham N' Cheese</h3>
+                    <p class="price">₱149</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Hawaian Moza</h3>
+                    <p class="price">₱159</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Peperoni Moza</h3>
+                    <p class="price">₱159</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Bacon N' Cheese</h3>
+                    <p class="price">₱169</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Kej's Cheesy Pizza</h3>
+                    <p class="price">₱169</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Kej's Cheesy Beef</h3>
+                    <p class="price">₱179</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Kej's Pizza Hungarian</h3>
+                    <p class="price">₱179</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="pizza">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Kej's All Meat</h3>
+                    <p class="price">₱199</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <!-- ================= Burger & Sandwich ================= -->
+            <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Special Burger</h3>
+                    <p class="price">₱65</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+              <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Burger With Fries</h3>
+                    <p class="price">₱125</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+              <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Bacon N' Egg Sandwich</h3>
+                    <p class="price">₱59</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+              <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Ham N' Egg Sandwich</h3>
+                    <p class="price">₱59</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+                <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Special Hotdog Sandwich</h3>
+                    <p class="price">₱69</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+                <div class="menu-item" data-category="burgersandwich">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Hungarian Sandwich</h3>
+                    <p class="price">₱99</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <!-- ================= Fries ================= -->
+            <div class="menu-item" data-category="fries">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Fries</h3>
+                    <p class="price">₱60</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+              <div class="menu-item" data-category="fries">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Fries Platter</h3>
+                    <p class="price">₱120</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+              <div class="menu-item" data-category="fries">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Nachos</h3>
+                    <p class="price">₱99</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <!-- ================= Sizzling ================= -->
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-pork.jpg" alt="Sizzling Pork">
+    <div class="menu-item-info">
+        <h3>Pork</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-liempo.jpg" alt="Sizzling Liempo">
+    <div class="menu-item-info">
+        <h3>Liempo</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="159">Unli Rice - ₱159</option>
+        </select>
+
+        <p class="price">₱99 - ₱159</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-chicken.jpg" alt="Sizzling Chicken">
+    <div class="menu-item-info">
+        <h3>Chicken</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-tapa.jpg" alt="Sizzling Tapa">
+    <div class="menu-item-info">
+        <h3>Tapa</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-bagnet.jpg" alt="Sizzling Bagnet">
+    <div class="menu-item-info">
+        <h3>Bagnet</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-burger-steak.jpg" alt="Sizzling Burger Steak">
+    <div class="menu-item-info">
+        <h3>Burger Steak</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="sizzling">
+    <img src="images/sizzling-hungarian.jpg" alt="Sizzling Hungarian">
+    <div class="menu-item-info">
+        <h3>Hungarian</h3>
+
+        <label>Choose Option:</label>
+        <select class="sizzling-option">
+            <option value="99">Unli Gravy & Soup - ₱99</option>
+            <option value="127">Unli Rice - ₱127</option>
+        </select>
+
+        <p class="price">₱99 - ₱127</p>
+
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+            <!-- ================= SilogMeal ================= -->
+            <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>PorkSilog</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>LiempoSilog</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>TapSilog</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>ChickSilog</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>BagnetSilog</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>SausageSilog</h3>
+                    <p class="price">₱99</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+               <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>TociSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>BaconSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>HotSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>HamSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>MalingSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+             <div class="menu-item" data-category="silogmeal">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>BangSilog</h3>
+                    <p class="price">₱89</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= Sisig ================= -->
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Pork Sisig Rice</h3>
+                    <p class="price">₱99</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Pork Sisig Platter</h3>
+                    <p class="price">₱149</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Bangus Sisig Rice</h3>
+                    <p class="price">₱99</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Bangus Sisig Platter</h3>
+                    <p class="price">₱149</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Chicken Sisig Rice</h3>
+                    <p class="price">₱95</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-category="sisig">
+                <img src="https://images.unsplash.com/photo-1523920290228-4f321a939b4c?w=800&h=600&fit=crop" alt="Matcha Latte">
+                <div class="menu-item-info">
+                    <h3>Chicken Sisig Platter</h3>
+                    <p class="price">₱149</p>
+                    <button class="add-to-cart">
+                        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+           <!-- ================= 3 in 1 Box ================= -->
+
+<div class="menu-item" data-category="3in1box">
+    <img src="YOUR_BOXA_IMAGE.jpg" alt="3 in 1 Box A">
+    <div class="menu-item-info">
+        <h3>3 in 1 Box A</h3>
+        <p>Garlic Buttered Shrimp, Binagoongan Bagnet, Chapsuey</p>
+        <p class="price">₱459</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="3in1box">
+    <img src="YOUR_BOXB_IMAGE.jpg" alt="3 in 1 Box B">
+    <div class="menu-item-info">
+        <h3>3 in 1 Box B</h3>
+        <p>Kare Kare, Sizzling Sisig, Chapsuey</p>
+        <p class="price">₱459</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="3in1box">
+    <img src="YOUR_BOXC_IMAGE.jpg" alt="3 in 1 Box C">
+    <div class="menu-item-info">
+        <h3>3 in 1 Box C</h3>
+        <p>Sizzling Bagnet, Sizzling Sisig, Chapsuey</p>
+        <p class="price">₱459</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+        <!-- ================= B1T1 ================= -->
+            <div class="menu-item" data-category="b1t1">
+    <img src="pizza.jpg" alt="BB1T1 Pizza">
+    
+    <div class="menu-item-info">
+        <h3>Buy 1 Take 1 Pizza (12")</h3>
+
+        <!-- Flavor Selection -->
+        <label>Choose Flavor:</label>
+        <select class="flavor">
+            <option value="Ham n Cheese - 290">Ham n Cheese - ₱290</option>
+            <option value="Hawaiian Moza - 310">Hawaiian Moza - ₱310</option>
+            <option value="Pepperoni Moza - 310">Pepperoni Moza - ₱310</option>
+        </select>
+
+        <p class="price">₱290 - ₱310</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="b1t1">
+    <img src="milktea.jpg" alt="BB1T1 Milktea">
+    
+    <div class="menu-item-info">
+        <h3>Buy 1 Take 1 Milk Tea (16oz)</h3>
+
+        <label>Choose Flavor:</label>
+        <select class="flavor">
+            <option>Okinawa</option>
+            <option>Winter Chocolate</option>
+            <option>Dark Choco</option>
+            <option>Red Velvet</option>
+            <option>Sakura Strawberry</option>
+        </select>
+
+        <p class="price">₱99</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+       <!-- =================  Kej's COMBO ================= -->
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo1.jpg" alt="Milktea + Takoyaki">
+    <div class="menu-item-info">
+        <h3>22oz Milktea + 5pcs Takoyaki</h3>
+        <p class="price">₱125</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo2.jpg" alt="Milktea + Fried Noodles">
+    <div class="menu-item-info">
+        <h3>22oz Milktea + Fried Noodles</h3>
+        <p class="price">₱129</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo3.jpg" alt="Milktea + Burger">
+    <div class="menu-item-info">
+        <h3>22oz Milktea + Special Burger</h3>
+        <p class="price">₱135</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo4.jpg">
+    <div class="menu-item-info">
+        <h3>Buy 1 Take 1 Milktea + Nachos</h3>
+        <p class="price">₱198</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo5.jpg">
+    <div class="menu-item-info">
+        <h3>Buy 1 Take 1 Milktea + Fries Platter</h3>
+        <p class="price">₱219</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="kejcombo">
+    <img src="combo6.jpg">
+    <div class="menu-item-info">
+        <h3>Buy 1 Take 1 Milktea + 10pcs Takoyaki</h3>
+        <p class="price">₱207</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<!-- ================= Budbod ================= -->
+<div class="menu-item" data-category="budbod">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Kej's Budbod</h3>
+        <p>Rice Bowl with Overload Toppings</p>
+        <p>Bacon, Ham, Tocino, Skinless, Hotdog, and Maling</p>
+        <p class="price">₱149</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<!-- ================= Desserts ================= -->
+<div class="menu-item" data-category="dessert">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Ube Flan</h3>
+        <p class="price">₱99</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="dessert">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Graham De Leche</h3>
+        <p class="price">₱139</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="dessert">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Leche Flan</h3>
+        <p class="price">₱99</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="dessert">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Graham</h3>
+        <p class="price">₱115</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="dessert">
+    <img src="YOUR_BUDBOD_IMAGE.jpg" alt="Kej's Budbod">
+    <div class="menu-item-info">
+        <h3>Ube Halaya</h3>
+        <p class="price">₱99</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<!-- ================= Group Meal ================= -->
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/alaminos-bangus.jpg" alt="Alaminos Bangus">
+    <div class="menu-item-info">
+        <h3>Alaminos Bangus</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="220">2-3 Pax - ₱220</option>
+            <option value="390">4-6 Pax - ₱390</option>
+        </select>
+        <p class="price">₱220 - ₱390</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/chopsuey.jpg" alt="Chopsuey">
+    <div class="menu-item-info">
+        <h3>Chopsuey</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="250">2-3 Pax - ₱250</option>
+            <option value="349">4-6 Pax - ₱349</option>
+        </select>
+        <p class="price">₱250 - ₱349</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/bulalo.jpg" alt="Bulalo">
+    <div class="menu-item-info">
+        <h3>Bulalo</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="280">2-3 Pax - ₱280</option>
+            <option value="560">4-6 Pax - ₱560</option>
+        </select>
+        <p class="price">₱280 - ₱560</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/sinigang-na-bagnet.jpg" alt="Sinigang na Bagnet">
+    <div class="menu-item-info">
+        <h3>Sinigang na Bagnet</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="280">2-3 Pax - ₱280</option>
+            <option value="560">4-6 Pax - ₱560</option>
+        </select>
+        <p class="price">₱280 - ₱560</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/sinigang-na-hipon.jpg" alt="Sinigang na Hipon">
+    <div class="menu-item-info">
+        <h3>Sinigang na Hipon</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="280">2-3 Pax - ₱280</option>
+            <option value="560">4-6 Pax - ₱560</option>
+        </select>
+        <p class="price">₱280 - ₱560</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/sizzling-bagnet.jpg" alt="Sizzling Bagnet">
+    <div class="menu-item-info">
+        <h3>Sizzling Bagnet</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="280">2-3 Pax - ₱280</option>
+            <option value="490">4-6 Pax - ₱490</option>
+        </select>
+        <p class="price">₱280 - ₱490</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/binagoongang-bagnet.jpg" alt="Binagoongang Bagnet">
+    <div class="menu-item-info">
+        <h3>Binagoongang Bagnet</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="280">2-3 Pax - ₱280</option>
+            <option value="490">4-6 Pax - ₱490</option>
+        </select>
+        <p class="price">₱280 - ₱490</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/pork-sisig.jpg" alt="Pork Sisig">
+    <div class="menu-item-info">
+        <h3>Pork Sisig</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="299">2-3 Pax - ₱299</option>
+            <option value="499">4-6 Pax - ₱499</option>
+        </select>
+        <p class="price">₱299 - ₱499</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/pork-kare-kare.jpg" alt="Pork Kare Kare">
+    <div class="menu-item-info">
+        <h3>Pork Kare Kare</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="320">2-3 Pax - ₱320</option>
+            <option value="520">4-6 Pax - ₱520</option>
+        </select>
+        <p class="price">₱320 - ₱520</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/garlic-buttered-shrimp.jpg" alt="Garlic Buttered Shrimp">
+    <div class="menu-item-info">
+        <h3>Garlic Buttered Shrimp</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="359">2-3 Pax - ₱359</option>
+            <option value="559">4-6 Pax - ₱559</option>
+        </select>
+        <p class="price">₱359 - ₱559</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="groupmeal">
+    <img src="images/mix-seafood.jpg" alt="Mix Seafood">
+    <div class="menu-item-info">
+        <h3>Mix Seafood</h3>
+        <label>Choose Size:</label>
+        <select class="group-size">
+            <option value="390">2-3 Pax - ₱390</option>
+            <option value="690">4-6 Pax - ₱690</option>
+        </select>
+        <p class="price">₱390 - ₱690</p>
+        <button class="add-to-cart">
+            <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/shopping-cart.png" alt="Cart Icon">
+            Add to Cart
+        </button>
+    </div>
+</div>
+
+<!-- ================= Pancit ================= -->
+<div class="menu-item" data-category="pancit2">
+    <img src="images/pancit-bihon.jpg" alt="Pancit Bihon">
+
+    <div class="menu-item-info">
+        <h3>Pancit Bihon</h3>
+
+        <label>Choose Size:</label>
+        <select class="pancit-size">
+            <option value="299">Small - ₱299</option>
+            <option value="549">Medium - ₱549</option>
+            <option value="799">Large - ₱799</option>
+        </select>
+
+        <p class="price">₱299 - ₱799</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="pancit2">
+    <img src="images/pancit-canton.jpg" alt="Pancit Canton">
+
+    <div class="menu-item-info">
+        <h3>Pancit Canton</h3>
+
+        <select class="pancit-size">
+            <option value="320">Small - ₱320</option>
+            <option value="629">Medium - ₱629</option>
+            <option value="849">Large - ₱849</option>
+        </select>
+
+        <p class="price">₱320 - ₱849</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+<div class="menu-item" data-category="pancit2">
+    <img src="images/pancit-mix.jpg" alt="Pancit Mix">
+
+    <div class="menu-item-info">
+        <h3>Pancit Mix</h3>
+
+        <select class="pancit-size">
+            <option value="350">Small - ₱350</option>
+            <option value="649">Medium - ₱649</option>
+            <option value="889">Large - ₱889</option>
+        </select>
+
+        <p class="price">₱350 - ₱889</p>
+
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+</div>
+
+        </div>
+    </section>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-brand-info">
+                <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/kej-Photoroom.png" 
+                     alt="Kej Logo" class="logo-img">
+                <h3>Kej's Kitchen</h3>
+                <p>Premium comfort food delivered to your door. Quality meals made with love for students and young professionals.</p>
+            </div>
+        </div>
+        <div class="footer-section operating-hours">
+            <h3><span style="margin-bottom: 20px;" class="icon-clock">🕐</span> Operating Hours</h3>
+            <div class="hours-row">
+                <span>Mon - Sun</span>
+                <span>8:00 AM - 2:00 AM</span>
+            </div>
+          
+        </div>
+        <div class="footer-section contact-section">
+            <h3>Location</h3>
+            <div class="contact-item">
+                <span class="icon-location">📍</span>
+                <span>Magsaysay Highway Alaminos City, Pangasinan
+              
+</span>
+            </div>
+          
+        </div>
+    </div>
+
+ <!-- CHATBOT -->
+  <div class="chatbot">
+    <div class="chatbot-header">
+      FoodBot Assistant 🤖
+      <span class="minimize-btn" onclick="toggleChat()">−</span>
+    </div>
+
+    <div class="chatbot-body">
+      <p><strong>FoodBot:</strong> Hi! Would you like pickup, dine-in, or delivery?</p>
+    </div>
+
+    <div class="chatbot-input">
+      <input type="text" placeholder="Type your message...">
+      <button>Send</button>
+    </div>
+  </div>
+
+  <!-- CHAT BUBBLE -->
+  <div id="chat-bubble" onclick="toggleChat()">💬</div>
+    
+    <div class="footer-bottom">
+        © 2026 BlackHabit. All rights reserved. | Powered by FoodConnect
+    </div>
+</footer>
+
+<script src="../js/chatbot.js"></script>
+<script src="../js/kej.js"></script>
+</body>
+</html>

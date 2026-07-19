@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Restaurant | FoodConnect</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/create_restaurant.css"
+    >
+</head>
+
+<body>
+    <div class="onboarding-page">
+        <aside class="setup-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    FC
+                </div>
+
+                <div>
+                    <h1>FoodConnect</h1>
+                    <p>Restaurant Partner</p>
+                </div>
+            </div>
+
+            <div class="setup-progress">
+                <div class="progress-item active">
+                    <span class="progress-number">1</span>
+
+                    <div>
+                        <strong>Restaurant details</strong>
+                        <small>Basic business information</small>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <span class="progress-number">2</span>
+
+                    <div>
+                        <strong>Business location</strong>
+                        <small>Restaurant address</small>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <span class="progress-number">3</span>
+
+                    <div>
+                        <strong>Business hours</strong>
+                        <small>Weekly operating schedule</small>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <span class="progress-number">4</span>
+
+                    <div>
+                        <strong>Order services</strong>
+                        <small>Pickup and delivery options</small>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <span class="progress-number">5</span>
+
+                    <div>
+                        <strong>Submit application</strong>
+                        <small>Administrator review</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-note">
+                <strong>Need to stop?</strong>
+
+                <p>
+                    Save your setup as a draft and continue later.
+                </p>
+            </div>
+        </aside>
+
+        <main class="setup-main">
+            <header class="setup-header">
+                <div>
+                    <p class="eyebrow">
+                        Restaurant onboarding
+                    </p>
+
+                    <h2>Create your restaurant</h2>
+
+                    <p class="header-description">
+                        Complete your restaurant details before submitting
+                        your application for FoodConnect administrator review.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="logout-button"
+                    id="logoutButton"
+                >
+                    Log out
+                </button>
+            </header>
+
+            <div
+                class="status-banner hidden"
+                id="statusBanner"
+            ></div>
+
+            <div
+                class="loading-state"
+                id="loadingState"
+            >
+                <div class="loading-spinner"></div>
+
+                <p>Loading your restaurant application...</p>
+            </div>
+
+            <form
+                id="restaurantForm"
+                class="restaurant-form hidden"
+                novalidate
+            >
+                <!-- =========================================
+                     RESTAURANT INFORMATION
+                     ========================================= -->
+
+                <section class="form-section">
+                    <div class="section-heading">
+                        <span class="section-number">1</span>
+
+                        <div>
+                            <h3>Restaurant information</h3>
+
+                            <p>
+                                Tell customers and FoodConnect about your
+                                restaurant.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-group-full">
+                            <label for="restaurantName">
+                                Restaurant name
+                                <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="restaurantName"
+                                name="restaurant_name"
+                                maxlength="150"
+                                autocomplete="organization"
+                                placeholder="Example: BlackHabit Café"
+                                required
+                            >
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cuisine">
+                                Restaurant type or cuisine
+                                <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cuisine"
+                                name="cuisine"
+                                maxlength="100"
+                                placeholder="Example: Café, Filipino, Fast Food"
+                                required
+                            >
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="restaurantContact">
+                                Business contact number
+                                <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="tel"
+                                id="restaurantContact"
+                                name="restaurant_contact"
+                                maxlength="30"
+                                autocomplete="tel"
+                                placeholder="Example: 0912 345 6789"
+                                required
+                            >
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="businessEmail">
+                                Business email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="businessEmail"
+                                name="business_email"
+                                maxlength="150"
+                                autocomplete="email"
+                                placeholder="restaurant@example.com"
+                            >
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="restaurantDescription">
+                                Restaurant description
+                            </label>
+
+                            <textarea
+                                id="restaurantDescription"
+                                name="restaurant_description"
+                                maxlength="1000"
+                                rows="5"
+                                placeholder="Describe your restaurant, specialties, and what makes it unique."
+                            ></textarea>
+
+                            <div class="textarea-meta">
+                                <small>
+                                    This may be shown on your public
+                                    restaurant page.
+                                </small>
+
+                                <small id="descriptionCounter">
+                                    0 / 1000
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================
+                     LOCATION
+                     ========================================= -->
+
+                <section class="form-section">
+                    <div class="section-heading">
+                        <span class="section-number">2</span>
+
+                        <div>
+                            <h3>Business location</h3>
+
+                            <p>
+                                Enter the complete physical location of your
+                                restaurant.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-group-full">
+                            <label for="restaurantAddress">
+                                Street address
+                                <span class="required">*</span>
+                            </label>
+
+                            <textarea
+                                id="restaurantAddress"
+                                name="restaurant_address"
+                                maxlength="500"
+                                rows="3"
+                                autocomplete="street-address"
+                                placeholder="Building, street, subdivision, or landmark"
+                                required
+                            ></textarea>
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="province">
+                                Province
+                            </label>
+
+                            <input
+                                type="text"
+                                id="province"
+                                name="province"
+                                maxlength="100"
+                                autocomplete="address-level1"
+                                placeholder="Example: Pangasinan"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cityMunicipality">
+                                City or municipality
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cityMunicipality"
+                                name="city_municipality"
+                                maxlength="100"
+                                autocomplete="address-level2"
+                                placeholder="Example: Alaminos City"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="barangay">
+                                Barangay
+                            </label>
+
+                            <input
+                                type="text"
+                                id="barangay"
+                                name="barangay"
+                                maxlength="100"
+                                autocomplete="address-level3"
+                                placeholder="Example: Poblacion"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postalCode">
+                                Postal code
+                            </label>
+
+                            <input
+                                type="text"
+                                id="postalCode"
+                                name="postal_code"
+                                maxlength="10"
+                                inputmode="numeric"
+                                autocomplete="postal-code"
+                                placeholder="Example: 2404"
+                            >
+
+                            <small class="field-error"></small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================
+                     BUSINESS HOURS
+                     ========================================= -->
+
+                <section class="form-section">
+                    <div class="section-heading">
+                        <span class="section-number">3</span>
+
+                        <div>
+                            <h3>Business hours</h3>
+
+                            <p>
+                                Set when customers can place restaurant
+                                orders.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="hours-toolbar">
+                        <button
+                            type="button"
+                            class="secondary-button small-button"
+                            id="applyMondayButton"
+                        >
+                            Apply Monday to all days
+                        </button>
+                    </div>
+
+                    <div
+                        class="business-hours"
+                        id="businessHoursContainer"
+                    >
+                        <!-- Generated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- =========================================
+                     ORDER AND DELIVERY OPTIONS
+                     ========================================= -->
+
+                <section class="form-section">
+                    <div class="section-heading">
+                        <span class="section-number">4</span>
+
+                        <div>
+                            <h3>Order and delivery services</h3>
+
+                            <p>
+                                Select how customers can receive their
+                                orders.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="service-options">
+                        <label class="service-card">
+                            <input
+                                type="checkbox"
+                                name="delivery_options"
+                                value="pickup"
+                                checked
+                            >
+
+                            <span class="service-check"></span>
+
+                            <span class="service-content">
+                                <strong>Customer pickup</strong>
+
+                                <small>
+                                    Customers collect orders directly from
+                                    your restaurant.
+                                </small>
+                            </span>
+                        </label>
+
+                        <label class="service-card">
+                            <input
+                                type="checkbox"
+                                name="delivery_options"
+                                value="restaurant_delivery"
+                            >
+
+                            <span class="service-check"></span>
+
+                            <span class="service-content">
+                                <strong>Restaurant delivery</strong>
+
+                                <small>
+                                    Use delivery staff employed by your
+                                    restaurant.
+                                </small>
+                            </span>
+                        </label>
+
+                        <label class="service-card">
+                            <input
+                                type="checkbox"
+                                name="delivery_options"
+                                value="foodconnect_delivery"
+                            >
+
+                            <span class="service-check"></span>
+
+                            <span class="service-content">
+                                <strong>FoodConnect delivery</strong>
+
+                                <small>
+                                    Request third-party riders through the
+                                    FoodConnect Delivery Coordinator.
+                                </small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <small
+                        class="section-error"
+                        id="deliveryOptionsError"
+                    ></small>
+
+                    <div class="form-grid pricing-grid">
+                        <div class="form-group">
+                            <label for="minimumOrder">
+                                Minimum order
+                            </label>
+
+                            <div class="money-input">
+                                <span>₱</span>
+
+                                <input
+                                    type="number"
+                                    id="minimumOrder"
+                                    name="minimum_order"
+                                    min="0"
+                                    step="0.01"
+                                    value="0.00"
+                                >
+                            </div>
+
+                            <small>
+                                Set to ₱0 if no minimum order is required.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deliveryFee">
+                                Fixed restaurant delivery fee
+                            </label>
+
+                            <div class="money-input">
+                                <span>₱</span>
+
+                                <input
+                                    type="number"
+                                    id="deliveryFee"
+                                    name="delivery_fee"
+                                    min="0"
+                                    step="0.01"
+                                    value="0.00"
+                                >
+                            </div>
+
+                            <small>
+                                This currently applies to restaurant-owned
+                                delivery.
+                            </small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================
+                     REVIEW AND SUBMISSION
+                     ========================================= -->
+
+                <section class="form-section submit-section">
+                    <div class="section-heading">
+                        <span class="section-number">5</span>
+
+                        <div>
+                            <h3>Submit for review</h3>
+
+                            <p>
+                                FoodConnect administrators will review your
+                                application before the restaurant becomes
+                                active.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="review-notice">
+                        <strong>Before submitting</strong>
+
+                        <p>
+                            Check that your restaurant name, address,
+                            contact number, hours, and service options are
+                            correct. Submitted applications cannot be
+                            edited until an administrator reviews them.
+                        </p>
+                    </div>
+
+                    <label class="confirmation-check">
+                        <input
+                            type="checkbox"
+                            id="confirmationCheckbox"
+                        >
+
+                        <span>
+                            I confirm that the restaurant information
+                            provided is accurate.
+                        </span>
+                    </label>
+                </section>
+
+                <div class="form-actions">
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="saveDraftButton"
+                    >
+                        Save as draft
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                        id="submitButton"
+                    >
+                        Submit for review
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <div
+        class="toast-container"
+        id="toastContainer"
+        aria-live="polite"
+    ></div>
+
+    <div
+        class="modal-overlay hidden"
+        id="submissionModal"
+    >
+        <div class="modal-card">
+            <div class="modal-icon">
+                ✓
+            </div>
+
+            <h3>Application submitted</h3>
+
+            <p>
+                Your restaurant application has been sent to the
+                FoodConnect administrator for review.
+            </p>
+
+            <button
+                type="button"
+                class="primary-button"
+                id="modalContinueButton"
+            >
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script src="../js/create_restaurant.js"></script>
+</body>
+</html>

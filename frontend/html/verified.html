@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Email Verification</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{background:#fff;padding:28px;border-radius:16px;max-width:460px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}
+    .btn{display:inline-block;margin-top:18px;background:#ff7a00;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold}
+    .small{margin-top:14px;color:#777;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="title">Checking…</h2>
+    <p id="msg">Please wait.</p>
+
+    <!-- ✅ FIXED PATH -->
+    <a class="btn" id="btn" href="/capshit/frontend/html/index.html">Go to Homepage</a>
+
+    <div class="small">FoodConnect • Email Verification</div>
+  </div>
+
+  <script>
+    const status = new URLSearchParams(location.search).get("status");
+
+    const title = document.getElementById("title");
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btn");
+
+    if (status === "ok") {
+      title.textContent = "Email verified ✅";
+      msg.textContent = "Your account is verified. Redirecting to homepage…";
+      btn.textContent = "Go to Homepage";
+
+      // ✅ FIXED PATH
+      btn.href = "/capshit/frontend/html/index.html";
+
+      setTimeout(() => {
+        window.location.href = "/capshit/frontend/html/index.html";
+      }, 10000);
+
+    } else if (status === "expired") {
+      title.textContent = "Link expired ⚠️";
+      msg.textContent = "Your verification link expired. Please resend a new verification email.";
+      btn.textContent = "Back to Login";
+
+      // ✅ FIXED PATH
+      btn.href = "/capshit/frontend/html/login.html";
+
+    } else {
+      title.textContent = "Verification failed ⚠️";
+      msg.textContent = "This link is invalid or already used. Please request a new verification email.";
+      btn.textContent = "Back to Login";
+
+      // ✅ FIXED PATH
+      btn.href = "/capshit/frontend/html/login.html";
+    }
+  </script>
+</body>
+</html>
