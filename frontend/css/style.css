@@ -922,20 +922,6 @@ img {
     );
 }
 
-.restaurant-card:nth-child(2) .restaurant-card-image {
-  background:
-    radial-gradient(
-      circle at 75% 20%,
-      rgba(255, 255, 255, 0.95),
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      #fff6f0,
-      #ffffff
-    );
-}
-
 .restaurant-card-image img {
   width: min(78%, 340px);
   height: 78%;
@@ -952,24 +938,49 @@ img {
 /* ===========================
    RESTAURANT STATUS
 =========================== */
-
 .status-badge {
   position: absolute;
   top: 17px;
   left: 17px;
 
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
   padding: 7px 11px;
 
   border-radius: 999px;
 
+  background: #f2f4f7;
+  color: var(--muted);
+
   font-size: 10px;
   font-weight: 800;
+}
+
+.status-badge::before {
+  content: "";
+
+  width: 7px;
+  height: 7px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: currentColor;
 }
 
 .status-badge.open {
   background: #e9f8ee;
   color: var(--success);
 }
+
+.status-badge.closed {
+  background: #fff0f0;
+  color: var(--danger);
+}
+
 
 /* ===========================
    RESTAURANT BODY
@@ -1027,26 +1038,84 @@ img {
 =========================== */
 
 .restaurant-meta {
-  margin-top: 17px;
+  margin-top: 18px;
+  margin-bottom: 18px;
+
+  display: grid;
+  grid-template-columns: repeat(
+    2,
+    minmax(0, 1fr)
+  );
+  gap: 11px;
+}
+
+.restaurant-meta-item {
+  min-width: 0;
 
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-
-  color: #667085;
-
-  font-size: 11px;
-}
-
-.restaurant-meta span {
-  display: inline-flex;
   align-items: center;
+  gap: 10px;
+
+  padding: 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 13px;
+
+  background: #fafafa;
 }
 
-.restaurant-meta i {
-  margin-right: 5px;
+.restaurant-meta-item > i {
+  width: 34px;
+  height: 34px;
 
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  margin: 0;
+
+  border-radius: 10px;
+
+  background: var(--primary-soft);
   color: var(--primary);
+
+  font-size: 13px;
+}
+
+.restaurant-meta-copy {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.restaurant-meta-copy strong {
+  color: var(--text);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.restaurant-meta-copy small {
+  max-width: 100%;
+
+  overflow: hidden;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  line-height: 1.4;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .restaurant-meta {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ===========================

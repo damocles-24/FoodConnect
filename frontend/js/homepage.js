@@ -727,6 +727,241 @@ document.addEventListener(
     }
 
     /* =========================
+   RESTAURANT AVAILABILITY
+========================= */
+
+function timeToMinutes(
+  timeValue = ""
+) {
+  const parts =
+    String(timeValue)
+      .split(":")
+      .map(Number);
+
+  if (
+    parts.length !== 2 ||
+    parts.some(Number.isNaN)
+  ) {
+    return null;
+  }
+
+  const [hours, minutes] =
+    parts;
+
+  if (
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function formatTime(
+  timeValue = ""
+) {
+  const totalMinutes =
+    timeToMinutes(timeValue);
+
+  if (totalMinutes === null) {
+    return "Schedule unavailable";
+  }
+
+  const hours24 =
+    Math.floor(totalMinutes / 60);
+
+  const minutes =
+    totalMinutes % 60;
+
+  const period =
+    hours24 >= 12
+      ? "PM"
+      : "AM";
+
+  const hours12 =
+    hours24 % 12 || 12;
+
+  return `${hours12}:${String(
+    minutes
+  ).padStart(2, "0")} ${period}`;
+}
+
+function formatDeliveryFee(
+  feeValue = 0
+) {
+  const fee =
+    Number(feeValue);
+
+  if (!Number.isFinite(fee)) {
+    return "Unavailable";
+  }
+
+  if (fee <= 0) {
+    return "Free";
+  }
+
+  return new Intl.NumberFormat(
+    "en-PH",
+    {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2
+    }
+  ).format(fee);
+}
+
+function isRestaurantOpen(
+  card,
+  currentDate = new Date()
+) {
+  const restaurantStatus =
+    String(
+      card.dataset
+        .restaurantStatus || ""
+    ).toLowerCase();
+
+  if (
+    restaurantStatus !== "active"
+  ) {
+    return false;
+  }
+
+  const operatingDays =
+    String(
+      card.dataset.operatingDays || ""
+    )
+      .split(",")
+      .map((day) =>
+        Number(day.trim())
+      )
+      .filter((day) =>
+        Number.isInteger(day)
+      );
+
+  const currentDay =
+    currentDate.getDay();
+
+  if (
+    !operatingDays.includes(
+      currentDay
+    )
+  ) {
+    return false;
+  }
+
+  const openingMinutes =
+    timeToMinutes(
+      card.dataset.openingTime
+    );
+
+  const closingMinutes =
+    timeToMinutes(
+      card.dataset.closingTime
+    );
+
+  if (
+    openingMinutes === null ||
+    closingMinutes === null
+  ) {
+    return false;
+  }
+
+  const currentMinutes =
+    currentDate.getHours() * 60 +
+    currentDate.getMinutes();
+
+  if (
+    openingMinutes ===
+    closingMinutes
+  ) {
+    return true;
+  }
+
+  if (
+    closingMinutes >
+    openingMinutes
+  ) {
+    return (
+      currentMinutes >=
+        openingMinutes &&
+      currentMinutes <
+        closingMinutes
+    );
+  }
+
+  return (
+    currentMinutes >=
+      openingMinutes ||
+    currentMinutes <
+      closingMinutes
+  );
+}
+
+function updateRestaurantCard(
+  card
+) {
+  const statusBadge =
+    card.querySelector(
+      ".status-badge"
+    );
+
+  const deliveryFee =
+    card.querySelector(
+      ".delivery-fee"
+    );
+
+  const restaurantHours =
+    card.querySelector(
+      ".restaurant-hours"
+    );
+
+  const open =
+    isRestaurantOpen(card);
+
+  if (statusBadge) {
+    statusBadge.textContent =
+      open
+        ? "Open Now"
+        : "Closed";
+
+    statusBadge.classList.toggle(
+      "open",
+      open
+    );
+
+    statusBadge.classList.toggle(
+      "closed",
+      !open
+    );
+  }
+
+  if (deliveryFee) {
+    deliveryFee.textContent =
+      formatDeliveryFee(
+        card.dataset.deliveryFee
+      );
+  }
+
+  if (restaurantHours) {
+    restaurantHours.textContent =
+      `${formatTime(
+        card.dataset.openingTime
+      )} – ${formatTime(
+        card.dataset.closingTime
+      )}`;
+  }
+}
+
+function updateAllRestaurantCards() {
+  restaurantCards.forEach(
+    updateRestaurantCard
+  );
+}
+
+    /* =========================
        LOGIN MODAL EVENTS
     ========================= */
 
@@ -1628,9 +1863,18 @@ document.addEventListener(
     }
 
     /* =========================
-       INITIALIZE HOMEPAGE
-    ========================= */
+   INITIALIZE HOMEPAGE
+========================= */
 
-    setupAccountUI();
+setupAccountUI();
+
+filterRestaurants();
+
+updateAllRestaurantCards();
+
+window.setInterval(
+  updateAllRestaurantCards,
+  60000
+);
   }
 );
