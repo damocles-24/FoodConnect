@@ -9,7 +9,7 @@ ini_set("display_errors", "0");
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_set_cookie_params([
         "lifetime" => 0,
-        "path" => "/capshit",
+        "path" => "/FoodConnect",
         "domain" => "",
         "secure" => false,
         "httponly" => true,

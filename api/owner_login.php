@@ -485,7 +485,7 @@ if (!$applicationStmt) {
 
 if ($restaurantId !== null && $restaurantId > 0) {
     $redirectUrl =
-        "/capshit/frontend/html/owner_dashboard_BH.html";
+        "/FoodConnect/frontend/html/owner_dashboard_BH.html";
 
     $onboardingRequired =
         false;
@@ -511,7 +511,7 @@ if ($restaurantId !== null && $restaurantId > 0) {
     */
 
     $redirectUrl =
-        "/capshit/frontend/html/create_restaurant.html";
+        "/FoodConnect/frontend/html/create_restaurant.html";
 
     $onboardingRequired =
         true;

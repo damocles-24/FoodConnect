@@ -288,7 +288,7 @@ try {
    ========================================================= */
 
 $verificationLink =
-    "http://localhost/capshit/api/verify.php?token=" .
+    "http://localhost/FoodConnect/api/verify.php?token=" .
     urlencode($verificationToken);
 
 $safeName = htmlspecialchars(

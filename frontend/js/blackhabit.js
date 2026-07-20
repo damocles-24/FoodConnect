@@ -38,7 +38,7 @@ let clearedCompletedOrderIds = new Set();
 let pendingCustomerCancellationOrderId = 0;
 let pendingCustomerCancellationReason = "";
 
-const API = "/capshit/api";
+const API = "/FoodConnect/api";
 
 let databaseProducts = [];
 let databaseProductGroups = [];

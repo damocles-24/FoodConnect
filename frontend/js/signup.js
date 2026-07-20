@@ -1,4 +1,4 @@
-const API = "/capshit/api";
+const API = "/FoodConnect/api";
 
 window.addEventListener("load", () => {
     document.body.classList.add("loaded");

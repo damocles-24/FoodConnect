@@ -49,7 +49,7 @@ $upd->bind_param("ssi", $token, $expires_at, $uid);
 $upd->execute();
 
 // Send email
-$link = "http://localhost/capshit/api/verify.php?token=" . $token;
+$link = "http://localhost/FoodConnect/api/verify.php?token=" . $token;
 
 $htmlBody = "
 <!doctype html>

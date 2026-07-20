@@ -153,7 +153,7 @@ function sortInventoryList(list) {
 
 async function loadActivityLogs() {
   try {
-    const data = await fetchJSON("http://localhost/capshit/api/get_activity_logs.php");
+    const data = await fetchJSON("http://localhost/FoodConnect/api/get_activity_logs.php");
 
     if (!data.success || !Array.isArray(data.logs)) {
       activityLogs = [];
@@ -203,7 +203,7 @@ function formatLogTime(dateValue) {
 
 async function saveActivityLog(type, title, description) {
   try {
-    await fetchJSON("http://localhost/capshit/api/add_activity_log.php", {
+    await fetchJSON("http://localhost/FoodConnect/api/add_activity_log.php", {
       method: "POST",
       body: JSON.stringify({
         action_type: type,
@@ -224,7 +224,7 @@ async function saveActivityLog(type, title, description) {
    API CONFIGURATION
 ========================= */
 
-const OWNER_API_BASE = "/capshit/api";
+const OWNER_API_BASE = "/FoodConnect/api";
 
 function normalizeOwnerApiUrl(url) {
   const value = String(url || "").trim();
@@ -241,7 +241,7 @@ function normalizeOwnerApiUrl(url) {
    * prevents PHP session cookies from being lost.
    */
   return value.replace(
-    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/capshit\/api/i,
+    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/FoodConnect\/api/i,
     OWNER_API_BASE
   );
 }
@@ -305,7 +305,7 @@ async function fetchJSON(url, options = {}) {
    DASHBOARD SUMMARY
 ========================= */
 async function loadDashboardSummary() {
-  const data = await fetchJSON("http://localhost/capshit/api/get_dashboard_summary.php");
+  const data = await fetchJSON("http://localhost/FoodConnect/api/get_dashboard_summary.php");
 
   const salesToday = document.getElementById("salesToday");
   const totalOrders = document.getElementById("totalOrders");
@@ -330,7 +330,7 @@ async function loadDashboardSummary() {
    PRODUCTS
 ========================= */
 async function loadProducts() {
-  const data = await fetchJSON("http://localhost/capshit/api/get_products.php");
+  const data = await fetchJSON("http://localhost/FoodConnect/api/get_products.php");
   const list = Array.isArray(data) ? data : data.products || [];
 
   products = list.map(p => ({
@@ -359,7 +359,7 @@ async function loadProducts() {
 }
 
 async function loadUsers() {
-  const data = await fetchJSON("http://localhost/capshit/api/get_users.php");
+  const data = await fetchJSON("http://localhost/FoodConnect/api/get_users.php");
 
   users = data.success && Array.isArray(data.users) ? data.users.map(u => ({
     id: u.user_id,
@@ -381,7 +381,7 @@ async function loadUsers() {
    ORDERS
 ========================= */
 async function loadRecentOrders() {
-  const data = await fetchJSON("http://localhost/capshit/api/get_recent_orders.php");
+  const data = await fetchJSON("http://localhost/FoodConnect/api/get_recent_orders.php");
   orders = Array.isArray(data) ? data : [];
 
   renderRecentOrders();
@@ -392,7 +392,7 @@ async function loadRecentOrders() {
    SALES CHART
 ========================= */
 async function loadSalesChart(range = "weekly") {
-  const data = await fetchJSON(`http://localhost/capshit/api/get_sales_chart.php?range=${range}`);
+  const data = await fetchJSON(`http://localhost/FoodConnect/api/get_sales_chart.php?range=${range}`);
   salesData = Array.isArray(data) ? data : [];
   renderChart();
   renderReportSalesChart();
@@ -530,7 +530,7 @@ function renderReportSalesChart() {
 
 async function loadSalesReport() {
   try {
-    const data = await fetchJSON("http://localhost/capshit/api/get_sales_report.php");
+    const data = await fetchJSON("http://localhost/FoodConnect/api/get_sales_report.php");
 
     if (!data.success) {
       console.error(data.message || "Failed to load sales report.");
@@ -1024,7 +1024,7 @@ function renderUsers(list = users) {
 
 async function loadOwnerNotifications() {
   try {
-    const data = await fetchJSON("http://localhost/capshit/api/get_activity_logs.php");
+    const data = await fetchJSON("http://localhost/FoodConnect/api/get_activity_logs.php");
 
     if (!data.success || !Array.isArray(data.logs)) {
       notifications = [];
@@ -1182,7 +1182,7 @@ async function markOwnerNotificationRead(logId) {
 
   try {
     const result = await fetchJSON(
-      "http://localhost/capshit/api/mark_notification_read.php",
+      "http://localhost/FoodConnect/api/mark_notification_read.php",
       {
         method: "POST",
         body: JSON.stringify({
@@ -1380,7 +1380,7 @@ if (saveProductBtn) {
       return;
     }
 
-    const result = await fetchJSON("http://localhost/capshit/api/add_product.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/add_product.php", {
       method: "POST",
       body: JSON.stringify(payload)
     });
@@ -1442,7 +1442,7 @@ if (updateProductBtn) {
     }
 
     try {
-      const result = await fetchJSON("http://localhost/capshit/api/update_product.php", {
+      const result = await fetchJSON("http://localhost/FoodConnect/api/update_product.php", {
         method: "POST",
         body: JSON.stringify(payload)
       });
@@ -1495,7 +1495,7 @@ if (updateUserBtn) {
       return;
     }
 
-    const result = await fetchJSON("http://localhost/capshit/api/update_user.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/update_user.php", {
       method: "POST",
       body: JSON.stringify(payload)
     });
@@ -1547,7 +1547,7 @@ if (saveUserBtn) {
       return;
     }
 
-    const result = await fetchJSON("http://localhost/capshit/api/add_user.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/add_user.php", {
       method: "POST",
       body: JSON.stringify(payload)
     });
@@ -1606,7 +1606,7 @@ if (saveRestockBtn) {
       return;
     }
 
-    const result = await fetchJSON("http://localhost/capshit/api/restock_product.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/restock_product.php", {
       method: "POST",
       body: JSON.stringify(payload)
     });
@@ -1762,7 +1762,7 @@ closeRestockModal?.addEventListener("click", () => restockModal.classList.remove
 closeModal?.addEventListener("click", () => orderModal.classList.remove("show"));
 
 logoutBtn?.addEventListener("click", () => {
-  window.location.href = "/capshit/api/logout.php";
+  window.location.href = "/FoodConnect/api/logout.php";
 });
 
 /* =========================
@@ -1792,7 +1792,7 @@ window.deleteUser = async function(id) {
   const confirmDelete = confirm("Are you sure you want to delete this user?");
   if (!confirmDelete) return;
 
-  const result = await fetchJSON("http://localhost/capshit/api/delete_user.php", {
+  const result = await fetchJSON("http://localhost/FoodConnect/api/delete_user.php", {
     method: "POST",
     body: JSON.stringify({
       user_id: id
@@ -1856,7 +1856,7 @@ window.deleteProduct = async function(id) {
   if (!confirmDelete) return;
 
   try {
-    const result = await fetchJSON("http://localhost/capshit/api/delete_product.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/delete_product.php", {
       method: "POST",
       body: JSON.stringify({
         product_id: id
@@ -2081,7 +2081,7 @@ function exportSalesReportPDF() {
 
 async function loadRestaurantSettings() {
   try {
-    const data = await fetchJSON("http://localhost/capshit/api/get_restaurant_settings.php");
+    const data = await fetchJSON("http://localhost/FoodConnect/api/get_restaurant_settings.php");
 
     if (!data.success) {
       console.error(data.message || "Failed to load restaurant settings.");
@@ -2127,7 +2127,7 @@ async function saveRestaurantSettings() {
     saveSettingsBtn.disabled = true;
     saveSettingsBtn.textContent = "Saving...";
 
-    const result = await fetchJSON("http://localhost/capshit/api/update_restaurant_settings.php", {
+    const result = await fetchJSON("http://localhost/FoodConnect/api/update_restaurant_settings.php", {
       method: "POST",
       body: JSON.stringify(payload)
     });

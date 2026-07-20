@@ -14,7 +14,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
     session_set_cookie_params([
         "lifetime" => 0,
-        "path" => "/capshit",
+        "path" => "/FoodConnect",
         "domain" => "",
         "secure" => false,
         "httponly" => true,

@@ -2,7 +2,7 @@
 
 session_set_cookie_params(
     0,
-    "/capshit",
+    "/FoodConnect",
     "",
     false,
     true
@@ -17,16 +17,16 @@ $token = trim(
 );
 
 $customerSuccessUrl =
-    "/capshit/frontend/html/verified.html?status=ok";
+    "/FoodConnect/frontend/html/verified.html?status=ok";
 
 $ownerSuccessUrl =
-    "/capshit/frontend/html/create_restaurant.html";
+    "/FoodConnect/frontend/html/create_restaurant.html";
 
 $expiredUrl =
-    "/capshit/frontend/html/verified.html?status=expired";
+    "/FoodConnect/frontend/html/verified.html?status=expired";
 
 $badUrl =
-    "/capshit/frontend/html/verified.html?status=bad";
+    "/FoodConnect/frontend/html/verified.html?status=bad";
 
 function redirect_to(string $url): void
 {

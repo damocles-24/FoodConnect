@@ -4,7 +4,7 @@
    API PATHS
    ========================================================= */
 
-const API_BASE = "/capshit/api";
+const API_BASE = "/FoodConnect/api";
 
 const API = {
     getApplication:
@@ -359,7 +359,7 @@ async function loadApplication() {
 
         if (response.status === 401) {
             window.location.href =
-                "/capshit/frontend/html/login.html";
+                "/FoodConnect/frontend/html/login.html";
 
             return;
         }
@@ -751,7 +751,7 @@ async function saveApplication(
 
         if (response.status === 401) {
             window.location.href =
-                "/capshit/frontend/html/login.html";
+                "FoodConnect/frontend/html/login.html";
 
             return;
         }
@@ -1163,7 +1163,7 @@ async function handleLogout() {
         );
     } finally {
         window.location.href =
-            "/capshit/frontend/html/login.html";
+            "/FoodConnect/frontend/html/login.html";
     }
 }
 
@@ -1183,7 +1183,7 @@ function redirectApprovedOwner(restaurant) {
         businessStatus === "active"
     ) {
         window.location.href =
-            "/capshit/frontend/html/owner_dashboard_BH.html";
+            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
 
         return;
     }
@@ -1196,7 +1196,7 @@ function redirectApprovedOwner(restaurant) {
 
     setTimeout(() => {
         window.location.href =
-            "/capshit/frontend/html/owner_dashboard_BH.html";
+            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
     }, 1200);
 }
 

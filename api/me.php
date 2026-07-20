@@ -295,7 +295,7 @@ function build_logged_in_response(
                 $restaurantId;
 
             $ownerRedirectUrl =
-                "/capshit/frontend/html/owner_dashboard_BH.html";
+                "/FoodConnect/frontend/html/owner_dashboard_BH.html";
         } else {
             $restaurantId = null;
 

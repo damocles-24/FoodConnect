@@ -1,4 +1,4 @@
-const API = "/capshit/api";
+const API = "/FoodConnect/api";
 
 let deliveryAvailability = {
     checked: false,

@@ -7,7 +7,7 @@ ini_set("display_errors", "0");
 
 session_set_cookie_params(
     0,
-    "/capshit",
+    "/FoodConnect",
     "",
     false,
     true
@@ -287,7 +287,7 @@ if ($remember) {
         $cookieValue,
         [
             "expires" => $expiresTimestamp,
-            "path" => "/capshit",
+            "path" => "/FoodConnect",
             "secure" => false,
             "httponly" => true,
             "samesite" => "Lax"
@@ -318,7 +318,7 @@ if ($remember) {
         "",
         [
             "expires" => time() - 3600,
-            "path" => "/capshit",
+            "path" => "/FoodConnect",
             "secure" => false,
             "httponly" => true,
             "samesite" => "Lax"

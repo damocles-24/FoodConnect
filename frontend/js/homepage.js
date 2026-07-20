@@ -9,7 +9,7 @@ function goToCart() {
 
 window.API =
   window.API ||
-  "/capshit/api";
+  "/FoodConnect/api";
 
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");

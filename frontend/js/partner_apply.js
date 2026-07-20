@@ -158,7 +158,7 @@ partnerForm.addEventListener(
 
         try {
             const response = await fetch(
-                "/capshit/api/partner_register.php",
+                "/FoodConnect/api/partner_register.php",
                 {
                     method: "POST",
 

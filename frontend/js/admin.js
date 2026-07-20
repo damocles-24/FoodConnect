@@ -1,7 +1,7 @@
 "use strict";
 
 const API_BASE =
-  "/capshit/api";
+  "/FoodConnect/api";
 
 /* =========================
    LOGIN AND SETUP ELEMENTS

@@ -8,7 +8,7 @@ ini_set("display_errors", "0");
 
 session_set_cookie_params(
     0,
-    "/capshit",
+    "/FoodConnect",
     "",
     false,
     true

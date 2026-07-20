@@ -36,7 +36,7 @@ if (ini_get("session.use_cookies")) {
         "",
         [
             "expires" => time() - 3600,
-            "path" => $params["path"] ?? "/capshit",
+            "path" => $params["path"] ?? "/FoodConnect",
             "domain" => $params["domain"] ?? "",
             "secure" => $params["secure"] ?? false,
             "httponly" => $params["httponly"] ?? true,
@@ -52,7 +52,7 @@ setcookie(
     "",
     [
         "expires" => time() - 3600,
-        "path" => "/capshit",
+        "path" => "/FoodConnect",
         "domain" => "",
         "secure" => false,
         "httponly" => true,
@@ -61,7 +61,7 @@ setcookie(
 );
 
 header(
-    "Location: /capshit/frontend/html/index.html"
+    "Location: /FoodConnect/frontend/html/index.html"
 );
 
 exit;
