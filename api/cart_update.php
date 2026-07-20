@@ -4,7 +4,7 @@ header("Content-Type: application/json; charset=utf-8");
 error_reporting(E_ALL);
 ini_set("display_errors", 0);
 
-session_set_cookie_params(0, "/capshit", "", false, true);
+session_set_cookie_params(0, "/FoodConnect", "", false, true);
 session_start();
 
 require_once __DIR__ . "/db.php";

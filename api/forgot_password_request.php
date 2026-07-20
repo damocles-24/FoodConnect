@@ -43,7 +43,7 @@ $upd->bind_param("ssi", $token_hash, $expires_dt, $uid);
 $upd->execute();
 
 // ✅ reset goes to your login.html (same page)
-$reset_link = "http://localhost/capshit/frontend/html/login.html?email=" . urlencode($email) . "&token=" . urlencode($raw_token);
+$reset_link = "http://localhost/FoodConnect/frontend/html/login.html?email=" . urlencode($email) . "&token=" . urlencode($raw_token);
 
 $html = "
   <h2>FoodConnect Password Reset</h2>
