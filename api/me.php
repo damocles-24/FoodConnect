@@ -311,7 +311,7 @@ function build_logged_in_response(
             $onboardingRequired = true;
 
             $ownerRedirectUrl =
-                "/capshit/frontend/html/create_restaurant.html";
+                "/FoodConnect/frontend/html/create_restaurant.html";
         }
     } elseif (
         in_array(

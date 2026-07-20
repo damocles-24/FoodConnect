@@ -57,7 +57,7 @@ if (!$stmt->execute()) {
 }
 
 // ✅ Professional: send email (no verify_link in response)
-$verify_link = "http://localhost/capshit/api/verify.php?token=" . $token;
+$verify_link = "http://localhost/FoodConnect/api/verify.php?token=" . $token;
 
 $htmlBody = "
 <!doctype html>

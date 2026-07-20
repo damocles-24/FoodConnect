@@ -1,9 +1,10 @@
 <?php
+
 header("Content-Type: application/json; charset=utf-8");
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
 
-session_set_cookie_params(0, "/FoodConnect", "", false, true);
-session_start();
-
+require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 
 function respond_json($data, $statusCode = 200) {

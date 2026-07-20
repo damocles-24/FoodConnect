@@ -3,7 +3,7 @@
 header("Content-Type: application/json; charset=utf-8");
 
 session_set_cookie_params(0, "/FoodConnect", "", false, true);
-session_start();
+require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
 

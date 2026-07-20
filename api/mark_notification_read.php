@@ -5,15 +5,9 @@ header(
     "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
 );
 
-session_set_cookie_params(
-    0,
-    "/FoodConnect",
-    "",
-    false,
-    true
-);
 
-session_start();
+
+require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
 
@@ -118,11 +112,10 @@ $checkStmt = $conn->prepare("
     WHERE log_id = ?
       AND restaurant_id = ?
       AND (
-            action_title LIKE
-                '%New Customer Order%'
+            action_type = 'order'
 
-            OR action_title =
-                'Customer Cancelled Order'
+            OR action_title LIKE
+                '%Cancelled%'
 
             OR action_title LIKE
                 '%Low Stock%'
