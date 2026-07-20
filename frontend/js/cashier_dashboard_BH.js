@@ -889,152 +889,470 @@ function openOrderModal(orderId) {
 }
 
 function buildModalContent(order) {
-  const items = Array.isArray(order.items) ? order.items : [];
+  const items = Array.isArray(order.items)
+    ? order.items
+    : [];
 
-  const orderItemsHTML = items.length > 0
-    ? items.map(item => `
-        <div class="order-item">
-          <div class="order-item-info">
-            <h4>${escapeHTML(item.product_name || "Unnamed Item")}</h4>
-            <p>
-    Qty: ${escapeHTML(item.quantity || 0)}
+  const orderType = String(
+    order.order_type || ""
+  )
+    .toLowerCase()
+    .trim();
 
-    ${item.base_text
-        ? `<br><strong>Variant:</strong> ${escapeHTML(item.base_text)}`
-        : ""
-    }
+  const normalizedStatus =
+    normalizeOrderStatus(
+      order.order_status
+    );
 
-    ${item.has_combo_choice
-        ? `<br><strong>Drink:</strong> ${escapeHTML(item.combo_choice_text)}`
-        : ""
-    }
+  const publicStatusClass =
+    getPublicStatusClass(
+      normalizedStatus
+    );
 
-    ${
-        item.addon_text &&
-        item.addon_text !== "No Add-on"
-            ? `<br><strong>Add-ons:</strong> ${escapeHTML(item.addon_text)}`
-            : ""
-    }
-</p>
-          </div>
-          <div class="order-item-price">
-            ₱${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
-          </div>
+  const publicStatusLabel =
+    getStatusDisplayLabel(
+      order.order_status,
+      order.order_type
+    );
+
+  const orderItemsHTML =
+    items.length > 0
+      ? items
+          .map((item, index) => {
+            const quantity =
+              Number(item.quantity || 0);
+
+            const price =
+              Number(item.price || 0);
+
+            const subtotal =
+              quantity * price;
+
+            const baseText =
+              String(
+                item.base_text || ""
+              ).trim();
+
+            const comboChoiceText =
+              String(
+                item.combo_choice_text ||
+                ""
+              ).trim();
+
+            const addonText =
+              String(
+                item.addon_text || ""
+              ).trim();
+
+            return `
+              <article class="ticket-order-item">
+                <div class="ticket-item-number">
+                  ${index + 1}
+                </div>
+
+                <div class="ticket-item-content">
+                  <div class="ticket-item-heading">
+                    <div>
+                      <h4>
+                        ${escapeHTML(
+                          item.product_name ||
+                          "Unnamed Item"
+                        )}
+                      </h4>
+
+                      <span class="ticket-item-quantity">
+                        Quantity: ${escapeHTML(
+                          quantity
+                        )}
+                      </span>
+                    </div>
+
+                    <strong class="ticket-item-subtotal">
+                      ₱${formatMoney(subtotal)}
+                    </strong>
+                  </div>
+
+                  ${
+                    baseText ||
+                    comboChoiceText ||
+                    (
+                      addonText &&
+                      addonText !== "No Add-on"
+                    )
+                      ? `
+                        <div class="ticket-item-options">
+                          ${
+                            baseText
+                              ? `
+                                <div>
+                                  <span>Variant</span>
+                                  <strong>
+                                    ${escapeHTML(
+                                      baseText
+                                    )}
+                                  </strong>
+                                </div>
+                              `
+                              : ""
+                          }
+
+                          ${
+                            comboChoiceText
+                              ? `
+                                <div>
+                                  <span>Drink</span>
+                                  <strong>
+                                    ${escapeHTML(
+                                      comboChoiceText
+                                    )}
+                                  </strong>
+                                </div>
+                              `
+                              : ""
+                          }
+
+                          ${
+                            addonText &&
+                            addonText !==
+                              "No Add-on"
+                              ? `
+                                <div>
+                                  <span>Add-ons</span>
+                                  <strong>
+                                    ${escapeHTML(
+                                      addonText
+                                    )}
+                                  </strong>
+                                </div>
+                              `
+                              : ""
+                          }
+                        </div>
+                      `
+                      : ""
+                  }
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `
+        <div class="ticket-empty-state">
+          <i class="fa-solid fa-basket-shopping"></i>
+
+          <p>
+            No items were found for this order.
+          </p>
         </div>
-      `).join("")
-    : `<p class="empty-message">No items found for this order.</p>`;
+      `;
 
+  const deliveryHTML =
+    orderType === "delivery"
+      ? `
+        <section class="ticket-section">
+          <div class="ticket-section-heading">
+            <div class="ticket-section-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
 
-    const cancellationHTML =
-  String(order.order_status || "").toLowerCase() === "cancelled"
-    ? `
-      <div class="cancellation-detail-box">
-        <span>Cancellation Information</span>
+            <div>
+              <h3>Delivery Information</h3>
+              <p>
+                Customer delivery destination
+              </p>
+            </div>
+          </div>
 
-        <strong>
-          ${escapeHTML(
-            order.cancellation_reason ||
-            "No cancellation reason recorded."
-          )}
-        </strong>
+          <div class="ticket-address-card">
+            <div class="ticket-address-row">
+              <span>Address</span>
 
-        <div class="cancellation-meta">
-          Cancelled by:
-          ${escapeHTML(
-            formatCancelledBy(order.cancelled_by)
-          )}
+              <strong>
+                ${escapeHTML(
+                  order.address ||
+                  "No delivery address provided"
+                )}
+              </strong>
+            </div>
 
-          ${
-            order.cancelled_at
-              ? ` • ${escapeHTML(
-                  formatDateTime(order.cancelled_at)
-                )}`
-              : ""
-          }
-        </div>
-      </div>
-    `
-    : "";
+            ${
+              order.landmark &&
+              String(order.landmark).trim() !== ""
+                ? `
+                  <div class="ticket-address-row">
+                    <span>Landmark</span>
+
+                    <strong>
+                      ${escapeHTML(
+                        order.landmark
+                      )}
+                    </strong>
+                  </div>
+                `
+                : ""
+            }
+          </div>
+        </section>
+      `
+      : "";
+
+  const notesHTML =
+    order.notes &&
+    String(order.notes).trim() !== ""
+      ? `
+        <section class="ticket-section">
+          <div class="ticket-section-heading">
+            <div class="ticket-section-icon">
+              <i class="fa-solid fa-note-sticky"></i>
+            </div>
+
+            <div>
+              <h3>Customer Notes</h3>
+              <p>
+                Special instructions for this order
+              </p>
+            </div>
+          </div>
+
+          <div class="ticket-notes-card">
+            ${escapeHTML(order.notes)}
+          </div>
+        </section>
+      `
+      : "";
+
+  const cancellationHTML =
+    normalizedStatus === "cancelled"
+      ? `
+        <section class="ticket-section">
+          <div class="ticket-section-heading cancellation-heading">
+            <div class="ticket-section-icon">
+              <i class="fa-solid fa-ban"></i>
+            </div>
+
+            <div>
+              <h3>Cancellation Information</h3>
+              <p>
+                This order was cancelled
+              </p>
+            </div>
+          </div>
+
+          <div class="ticket-cancellation-card">
+            <span>Cancellation Reason</span>
+
+            <strong>
+              ${escapeHTML(
+                order.cancellation_reason ||
+                "No cancellation reason recorded."
+              )}
+            </strong>
+
+            <div class="ticket-cancellation-meta">
+              <span>
+                Cancelled by
+                ${escapeHTML(
+                  formatCancelledBy(
+                    order.cancelled_by
+                  )
+                )}
+              </span>
+
+              ${
+                order.cancelled_at
+                  ? `
+                    <span>
+                      ${escapeHTML(
+                        formatDateTime(
+                          order.cancelled_at
+                        )
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+            </div>
+          </div>
+        </section>
+      `
+      : "";
+
   return `
-<div class="order-detail-box">
-  <span>Queue Number</span>
-  <strong>#${escapeHTML(order.queue_number || "N/A")}</strong>
-</div>
+    <div class="cashier-order-ticket">
 
-    <div class="order-details-grid">
-      <div class="order-detail-box">
-        <span>Customer Name</span>
-        <strong>${escapeHTML(order.customer_name || "N/A")}</strong>
-      </div>
+      <section class="ticket-identity-card">
+        <div class="ticket-identity-main">
+          <span class="ticket-overline">
+            Current Order
+          </span>
 
-      <div class="order-detail-box">
-        <span>Contact Number</span>
-        <strong>${escapeHTML(order.contact_number || "N/A")}</strong>
-      </div>
+          <h2>
+            Order #${escapeHTML(
+              order.order_id || "N/A"
+            )}
+          </h2>
 
-      <div class="order-detail-box">
-        <span>Order Type</span>
-        <strong>${formatOrderType(order.order_type)}</strong>
-      </div>
+          <div class="ticket-identity-meta">
+            <span>
+              <i class="fa-solid fa-clock"></i>
 
-      <div class="order-detail-box">
-        <span>Payment Method</span>
-        <strong>${escapeHTML(order.payment_method || "N/A")}</strong>
-      </div>
+              ${escapeHTML(
+                formatDateTime(
+                  order.created_at
+                )
+              )}
+            </span>
 
-      <div class="order-detail-box">
-        <span>Total Amount</span>
-        <strong>₱${formatMoney(order.total_amount)}</strong>
-      </div>
+            <span>
+              <i class="fa-solid fa-utensils"></i>
 
-      <div class="order-detail-box">
-        <span>Status</span>
-        <strong>
-  ${escapeHTML(
-    getStatusDisplayLabel(order.order_status, order.order_type)
-  )}
-</strong>
-      </div>
+              ${escapeHTML(
+                formatOrderType(
+                  order.order_type
+                )
+              )}
+            </span>
+          </div>
+        </div>
 
-      <div class="order-detail-box">
-        <span>Address</span>
-        <strong>${escapeHTML(order.address || "N/A")}</strong>
-      </div>
+        <div class="ticket-queue-card">
+          <span>Queue Number</span>
 
-      <div class="order-detail-box">
-        <span>Landmark</span>
-        <strong>${escapeHTML(order.landmark || "N/A")}</strong>
-      </div>
+          <strong>
+            #${escapeHTML(
+              order.queue_number || "N/A"
+            )}
+          </strong>
+        </div>
 
-      <div class="order-detail-box">
-        <span>Table Number</span>
-        <strong>${escapeHTML(order.table_number || "N/A")}</strong>
-      </div>
+        <span
+          class="status-badge ticket-status-badge ${escapeHTML(
+            publicStatusClass
+          )}"
+        >
+          ${escapeHTML(
+            publicStatusLabel
+          )}
+        </span>
+      </section>
 
-      <div class="order-detail-box">
-        <span>Pickup Time</span>
-        <strong>${escapeHTML(order.pickup_time || "N/A")}</strong>
-      </div>
+      <section class="ticket-section">
+        <div class="ticket-section-heading">
+          <div class="ticket-section-icon">
+            <i class="fa-solid fa-user"></i>
+          </div>
 
-      <div class="order-detail-box">
-        <span>Notes</span>
-        <strong>${escapeHTML(order.notes || "None")}</strong>
-      </div>
+          <div>
+            <h3>Customer Information</h3>
+            <p>
+              Customer and contact details
+            </p>
+          </div>
+        </div>
 
-      <div class="order-detail-box">
-        <span>Date / Time</span>
-        <strong>${formatDateTime(order.created_at)}</strong>
-      </div>
+        <div class="ticket-info-grid">
+          <div class="ticket-info-card">
+            <span>Customer Name</span>
+
+            <strong>
+              ${escapeHTML(
+                order.customer_name ||
+                "Unknown Customer"
+              )}
+            </strong>
+          </div>
+
+          <div class="ticket-info-card">
+            <span>Contact Number</span>
+
+            <strong>
+              ${escapeHTML(
+                order.contact_number ||
+                "No contact number"
+              )}
+            </strong>
+          </div>
+
+          <div class="ticket-info-card">
+            <span>Order Type</span>
+
+            <strong>
+              ${escapeHTML(
+                formatOrderType(
+                  order.order_type
+                )
+              )}
+            </strong>
+          </div>
+
+          <div class="ticket-info-card">
+            <span>Payment Method</span>
+
+            <strong>
+              ${escapeHTML(
+                order.payment_method ||
+                "N/A"
+              )}
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      ${deliveryHTML}
+
+      <section class="ticket-section ticket-items-section">
+        <div class="ticket-section-heading">
+          <div class="ticket-section-icon">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+
+          <div>
+            <h3>Order Items</h3>
+
+            <p>
+              ${items.length}
+              item${items.length === 1 ? "" : "s"}
+              in this order
+            </p>
+          </div>
+        </div>
+
+        <div class="ticket-items-list">
+          ${orderItemsHTML}
+        </div>
+      </section>
+
+      ${notesHTML}
+
       ${cancellationHTML}
-    </div>
 
-    <h3 class="order-items-title">Order Items</h3>
+      <section class="ticket-payment-card">
+        <div>
+          <span>Payment Method</span>
 
-    <div class="order-items-list">
-      ${orderItemsHTML}
+          <strong>
+            ${escapeHTML(
+              order.payment_method ||
+              "N/A"
+            )}
+          </strong>
+        </div>
+
+        <div class="ticket-total">
+          <span>Total Amount</span>
+
+          <strong>
+            ₱${formatMoney(
+              order.total_amount
+            )}
+          </strong>
+        </div>
+      </section>
+
     </div>
   `;
 }
+
 function formatCancelledBy(value) {
   const normalized =
     String(value || "").toLowerCase();

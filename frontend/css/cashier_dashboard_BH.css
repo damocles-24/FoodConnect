@@ -911,68 +911,439 @@ button {
 
 
 /* ================================
-   ORDER DETAILS CONTENT
+   CASHIER ORDER TICKET / ID LAYOUT
 ================================ */
 
-.order-details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 22px;
+#orderModal .modal {
+  max-width: 860px;
 }
 
-.order-detail-box {
+#orderModal .modal-body {
+  padding: 20px;
+  background: #141414;
+}
+
+.cashier-order-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Main order identity */
+
+.ticket-identity-card {
+  position: relative;
+  min-height: 150px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.18),
+      rgba(212, 175, 55, 0.04)
+    );
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+}
+
+.ticket-identity-card::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.06);
+  pointer-events: none;
+}
+
+.ticket-identity-main {
+  position: relative;
+  z-index: 1;
+}
+
+.ticket-overline {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.ticket-identity-main h2 {
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.ticket-identity-meta {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.ticket-identity-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ticket-identity-meta i {
+  color: var(--gold);
+}
+
+.ticket-queue-card {
+  position: relative;
+  z-index: 1;
+  min-width: 150px;
+  padding: 17px 20px;
+  text-align: center;
+  background: #101010;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  border-radius: 14px;
+}
+
+.ticket-queue-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ticket-queue-card strong {
+  color: var(--gold);
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.ticket-status-badge {
+  position: absolute;
+  right: 22px;
+  bottom: 15px;
+  z-index: 2;
+}
+
+/* General ticket sections */
+
+.ticket-section {
+  padding: 20px;
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.ticket-section-heading {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticket-section-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  background: rgba(212, 175, 55, 0.11);
+  border-radius: 10px;
+}
+
+.ticket-section-heading h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ticket-section-heading p {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+/* Customer information */
+
+.ticket-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.ticket-info-card {
+  min-width: 0;
   padding: 14px;
   background: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 9px;
+  border-radius: 10px;
 }
 
-.order-detail-box span {
+.ticket-info-card span {
   display: block;
   margin-bottom: 5px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.order-detail-box strong {
+.ticket-info-card strong {
+  display: block;
+  overflow-wrap: anywhere;
   font-size: 13px;
   font-weight: 500;
 }
 
-.order-items-title {
-  margin-bottom: 12px;
-  font-size: 15px;
+/* Delivery information */
+
+.ticket-address-card {
+  padding: 0 15px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
 }
 
-.order-item {
-  padding: 13px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
+.ticket-address-row {
+  padding: 14px 0;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
   border-bottom: 1px solid var(--border-color);
 }
 
-.order-item:last-child {
+.ticket-address-row:last-child {
   border-bottom: none;
 }
 
-.order-item-info h4 {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.order-item-info p {
-  margin-top: 3px;
+.ticket-address-row span {
   color: var(--text-secondary);
   font-size: 11px;
 }
 
-.order-item-price {
-  color: var(--gold);
+.ticket-address-row strong {
+  overflow-wrap: anywhere;
   font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+/* Ordered items */
+
+.ticket-items-list {
+  overflow: hidden;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+}
+
+.ticket-order-item {
+  padding: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ticket-order-item:last-child {
+  border-bottom: none;
+}
+
+.ticket-item-number {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  background: var(--gold);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ticket-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-item-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.ticket-item-heading h4 {
+  overflow-wrap: anywhere;
+  font-size: 14px;
   font-weight: 600;
+}
+
+.ticket-item-quantity {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ticket-item-subtotal {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.ticket-item-options {
+  margin-top: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ticket-item-options div {
+  padding: 7px 9px;
+  background: #181818;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+}
+
+.ticket-item-options span {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.ticket-item-options strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.ticket-empty-state {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.ticket-empty-state i {
+  margin-bottom: 10px;
+  color: var(--gold);
+  font-size: 30px;
+}
+
+.ticket-empty-state p {
+  font-size: 12px;
+}
+
+/* Customer notes */
+
+.ticket-notes-card {
+  padding: 15px;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  background: rgba(240, 173, 78, 0.07);
+  border: 1px solid rgba(240, 173, 78, 0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Cancellation details */
+
+.cancellation-heading .ticket-section-icon {
+  color: var(--cancelled);
+  background: rgba(231, 76, 60, 0.12);
+}
+
+.ticket-cancellation-card {
+  padding: 15px;
+  background: rgba(231, 76, 60, 0.07);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: 10px;
+}
+
+.ticket-cancellation-card > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.ticket-cancellation-card > strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #ff8c82;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.ticket-cancellation-meta {
+  margin-top: 11px;
+  padding-top: 11px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.ticket-cancellation-meta span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+/* Payment summary */
+
+.ticket-payment-card {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.14),
+      rgba(212, 175, 55, 0.04)
+    );
+  border: 1px solid rgba(212, 175, 55, 0.34);
+  border-radius: 14px;
+}
+
+.ticket-payment-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ticket-payment-card strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ticket-total {
+  text-align: right;
+}
+
+.ticket-total strong {
+  color: var(--gold);
+  font-size: 24px;
 }
 
 
@@ -999,6 +1370,46 @@ button {
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.25s ease;
+      #orderModal .modal {
+    max-height: 96vh;
+  }
+
+  #orderModal .modal-header {
+    padding: 16px 18px;
+  }
+
+  #orderModal .modal-body {
+    padding: 14px;
+  }
+
+  #orderModal .modal-footer {
+    padding: 14px;
+  }
+
+  .cashier-order-ticket {
+    gap: 12px;
+  }
+
+  .ticket-identity-card {
+    padding: 18px;
+  }
+
+  .ticket-section {
+    padding: 16px;
+  }
+
+  .ticket-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ticket-item-options {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ticket-item-options div {
+    width: 100%;
+  }
   }
 
   .sidebar.active {
@@ -1091,6 +1502,111 @@ button {
     .assignment-order-summary,
 .assignment-fee-grid {
   grid-template-columns: 1fr;
+
+    #orderModal.modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  #orderModal .modal {
+    max-width: none;
+    max-height: 100vh;
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  #orderModal .modal-header {
+    flex: 0 0 auto;
+  }
+
+  #orderModal .modal-body {
+    flex: 1;
+    padding: 12px;
+  }
+
+  #orderModal .modal-footer {
+    flex: 0 0 auto;
+    padding: 12px;
+    background: var(--card-color);
+  }
+
+  #orderModal .cancel-modal-btn {
+    width: 100%;
+  }
+
+  #orderModal .modal-actions {
+    width: 100%;
+  }
+
+  #orderModal .status-action-btn {
+    min-height: 42px;
+  }
+
+  .ticket-identity-card {
+    min-height: 0;
+    padding: 16px;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .ticket-identity-main h2 {
+    font-size: 24px;
+  }
+
+  .ticket-identity-meta {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ticket-queue-card {
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .ticket-queue-card strong {
+    font-size: 26px;
+  }
+
+  .ticket-status-badge {
+    position: static;
+    width: fit-content;
+  }
+
+  .ticket-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-address-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .ticket-order-item {
+    padding: 13px;
+  }
+
+  .ticket-item-heading {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ticket-item-subtotal {
+    align-self: flex-start;
+  }
+
+  .ticket-payment-card {
+    align-items: flex-end;
+  }
+
+  .ticket-total strong {
+    font-size: 21px;
+  }
+
+  .ticket-cancellation-meta {
+    flex-direction: column;
+  }
 }
 
 .assign-rider-footer {
