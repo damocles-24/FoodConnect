@@ -549,162 +549,353 @@ function closeDeliveryModal() {
 }
 
 function buildDeliveryDetails(delivery) {
-  const items = Array.isArray(delivery.items)
+  const items = Array.isArray(
+    delivery.items
+  )
     ? delivery.items
     : [];
 
-  const itemRows = items.length > 0
-    ? items.map(item => {
-        const quantity = Number(item.quantity || 0);
-        const itemPrice = Number(item.price || 0);
+  const amountToCollect =
+    getAmountToCollect(delivery);
 
-        return `
-          <div class="delivery-item">
+  const itemRows =
+    items.length > 0
+      ? items
+          .map((item) => {
+            const quantity = Math.max(
+              0,
+              Number(item.quantity || 0)
+            );
 
-            <div>
-              <h4>
-                ${quantity}×
-                ${escapeHTML(
-                  item.product_name || "Unnamed Item"
-                )}
-              </h4>
+            const itemPrice = Number(
+              item.price || 0
+            );
 
-              <p>
-                ${
-                  item.base_text
-                    ? escapeHTML(item.base_text)
-                    : "Standard"
-                }
+            const itemSubtotal =
+              quantity * itemPrice;
 
-                ${
-                  item.addon_text
-                    ? ` • ${escapeHTML(item.addon_text)}`
-                    : ""
-                }
-              </p>
-            </div>
+            const variantText = String(
+              item.base_text || ""
+            ).trim();
 
-            <div class="delivery-item-price">
-              ₱${formatMoney(quantity * itemPrice)}
-            </div>
+            const comboChoiceText = String(
+              item.combo_choice_text || ""
+            ).trim();
 
+            const addonText = String(
+              item.addon_text || ""
+            ).trim();
+
+            const hasAddon =
+              addonText !== "" &&
+              addonText.toLowerCase() !==
+                "no add-on";
+
+            return `
+              <div class="delivery-order-item">
+
+                <div class="delivery-order-item-info">
+
+                  <h4>
+                    ${escapeHTML(
+                      item.product_name ||
+                      "Unnamed Item"
+                    )}
+                  </h4>
+
+                  <p>
+                    <strong>Quantity:</strong>
+                    ${escapeHTML(quantity)}
+                  </p>
+
+                  ${
+                    variantText
+                      ? `
+                          <p>
+                            <strong>
+                              Variant:
+                            </strong>
+
+                            ${escapeHTML(
+                              variantText
+                            )}
+                          </p>
+                        `
+                      : ""
+                  }
+
+                  ${
+                    comboChoiceText
+                      ? `
+                          <p>
+                            <strong>
+                              Selection:
+                            </strong>
+
+                            ${escapeHTML(
+                              comboChoiceText
+                            )}
+                          </p>
+                        `
+                      : ""
+                  }
+
+                  ${
+                    hasAddon
+                      ? `
+                          <p>
+                            <strong>
+                              Add-ons:
+                            </strong>
+
+                            ${escapeHTML(
+                              addonText
+                            )}
+                          </p>
+                        `
+                      : ""
+                  }
+
+                </div>
+
+                <div class="delivery-order-item-price">
+                  ₱${formatMoney(
+                    itemSubtotal
+                  )}
+                </div>
+
+              </div>
+            `;
+          })
+          .join("")
+      : `
+          <div class="delivery-items-empty">
+            <i class="fa-solid fa-receipt"></i>
+
+            <p>
+              No order items were found.
+            </p>
           </div>
         `;
-      }).join("")
-    : `
-        <div class="delivery-empty-state">
-          <p>No order items were found.</p>
-        </div>
-      `;
-
-  const amountToCollect = getAmountToCollect(delivery);
 
   return `
-    <div class="delivery-detail-grid">
+    <section class="delivery-detail-section">
 
-      <div class="delivery-detail-box">
-        <span>Queue Number</span>
-        <strong>
-          #${escapeHTML(delivery.queue_number || "N/A")}
-        </strong>
-      </div>
+      <div
+        class="delivery-detail-box
+               delivery-detail-highlight"
+      >
+        <span>
+          Queue Number
+        </span>
 
-      <div class="delivery-detail-box">
-        <span>Order ID</span>
         <strong>
-          #${escapeHTML(delivery.order_id)}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box">
-        <span>Customer</span>
-        <strong>
-          ${escapeHTML(
-            delivery.customer_name || "N/A"
+          #${escapeHTML(
+            delivery.queue_number ||
+            "N/A"
           )}
         </strong>
       </div>
 
-      <div class="delivery-detail-box">
-        <span>Contact Number</span>
-        <strong>
-          ${escapeHTML(
-            delivery.contact_number || "N/A"
-          )}
-        </strong>
+      <div class="delivery-detail-grid">
+
+        <div class="delivery-detail-box">
+          <span>
+            Order ID
+          </span>
+
+          <strong>
+            #${escapeHTML(
+              delivery.order_id ||
+              "N/A"
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Delivery Status
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              getDeliveryStatusLabel(
+                delivery.delivery_status
+              )
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Customer Name
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              delivery.customer_name ||
+              "N/A"
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Contact Number
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              delivery.contact_number ||
+              "N/A"
+            )}
+          </strong>
+        </div>
+
+        <div
+          class="delivery-detail-box
+                 full-width"
+        >
+          <span>
+            Delivery Address
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              buildFullAddress(
+                delivery
+              )
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Payment Method
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              delivery.payment_method ||
+              "N/A"
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Amount to Collect
+          </span>
+
+          <strong class="delivery-money-value">
+            ₱${formatMoney(
+              amountToCollect
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Order Total
+          </span>
+
+          <strong>
+            ₱${formatMoney(
+              delivery.total_amount
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Delivery Fee
+          </span>
+
+          <strong>
+            ₱${formatMoney(
+              delivery.delivery_fee
+            )}
+          </strong>
+        </div>
+
+        <div
+          class="delivery-detail-box
+                 full-width"
+        >
+          <span>
+            Customer Notes
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              delivery.notes ||
+              "None"
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Assigned At
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              formatDateTime(
+                delivery.assigned_at
+              )
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Order Created
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              formatDateTime(
+                delivery.created_at
+              )
+            )}
+          </strong>
+        </div>
+
       </div>
 
-      <div class="delivery-detail-box full-width">
-        <span>Delivery Address</span>
-        <strong>
-          ${escapeHTML(buildFullAddress(delivery))}
+    </section>
+
+    <section class="delivery-items-section">
+
+      <div class="delivery-items-heading">
+
+        <div>
+          <span>
+            Order Contents
+          </span>
+
+          <h3>
+            Ordered Items
+          </h3>
+        </div>
+
+        <strong class="delivery-item-count">
+          ${items.length}
+          ${
+            items.length === 1
+              ? "item"
+              : "items"
+          }
         </strong>
+
       </div>
 
-      <div class="delivery-detail-box">
-        <span>Payment Method</span>
-        <strong>
-          ${escapeHTML(
-            delivery.payment_method || "N/A"
-          )}
-        </strong>
+      <div class="delivery-items-list">
+        ${itemRows}
       </div>
 
-      <div class="delivery-detail-box">
-        <span>Amount to Collect</span>
-        <strong>
-          ₱${formatMoney(amountToCollect)}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box">
-        <span>Delivery Fee</span>
-        <strong>
-          ₱${formatMoney(delivery.delivery_fee)}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box">
-        <span>Delivery Status</span>
-        <strong>
-          ${escapeHTML(
-            getDeliveryStatusLabel(
-              delivery.delivery_status
-            )
-          )}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box full-width">
-        <span>Customer Notes</span>
-        <strong>
-          ${escapeHTML(delivery.notes || "None")}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box">
-        <span>Assigned At</span>
-        <strong>
-          ${formatDateTime(delivery.assigned_at)}
-        </strong>
-      </div>
-
-      <div class="delivery-detail-box">
-        <span>Order Created</span>
-        <strong>
-          ${formatDateTime(delivery.created_at)}
-        </strong>
-      </div>
-
-    </div>
-
-    <h3 class="delivery-items-title">
-      Order Items
-    </h3>
-
-    <div class="delivery-items-list">
-      ${itemRows}
-    </div>
+    </section>
   `;
 }
 

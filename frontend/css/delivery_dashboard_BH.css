@@ -603,74 +603,200 @@ button {
    DELIVERY DETAILS
 ===================================== */
 
+.delivery-detail-section {
+  display: grid;
+  gap: 12px;
+}
+
 .delivery-detail-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 .delivery-detail-box {
-  padding: 13px;
+  min-width: 0;
+  padding: 14px 15px;
 
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 10px;
 }
 
 .delivery-detail-box.full-width {
   grid-column: 1 / -1;
 }
 
+.delivery-detail-highlight {
+  width: 100%;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.16),
+      rgba(212, 175, 55, 0.05)
+    );
+
+  border-color:
+    rgba(212, 175, 55, 0.45);
+}
+
 .delivery-detail-box span {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+
   color: var(--text-secondary);
+
   font-size: 10px;
+  font-weight: 500;
 }
 
 .delivery-detail-box strong {
   display: block;
-  font-size: 12px;
-  font-weight: 500;
+
+  color: var(--text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+
   overflow-wrap: anywhere;
 }
 
-.delivery-items-title {
-  margin: 22px 0 10px;
-  font-size: 14px;
+.delivery-detail-highlight strong {
+  color: var(--gold);
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.delivery-item {
-  padding: 12px 0;
+.delivery-money-value {
+  color: var(--gold) !important;
+}
+
+/* =====================================
+   DELIVERY ORDER ITEMS
+===================================== */
+
+.delivery-items-section {
+  margin-top: 24px;
+}
+
+.delivery-items-heading {
+  margin-bottom: 12px;
 
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
+  gap: 16px;
+}
+
+.delivery-items-heading span {
+  display: block;
+  margin-bottom: 3px;
+
+  color: var(--gold);
+
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.delivery-items-heading h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.delivery-item-count {
+  padding: 5px 9px;
+
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.delivery-items-list {
+  padding: 0 15px;
+
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.delivery-order-item {
+  padding: 15px 0;
+
+  display: flex;
   align-items: flex-start;
-  gap: 15px;
+  justify-content: space-between;
+  gap: 16px;
 
   border-bottom: 1px solid var(--border);
 }
 
-.delivery-item:last-child {
+.delivery-order-item:last-child {
   border-bottom: none;
 }
 
-.delivery-item h4 {
-  font-size: 12px;
+.delivery-order-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.delivery-order-item-info h4 {
+  margin-bottom: 6px;
+
+  color: var(--text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.delivery-order-item-info p {
+  margin-top: 3px;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.delivery-order-item-info p strong {
+  color: #d0d0d0;
   font-weight: 500;
 }
 
-.delivery-item p {
-  margin-top: 3px;
-  color: var(--text-secondary);
-  font-size: 10px;
+.delivery-order-item-price {
+  flex-shrink: 0;
+
+  color: var(--gold);
+
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.delivery-item-price {
+.delivery-items-empty {
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.delivery-items-empty i {
+  margin-bottom: 8px;
+
   color: var(--gold);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 25px;
+}
+
+.delivery-items-empty p {
+  color: var(--text-secondary);
+  font-size: 11px;
 }
 
 /* =====================================
@@ -944,6 +1070,26 @@ button {
   .delivery-detail-grid {
     grid-template-columns: 1fr;
   }
+
+  .delivery-detail-box.full-width {
+  grid-column: auto;
+}
+
+.delivery-order-item {
+  gap: 10px;
+}
+
+.delivery-order-item-info h4 {
+  font-size: 12px;
+}
+
+.delivery-order-item-price {
+  font-size: 12px;
+}
+
+.delivery-items-heading {
+  align-items: flex-start;
+}
 
   .delivery-card-actions {
     grid-template-columns: 1fr;
