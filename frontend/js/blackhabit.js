@@ -6,6 +6,39 @@ function goToCart() {
 
 
 const API = "/FoodConnect/api";
+const pageParameters =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const restaurantIdParameter =
+  pageParameters.get(
+    "restaurant_id"
+  );
+
+const requestedRestaurantId =
+  Number.parseInt(
+    restaurantIdParameter || "",
+    10
+  );
+
+/*
+ * Temporary fallback for the BlackHabit restaurant.
+ *
+ * Change 1 when BlackHabit has a different restaurant_id.
+ * After owner-created restaurant pages are implemented,
+ * every page should supply its own restaurant_id.
+ */
+const DEFAULT_RESTAURANT_ID = 1;
+
+const CURRENT_RESTAURANT_ID =
+  Number.isInteger(
+    requestedRestaurantId
+  ) &&
+  requestedRestaurantId > 0
+    ? requestedRestaurantId
+    : DEFAULT_RESTAURANT_ID;
+
 
 
 let databaseProductGroups = [];
@@ -155,6 +188,20 @@ if (nameEl) {
   const searchBtn = document.getElementById("searchBtn");
   const searchResults = document.getElementById("searchResults");
   const menuGrid = document.getElementById("menuGrid");
+  const popularSection =
+  document.getElementById(
+    "popularSection"
+  );
+
+const popularGrid =
+  document.getElementById(
+    "popularGrid"
+  );
+
+const popularDescription =
+  document.getElementById(
+    "popularDescription"
+  );
 
   const productOptionsModal = document.createElement("div");
 
@@ -396,6 +443,46 @@ function normalizeProductName(value) {
   return String(value || "")
     .trim()
     .replace(/\s+/g, " ");
+}
+
+function normalizeProductIds(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((id) =>
+        Number.parseInt(id, 10)
+      )
+      .filter(
+        (id) =>
+          Number.isInteger(id) &&
+          id > 0
+      );
+  }
+
+  if (
+    typeof value === "string"
+  ) {
+    return value
+      .split(",")
+      .map((id) =>
+        Number.parseInt(
+          id.trim(),
+          10
+        )
+      )
+      .filter(
+        (id) =>
+          Number.isInteger(id) &&
+          id > 0
+      );
+  }
+
+  const singleId =
+    Number.parseInt(value, 10);
+
+  return Number.isInteger(singleId) &&
+    singleId > 0
+      ? [singleId]
+      : [];
 }
 
 function normalizeAddonCategory(value) {
@@ -772,6 +859,175 @@ const isUnavailable =
   }
 </button>
         
+      </div>
+    </article>
+  `;
+}
+
+function buildPopularProductCard(
+  group,
+  popularProduct,
+  rank
+) {
+  if (!group) {
+    return "";
+  }
+
+  const availableVariants =
+    group.variants.filter(
+      (variant) =>
+        variant.available
+    );
+
+  const isBundle =
+    isPotentialBundleGroup(group);
+
+  const isUnavailable =
+    !isBundle &&
+    availableVariants.length === 0;
+
+  const variantSummary =
+    getVariantSummary(group);
+
+  const totalSold = Math.max(
+    0,
+    Number(
+      popularProduct.total_sold || 0
+    )
+  );
+
+  const fallbackValue =
+  popularProduct.is_fallback;
+
+const isFallback =
+  fallbackValue === true ||
+  fallbackValue === 1 ||
+  fallbackValue === "1" ||
+  String(
+    fallbackValue
+  ).toLowerCase() === "true";
+
+  const popularityLabel =
+    isFallback
+      ? `
+          <span
+            class="popular-card-label is-new"
+          >
+            Recommended product
+          </span>
+        `
+      : `
+          <span
+            class="popular-card-label"
+          >
+            🔥 ${totalSold}
+            ${totalSold === 1
+              ? "item"
+              : "items"}
+            ordered
+          </span>
+        `;
+
+  const buttonText =
+    group.variants.length > 1
+      ? "Choose Options"
+      : "Add to Cart";
+
+  return `
+    <article
+      class="menu-item dynamic-menu-item popular-card"
+      data-product-group="${
+        escapeMenuText(group.key)
+      }"
+      data-category="${
+        escapeMenuText(
+          group.categorySlug
+        )
+      }"
+      data-subcategory="${
+        escapeMenuText(
+          group.subcategorySlug
+        )
+      }"
+    >
+      <span class="popular-rank">
+        #${rank}
+      </span>
+
+      <img
+        src="${DEFAULT_PRODUCT_IMAGE}"
+        alt="${
+          escapeMenuText(group.name)
+        }"
+        loading="lazy"
+      >
+
+      <div class="menu-item-info">
+        <div class="menu-item-details">
+          <h3>
+            ${escapeMenuText(group.name)}
+          </h3>
+
+          <p class="price">
+            ${
+              escapeMenuText(
+                getProductPriceLabel(
+                  group
+                )
+              )
+            }
+          </p>
+
+          ${
+            variantSummary
+              ? `
+                  <p
+                    class="product-variant-summary"
+                  >
+                    ${
+                      escapeMenuText(
+                        variantSummary
+                      )
+                    }
+                  </p>
+                `
+              : ""
+          }
+
+          ${popularityLabel}
+
+          ${
+            isUnavailable
+              ? `
+                  <p
+                    class="product-stock-message"
+                  >
+                    Currently unavailable
+                  </p>
+                `
+              : ""
+          }
+        </div>
+
+        <button
+          type="button"
+          class="add-to-cart dynamic-add-to-cart"
+          data-product-group="${
+            escapeMenuText(
+              group.key
+            )
+          }"
+          data-original-text="${
+            buttonText
+          }"
+          ${
+            isUnavailable
+              ? "disabled"
+              : ""
+          }
+        >
+          ${buttonText}
+        </button>
       </div>
     </article>
   `;
@@ -1518,12 +1774,17 @@ async function loadDatabaseProducts() {
 
   try {
     const response = await fetch(
-      `${API}/get_products.php`,
-      {
-        credentials: "include",
-        cache: "no-store"
-      }
-    );
+  `${API}/get_products.php` +
+  `?restaurant_id=${
+    encodeURIComponent(
+      CURRENT_RESTAURANT_ID
+    )
+  }`,
+  {
+    credentials: "include",
+    cache: "no-store"
+  }
+);
 
     const rawText = await response.text();
 
@@ -1640,11 +1901,6 @@ databaseAddons = Array.from(
   addonMap.values()
 );
 
-console.log(
-  "Loaded FoodConnect add-ons:",
-  databaseAddons
-);
-
     databaseProductGroups =
   groupProducts(products);
 
@@ -1668,6 +1924,213 @@ return databaseProductGroups;
     items = [];
 
     return [];
+  }
+}
+
+async function loadPopularProducts() {
+  if (
+    !popularSection ||
+    !popularGrid
+  ) {
+    return;
+  }
+
+  popularSection.hidden = false;
+
+  popularGrid.innerHTML = `
+    <div class="popular-loading">
+      Loading popular products...
+    </div>
+  `;
+
+  try {
+    const response = await fetch(
+      `${API}/get_popular_products.php` +
+      `?restaurant_id=${
+        encodeURIComponent(
+          CURRENT_RESTAURANT_ID
+        )
+      }&limit=4`,
+      {
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    const rawText =
+      await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(
+        rawText
+      );
+    } catch (parseError) {
+      console.error(
+        "Invalid popular products response:",
+        rawText
+      );
+
+      throw new Error(
+        "The popular-products API returned invalid JSON."
+      );
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load popular products."
+      );
+    }
+
+    const popularProducts =
+      Array.isArray(data.products)
+        ? data.products
+        : [];
+
+    if (
+      popularProducts.length === 0
+    ) {
+      popularSection.hidden = true;
+      popularGrid.innerHTML = "";
+      return;
+    }
+
+    if (popularDescription) {
+      popularDescription.textContent =
+        data.source === "fallback"
+          ? "Recommended products from this restaurant."
+          : "The most frequently ordered products from this restaurant.";
+    }
+
+    const cards = [];
+
+    popularProducts.forEach(
+  (popularProduct) => {
+    const popularProductIds =
+      normalizeProductIds(
+        popularProduct.product_ids
+      );
+
+    /*
+     * Primary matching:
+     * Match using real database product IDs.
+     *
+     * This is safer than matching category labels
+     * because category capitalization and spacing
+     * can differ between APIs.
+     */
+    let matchingGroup = null;
+
+    if (
+      popularProductIds.length > 0
+    ) {
+      matchingGroup =
+        databaseProductGroups.find(
+          (group) =>
+            group.variants.some(
+              (variant) =>
+                popularProductIds.includes(
+                  Number(
+                    variant.productId
+                  )
+                )
+            )
+        ) || null;
+    }
+
+    /*
+     * Compatibility fallback:
+     * Used only when an older API response does not
+     * contain product_ids.
+     */
+    if (!matchingGroup) {
+      const productName =
+        normalizeProductName(
+          popularProduct.product_name
+        ).toLowerCase();
+
+      const category =
+        normalizeProductName(
+          popularProduct.category
+        ).toLowerCase();
+
+      matchingGroup =
+        databaseProductGroups.find(
+          (group) => {
+            const groupName =
+              normalizeProductName(
+                group.name
+              ).toLowerCase();
+
+            const groupCategory =
+              normalizeProductName(
+                group.rawCategory
+              ).toLowerCase();
+
+            return (
+              groupName === productName &&
+              (
+                category === "" ||
+                groupCategory === category
+              )
+            );
+          }
+        ) || null;
+    }
+
+    if (!matchingGroup) {
+      console.warn(
+        "Popular product was not found in the loaded menu:",
+        popularProduct
+      );
+
+      return;
+    }
+
+    const displayRank =
+      cards.length + 1;
+
+    cards.push(
+      buildPopularProductCard(
+        matchingGroup,
+        popularProduct,
+        displayRank
+      )
+    );
+  }
+);
+
+    if (cards.length === 0) {
+  console.warn(
+    "Popular products were returned, but none matched the currently loaded restaurant menu."
+  );
+
+  popularSection.hidden = true;
+  popularGrid.innerHTML = "";
+
+  return;
+}
+
+    popularGrid.innerHTML =
+      cards.join("");
+
+  } catch (error) {
+    console.error(
+      "Load popular products:",
+      error
+    );
+
+    /*
+     * Popular products are optional.
+     * Do not break the normal menu when this request fails.
+     */
+    popularSection.hidden = true;
+    popularGrid.innerHTML = "";
   }
 }
 
@@ -2112,72 +2575,100 @@ allSubFilterBtns.forEach(
   }
 }
 
-menuGrid?.addEventListener(
-  "click",
-  async (event) => {
-    const button = event.target.closest(
+async function handleProductGridClick(
+  event
+) {
+  const button =
+    event.target.closest(
       ".dynamic-add-to-cart"
     );
 
-    if (!button || button.disabled) {
-      return;
-    }
+  if (
+    !button ||
+    button.disabled
+  ) {
+    return;
+  }
 
-    if (!loggedIn) {
-      alert("Please login first.");
-      window.location.href = "login.html";
-      return;
-    }
+  if (!loggedIn) {
+    alert("Please login first.");
 
-    const groupKey =
-      button.dataset.productGroup || "";
+    window.location.href =
+      "login.html";
 
-    const group =
-      databaseProductGroups.find(
-        (item) => item.key === groupKey
-      );
+    return;
+  }
 
-    if (!group) {
-      alert("Product information was not found.");
-      return;
-    }
+  const groupKey =
+    button.dataset.productGroup || "";
 
-    const isBundle =
-  isPotentialBundleGroup(group);
-
-const availableVariants = isBundle
-  ? group.variants
-  : group.variants.filter(
-      (variant) => variant.available
+  const group =
+    databaseProductGroups.find(
+      (item) =>
+        item.key === groupKey
     );
 
-    const addons =
-      getAddonsForProductGroup(group);
+  if (!group) {
+    alert(
+      "Product information was not found."
+    );
 
-    /*
-     * Products with one option and no add-ons can
-     * be added immediately.
-     */
-    if (
-  !isBundle &&
-  availableVariants.length === 1 &&
-  addons.length === 0 &&
-  !availableVariants[0].size
-) {
-      await addDatabaseProductToCart({
-        productId:
-          availableVariants[0].productId,
-
-        quantity: 1,
-        addonIds: [],
-        button
-      });
-
-      return;
-    }
-
-    await openProductOptionsModal(groupKey);
+    return;
   }
+
+  const isBundle =
+    isPotentialBundleGroup(group);
+
+  const availableVariants =
+    isBundle
+      ? group.variants
+      : group.variants.filter(
+          (variant) =>
+            variant.available
+        );
+
+  const addons =
+    getAddonsForProductGroup(
+      group
+    );
+
+  /*
+   * A normal product with one variant,
+   * no size, and no add-ons can be added
+   * immediately.
+   */
+  if (
+    !isBundle &&
+    availableVariants.length === 1 &&
+    addons.length === 0 &&
+    !availableVariants[0].size
+  ) {
+    await addDatabaseProductToCart({
+      productId:
+        availableVariants[0]
+          .productId,
+
+      quantity: 1,
+      addonIds: [],
+      button
+    });
+
+    return;
+  }
+
+  await openProductOptionsModal(
+    groupKey
+  );
+}
+
+menuGrid?.addEventListener(
+  "click",
+  handleProductGridClick
+);
+
+popularGrid?.addEventListener(
+  "click",
+  handleProductGridClick
 );
 
 closeProductOptionsButton?.addEventListener(
@@ -2353,14 +2844,20 @@ confirmProductAddToCart?.addEventListener(
   }
 );
 
+
+
+
 await loadDatabaseProducts();
+
+/*
+ * Must run after products because the popular API results
+ * are matched to databaseProductGroups.
+ */
+await loadPopularProducts();
 
 showCorrectSubfilters();
 applyFilters();
 await updateCartBadge();
-
-
-
 
 
 });
