@@ -150,6 +150,8 @@ try {
             o.cancelled_by,
             o.cancelled_at
                 AS order_cancelled_at,
+            o.subtotal,
+            o.delivery_fee,
             o.total_amount,
             o.payment_method,
             o.address,
@@ -404,17 +406,37 @@ try {
              * not the delivery cancellation timestamp.
              */
             "cancelled_at" =>
-                $row["order_cancelled_at"],
+    $row["order_cancelled_at"],
 
-            "total_amount" =>
-                number_format(
-                    (float)(
-                        $row["total_amount"] ?? 0
-                    ),
-                    2,
-                    ".",
-                    ""
-                ),
+"subtotal" =>
+    number_format(
+        (float)(
+            $row["subtotal"] ?? 0
+        ),
+        2,
+        ".",
+        ""
+    ),
+
+"delivery_fee" =>
+    number_format(
+        (float)(
+            $row["delivery_fee"] ?? 0
+        ),
+        2,
+        ".",
+        ""
+    ),
+
+"total_amount" =>
+    number_format(
+        (float)(
+            $row["total_amount"] ?? 0
+        ),
+        2,
+        ".",
+        ""
+    ),
 
             "payment_method" =>
                 $row["payment_method"],

@@ -1427,17 +1427,19 @@ try {
     ===================================================== */
 
     $restaurantLockStmt = $conn->prepare("
-        SELECT
-            restaurant_id
+    SELECT
+        restaurant_id,
+        delivery_fee,
+        business_status
 
-        FROM tbl_restaurants
+    FROM tbl_restaurants
 
-        WHERE restaurant_id = ?
+    WHERE restaurant_id = ?
 
-        LIMIT 1
+    LIMIT 1
 
-        FOR UPDATE
-    ");
+    FOR UPDATE
+");
 
     if (!$restaurantLockStmt) {
         throw new RuntimeException(
@@ -1471,6 +1473,39 @@ try {
             "The selected restaurant no longer exists."
         );
     }
+
+    /* =====================================================
+   AUTHORITATIVE ORDER TOTAL
+
+   Product prices were already validated from the database.
+
+   Delivery fee:
+   - comes directly from tbl_restaurants
+   - is added only for delivery
+   - is never trusted from JavaScript
+===================================================== */
+
+$subtotal = round(
+    $total,
+    2
+);
+
+$delivery_fee = 0.00;
+
+if ($order_type === "delivery") {
+    $delivery_fee = max(
+        0,
+        (float)(
+            $restaurantRow["delivery_fee"] ?? 0
+        )
+    );
+}
+
+$total = round(
+    $subtotal +
+    $delivery_fee,
+    2
+);
 
     /* =====================================================
        GENERATE DAILY RESTAURANT QUEUE NUMBER
@@ -1529,62 +1564,68 @@ try {
     ===================================================== */
 
     $insertOrderStmt = $conn->prepare("
-        INSERT INTO tbl_orders (
-            queue_number,
-            restaurant_id,
-            user_id,
-            customer_name,
-            contact_number,
-            order_type,
-            payment_method,
-            address,
-            landmark,
-            table_number,
-            pickup_time,
-            notes,
-            order_status,
-            total_amount
-        )
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            'pending',
-            ?
-        )
-    ");
+    INSERT INTO tbl_orders (
+        queue_number,
+        restaurant_id,
+        user_id,
+        customer_name,
+        contact_number,
+        order_type,
+        payment_method,
+        address,
+        landmark,
+        table_number,
+        pickup_time,
+        notes,
+        order_status,
+        subtotal,
+        delivery_fee,
+        total_amount
+    )
+    VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        'pending',
+        ?,
+        ?,
+        ?
+    )
+");
 
-    if (!$insertOrderStmt) {
-        throw new RuntimeException(
-            "Unable to prepare the order."
-        );
-    }
-
-    $insertOrderStmt->bind_param(
-        "iiisssssssssd",
-        $queue_number,
-        $restaurant_id,
-        $user_id,
-        $customer_name,
-        $contact_number,
-        $order_type,
-        $payment_method,
-        $address,
-        $landmark,
-        $table_number,
-        $pickup_time,
-        $notes,
-        $total
+if (!$insertOrderStmt) {
+    throw new RuntimeException(
+        "Unable to prepare the order."
     );
+}
+
+$insertOrderStmt->bind_param(
+    "iiisssssssssddd",
+    $queue_number,
+    $restaurant_id,
+    $user_id,
+    $customer_name,
+    $contact_number,
+    $order_type,
+    $payment_method,
+    $address,
+    $landmark,
+    $table_number,
+    $pickup_time,
+    $notes,
+    $subtotal,
+    $delivery_fee,
+    $total
+);
 
     if (!$insertOrderStmt->execute()) {
         $insertOrderStmt->close();
@@ -2076,13 +2117,26 @@ try {
        SUCCESS RESPONSE
     ===================================================== */
 
-    respond_json([
-        "success" => true,
-        "message" => "Checkout successful.",
-        "order_id" => $order_id,
-        "queue_number" => $queue_number,
-        "total_amount" => round($total, 2)
-    ]);
+   respond_json([
+    "success" => true,
+    "message" =>
+        "Checkout successful.",
+
+    "order_id" =>
+        $order_id,
+
+    "queue_number" =>
+        $queue_number,
+
+    "subtotal" =>
+        round($subtotal, 2),
+
+    "delivery_fee" =>
+        round($delivery_fee, 2),
+
+    "total_amount" =>
+        round($total, 2)
+]);
 
 } catch (Throwable $exception) {
 

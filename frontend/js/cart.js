@@ -7,6 +7,30 @@ let deliveryAvailability = {
     availableRiderCount: 0
 };
 
+let cartPricing = {
+    subtotal: 0,
+    deliveryFee: 0,
+    selectedOrderType: ""
+};
+
+/* =========================================================
+   CUSTOMER ORDERS STATE
+========================================================= */
+
+let customerOrders = [];
+let currentOrderFilter = "active";
+let customerOrdersLoading = false;
+let customerOrdersInterval = null;
+
+let expandedCustomerOrderIds =
+    new Set();
+
+let clearedCompletedOrderIds =
+    new Set();
+
+const CLEARED_COMPLETED_ORDERS_KEY =
+    "foodconnect_cleared_completed_orders";
+
 /* =========================================================
    HELPERS
    ========================================================= */
@@ -127,34 +151,93 @@ function updateCartBadge(totalItems) {
 }
 
 function updateTotals(
-    totalItems = 0,
-    totalPrice = 0
+    totalItems = 0
 ) {
     const totalItemsElement =
-        document.getElementById("totalItems");
+        document.getElementById(
+            "totalItems"
+        );
+
+const cartTabCount =
+    document.getElementById(
+        "cartTabCount"
+    );
 
     const subtotalElement =
-        document.getElementById("subtotalPrice");
+        document.getElementById(
+            "subtotalPrice"
+        );
+
+    const deliveryFeeElement =
+        document.getElementById(
+            "deliveryFeePrice"
+        );
 
     const totalPriceElement =
-        document.getElementById("totalPrice");
+        document.getElementById(
+            "totalPrice"
+        );
+
+    const subtotal =
+        Number(
+            cartPricing.subtotal || 0
+        );
+
+    const restaurantDeliveryFee =
+        Number(
+            cartPricing.deliveryFee || 0
+        );
+
+    const appliedDeliveryFee =
+        cartPricing.selectedOrderType ===
+        "delivery"
+            ? restaurantDeliveryFee
+            : 0;
+
+    const grandTotal =
+        subtotal +
+        appliedDeliveryFee;
 
     if (totalItemsElement) {
         totalItemsElement.textContent =
-            String(Number(totalItems || 0));
+            String(
+                Number(totalItems || 0)
+            );
     }
+
+    if (cartTabCount) {
+    cartTabCount.textContent =
+        String(
+            Number(totalItems || 0)
+        );
+}
 
     if (subtotalElement) {
         subtotalElement.textContent =
-            formatPrice(totalPrice);
+            formatPrice(subtotal);
+    }
+
+    if (deliveryFeeElement) {
+        deliveryFeeElement.textContent =
+            formatPrice(
+                appliedDeliveryFee
+            );
     }
 
     if (totalPriceElement) {
         totalPriceElement.textContent =
-            formatPrice(totalPrice);
+            formatPrice(grandTotal);
     }
 
     updateCartBadge(totalItems);
+}
+
+function resetCartPricing() {
+    cartPricing = {
+        subtotal: 0,
+        deliveryFee: 0,
+        selectedOrderType: ""
+    };
 }
 
 function getBackPage() {
@@ -333,7 +416,8 @@ async function loadCart() {
     `;
 
     setCartActionState(false);
-    updateTotals(0, 0);
+    resetCartPricing();
+    updateTotals(0);
 
     try {
         const response = await fetch(
@@ -378,11 +462,26 @@ async function loadCart() {
             data.items
                 .map(renderCartItem)
                 .join("");
+        cartPricing.subtotal =
+    Number(
+        data.subtotal ??
+        data.total_price ??
+        0
+    );
 
-        updateTotals(
-            data.total_items,
-            data.total_price
-        );
+cartPricing.deliveryFee =
+    Number(
+        data.delivery_fee ?? 0
+    );
+
+cartPricing.selectedOrderType =
+    document
+        .getElementById("orderType")
+        ?.value || "";
+
+updateTotals(
+    data.total_items
+);
 
         setCartActionState(true);
 
@@ -989,10 +1088,23 @@ async function updateOrderTypeFields() {
     }
 
     const type =
-        orderType.value;
+    orderType.value;
 
-    dynamicFields.innerHTML = "";
-    paymentMethod.value = "";
+cartPricing.selectedOrderType =
+    type;
+
+updateTotals(
+    Number(
+        document
+            .getElementById(
+                "totalItems"
+            )
+            ?.textContent || 0
+    )
+);
+
+dynamicFields.innerHTML = "";
+paymentMethod.value = "";
 
     resetDeliveryAvailability();
     showCheckoutMessage();
@@ -1318,6 +1430,8 @@ async function placeOrder() {
         contactNumber.value = "";
         paymentMethod.value = "";
         resetDeliveryAvailability();
+        resetCartPricing();
+        updateTotals(0);
 
         document.getElementById(
             "dynamicFields"
@@ -1367,12 +1481,1057 @@ async function placeOrder() {
 }
 
 /* =========================================================
+   CUSTOMER ORDERS HELPERS
+========================================================= */
+
+function normalizeOrderStatus(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replaceAll("-", "_")
+        .replaceAll(" ", "_");
+}
+
+function normalizeOrderType(value) {
+    const normalized =
+        String(value || "")
+            .trim()
+            .toLowerCase()
+            .replaceAll("_", "-")
+            .replaceAll(" ", "-");
+
+    if (normalized === "takeout") {
+        return "take-out";
+    }
+
+    if (normalized === "dinein") {
+        return "dine-in";
+    }
+
+    return normalized;
+}
+
+function formatOrderType(value) {
+    return String(value || "N/A")
+        .replaceAll("-", " ")
+        .replaceAll("_", " ")
+        .replace(
+            /\b\w/g,
+            (character) =>
+                character.toUpperCase()
+        );
+}
+
+function formatOrderDate(value) {
+    if (!value) {
+        return "Date unavailable";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    return date.toLocaleString(
+        "en-PH",
+        {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+function getCustomerTrackingStatus(order) {
+    const orderStatus =
+        normalizeOrderStatus(
+            order.order_status
+        );
+
+    const deliveryStatus =
+        normalizeOrderStatus(
+            order.delivery
+                ?.delivery_status
+        );
+
+    const orderType =
+        normalizeOrderType(
+            order.order_type
+        );
+
+    if (orderStatus === "cancelled") {
+        return "cancelled";
+    }
+
+    if (
+        deliveryStatus === "completed" ||
+        orderStatus === "completed" ||
+        orderStatus === "done" ||
+        orderStatus ===
+            "picked_up_by_customer"
+    ) {
+        return "completed";
+    }
+
+    if (
+        deliveryStatus ===
+        "out_for_delivery"
+    ) {
+        return "out_for_delivery";
+    }
+
+    if (
+        orderType === "delivery" &&
+        [
+            "ready",
+            "assigned",
+            "accepted",
+            "picked_up"
+        ].includes(
+            deliveryStatus ||
+            orderStatus
+        )
+    ) {
+        return "preparing";
+    }
+
+    if (
+        orderType !== "delivery" &&
+        orderStatus === "ready"
+    ) {
+        return "preparing";
+    }
+
+    if (
+        orderStatus ===
+        "order_received"
+    ) {
+        return "order_received";
+    }
+
+    return orderStatus ||
+        "order_received";
+}
+
+function getOrderStatusLabel(status) {
+    const labels = {
+        order_received:
+            "Order Received",
+
+        pending:
+            "Order Received",
+
+        preparing:
+            "Preparing",
+
+        out_for_delivery:
+            "Out for Delivery",
+
+        completed:
+            "Completed",
+
+        cancelled:
+            "Cancelled"
+    };
+
+    return (
+        labels[status] ||
+        formatOrderType(status)
+    );
+}
+
+function getClearedCompletedOrderIds() {
+    try {
+        const stored =
+            JSON.parse(
+                localStorage.getItem(
+                    CLEARED_COMPLETED_ORDERS_KEY
+                ) || "[]"
+            );
+
+        if (!Array.isArray(stored)) {
+            return new Set();
+        }
+
+        return new Set(
+            stored
+                .map(Number)
+                .filter(
+                    (orderId) =>
+                        Number.isInteger(
+                            orderId
+                        ) &&
+                        orderId > 0
+                )
+        );
+    } catch {
+        return new Set();
+    }
+}
+
+function saveClearedCompletedOrderIds() {
+    localStorage.setItem(
+        CLEARED_COMPLETED_ORDERS_KEY,
+        JSON.stringify(
+            Array.from(
+                clearedCompletedOrderIds
+            )
+        )
+    );
+}
+
+/* =========================================================
+   CUSTOMER ORDER COUNTERS
+========================================================= */
+
+function updateCustomerOrderCounters() {
+    const visibleOrders =
+        customerOrders.filter(
+            (order) => {
+                const orderId =
+                    Number(
+                        order.order_id
+                    );
+
+                const status =
+                    getCustomerTrackingStatus(
+                        order
+                    );
+
+                return !(
+                    status ===
+                        "completed" &&
+                    clearedCompletedOrderIds
+                        .has(orderId)
+                );
+            }
+        );
+
+    const activeCount =
+        visibleOrders.filter(
+            (order) =>
+                ![
+                    "completed",
+                    "cancelled"
+                ].includes(
+                    getCustomerTrackingStatus(
+                        order
+                    )
+                )
+        ).length;
+
+    const completedCount =
+        visibleOrders.filter(
+            (order) =>
+                getCustomerTrackingStatus(
+                    order
+                ) === "completed"
+        ).length;
+
+    const allCount =
+        visibleOrders.length;
+
+    const values = {
+        activeOrdersCount:
+            activeCount,
+
+        activeOrdersTabCount:
+            activeCount,
+
+        completedOrdersCount:
+            completedCount,
+
+        allOrdersCount:
+            allCount
+    };
+
+    Object.entries(values).forEach(
+        ([elementId, value]) => {
+            const element =
+                document.getElementById(
+                    elementId
+                );
+
+            if (element) {
+                element.textContent =
+                    String(value);
+            }
+        }
+    );
+}
+
+/* =========================================================
+   CUSTOMER ORDER CARD
+========================================================= */
+
+function buildCustomerOrderItems(order) {
+    const items =
+        Array.isArray(order.items)
+            ? order.items
+            : [];
+
+    if (items.length === 0) {
+        return `
+            <p class="customer-order-item-meta">
+                No order items found.
+            </p>
+        `;
+    }
+
+    return items
+        .map((item) => {
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        item.quantity || 1
+                    )
+                );
+
+            const subtotal =
+                Number(
+                    item.subtotal ??
+                    (
+                        Number(
+                            item.price || 0
+                        ) *
+                        quantity
+                    )
+                );
+
+            const detailParts = [];
+
+            const baseText =
+                String(
+                    item.base_text || ""
+                ).trim();
+
+            const comboText =
+                String(
+                    item.combo_choice_text ||
+                    ""
+                ).trim();
+
+            const addonText =
+                String(
+                    item.addon_text || ""
+                ).trim();
+
+            if (
+                baseText &&
+                baseText.toLowerCase() !==
+                    "default"
+            ) {
+                detailParts.push(
+                    `Variant: ${baseText}`
+                );
+            }
+
+            if (
+                comboText &&
+                comboText !== "[]" &&
+                comboText.toLowerCase() !==
+                    "null"
+            ) {
+                detailParts.push(
+                    `Choice: ${comboText}`
+                );
+            }
+
+            if (
+                addonText &&
+                addonText !== "[]" &&
+                addonText.toLowerCase() !==
+                    "null" &&
+                addonText.toLowerCase() !==
+                    "no add-on"
+            ) {
+                detailParts.push(
+                    `Add-ons: ${addonText}`
+                );
+            }
+
+            return `
+                <div class="customer-order-item">
+
+                    <div>
+                        <div class="customer-order-item-name">
+                            ${escapeHtml(
+                                item.product_name ||
+                                "Order Item"
+                            )}
+                            ×${quantity}
+                        </div>
+
+                        ${
+                            detailParts.length
+                                ? `
+                                    <div class="customer-order-item-meta">
+                                        ${detailParts
+                                            .map(
+                                                escapeHtml
+                                            )
+                                            .join(
+                                                "<br>"
+                                            )}
+                                    </div>
+                                `
+                                : ""
+                        }
+                    </div>
+
+                    <strong class="customer-order-item-price">
+                        ${formatPrice(
+                            subtotal
+                        )}
+                    </strong>
+
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function buildCustomerOrderTimeline(
+    order,
+    currentStatus
+) {
+    const orderType =
+        normalizeOrderType(
+            order.order_type
+        );
+
+    const steps =
+        orderType === "delivery"
+            ? [
+                {
+                    key:
+                        "order_received",
+                    label:
+                        "Order Received",
+                    icon:
+                        "fa-receipt"
+                },
+                {
+                    key:
+                        "preparing",
+                    label:
+                        "Preparing",
+                    icon:
+                        "fa-fire-burner"
+                },
+                {
+                    key:
+                        "out_for_delivery",
+                    label:
+                        "Out for Delivery",
+                    icon:
+                        "fa-motorcycle"
+                },
+                {
+                    key:
+                        "completed",
+                    label:
+                        "Completed",
+                    icon:
+                        "fa-circle-check"
+                }
+            ]
+            : [
+                {
+                    key:
+                        "order_received",
+                    label:
+                        "Order Received",
+                    icon:
+                        "fa-receipt"
+                },
+                {
+                    key:
+                        "preparing",
+                    label:
+                        "Preparing",
+                    icon:
+                        "fa-fire-burner"
+                },
+                {
+                    key:
+                        "completed",
+                    label:
+                        "Completed",
+                    icon:
+                        "fa-circle-check"
+                }
+            ];
+
+    if (currentStatus === "cancelled") {
+        return `
+            <div class="customer-order-timeline">
+
+                <div class="customer-order-timeline-step current">
+
+                    <span class="customer-order-timeline-icon">
+                        <i class="fa-solid fa-ban"></i>
+                    </span>
+
+                    <span>
+                        Order Cancelled
+                    </span>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+    const normalizedStatus =
+        currentStatus === "pending"
+            ? "order_received"
+            : currentStatus;
+
+    const currentIndex =
+        steps.findIndex(
+            (step) =>
+                step.key ===
+                normalizedStatus
+        );
+
+    return `
+        <div class="customer-order-timeline">
+
+            ${steps
+                .map(
+                    (
+                        step,
+                        index
+                    ) => {
+                        let stateClass = "";
+
+                        if (
+                            currentIndex >= 0 &&
+                            index <
+                                currentIndex
+                        ) {
+                            stateClass =
+                                "done";
+                        }
+
+                        if (
+                            index ===
+                                currentIndex
+                        ) {
+                            stateClass =
+                                "current";
+                        }
+
+                        if (
+                            normalizedStatus ===
+                            "completed"
+                        ) {
+                            stateClass =
+                                "done";
+                        }
+
+                        return `
+                            <div class="customer-order-timeline-step ${stateClass}">
+
+                                <span class="customer-order-timeline-icon">
+                                    <i class="fa-solid ${step.icon}"></i>
+                                </span>
+
+                                <span>
+                                    ${escapeHtml(
+                                        step.label
+                                    )}
+                                </span>
+
+                            </div>
+                        `;
+                    }
+                )
+                .join("")}
+
+        </div>
+    `;
+}
+
+function buildCustomerOrderCard(order) {
+    const orderId =
+        Number(
+            order.order_id || 0
+        );
+
+    const status =
+        getCustomerTrackingStatus(
+            order
+        );
+
+    const expanded =
+        expandedCustomerOrderIds
+            .has(orderId);
+
+    const subtotal =
+        Number(
+            order.subtotal ??
+            (
+                Number(
+                    order.total_amount || 0
+                ) -
+                Number(
+                    order.delivery_fee || 0
+                )
+            )
+        );
+
+    const deliveryFee =
+        Number(
+            order.delivery_fee || 0
+        );
+
+    const total =
+        Number(
+            order.total_amount || 0
+        );
+
+    return `
+        <article
+            class="customer-order-card ${
+                expanded
+                    ? "expanded"
+                    : ""
+            }"
+            data-order-id="${orderId}"
+        >
+
+            <button
+                type="button"
+                class="customer-order-card-header"
+                data-toggle-customer-order="${orderId}"
+            >
+                <span>
+                    <span class="customer-order-number">
+                        Order #${orderId}
+                    </span>
+
+                    <span class="customer-order-date">
+                        ${escapeHtml(
+                            formatOrderDate(
+                                order.created_at
+                            )
+                        )}
+                        •
+                        ${escapeHtml(
+                            formatOrderType(
+                                order.order_type
+                            )
+                        )}
+                    </span>
+                </span>
+
+                <span class="customer-order-header-right">
+
+                    <span
+                        class="customer-order-status ${status}"
+                    >
+                        ${escapeHtml(
+                            getOrderStatusLabel(
+                                status
+                            )
+                        )}
+                    </span>
+
+                    <span class="customer-order-toggle">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </span>
+
+                </span>
+            </button>
+
+            <div
+                class="customer-order-details"
+                ${
+                    expanded
+                        ? ""
+                        : "hidden"
+                }
+            >
+
+                <div class="customer-order-items">
+                    ${buildCustomerOrderItems(
+                        order
+                    )}
+                </div>
+
+                <div class="customer-order-price-summary">
+
+                    <div class="customer-order-price-row">
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong>
+                            ${formatPrice(
+                                subtotal
+                            )}
+                        </strong>
+                    </div>
+
+                    <div class="customer-order-price-row">
+                        <span>
+                            Delivery Fee
+                        </span>
+
+                        <strong>
+                            ${formatPrice(
+                                deliveryFee
+                            )}
+                        </strong>
+                    </div>
+
+                    <div class="customer-order-price-row total">
+                        <span>
+                            Total
+                        </span>
+
+                        <strong>
+                            ${formatPrice(
+                                total
+                            )}
+                        </strong>
+                    </div>
+
+                </div>
+
+                ${buildCustomerOrderTimeline(
+                    order,
+                    status
+                )}
+
+            </div>
+
+        </article>
+    `;
+}
+
+/* =========================================================
+   RENDER CUSTOMER ORDERS
+========================================================= */
+
+function renderFilteredCustomerOrders() {
+    const ordersContent =
+        document.getElementById(
+            "ordersContent"
+        );
+
+    if (!ordersContent) {
+        return;
+    }
+
+    const filteredOrders =
+        customerOrders.filter(
+            (order) => {
+                const orderId =
+                    Number(
+                        order.order_id
+                    );
+
+                const status =
+                    getCustomerTrackingStatus(
+                        order
+                    );
+
+                if (
+                    status ===
+                        "completed" &&
+                    clearedCompletedOrderIds
+                        .has(orderId)
+                ) {
+                    return false;
+                }
+
+                if (
+                    currentOrderFilter ===
+                    "active"
+                ) {
+                    return ![
+                        "completed",
+                        "cancelled"
+                    ].includes(status);
+                }
+
+                if (
+                    currentOrderFilter ===
+                    "completed"
+                ) {
+                    return (
+                        status ===
+                        "completed"
+                    );
+                }
+
+                return true;
+            }
+        );
+
+    updateCustomerOrderCounters();
+
+    if (
+        filteredOrders.length === 0
+    ) {
+        let message =
+            "No orders found.";
+
+        if (
+            currentOrderFilter ===
+            "active"
+        ) {
+            message =
+                "No active orders.";
+        }
+
+        if (
+            currentOrderFilter ===
+            "completed"
+        ) {
+            message =
+                "No completed orders.";
+        }
+
+        ordersContent.innerHTML = `
+            <div class="empty-customer-orders">
+
+                <i class="fa-solid fa-receipt"></i>
+
+                <h3>
+                    ${escapeHtml(
+                        message
+                    )}
+                </h3>
+
+                <p>
+                    Your submitted orders will appear here.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    ordersContent.innerHTML =
+        filteredOrders
+            .map(
+                buildCustomerOrderCard
+            )
+            .join("");
+}
+
+/* =========================================================
+   LOAD CUSTOMER ORDERS
+========================================================= */
+
+async function loadCustomerOrders(
+    showLoading = true
+) {
+    const ordersContent =
+        document.getElementById(
+            "ordersContent"
+        );
+
+    if (
+        customerOrdersLoading ||
+        !ordersContent
+    ) {
+        return false;
+    }
+
+    customerOrdersLoading = true;
+
+    if (showLoading) {
+        ordersContent.innerHTML = `
+            <div class="cart-loading">
+
+                <span class="loading-spinner"></span>
+
+                <p>
+                    Loading your orders...
+                </p>
+
+            </div>
+        `;
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/get_customer_orders.php`,
+            {
+                credentials:
+                    "include",
+
+                cache:
+                    "no-store"
+            }
+        );
+
+        const data =
+            await readJsonResponse(
+                response
+            );
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to load your orders."
+            );
+        }
+
+        customerOrders =
+            Array.isArray(
+                data.orders
+            )
+                ? data.orders
+                : [];
+
+        renderFilteredCustomerOrders();
+
+        return true;
+
+    } catch (error) {
+        console.error(
+            "Load customer orders error:",
+            error
+        );
+
+        ordersContent.innerHTML = `
+            <div class="empty-customer-orders">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <h3>
+                    Unable to load orders
+                </h3>
+
+                <p>
+                    ${escapeHtml(
+                        error.message ||
+                        "Please try again."
+                    )}
+                </p>
+
+            </div>
+        `;
+
+        return false;
+
+    } finally {
+        customerOrdersLoading =
+            false;
+    }
+}
+
+/* =========================================================
+   CART AND MY ORDERS NAVIGATION
+========================================================= */
+
+function switchCustomerTab(tabName) {
+    const cartTabButton =
+        document.getElementById(
+            "showCartTabBtn"
+        );
+
+    const ordersTabButton =
+        document.getElementById(
+            "showOrdersTabBtn"
+        );
+
+    const cartTabSection =
+        document.getElementById(
+            "cartTabSection"
+        );
+
+    const ordersTabSection =
+        document.getElementById(
+            "ordersTabSection"
+        );
+
+    const showingOrders =
+        tabName === "orders";
+
+    cartTabButton?.classList.toggle(
+        "active",
+        !showingOrders
+    );
+
+    ordersTabButton?.classList.toggle(
+        "active",
+        showingOrders
+    );
+
+    cartTabButton?.setAttribute(
+        "aria-selected",
+        String(!showingOrders)
+    );
+
+    ordersTabButton?.setAttribute(
+        "aria-selected",
+        String(showingOrders)
+    );
+
+    if (cartTabSection) {
+        cartTabSection.hidden =
+            showingOrders;
+
+        cartTabSection.classList.toggle(
+            "active",
+            !showingOrders
+        );
+    }
+
+    if (ordersTabSection) {
+        ordersTabSection.hidden =
+            !showingOrders;
+
+        ordersTabSection.classList.toggle(
+            "active",
+            showingOrders
+        );
+    }
+
+   window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+});
+}
+
+/* =========================================================
    INITIALIZATION
    ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
+const showCartTabButton =
+    document.getElementById(
+        "showCartTabBtn"
+    );
+
+const showOrdersTabButton =
+    document.getElementById(
+        "showOrdersTabBtn"
+    );
+
         const backButton =
             document.getElementById("backBtn");
 
@@ -1420,6 +2579,191 @@ document.addEventListener(
             document.getElementById(
                 "contactNumber"
             );
+
+            showCartTabButton?.addEventListener(
+    "click",
+    () => {
+        switchCustomerTab("cart");
+    }
+);
+
+showOrdersTabButton?.addEventListener(
+    "click",
+    async () => {
+        switchCustomerTab("orders");
+
+        await loadCustomerOrders(
+            customerOrders.length === 0
+        );
+    }
+);
+
+const refreshCustomerOrdersButton =
+    document.getElementById(
+        "refreshCustomerOrdersBtn"
+    );
+
+const clearCompletedOrdersButton =
+    document.getElementById(
+        "clearCompletedOrdersBtn"
+    );
+
+const orderFilterButtons =
+    document.querySelectorAll(
+        ".customer-order-filter"
+    );
+
+const ordersContent =
+    document.getElementById(
+        "ordersContent"
+    );
+
+clearedCompletedOrderIds =
+    getClearedCompletedOrderIds();
+
+refreshCustomerOrdersButton
+    ?.addEventListener(
+        "click",
+        async () => {
+            await loadCustomerOrders(
+                true
+            );
+        }
+    );
+
+orderFilterButtons.forEach(
+    (button) => {
+        button.addEventListener(
+            "click",
+            () => {
+                orderFilterButtons
+                    .forEach(
+                        (
+                            filterButton
+                        ) => {
+                            filterButton
+                                .classList
+                                .remove(
+                                    "active"
+                                );
+                        }
+                    );
+
+                button.classList.add(
+                    "active"
+                );
+
+                currentOrderFilter =
+                    button.dataset
+                        .orderFilter ||
+                    "active";
+
+                renderFilteredCustomerOrders();
+            }
+        );
+    }
+);
+
+clearCompletedOrdersButton
+    ?.addEventListener(
+        "click",
+        () => {
+            const completedOrders =
+                customerOrders.filter(
+                    (order) =>
+                        getCustomerTrackingStatus(
+                            order
+                        ) ===
+                        "completed"
+                );
+
+            if (
+                completedOrders.length ===
+                0
+            ) {
+                window.alert(
+                    "There are no completed orders to clear."
+                );
+
+                return;
+            }
+
+            const confirmed =
+                window.confirm(
+                    "Clear completed orders from this list? This will not delete them from the database."
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            completedOrders.forEach(
+                (order) => {
+                    const orderId =
+                        Number(
+                            order.order_id
+                        );
+
+                    if (
+                        Number.isInteger(
+                            orderId
+                        ) &&
+                        orderId > 0
+                    ) {
+                        clearedCompletedOrderIds
+                            .add(
+                                orderId
+                            );
+                    }
+                }
+            );
+
+            saveClearedCompletedOrderIds();
+            renderFilteredCustomerOrders();
+        }
+    );
+
+ordersContent?.addEventListener(
+    "click",
+    (event) => {
+        const toggleButton =
+            event.target.closest(
+                "[data-toggle-customer-order]"
+            );
+
+        if (!toggleButton) {
+            return;
+        }
+
+        const orderId =
+            Number(
+                toggleButton.dataset
+                    .toggleCustomerOrder
+            );
+
+        if (
+            !Number.isInteger(
+                orderId
+            ) ||
+            orderId <= 0
+        ) {
+            return;
+        }
+
+        if (
+            expandedCustomerOrderIds
+                .has(orderId)
+        ) {
+            expandedCustomerOrderIds
+                .delete(orderId);
+        } else {
+            expandedCustomerOrderIds
+                .add(orderId);
+        }
+
+        renderFilteredCustomerOrders();
+    }
+);
 
         backButton?.addEventListener(
             "click",
@@ -1581,7 +2925,45 @@ document.addEventListener(
             placeOrder
         );
 
-        loadCart();
+        switchCustomerTab("cart");
+
+clearedCompletedOrderIds =
+    getClearedCompletedOrderIds();
+
+loadCart();
+loadCustomerOrders(true);
+
+if (
+    customerOrdersInterval ===
+    null
+) {
+    customerOrdersInterval =
+        window.setInterval(
+            () => {
+                loadCustomerOrders(
+                    false
+                );
+            },
+            5000
+        );
+}
+                }
+);
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+        if (
+            customerOrdersInterval !==
+            null
+        ) {
+            window.clearInterval(
+                customerOrdersInterval
+            );
+
+            customerOrdersInterval =
+                null;
+        }
     }
 );
 

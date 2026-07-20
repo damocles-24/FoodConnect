@@ -281,11 +281,25 @@ $items = [];
 $total_items = 0;
 $total_price = 0.00;
 
+$cart_restaurant_id = 0;
+$has_mixed_restaurants = false;
+
 while ($row = $cartResult->fetch_assoc()) {
     $cart_id = (int)$row["cart_id"];
     $restaurant_id = (int)$row["restaurant_id"];
     $product_id = (int)$row["product_id"];
     $quantity = (int)$row["quantity"];
+
+    if ($cart_restaurant_id === 0) {
+    $cart_restaurant_id =
+        $restaurant_id;
+
+} elseif (
+    $cart_restaurant_id !==
+    $restaurant_id
+) {
+    $has_mixed_restaurants = true;
+}
 
     $base_price = (float)$row["base_price"];
     $stock = (int)$row["stock"];
@@ -604,12 +618,118 @@ $addonStmt->close();
 $comboOptionStmt->close();
 
 /* =========================================================
+   LOAD RESTAURANT DELIVERY FEE
+
+   This value is only for displaying the current restaurant
+   delivery fee in the cart. checkout.php will retrieve and
+   validate it again before creating the order.
+========================================================= */
+
+$delivery_fee = 0.00;
+
+if (
+    $cart_restaurant_id > 0 &&
+    !$has_mixed_restaurants
+) {
+    $restaurantStmt = $conn->prepare("
+        SELECT
+            delivery_fee
+
+        FROM tbl_restaurants
+
+        WHERE restaurant_id = ?
+
+        LIMIT 1
+    ");
+
+    if (!$restaurantStmt) {
+        error_log(
+            "cart_get.php restaurant query prepare error: " .
+            $conn->error
+        );
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to load restaurant pricing.",
+            "items" => [],
+            "total_items" => 0,
+            "total_price" => 0,
+            "subtotal" => 0,
+            "delivery_fee" => 0
+        ], 500);
+    }
+
+    $restaurantStmt->bind_param(
+        "i",
+        $cart_restaurant_id
+    );
+
+    if (!$restaurantStmt->execute()) {
+        error_log(
+            "cart_get.php restaurant query execute error: " .
+            $restaurantStmt->error
+        );
+
+        $restaurantStmt->close();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to load restaurant pricing.",
+            "items" => [],
+            "total_items" => 0,
+            "total_price" => 0,
+            "subtotal" => 0,
+            "delivery_fee" => 0
+        ], 500);
+    }
+
+    $restaurantResult =
+        $restaurantStmt->get_result();
+
+    $restaurantRow =
+        $restaurantResult->fetch_assoc();
+
+    $restaurantStmt->close();
+
+    if ($restaurantRow) {
+        $delivery_fee = max(
+            0,
+            (float)(
+                $restaurantRow["delivery_fee"] ?? 0
+            )
+        );
+    }
+}
+
+/* =========================================================
    FINAL RESPONSE
 ========================================================= */
 
 respond_json([
     "success" => true,
+
+    "restaurant_id" =>
+        $cart_restaurant_id > 0
+            ? $cart_restaurant_id
+            : null,
+
     "items" => $items,
-    "total_items" => $total_items,
-    "total_price" => round($total_price, 2)
+
+    "total_items" =>
+        $total_items,
+
+    /*
+     * Preserve total_price for compatibility with existing
+     * JavaScript. It currently represents the item subtotal.
+     */
+    "total_price" =>
+        round($total_price, 2),
+
+    "subtotal" =>
+        round($total_price, 2),
+
+    "delivery_fee" =>
+        round($delivery_fee, 2)
 ]);

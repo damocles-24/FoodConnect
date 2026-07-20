@@ -82,6 +82,56 @@
 
 <main class="cart-page">
 
+<nav
+    class="customer-order-navigation"
+    aria-label="Cart and order navigation"
+>
+    <button
+        type="button"
+        id="showCartTabBtn"
+        class="customer-order-tab active"
+        data-customer-tab="cart"
+    >
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        <span>
+            Cart & Checkout
+        </span>
+
+        <span
+            id="cartTabCount"
+            class="customer-tab-count"
+        >
+            0
+        </span>
+    </button>
+
+    <button
+        type="button"
+        id="showOrdersTabBtn"
+        class="customer-order-tab"
+        data-customer-tab="orders"
+    >
+        <i class="fa-solid fa-receipt"></i>
+
+        <span>
+            My Orders
+        </span>
+
+        <span
+            id="activeOrdersTabCount"
+            class="customer-tab-count"
+        >
+            0
+        </span>
+    </button>
+</nav> 
+
+<div
+    id="cartTabSection"
+    class="customer-tab-section active"
+>
+
     <div class="cart-page-heading">
 
         <div>
@@ -153,44 +203,61 @@
 
         </div>
 
-    </section>
+        </section>
 
     <section class="cart-bottom-bar">
 
         <div class="bottom-summary">
 
-            <div class="bottom-summary-item">
+    <div class="bottom-summary-item">
 
-                <span>
-                    Total Items
-                </span>
+        <span>
+            Total Items
+        </span>
 
-                <strong id="totalItems">
-                    0
-                </strong>
+        <strong id="totalItems">
+            0
+        </strong>
 
-            </div>
+    </div>
 
-            <div class="bottom-summary-item total-price-item">
+    <div class="bottom-summary-item">
 
-                <span>
-                    Total
-                </span>
+        <span>
+            Subtotal
+        </span>
 
-                <strong id="totalPrice">
-                    ₱0.00
-                </strong>
+        <strong id="subtotalPrice">
+            ₱0.00
+        </strong>
 
-            </div>
+    </div>
 
-            <span
-                id="subtotalPrice"
-                class="hidden-subtotal"
-            >
-                ₱0.00
-            </span>
+    <div class="bottom-summary-item">
 
-        </div>
+        <span>
+            Delivery Fee
+        </span>
+
+        <strong id="deliveryFeePrice">
+            ₱0.00
+        </strong>
+
+    </div>
+
+    <div class="bottom-summary-item total-price-item">
+
+        <span>
+            Grand Total
+        </span>
+
+        <strong id="totalPrice">
+            ₱0.00
+        </strong>
+
+    </div>
+
+</div>
 
         <div class="bottom-actions">
 
@@ -486,8 +553,288 @@
         </div>
 
     </section>
+    </div>
+
+
+    <section
+    id="ordersTabSection"
+    class="customer-tab-section"
+    hidden
+>
+    <div class="orders-page-heading">
+
+        <div>
+            <span class="page-kicker">
+                <i class="fa-solid fa-receipt"></i>
+                Customer Orders
+            </span>
+
+            <h1>
+                My Orders
+            </h1>
+
+            <p>
+                Track active orders and review your completed transactions.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            id="refreshCustomerOrdersBtn"
+            class="refresh-orders-button"
+        >
+            <i class="fa-solid fa-rotate"></i>
+
+            <span>
+                Refresh
+            </span>
+        </button>
+
+    </div>
+
+    <div
+        id="customerOrderNotice"
+        class="cart-notice"
+        role="alert"
+        aria-live="polite"
+    ></div>
+
+    <section class="customer-orders-card">
+
+        <div class="customer-orders-toolbar">
+
+            <div
+                class="customer-order-filters"
+                role="group"
+                aria-label="Filter customer orders"
+            >
+                <button
+                    type="button"
+                    class="customer-order-filter active"
+                    data-order-filter="active"
+                >
+                    Active
+
+                    <span id="activeOrdersCount">
+                        0
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    class="customer-order-filter"
+                    data-order-filter="completed"
+                >
+                    Completed
+
+                    <span id="completedOrdersCount">
+                        0
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    class="customer-order-filter"
+                    data-order-filter="all"
+                >
+                    All
+
+                    <span id="allOrdersCount">
+                        0
+                    </span>
+                </button>
+            </div>
+
+            <button
+                type="button"
+                id="clearCompletedOrdersBtn"
+                class="clear-completed-orders-button"
+            >
+                <i class="fa-regular fa-trash-can"></i>
+
+                <span>
+                    Clear Completed
+                </span>
+            </button>
+
+        </div>
+
+        <div
+            id="ordersContent"
+            class="customer-orders-content"
+            aria-live="polite"
+        >
+            <div class="cart-loading">
+
+                <span class="loading-spinner"></span>
+
+                <p>
+                    Loading your orders...
+                </p>
+
+            </div>
+        </div>
+
+    </section>
+</section>
 
 </main>
+
+<div
+    id="customerCancelModal"
+    class="customer-cancel-modal"
+    aria-hidden="true"
+>
+    <div
+        class="customer-cancel-modal-backdrop"
+        data-close-customer-cancel-modal
+    ></div>
+
+    <div
+        class="customer-cancel-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customerCancelModalTitle"
+    >
+        <button
+            type="button"
+            id="closeCustomerCancelModal"
+            class="customer-cancel-modal-close"
+            aria-label="Close cancellation modal"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="customer-cancel-modal-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <h2 id="customerCancelModalTitle">
+            Cancel Order
+        </h2>
+
+        <p>
+            Please select the reason why you want to cancel this order.
+        </p>
+
+        <div
+            id="customerCancelReasons"
+            class="customer-cancel-reasons"
+        >
+            <label>
+                <input
+                    type="radio"
+                    name="customerCancelReason"
+                    value="Changed my mind"
+                >
+
+                <span>
+                    Changed my mind
+                </span>
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="customerCancelReason"
+                    value="Duplicate order"
+                >
+
+                <span>
+                    Duplicate order
+                </span>
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="customerCancelReason"
+                    value="Incorrect order details"
+                >
+
+                <span>
+                    Incorrect order details
+                </span>
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="customerCancelReason"
+                    value="Delivery is taking too long"
+                >
+
+                <span>
+                    Delivery is taking too long
+                </span>
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="customerCancelReason"
+                    value="other"
+                >
+
+                <span>
+                    Other reason
+                </span>
+            </label>
+        </div>
+
+        <div
+            id="customerOtherReasonGroup"
+            class="customer-other-reason-group"
+            hidden
+        >
+            <label for="customerOtherCancelReason">
+                Other reason
+            </label>
+
+            <textarea
+                id="customerOtherCancelReason"
+                rows="3"
+                maxlength="250"
+                placeholder="Please enter your reason"
+            ></textarea>
+
+            <small>
+                Maximum of 250 characters.
+            </small>
+        </div>
+
+        <div
+            id="customerCancelMessage"
+            class="checkout-message"
+            role="alert"
+            aria-live="polite"
+        ></div>
+
+        <div class="customer-cancel-modal-actions">
+
+            <button
+                type="button"
+                id="backCustomerCancelModal"
+                class="secondary-checkout-button"
+            >
+                Keep Order
+            </button>
+
+            <button
+                type="button"
+                id="confirmCustomerCancelBtn"
+                class="confirm-cancel-order-button"
+            >
+                <span>
+                    Confirm Cancellation
+                </span>
+
+                <i class="fa-solid fa-ban"></i>
+            </button>
+
+        </div>
+    </div>
+</div>
 
 <footer class="cart-footer">
 
@@ -499,7 +846,7 @@
 
 </footer>
 
-<script src="../js/cart.js?v=12"></script>
+<script src="../js/cart.js?v=13"></script>
 
 </body>
 </html>

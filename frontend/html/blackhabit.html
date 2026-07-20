@@ -127,8 +127,17 @@
       </div>
     </div>
 
-    <div class="footer-section operating-hours">
-      <h3><span style="margin-bottom: 20px;" class="icon-clock">🕐</span> Operating Hours</h3>
+       <div class="footer-section operating-hours">
+      <h3>
+        <span
+          style="margin-bottom: 20px;"
+          class="icon-clock"
+        >
+          🕐
+        </span>
+        Operating Hours
+      </h3>
+
       <div class="hours-row">
         <span>Mon - Sun</span>
         <span>9:00 AM - 8:00 PM</span>
@@ -137,259 +146,28 @@
 
     <div class="footer-section contact-section">
       <h3>Location</h3>
+
       <div class="contact-item">
         <span class="icon-location">📍</span>
-        <span>Cp Garcia Street,Alaminos City along municipal hall near tennis court.</span>
+
+        <span>
+          Cp Garcia Street, Alaminos City along
+          municipal hall near tennis court.
+        </span>
       </div>
     </div>
   </div>
 
-  <!-- ===========================
-     MY ORDERS FLOATING BUTTON
-=========================== -->
-
-<button id="ordersBubble" class="orders-bubble">
-    <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/basket.png" alt="My Orders">
-</button>
-
-<div id="ordersPanel" class="orders-panel">
-
-  <div class="orders-header">
-    <h3>
-      <i class="fa-solid fa-box"></i>
-      My Orders
-    </h3>
-
-    <button
-      id="closeOrdersPanel"
-      type="button"
-      aria-label="Close My Orders"
-    >
-      ✕
-    </button>
-  </div>
-
-  <!-- ORDER FILTER TABS -->
-  <div class="customer-order-tabs">
-
-    <button
-      type="button"
-      class="customer-order-tab active"
-      data-order-filter="active"
-    >
-      Active
-    </button>
-
-    <button
-      type="button"
-      class="customer-order-tab"
-      data-order-filter="completed"
-    >
-      Completed
-    </button>
-
-    <button
-      type="button"
-      class="customer-order-tab"
-      data-order-filter="all"
-    >
-      All
-    </button>
-
-    <div
-  class="completed-orders-actions"
-  id="completedOrdersActions"
-  hidden
->
-  <button
-    type="button"
-    id="clearCompletedOrdersBtn"
-    class="clear-completed-orders-btn"
-  >
-    Clear Completed
-  </button>
-</div>
-
-  </div>
-
-  <div id="ordersContent">
-    <div class="orders-loading">
-      Loading orders...
-    </div>
-  </div>
-
-</div>
-
-  
   <div class="footer-bottom">
-    © 2026 BlackHabit. All rights reserved. | Powered by FoodConnect
+    © 2026 BlackHabit. All rights reserved.
+    | Powered by FoodConnect
   </div>
 </footer>
 
-<!-- CUSTOMER CANCELLATION MODAL -->
-<div
-  id="customerCancelModal"
-  class="customer-cancel-modal"
-  aria-hidden="true"
->
-  <div
-    class="customer-cancel-dialog"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="customerCancelTitle"
-  >
-    <div class="customer-cancel-header">
-      <div>
-        <span class="customer-cancel-label">
-          Order Cancellation
-        </span>
+<script src="../js/blackhabit.js"></script>
+</body>
+</html>
 
-        <h2 id="customerCancelTitle">
-          Cancel Order
-        </h2>
-
-        <p id="customerCancelSubtitle">
-          Select your cancellation reason.
-        </p>
-      </div>
-
-      <button
-        type="button"
-        id="closeCustomerCancelModal"
-        class="close-customer-cancel-modal"
-      >
-        ×
-      </button>
-    </div>
-
-    <div class="customer-cancel-body">
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="Ordered by mistake"
-        >
-        <span>
-          <strong>Ordered by mistake</strong>
-          <small>I placed this order accidentally.</small>
-        </span>
-      </label>
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="Want to change my order"
-        >
-        <span>
-          <strong>Want to change my order</strong>
-          <small>I want to change an item or quantity.</small>
-        </span>
-      </label>
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="Incorrect delivery details"
-        >
-        <span>
-          <strong>Incorrect delivery details</strong>
-          <small>The address or delivery information is incorrect.</small>
-        </span>
-      </label>
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="Payment issue"
-        >
-        <span>
-          <strong>Payment issue</strong>
-          <small>I encountered a payment-related problem.</small>
-        </span>
-      </label>
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="No longer needed"
-        >
-        <span>
-          <strong>No longer needed</strong>
-          <small>I no longer need this order.</small>
-        </span>
-      </label>
-
-      <label class="customer-cancel-option">
-        <input
-          type="radio"
-          name="customerCancellationReason"
-          value="Other"
-        >
-        <span>
-          <strong>Other</strong>
-          <small>Enter your own cancellation reason.</small>
-        </span>
-      </label>
-
-      <div
-        id="customerOtherReasonGroup"
-        class="customer-other-reason"
-        hidden
-      >
-        <label for="customerOtherReasonInput">
-          Other reason
-        </label>
-
-        <textarea
-          id="customerOtherReasonInput"
-          rows="4"
-          maxlength="255"
-          placeholder="Enter your reason..."
-        ></textarea>
-
-        <div class="customer-reason-counter">
-          <span id="customerReasonCharacterCount">0</span>/255
-        </div>
-      </div>
-
-      <p
-        id="customerCancelError"
-        class="customer-cancel-error"
-        hidden
-      >
-        Please select a valid cancellation reason.
-      </p>
-
-      <div class="customer-cancel-warning">
-        You can only cancel a pending order within five minutes.
-      </div>
-    </div>
-
-    <div class="customer-cancel-footer">
-      <button
-        type="button"
-        id="backCustomerCancelBtn"
-        class="customer-cancel-back-btn"
-      >
-        Go Back
-      </button>
-
-      <button
-        type="button"
-        id="confirmCustomerCancelBtn"
-        class="customer-cancel-confirm-btn"
-        disabled
-      >
-        Confirm Cancellation
-      </button>
-    </div>
-  </div>
-</div>
 
 <script src="../js/blackhabit.js"></script>
 </body>
