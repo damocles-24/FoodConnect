@@ -1,5 +1,12 @@
 const API = "/capshit/api";
 
+let deliveryAvailability = {
+    checked: false,
+    available: false,
+    checking: false,
+    availableRiderCount: 0
+};
+
 /* =========================================================
    HELPERS
    ========================================================= */
@@ -821,11 +828,149 @@ async function removeItem(cartId) {
     }
 }
 
+function resetDeliveryAvailability() {
+    deliveryAvailability = {
+        checked: false,
+        available: false,
+        checking: false,
+        availableRiderCount: 0
+    };
+}
+
+function setPlaceOrderAvailability() {
+    const orderType =
+        document.getElementById("orderType");
+
+    const placeOrderButton =
+        document.getElementById(
+            "placeOrderBtn"
+        );
+
+    if (!placeOrderButton) {
+        return;
+    }
+
+    const type =
+        orderType?.value || "";
+
+    if (isPlacingOrder) {
+        placeOrderButton.disabled = true;
+        return;
+    }
+
+    if (type !== "delivery") {
+        placeOrderButton.disabled = false;
+        return;
+    }
+
+    placeOrderButton.disabled =
+        deliveryAvailability.checking ||
+        !deliveryAvailability.checked ||
+        !deliveryAvailability.available;
+}
+
+async function checkDeliveryAvailability() {
+    const orderType =
+        document.getElementById("orderType");
+
+    if (
+        !orderType ||
+        orderType.value !== "delivery"
+    ) {
+        resetDeliveryAvailability();
+        setPlaceOrderAvailability();
+        return;
+    }
+
+    deliveryAvailability.checked = false;
+    deliveryAvailability.available = false;
+    deliveryAvailability.checking = true;
+    deliveryAvailability.availableRiderCount = 0;
+
+    setPlaceOrderAvailability();
+
+    showCheckoutMessage(
+        "Checking delivery rider availability...",
+        "info"
+    );
+
+    try {
+        const response = await fetch(
+            `${API}/check_delivery_availability.php`,
+            {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store"
+            }
+        );
+
+        const data =
+            await readJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Unable to check delivery availability."
+            );
+        }
+
+        deliveryAvailability.checked = true;
+
+        deliveryAvailability.available =
+            data.delivery_available === true;
+
+        deliveryAvailability.availableRiderCount =
+            Number(
+                data.available_rider_count || 0
+            );
+
+        if (!deliveryAvailability.available) {
+            showCheckoutMessage(
+                "No delivery rider is currently available for this restaurant. Please try again later.",
+                "error"
+            );
+
+            return;
+        }
+
+        const riderCount =
+            deliveryAvailability
+                .availableRiderCount;
+
+        showCheckoutMessage(
+            `${riderCount} delivery rider${
+                riderCount === 1 ? "" : "s"
+            } currently available.`,
+            "success"
+        );
+
+    } catch (error) {
+        console.error(
+            "Delivery availability error:",
+            error
+        );
+
+        deliveryAvailability.checked = true;
+        deliveryAvailability.available = false;
+        deliveryAvailability.availableRiderCount = 0;
+
+        showCheckoutMessage(
+            error.message ||
+            "Unable to check delivery availability.",
+            "error"
+        );
+
+    } finally {
+        deliveryAvailability.checking = false;
+        setPlaceOrderAvailability();
+    }
+}
+
 /* =========================================================
    CHECKOUT DYNAMIC FIELDS
    ========================================================= */
 
-function updateOrderTypeFields() {
+async function updateOrderTypeFields() {
     const orderType =
         document.getElementById("orderType");
 
@@ -848,6 +993,9 @@ function updateOrderTypeFields() {
 
     dynamicFields.innerHTML = "";
     paymentMethod.value = "";
+
+    resetDeliveryAvailability();
+    showCheckoutMessage();
 
     if (type === "dine-in") {
         paymentMethod.value = "Cash";
@@ -925,7 +1073,11 @@ function updateOrderTypeFields() {
                 placeholder="Optional delivery instructions"
             ></textarea>
         `;
+
+        await checkDeliveryAvailability();
     }
+
+    setPlaceOrderAvailability();
 }
 
 /* =========================================================
@@ -1054,6 +1206,23 @@ async function placeOrder() {
     }
 
     if (type === "delivery") {
+                if (
+            !deliveryAvailability.checked ||
+            !deliveryAvailability.available
+        ) {
+            await checkDeliveryAvailability();
+
+            if (
+                !deliveryAvailability.available
+            ) {
+                showCheckoutMessage(
+                    "No delivery rider is currently available for this restaurant. Please choose Takeout or Dine-in.",
+                    "error"
+                );
+
+                return;
+            }
+        }
         const address =
             document
                 .getElementById("address")
@@ -1148,6 +1317,7 @@ async function placeOrder() {
         customerName.value = "";
         contactNumber.value = "";
         paymentMethod.value = "";
+        resetDeliveryAvailability();
 
         document.getElementById(
             "dynamicFields"

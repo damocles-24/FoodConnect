@@ -1,6 +1,9 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
+
 header(
     "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
 );
@@ -36,6 +39,23 @@ function respond_json(
 }
 
 /* =========================================================
+   DATABASE CONNECTION CHECK
+========================================================= */
+
+if (
+    !isset($conn) ||
+    !($conn instanceof mysqli)
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Database connection is unavailable.",
+        "notifications" => [],
+        "unread_count" => 0
+    ], 500);
+}
+
+/* =========================================================
    AUTHENTICATION
 ========================================================= */
 
@@ -43,16 +63,22 @@ if (
     empty($_SESSION["user_id"]) ||
     empty($_SESSION["restaurant_id"])
 ) {
+    $conn->close();
+
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access.",
+        "message" =>
+            "Unauthorized access.",
         "notifications" => [],
         "unread_count" => 0
     ], 401);
 }
 
-$user_id = (int)$_SESSION["user_id"];
-$restaurant_id = (int)$_SESSION["restaurant_id"];
+$user_id =
+    (int)$_SESSION["user_id"];
+
+$restaurant_id =
+    (int)$_SESSION["restaurant_id"];
 
 $role = strtolower(
     trim(
@@ -69,6 +95,8 @@ if (
         true
     )
 ) {
+    $conn->close();
+
     respond_json([
         "success" => false,
         "message" =>
@@ -82,59 +110,66 @@ if (
    NOTIFICATIONS QUERY
 
    Included:
-   - new customer orders
-   - cancellations performed by customers
-   - low stock
-   - out of stock
+   - New customer orders
+   - Customer cancellations
+   - Low-stock notifications
+   - Out-of-stock notifications
 
    Excluded:
-   - Restaurant Cancelled Order
-   - cashier's own cancellation action
+   - Restaurant cancellation notifications
+   - Cashier's own cancellation action
 ========================================================= */
 
-$stmt = $conn->prepare("
+$sql = "
     SELECT
-        logs.log_id,
-        logs.action_type,
-        logs.action_title,
-        logs.action_description,
-        logs.created_at,
+        activity_logs.log_id,
+        activity_logs.action_type,
+        activity_logs.action_title,
+        activity_logs.action_description,
+        activity_logs.created_at,
 
         CASE
-            WHEN reads.notification_read_id IS NULL
-                THEN 0
+            WHEN notification_reads.notification_read_id
+                IS NULL
+            THEN 0
             ELSE 1
         END AS is_read
 
-    FROM tbl_activity_logs logs
+    FROM tbl_activity_logs AS activity_logs
 
-    LEFT JOIN tbl_notification_reads reads
-        ON reads.log_id = logs.log_id
-       AND reads.user_id = ?
-       AND reads.restaurant_id =
-            logs.restaurant_id
+    LEFT JOIN tbl_notification_reads AS notification_reads
+        ON notification_reads.log_id =
+            activity_logs.log_id
 
-    WHERE logs.restaurant_id = ?
+       AND notification_reads.user_id = ?
+
+       AND notification_reads.restaurant_id =
+            activity_logs.restaurant_id
+
+    WHERE activity_logs.restaurant_id = ?
+
       AND (
-            logs.action_title LIKE
+            activity_logs.action_title LIKE
                 '%New Customer Order%'
 
-            OR logs.action_title =
+            OR activity_logs.action_title =
                 'Customer Cancelled Order'
 
-            OR logs.action_title LIKE
+            OR activity_logs.action_title LIKE
                 '%Low Stock%'
 
-            OR logs.action_title LIKE
+            OR activity_logs.action_title LIKE
                 '%Out of Stock%'
       )
 
     ORDER BY
-        logs.created_at DESC,
-        logs.log_id DESC
+        activity_logs.created_at DESC,
+        activity_logs.log_id DESC
 
     LIMIT 30
-");
+";
+
+$stmt = $conn->prepare($sql);
 
 if (!$stmt) {
     error_log(
@@ -153,11 +188,37 @@ if (!$stmt) {
     ], 500);
 }
 
-$stmt->bind_param(
-    "ii",
-    $user_id,
-    $restaurant_id
-);
+/* =========================================================
+   BIND PARAMETERS
+========================================================= */
+
+if (
+    !$stmt->bind_param(
+        "ii",
+        $user_id,
+        $restaurant_id
+    )
+) {
+    error_log(
+        "FoodConnect cashier notification bind error: " .
+        $stmt->error
+    );
+
+    $stmt->close();
+    $conn->close();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Unable to load notifications.",
+        "notifications" => [],
+        "unread_count" => 0
+    ], 500);
+}
+
+/* =========================================================
+   EXECUTE QUERY
+========================================================= */
 
 if (!$stmt->execute()) {
     error_log(
@@ -179,25 +240,49 @@ if (!$stmt->execute()) {
 
 $result = $stmt->get_result();
 
+if (!$result) {
+    error_log(
+        "FoodConnect cashier notification result error: " .
+        $stmt->error
+    );
+
+    $stmt->close();
+    $conn->close();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Unable to load notifications.",
+        "notifications" => [],
+        "unread_count" => 0
+    ], 500);
+}
+
+/* =========================================================
+   BUILD RESPONSE
+========================================================= */
+
 $notifications = [];
 $unread_count = 0;
 
-while ($row = $result->fetch_assoc()) {
-    $row["log_id"] = (int)(
+while (
+    $row = $result->fetch_assoc()
+) {
+    $log_id = (int)(
         $row["log_id"] ?? 0
     );
 
-    $row["is_read"] = (int)(
+    $is_read = (int)(
         $row["is_read"] ?? 0
     );
 
-    if ($row["is_read"] === 0) {
+    if ($is_read === 0) {
         $unread_count++;
     }
 
     $notifications[] = [
         "log_id" =>
-            $row["log_id"],
+            $log_id,
 
         "action_type" =>
             trim(
@@ -224,15 +309,26 @@ while ($row = $result->fetch_assoc()) {
             $row["created_at"] ?? null,
 
         "is_read" =>
-            $row["is_read"]
+            $is_read
     ];
 }
 
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+$result->free();
 $stmt->close();
 $conn->close();
 
+/* =========================================================
+   SUCCESS RESPONSE
+========================================================= */
+
 respond_json([
     "success" => true,
-    "notifications" => $notifications,
-    "unread_count" => $unread_count
+    "notifications" =>
+        $notifications,
+    "unread_count" =>
+        $unread_count
 ]);

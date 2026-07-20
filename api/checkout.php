@@ -1336,6 +1336,91 @@ try {
             "Unable to determine the restaurant."
         );
     }
+
+        /* =====================================================
+       DELIVERY RIDER AVAILABILITY
+
+       Delivery orders are accepted only when the restaurant
+       currently has at least one available internal rider.
+
+       Internal riders must:
+       - belong to this restaurant
+       - have role = delivery_staff
+       - have status = 1
+       - have no active delivery assignment
+    ===================================================== */
+
+    if ($order_type === "delivery") {
+        $availableRiderStmt = $conn->prepare("
+            SELECT
+                riders.user_id
+
+            FROM tbl_users AS riders
+
+            WHERE riders.restaurant_id = ?
+              AND riders.role = 'delivery_staff'
+              AND riders.status = 1
+
+              AND NOT EXISTS (
+                    SELECT
+                        1
+
+                    FROM tbl_delivery_assignments
+                        AS assignments
+
+                    WHERE assignments.rider_id =
+                            riders.user_id
+
+                      AND assignments.restaurant_id =
+                            riders.restaurant_id
+
+                      AND assignments.delivery_status
+                            NOT IN (
+                                'completed',
+                                'cancelled'
+                            )
+              )
+
+            ORDER BY riders.user_id ASC
+
+            LIMIT 1
+
+            FOR UPDATE
+        ");
+
+        if (!$availableRiderStmt) {
+            throw new RuntimeException(
+                "Unable to prepare delivery availability validation."
+            );
+        }
+
+        $availableRiderStmt->bind_param(
+            "i",
+            $restaurant_id
+        );
+
+        if (!$availableRiderStmt->execute()) {
+            $availableRiderStmt->close();
+
+            throw new RuntimeException(
+                "Unable to verify delivery availability."
+            );
+        }
+
+        $availableRiderResult =
+            $availableRiderStmt->get_result();
+
+        $availableRider =
+            $availableRiderResult->fetch_assoc();
+
+        $availableRiderStmt->close();
+
+        if (!$availableRider) {
+            throw new RuntimeException(
+                "No delivery rider is currently available for this restaurant. Please choose Takeout or Dine-in."
+            );
+        }
+    }
     
     /* =====================================================
        LOCK RESTAURANT FOR QUEUE GENERATION
@@ -2034,6 +2119,7 @@ try {
         "An invalid combo option was found.",
         "An invalid add-on was found.",
         "Unable to determine the restaurant.",
+        "No delivery rider is currently available for this restaurant. Please choose Takeout or Dine-in.",
         "Products from different restaurants cannot be checked out together.",
         "A product in your cart no longer exists.",
         "This combo is currently unavailable.",
