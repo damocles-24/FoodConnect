@@ -187,6 +187,7 @@ $sql = "
         o.cancelled_by,
         o.cancelled_at,
         o.total_amount,
+        r.delivery_fee,
         o.payment_method,
         o.address,
         o.landmark,
@@ -207,10 +208,13 @@ $sql = "
         oi.combo_choice_text,
         oi.combo_choice_ids_json
 
-    FROM tbl_orders AS o
+        FROM tbl_orders AS o
 
-    LEFT JOIN tbl_order_items AS oi
-        ON oi.order_id = o.order_id
+INNER JOIN tbl_restaurants AS r
+    ON r.restaurant_id = o.restaurant_id
+
+LEFT JOIN tbl_order_items AS oi
+    ON oi.order_id = o.order_id
 
     WHERE o.restaurant_id = ?
 
@@ -337,6 +341,14 @@ while ($row = $result->fetch_assoc()) {
                     ),
                     2
                 ),
+
+                "delivery_fee" =>
+    round(
+        (float)(
+            $row["delivery_fee"] ?? 0
+        ),
+        2
+    ),
 
             "payment_method" =>
                 trim(

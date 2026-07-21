@@ -1537,22 +1537,26 @@ async function openAssignRiderModal() {
       "No Order Selected",
       "Please select an order first."
     );
+
     return;
   }
 
   const orderType = String(
     selectedOrder.order_type || ""
-  ).toLowerCase();
+  )
+    .toLowerCase()
+    .trim();
 
-  const orderStatus = String(
-    selectedOrder.order_status || ""
-  ).toLowerCase();
+  const orderStatus = normalizeOrderStatus(
+    selectedOrder.order_status
+  );
 
   if (orderType !== "delivery") {
     showToast(
       "Invalid Order Type",
       "Only delivery orders can be assigned to a rider."
     );
+
     return;
   }
 
@@ -1561,79 +1565,270 @@ async function openAssignRiderModal() {
       "Order Not Ready",
       "The order must be ready before assigning a rider."
     );
+
     return;
   }
 
-  document.getElementById("assignRiderSubtitle").textContent =
-    `Assign a rider to Order #${selectedOrder.order_id}`;
+  /*
+   * The delivery fee must come from the order returned
+   * by get_cashier_orders.php.
+   *
+   * The cashier cannot manually enter or change it.
+   */
+  const deliveryFee = Number(
+    selectedOrder.delivery_fee
+  );
 
-  document.getElementById("assignmentOrderSummary").innerHTML = `
-    <div class="assignment-summary-item">
-      <span>Queue Number</span>
-      <strong>
-        #${escapeHTML(selectedOrder.queue_number || "N/A")}
-      </strong>
-    </div>
+  const hasValidDeliveryFee =
+    Number.isFinite(deliveryFee) &&
+    deliveryFee >= 0;
 
-    <div class="assignment-summary-item">
-      <span>Customer</span>
-      <strong>
-        ${escapeHTML(selectedOrder.customer_name || "N/A")}
-      </strong>
-    </div>
+  const subtitle =
+    document.getElementById(
+      "assignRiderSubtitle"
+    );
 
-    <div class="assignment-summary-item">
-      <span>Contact</span>
-      <strong>
-        ${escapeHTML(selectedOrder.contact_number || "N/A")}
-      </strong>
-    </div>
+  const summary =
+    document.getElementById(
+      "assignmentOrderSummary"
+    );
 
-    <div class="assignment-summary-item">
-      <span>Order Total</span>
-      <strong>
-        ₱${formatMoney(selectedOrder.total_amount)}
-      </strong>
-    </div>
+  const deliveryFeeInput =
+    document.getElementById(
+      "deliveryFeeInput"
+    );
 
-    <div class="assignment-summary-item">
-      <span>Address</span>
-      <strong>
-        ${escapeHTML(selectedOrder.address || "N/A")}
-      </strong>
-    </div>
+  const riderPaymentInput =
+    document.getElementById(
+      "riderPaymentInput"
+    );
 
-    <div class="assignment-summary-item">
-      <span>Landmark</span>
-      <strong>
-        ${escapeHTML(selectedOrder.landmark || "N/A")}
-      </strong>
-    </div>
-  `;
+  const deliveryFeeDisplay =
+    document.getElementById(
+      "deliveryFeeDisplay"
+    );
 
-  document.getElementById("deliveryFeeInput").value = "0.00";
+  const deliveryFeeError =
+    document.getElementById(
+      "deliveryFeeError"
+    );
+
+  const confirmButton =
+    document.getElementById(
+      "confirmAssignRiderBtn"
+    );
+
+  if (subtitle) {
+    subtitle.textContent =
+      `Queue #${selectedOrder.queue_number || "N/A"} • ` +
+      `Order #${selectedOrder.order_id}`;
+  }
+
+  if (summary) {
+    summary.innerHTML = `
+      <div class="assignment-summary-item is-highlighted">
+        <span>Queue Number</span>
+
+        <strong>
+          #${escapeHTML(
+            selectedOrder.queue_number ||
+            "N/A"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item">
+        <span>Order Number</span>
+
+        <strong>
+          #${escapeHTML(
+            selectedOrder.order_id ||
+            "N/A"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item">
+        <span>Customer</span>
+
+        <strong>
+          ${escapeHTML(
+            selectedOrder.customer_name ||
+            "Unknown Customer"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item is-highlighted">
+        <span>Order Total</span>
+
+        <strong>
+          ₱${formatMoney(
+            selectedOrder.total_amount
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item">
+        <span>Contact Number</span>
+
+        <strong>
+          ${escapeHTML(
+            selectedOrder.contact_number ||
+            "No contact number"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item">
+        <span>Payment Method</span>
+
+        <strong>
+          ${escapeHTML(
+            selectedOrder.payment_method ||
+            "N/A"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item assignment-address">
+        <span>Delivery Address</span>
+
+        <strong>
+          ${escapeHTML(
+            selectedOrder.address ||
+            "No delivery address provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="assignment-summary-item assignment-address">
+        <span>Landmark</span>
+
+        <strong>
+          ${escapeHTML(
+            selectedOrder.landmark ||
+            "No landmark provided"
+          )}
+        </strong>
+      </div>
+    `;
+  }
+
+  if (deliveryFeeInput) {
+    deliveryFeeInput.value =
+      hasValidDeliveryFee
+        ? deliveryFee.toFixed(2)
+        : "";
+  }
+
+  /*
+   * Internal restaurant riders are not paid through
+   * this cashier assignment interface.
+   */
+  if (riderPaymentInput) {
+    riderPaymentInput.value = "0.00";
+  }
+
+  if (deliveryFeeDisplay) {
+    deliveryFeeDisplay.textContent =
+      hasValidDeliveryFee
+        ? `₱${formatMoney(deliveryFee)}`
+        : "Unavailable";
+  }
+
+  if (deliveryFeeError) {
+    deliveryFeeError.hidden =
+      hasValidDeliveryFee;
+  }
+
+  /*
+   * Prevent assignment when the order API did not
+   * provide a valid database delivery fee.
+   */
+  if (confirmButton) {
+    confirmButton.disabled =
+      !hasValidDeliveryFee;
+  }
 
   document
     .getElementById("assignRiderModal")
-    .classList.add("active");
-
-  
+    ?.classList.add("active");
 
   await loadAvailableRiders();
 }
 
 function closeAssignRiderModal() {
   document
-    .getElementById("assignRiderModal")
+    .getElementById(
+      "assignRiderModal"
+    )
     ?.classList.remove("active");
 
-  const riderSelect = document.getElementById("riderSelect");
+  const riderSelect =
+    document.getElementById(
+      "riderSelect"
+    );
+
+  const deliveryFeeInput =
+    document.getElementById(
+      "deliveryFeeInput"
+    );
+
+  const riderPaymentInput =
+    document.getElementById(
+      "riderPaymentInput"
+    );
+
+  const deliveryFeeDisplay =
+    document.getElementById(
+      "deliveryFeeDisplay"
+    );
+
+  const deliveryFeeError =
+    document.getElementById(
+      "deliveryFeeError"
+    );
+
+  const confirmButton =
+    document.getElementById(
+      "confirmAssignRiderBtn"
+    );
 
   if (riderSelect) {
     riderSelect.innerHTML = `
       <option value="">
         Select an available rider
       </option>
+    `;
+
+    riderSelect.disabled = false;
+  }
+
+  if (deliveryFeeInput) {
+    deliveryFeeInput.value = "0.00";
+  }
+
+  if (riderPaymentInput) {
+    riderPaymentInput.value = "0.00";
+  }
+
+  if (deliveryFeeDisplay) {
+    deliveryFeeDisplay.textContent =
+      "₱0.00";
+  }
+
+  if (deliveryFeeError) {
+    deliveryFeeError.hidden = true;
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = false;
+
+    confirmButton.innerHTML = `
+      <i class="fa-solid fa-motorcycle"></i>
+      Assign Rider
+      <i class="fa-solid fa-arrow-right"></i>
     `;
   }
 }
@@ -1744,121 +1939,180 @@ async function submitRiderAssignment() {
       "No Order Selected",
       "Please select an order first."
     );
+
     return;
   }
 
-  const riderSelect = document.getElementById("riderSelect");
-  const deliveryFeeInput = document.getElementById(
-    "deliveryFeeInput"
-  );
-  
-  const submitBtn = document.getElementById(
-    "confirmAssignRiderBtn"
+  const riderSelect =
+    document.getElementById(
+      "riderSelect"
+    );
+
+  const submitButton =
+    document.getElementById(
+      "confirmAssignRiderBtn"
+    );
+
+  const riderId = Number(
+    riderSelect?.value || 0
   );
 
- const riderId = Number(riderSelect?.value || 0);
-const deliveryFee = Number(deliveryFeeInput?.value || 0);
+  /*
+   * Use the delivery fee that came from the database
+   * through the selected order.
+   *
+   * Do not accept a cashier-entered fee.
+   */
+  const deliveryFee = Number(
+    selectedOrder.delivery_fee
+  );
 
   if (riderId <= 0) {
     showToast(
       "Rider Required",
-      "Please select an available rider."
+      "Please select an available restaurant rider."
     );
+
+    riderSelect?.focus();
+
     return;
   }
 
-if (
-  !Number.isFinite(deliveryFee) ||
-  deliveryFee < 0
-) {
-  showToast(
-    "Invalid Delivery Fee",
-    "The delivery fee must be a valid non-negative amount."
+  if (
+    !Number.isFinite(deliveryFee) ||
+    deliveryFee < 0
+  ) {
+    showToast(
+      "Delivery Fee Unavailable",
+      "The fixed delivery fee was not loaded from this order. Refresh the orders and try again."
+    );
+
+    return;
+  }
+
+  const selectedRiderName =
+    riderSelect?.options[
+      riderSelect.selectedIndex
+    ]?.textContent?.trim() ||
+    "the selected rider";
+
+  const orderId = Number(
+    selectedOrder.order_id
   );
 
-  return;
-}
+  /*
+   * Keep a local immutable copy because selectedOrder
+   * may change after modal operations.
+   */
+  const assignmentPayload = {
+    order_id: orderId,
+    rider_id: riderId,
+    delivery_fee: deliveryFee,
+    rider_payment: 0
+  };
 
-restoreAssignModalAfterConfirm = true;
+  restoreAssignModalAfterConfirm = true;
 
-document
-  .getElementById("assignRiderModal")
-  ?.classList.remove("active");
+  document
+    .getElementById(
+      "assignRiderModal"
+    )
+    ?.classList.remove("active");
 
-openConfirmModal(
-  "Assign Delivery Rider",
-  `Assign the selected rider to Order #${selectedOrder.order_id}?`,
-  async () => {
-    try {
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-          <i class="fa-solid fa-spinner fa-spin"></i>
-          Assigning...
-        `;
-      }
+  openConfirmModal(
+    "Assign Delivery Rider",
+    `Assign ${selectedRiderName} to Order #${orderId} with the fixed ₱${formatMoney(deliveryFee)} delivery fee?`,
+    async () => {
+      try {
+        if (submitButton) {
+          submitButton.disabled = true;
 
-      const response = await fetch(
-        `${API_BASE}/assign_delivery_rider.php`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            order_id: selectedOrder.order_id,
-            rider_id: riderId,
-            delivery_fee: deliveryFee,
-            rider_payment: 0
-          })
+          submitButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Assigning Rider...
+          `;
         }
-      );
 
-      const data = await response.json();
+        const response = await fetch(
+          `${API_BASE}/assign_delivery_rider.php`,
+          {
+            method: "POST",
+            credentials: "include",
 
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message || "Failed to assign rider."
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify(
+              assignmentPayload
+            )
+          }
         );
-      }
 
-      showToast(
-        "Rider Assigned",
-        `${data.assignment?.rider_name || "The rider"} was assigned to Order #${selectedOrder.order_id}.`
-      );
+        const data =
+          await response.json();
 
-      closeAssignRiderModal();
-      closeModal();
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+            "Failed to assign the rider."
+          );
+        }
 
-      await loadOrders();
-      await loadCashierNotifications();
+        showToast(
+          "Rider Assigned",
+          `${
+            data.assignment?.rider_name ||
+            selectedRiderName
+          } was assigned to Order #${orderId}.`
+        );
 
-    } catch (error) {
-      console.error("Assign rider error:", error);
+        restoreAssignModalAfterConfirm =
+          false;
 
-      showToast(
-        "Assignment Failed",
-        error.message || "Failed to assign the rider."
-      );
+        closeAssignRiderModal();
+        closeModal();
 
-      document
-        .getElementById("assignRiderModal")
-        ?.classList.add("active");
+        await loadOrders();
+        await loadCashierNotifications();
 
-      await loadAvailableRiders();
+      } catch (error) {
+        console.error(
+          "Assign rider error:",
+          error
+        );
 
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `
-          <i class="fa-solid fa-motorcycle"></i>
-          Assign Rider
-        `;
+        showToast(
+          "Assignment Failed",
+          error.message ||
+          "Failed to assign the rider."
+        );
+
+        document
+          .getElementById(
+            "assignRiderModal"
+          )
+          ?.classList.add("active");
+
+        await loadAvailableRiders();
+
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+
+          submitButton.innerHTML = `
+            <i class="fa-solid fa-motorcycle"></i>
+            Assign Rider
+            <i class="fa-solid fa-arrow-right"></i>
+          `;
+        }
       }
     }
-  }
-);
+  );
 }
 
 function openCancelReasonModal() {

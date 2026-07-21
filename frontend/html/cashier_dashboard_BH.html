@@ -575,107 +575,380 @@
 
 <!-- ASSIGN RIDER MODAL -->
 <div class="modal-overlay" id="assignRiderModal">
-  <div class="assign-rider-modal">
+  <div
+    class="assign-rider-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="assignRiderTitle"
+  >
 
-    <div class="modal-header">
-      <div>
-        <h2>Assign Delivery Rider</h2>
-        <p id="assignRiderSubtitle">
-          Select an available restaurant rider
-        </p>
+    <div class="assign-rider-header">
+      <div class="assign-rider-title-group">
+        <div class="assign-rider-header-icon">
+          <i class="fa-solid fa-motorcycle"></i>
+        </div>
+
+        <div>
+          <span class="assign-rider-overline">
+            Delivery Management
+          </span>
+
+          <h2 id="assignRiderTitle">
+            Assign Restaurant Rider
+          </h2>
+
+          <p id="assignRiderSubtitle">
+            Select an available restaurant rider
+          </p>
+        </div>
       </div>
 
-      <button class="close-modal" id="closeAssignRiderModal">
+      <button
+        type="button"
+        class="close-modal"
+        id="closeAssignRiderModal"
+        aria-label="Close rider assignment modal"
+      >
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
     <div class="assign-rider-body">
 
-      <div class="assignment-order-summary" id="assignmentOrderSummary">
-        <!-- Filled by JavaScript -->
-      </div>
+      <!-- Filled by JavaScript -->
+      <div
+        class="assignment-order-summary"
+        id="assignmentOrderSummary"
+      ></div>
 
-      <div class="form-group">
-        <label for="riderSelect">Available Restaurant Rider</label>
+      <section class="assignment-section">
+        <div class="assignment-section-heading">
+          <div class="assignment-section-icon">
+            <i class="fa-solid fa-user-helmet-safety"></i>
+          </div>
 
-        <select id="riderSelect">
-          <option value="">Loading available riders...</option>
-        </select>
-
-        <small id="riderAvailabilityMessage">
-          Only active riders without an ongoing delivery are displayed.
-        </small>
-      </div>
-
-     <div class="assignment-fee-grid">
-
-  <div class="form-group">
-    <label for="deliveryFeeInput">
-      Customer Delivery Fee
-    </label>
-
-    <div class="currency-input">
-      <span>₱</span>
-
-      <input
-        type="number"
-        id="deliveryFeeInput"
-        min="0"
-        step="0.01"
-        value="0.00"
-      />
-    </div>
-
-    <small>
-      Amount charged to the customer for delivery.
-    </small>
-  </div>
-
-</div>
-
-        <div class="form-group">
-          <label for="riderPaymentInput">Rider Payment</label>
-
-          <div class="currency-input">
-            <span>₱</span>
-            <input
-              type="number"
-              id="riderPaymentInput"
-              min="0"
-              step="0.01"
-              value="0.00"
-            />
+          <div>
+            <h3>Select a Rider</h3>
+            <p>
+              Only available riders from this restaurant are shown.
+            </p>
           </div>
         </div>
 
-      </div>
+        <div class="assignment-rider-field">
+          <label for="riderSelect">
+            Available Restaurant Rider
+          </label>
+
+          <div class="assignment-select-wrapper">
+            <i class="fa-solid fa-motorcycle"></i>
+
+            <select id="riderSelect">
+              <option value="">
+                Loading available riders...
+              </option>
+            </select>
+
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+
+          <div class="rider-availability-row">
+            <span class="availability-indicator"></span>
+
+            <small id="riderAvailabilityMessage">
+              Checking restaurant rider availability.
+            </small>
+          </div>
+        </div>
+      </section>
+
+      <section class="assignment-section">
+        <div class="assignment-section-heading">
+          <div class="assignment-section-icon">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+
+          <div>
+            <h3>Delivery Charge</h3>
+            <p>
+              The cashier cannot change the restaurant's delivery fee.
+            </p>
+          </div>
+        </div>
+
+        <div class="fixed-delivery-fee-card">
+          <div class="fixed-fee-icon">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+
+          <div class="fixed-fee-content">
+            <span>Customer Delivery Fee</span>
+
+            <strong id="deliveryFeeDisplay">
+              ₱0.00
+            </strong>
+
+            <small>
+              Fixed by the restaurant and loaded from the order.
+            </small>
+          </div>
+
+          <div class="fixed-fee-badge">
+            <i class="fa-solid fa-lock"></i>
+            Fixed
+          </div>
+        </div>
+
+        <!--
+          Keep these IDs for compatibility with the existing JavaScript
+          and assignment API. Cashiers cannot edit these values.
+        -->
+        <input
+          type="hidden"
+          id="deliveryFeeInput"
+          value="0.00"
+        />
+
+        <input
+          type="hidden"
+          id="riderPaymentInput"
+          value="0.00"
+        />
+
+        <p
+          class="delivery-fee-error"
+          id="deliveryFeeError"
+          hidden
+        >
+          The delivery fee could not be loaded from this order.
+        </p>
+      </section>
 
       <div class="assignment-note">
-        <i class="fa-solid fa-circle-info"></i>
+        <div class="assignment-note-icon">
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
 
-        <p>
-  This rider is an employee of BlackHabit. Rider salary or
-  compensation is handled directly by the restaurant.
-        </p>
+        <div>
+          <strong>Restaurant-owned rider</strong>
+
+          <p>
+            This rider belongs to this restaurant. Rider salary and
+            compensation are managed directly by the restaurant owner.
+            FoodConnect does not process restaurant rider payroll.
+          </p>
+        </div>
       </div>
 
     </div>
 
     <div class="assign-rider-footer">
       <button
-        class="confirm-cancel-btn"
+        type="button"
+        class="assignment-back-btn"
         id="cancelAssignRiderBtn"
       >
         Cancel
       </button>
 
       <button
-        class="confirm-ok-btn"
+        type="button"
+        class="assignment-submit-btn"
         id="confirmAssignRiderBtn"
       >
         <i class="fa-solid fa-motorcycle"></i>
         Assign Rider
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+  </div>
+</div><!-- ASSIGN RIDER MODAL -->
+<div class="modal-overlay" id="assignRiderModal">
+  <div
+    class="assign-rider-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="assignRiderTitle"
+  >
+
+    <div class="assign-rider-header">
+      <div class="assign-rider-title-group">
+        <div class="assign-rider-header-icon">
+          <i class="fa-solid fa-motorcycle"></i>
+        </div>
+
+        <div>
+          <span class="assign-rider-overline">
+            Delivery Management
+          </span>
+
+          <h2 id="assignRiderTitle">
+            Assign Restaurant Rider
+          </h2>
+
+          <p id="assignRiderSubtitle">
+            Select an available restaurant rider
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="close-modal"
+        id="closeAssignRiderModal"
+        aria-label="Close rider assignment modal"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="assign-rider-body">
+
+      <!-- Filled by JavaScript -->
+      <div
+        class="assignment-order-summary"
+        id="assignmentOrderSummary"
+      ></div>
+
+      <section class="assignment-section">
+        <div class="assignment-section-heading">
+          <div class="assignment-section-icon">
+            <i class="fa-solid fa-user-helmet-safety"></i>
+          </div>
+
+          <div>
+            <h3>Select a Rider</h3>
+            <p>
+              Only available riders from this restaurant are shown.
+            </p>
+          </div>
+        </div>
+
+        <div class="assignment-rider-field">
+          <label for="riderSelect">
+            Available Restaurant Rider
+          </label>
+
+          <div class="assignment-select-wrapper">
+            <i class="fa-solid fa-motorcycle"></i>
+
+            <select id="riderSelect">
+              <option value="">
+                Loading available riders...
+              </option>
+            </select>
+
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+
+          <div class="rider-availability-row">
+            <span class="availability-indicator"></span>
+
+            <small id="riderAvailabilityMessage">
+              Checking restaurant rider availability.
+            </small>
+          </div>
+        </div>
+      </section>
+
+      <section class="assignment-section">
+        <div class="assignment-section-heading">
+          <div class="assignment-section-icon">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+
+          <div>
+            <h3>Delivery Charge</h3>
+            <p>
+              The cashier cannot change the restaurant's delivery fee.
+            </p>
+          </div>
+        </div>
+
+        <div class="fixed-delivery-fee-card">
+          <div class="fixed-fee-icon">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+
+          <div class="fixed-fee-content">
+            <span>Customer Delivery Fee</span>
+
+            <strong id="deliveryFeeDisplay">
+              ₱0.00
+            </strong>
+
+            <small>
+              Fixed by the restaurant and loaded from the order.
+            </small>
+          </div>
+
+          <div class="fixed-fee-badge">
+            <i class="fa-solid fa-lock"></i>
+            Fixed
+          </div>
+        </div>
+
+        <!--
+          Keep these IDs for compatibility with the existing JavaScript
+          and assignment API. Cashiers cannot edit these values.
+        -->
+        <input
+          type="hidden"
+          id="deliveryFeeInput"
+          value="0.00"
+        />
+
+        <input
+          type="hidden"
+          id="riderPaymentInput"
+          value="0.00"
+        />
+
+        <p
+          class="delivery-fee-error"
+          id="deliveryFeeError"
+          hidden
+        >
+          The delivery fee could not be loaded from this order.
+        </p>
+      </section>
+
+      <div class="assignment-note">
+        <div class="assignment-note-icon">
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
+
+        <div>
+          <strong>Restaurant-owned rider</strong>
+
+          <p>
+            This rider belongs to this restaurant. Rider salary and
+            compensation are managed directly by the restaurant owner.
+            FoodConnect does not process restaurant rider payroll.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="assign-rider-footer">
+      <button
+        type="button"
+        class="assignment-back-btn"
+        id="cancelAssignRiderBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="assignment-submit-btn"
+        id="confirmAssignRiderBtn"
+      >
+        <i class="fa-solid fa-motorcycle"></i>
+        Assign Rider
+        <i class="fa-solid fa-arrow-right"></i>
       </button>
     </div>
 

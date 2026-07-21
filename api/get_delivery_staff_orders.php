@@ -104,7 +104,7 @@ $sql = "
         da.assigned_by,
         da.assignment_type,
         da.delivery_status,
-        da.delivery_fee,
+        da.delivery_fee AS assignment_delivery_fee,
         da.rider_payment,
         da.assigned_at,
         da.accepted_at,
@@ -118,6 +118,8 @@ $sql = "
         o.contact_number,
         o.order_type,
         o.order_status,
+        o.subtotal,
+        o.delivery_fee AS order_delivery_fee,
         o.total_amount,
         o.payment_method,
         o.address,
@@ -132,7 +134,8 @@ $sql = "
         oi.price,
         oi.product_name,
         oi.base_text,
-        oi.addon_text
+        oi.addon_text,
+        oi.combo_choice_text
 
     FROM tbl_delivery_assignments da
 
@@ -193,8 +196,27 @@ while ($row = $result->fetch_assoc()) {
             "assignment_type" => $row["assignment_type"],
             "delivery_status" => $row["delivery_status"],
 
-            "delivery_fee" => (float) $row["delivery_fee"],
-            "rider_payment" => (float) $row["rider_payment"],
+            /*
+ * Customer-facing delivery charge from tbl_orders.
+ */
+"delivery_fee" =>
+    (float)(
+        $row["order_delivery_fee"] ?? 0
+    ),
+
+/*
+ * Keep assignment-level values separate because they may
+ * represent rider compensation or assignment configuration.
+ */
+"assignment_delivery_fee" =>
+    (float)(
+        $row["assignment_delivery_fee"] ?? 0
+    ),
+
+"rider_payment" =>
+    (float)(
+        $row["rider_payment"] ?? 0
+    ),
 
             "assigned_at" => $row["assigned_at"],
             "accepted_at" => $row["accepted_at"],
@@ -212,8 +234,18 @@ while ($row = $result->fetch_assoc()) {
             "order_type" => $row["order_type"],
             "order_status" => $row["order_status"],
 
-            "total_amount" => (float) $row["total_amount"],
-            "payment_method" => $row["payment_method"],
+            "subtotal" =>
+    (float)(
+        $row["subtotal"] ?? 0
+    ),
+
+"total_amount" =>
+    (float)(
+        $row["total_amount"] ?? 0
+    ),
+
+"payment_method" =>
+    $row["payment_method"],
 
             "address" => $row["address"],
             "landmark" => $row["landmark"],
@@ -225,24 +257,40 @@ while ($row = $result->fetch_assoc()) {
     }
 
     if (!empty($row["order_item_id"])) {
-        $deliveries[$assignment_id]["items"][] = [
-            "order_item_id" => (int) $row["order_item_id"],
+    $deliveries[$assignment_id]["items"][] = [
+        "order_item_id" =>
+            (int)$row["order_item_id"],
 
-            "product_id" => $row["product_id"] !== null
-                ? (int) $row["product_id"]
+        "product_id" =>
+            $row["product_id"] !== null
+                ? (int)$row["product_id"]
                 : null,
 
-            "combo_id" => $row["combo_id"] !== null
-                ? (int) $row["combo_id"]
+        "combo_id" =>
+            $row["combo_id"] !== null
+                ? (int)$row["combo_id"]
                 : null,
 
-            "quantity" => (int) $row["quantity"],
-            "price" => (float) $row["price"],
-            "product_name" => $row["product_name"],
-            "base_text" => $row["base_text"],
-            "addon_text" => $row["addon_text"]
-        ];
-    }
+        "quantity" =>
+            (int)($row["quantity"] ?? 0),
+
+        "price" =>
+            (float)($row["price"] ?? 0),
+
+        "product_name" =>
+            $row["product_name"] ??
+            "Unnamed Item",
+
+        "base_text" =>
+            $row["base_text"] ?? "",
+
+        "addon_text" =>
+            $row["addon_text"] ?? "",
+
+        "combo_choice_text" =>
+            $row["combo_choice_text"] ?? ""
+    ];
+}
 }
 
 $stmt->close();

@@ -592,80 +592,91 @@ function buildDeliveryDetails(delivery) {
                 "no add-on";
 
             return `
-              <div class="delivery-order-item">
+<div class="delivery-order-item">
 
-                <div class="delivery-order-item-info">
+    <div class="delivery-order-main">
 
-                  <h4>
-                    ${escapeHTML(
-                      item.product_name ||
-                      "Unnamed Item"
-                    )}
-                  </h4>
+        <div class="delivery-order-left">
 
-                  <p>
-                    <strong>Quantity:</strong>
-                    ${escapeHTML(quantity)}
-                  </p>
+            <h4>
 
-                  ${
+                ${escapeHTML(
+                    item.product_name ||
+                    "Unnamed Item"
+                )}
+
+            </h4>
+
+            <div class="delivery-order-meta">
+
+                <span>
+
+                    Qty:
+                    ${quantity}
+
+                </span>
+
+                ${
                     variantText
-                      ? `
-                          <p>
-                            <strong>
-                              Variant:
-                            </strong>
+                    ? `
+                        <span>
 
+                            Variant:
                             ${escapeHTML(
-                              variantText
+                                variantText
                             )}
-                          </p>
-                        `
-                      : ""
-                  }
 
-                  ${
+                        </span>
+                    `
+                    : ""
+                }
+
+                ${
                     comboChoiceText
-                      ? `
-                          <p>
-                            <strong>
-                              Selection:
-                            </strong>
+                    ? `
+                        <span>
 
+                            Selection:
                             ${escapeHTML(
-                              comboChoiceText
+                                comboChoiceText
                             )}
-                          </p>
-                        `
-                      : ""
-                  }
 
-                  ${
+                        </span>
+                    `
+                    : ""
+                }
+
+                ${
                     hasAddon
-                      ? `
-                          <p>
-                            <strong>
-                              Add-ons:
-                            </strong>
+                    ? `
+                        <span>
 
+                            Add-ons:
                             ${escapeHTML(
-                              addonText
+                                addonText
                             )}
-                          </p>
-                        `
-                      : ""
-                  }
 
-                </div>
+                        </span>
+                    `
+                    : ""
+                }
 
-                <div class="delivery-order-item-price">
-                  ₱${formatMoney(
-                    itemSubtotal
-                  )}
-                </div>
+            </div>
 
-              </div>
-            `;
+        </div>
+
+        <div class="delivery-order-right">
+
+            ₱${formatMoney(
+                itemSubtotal
+            )}
+
+        </div>
+
+    </div>
+
+</div>
+`;
           })
           .join("")
       : `
@@ -795,28 +806,43 @@ function buildDeliveryDetails(delivery) {
         </div>
 
         <div class="delivery-detail-box">
-          <span>
-            Order Total
-          </span>
+  <span>
+    Order Subtotal
+  </span>
 
-          <strong>
-            ₱${formatMoney(
-              delivery.total_amount
-            )}
-          </strong>
-        </div>
+  <strong>
+    ₱${formatMoney(
+      delivery.subtotal
+    )}
+  </strong>
+</div>
 
-        <div class="delivery-detail-box">
-          <span>
-            Delivery Fee
-          </span>
+<div class="delivery-detail-box">
+  <span>
+    Delivery Fee
+  </span>
 
-          <strong>
-            ₱${formatMoney(
-              delivery.delivery_fee
-            )}
-          </strong>
-        </div>
+  <strong>
+    ₱${formatMoney(
+      delivery.delivery_fee
+    )}
+  </strong>
+</div>
+
+<div
+  class="delivery-detail-box
+         full-width"
+>
+  <span>
+    Customer Total
+  </span>
+
+  <strong class="delivery-money-value">
+    ₱${formatMoney(
+      delivery.total_amount
+    )}
+  </strong>
+</div>
 
         <div
           class="delivery-detail-box
@@ -868,34 +894,43 @@ function buildDeliveryDetails(delivery) {
 
     <section class="delivery-items-section">
 
-      <div class="delivery-items-heading">
+  <div class="delivery-items-header">
 
-        <div>
-          <span>
-            Order Contents
-          </span>
+    <div>
 
-          <h3>
-            Ordered Items
-          </h3>
-        </div>
+      <span class="delivery-section-label">
+        ORDER DETAILS
+      </span>
 
-        <strong class="delivery-item-count">
-          ${items.length}
-          ${
-            items.length === 1
-              ? "item"
-              : "items"
-          }
-        </strong>
+      <h3>
+        Ordered Items
+      </h3>
 
-      </div>
+    </div>
 
-      <div class="delivery-items-list">
-        ${itemRows}
-      </div>
+    <div class="delivery-item-total">
 
-    </section>
+      ${
+        items.length
+      }
+
+      ${
+        items.length === 1
+          ? "Item"
+          : "Items"
+      }
+
+    </div>
+
+  </div>
+
+  <div class="delivery-items-list">
+
+    ${itemRows}
+
+  </div>
+
+</section>
   `;
 }
 
@@ -1174,9 +1209,6 @@ function getAmountToCollect(delivery) {
 
   const totalAmount =
     Number(delivery.total_amount || 0);
-
-  const deliveryFee =
-    Number(delivery.delivery_fee || 0);
 
   /*
    * Cash and COD deliveries require collection.
