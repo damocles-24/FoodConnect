@@ -120,11 +120,17 @@ try {
         );
     }
 
-    if ($order_status !== "ready") {
-        throw new Exception(
-            "The order must be ready before assigning a rider."
-        );
-    }
+    if (
+    !in_array(
+        $order_status,
+        ["preparing", "ready"],
+        true
+    )
+) {
+    throw new Exception(
+        "The order must be preparing before assigning a rider."
+    );
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -323,10 +329,13 @@ try {
 
     $updateOrderSql = "
         UPDATE tbl_orders
-        SET order_status = 'assigned'
+        SET order_status = 'out_for_delivery'
         WHERE order_id = ?
           AND restaurant_id = ?
-          AND order_status = 'ready'
+        AND order_status IN (
+        'preparing',
+        'ready'
+)  
     ";
 
     $updateOrderStmt = $conn->prepare($updateOrderSql);

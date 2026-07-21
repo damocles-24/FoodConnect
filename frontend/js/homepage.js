@@ -817,11 +817,29 @@ function isRestaurantOpen(
   card,
   currentDate = new Date()
 ) {
+  const businessStatus =
+    String(
+      card.dataset.businessStatus ||
+      "Closed"
+    )
+      .trim()
+      .toLowerCase();
+
+  /*
+   * The owner-controlled business status takes
+   * priority over the operating schedule.
+   */
+  if (businessStatus !== "open") {
+    return false;
+  }
+
   const restaurantStatus =
     String(
-      card.dataset
-        .restaurantStatus || ""
-    ).toLowerCase();
+      card.dataset.restaurantStatus ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
 
   if (
     restaurantStatus !== "active"
@@ -834,10 +852,10 @@ function isRestaurantOpen(
       card.dataset.operatingDays || ""
     )
       .split(",")
-      .map((day) =>
+      .map(day =>
         Number(day.trim())
       )
-      .filter((day) =>
+      .filter(day =>
         Number.isInteger(day)
       );
 
@@ -862,11 +880,17 @@ function isRestaurantOpen(
       card.dataset.closingTime
     );
 
+  /*
+   * Your database currently also stores a combined
+   * opening_hours string. Until separate opening and
+   * closing columns are dynamic, use the existing
+   * card schedule.
+   */
   if (
     openingMinutes === null ||
     closingMinutes === null
   ) {
-    return false;
+    return true;
   }
 
   const currentMinutes =
@@ -874,30 +898,102 @@ function isRestaurantOpen(
     currentDate.getMinutes();
 
   if (
-    openingMinutes ===
-    closingMinutes
+    openingMinutes === closingMinutes
   ) {
     return true;
   }
 
   if (
-    closingMinutes >
-    openingMinutes
+    closingMinutes > openingMinutes
   ) {
     return (
-      currentMinutes >=
-        openingMinutes &&
-      currentMinutes <
-        closingMinutes
+      currentMinutes >= openingMinutes &&
+      currentMinutes < closingMinutes
     );
   }
 
   return (
-    currentMinutes >=
-      openingMinutes ||
-    currentMinutes <
-      closingMinutes
+    currentMinutes >= openingMinutes ||
+    currentMinutes < closingMinutes
   );
+}
+
+async function loadPublicRestaurantCard(
+  card
+) {
+  const restaurantId =
+    Number(
+      card.dataset.restaurantId || 0
+    );
+
+  if (
+    !Number.isInteger(restaurantId) ||
+    restaurantId <= 0
+  ) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${window.API}/get_public_restaurant.php?restaurant_id=${restaurantId}`,
+      {
+        cache: "no-store"
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load restaurant."
+      );
+    }
+
+    const restaurant =
+      data.restaurant || {};
+
+    card.dataset.businessStatus =
+      String(
+        restaurant.business_status ||
+        "Closed"
+      );
+
+    card.dataset.deliveryFee =
+      String(
+        restaurant.delivery_fee || 0
+      );
+
+    const nameElement =
+      card.querySelector("h3");
+
+    if (
+      nameElement &&
+      restaurant.name
+    ) {
+      nameElement.textContent =
+        restaurant.name;
+
+      card.dataset.name =
+        restaurant.name;
+    }
+
+    updateRestaurantCard(card);
+  } catch (error) {
+    console.error(
+      "Load public restaurant card failed:",
+      error
+    );
+
+    card.dataset.businessStatus =
+      "Closed";
+
+    updateRestaurantCard(card);
+  }
 }
 
 function updateRestaurantCard(
@@ -921,22 +1017,32 @@ function updateRestaurantCard(
   const open =
     isRestaurantOpen(card);
 
-  if (statusBadge) {
-    statusBadge.textContent =
-      open
-        ? "Open Now"
+ if (statusBadge) {
+  const businessStatus =
+    String(
+      card.dataset.businessStatus ||
+      "Closed"
+    ).trim();
+
+  statusBadge.textContent =
+    open
+      ? "Open Now"
+      : businessStatus
+          .toLowerCase() ===
+        "temporarily unavailable"
+        ? "Temporarily Unavailable"
         : "Closed";
 
-    statusBadge.classList.toggle(
-      "open",
-      open
-    );
+  statusBadge.classList.toggle(
+    "open",
+    open
+  );
 
-    statusBadge.classList.toggle(
-      "closed",
-      !open
-    );
-  }
+  statusBadge.classList.toggle(
+    "closed",
+    !open
+  );
+}
 
   if (deliveryFee) {
     deliveryFee.textContent =
@@ -1871,6 +1977,10 @@ setupAccountUI();
 filterRestaurants();
 
 updateAllRestaurantCards();
+
+restaurantCards.forEach(card => {
+  loadPublicRestaurantCard(card);
+});
 
 window.setInterval(
   updateAllRestaurantCards,

@@ -6,6 +6,12 @@ function goToCart() {
 
 
 const API = "/FoodConnect/api";
+
+let currentRestaurantStatus =
+  "Closed";
+
+let restaurantAcceptingOrders =
+  false;
 const pageParameters =
   new URLSearchParams(
     window.location.search
@@ -1773,13 +1779,10 @@ async function loadDatabaseProducts() {
   `;
 
   try {
-    const response = await fetch(
-  `${API}/get_products.php` +
-  `?restaurant_id=${
-    encodeURIComponent(
-      CURRENT_RESTAURANT_ID
-    )
-  }`,
+const response = await fetch(
+  `${API}/get_public_products.php?restaurant_id=${encodeURIComponent(
+    CURRENT_RESTAURANT_ID
+  )}`,
   {
     credentials: "include",
     cache: "no-store"
@@ -1811,11 +1814,24 @@ async function loadDatabaseProducts() {
      * and:
      * { success: true, products: [...] }
      */
-    const products = Array.isArray(data)
+  const products =
+  Array.isArray(data.products)
+    ? data.products
+    : Array.isArray(data)
       ? data
-      : Array.isArray(data.products)
-        ? data.products
-        : [];
+      : [];
+
+const restaurant =
+  data.restaurant || {};
+
+currentRestaurantStatus =
+  String(
+    restaurant.business_status ||
+    "Closed"
+  );
+
+restaurantAcceptingOrders =
+  restaurant.is_accepting_orders === true;
 
         
 
@@ -2507,7 +2523,17 @@ allSubFilterBtns.forEach(
       button.disabled = true;
       button.textContent = "Adding...";
     }
+if (!restaurantAcceptingOrders) {
 
+    alert(
+        currentRestaurantStatus ===
+        "Temporarily Unavailable"
+            ? "This restaurant is temporarily unavailable."
+            : "This restaurant is currently closed."
+    );
+
+    return;
+}
     const response = await fetch(
       `${API}/cart_add.php`,
       {
@@ -2526,6 +2552,17 @@ allSubFilterBtns.forEach(
 })
       }
     );
+
+    if (!restaurantAcceptingOrders) {
+  alert(
+    currentRestaurantStatus ===
+      "Temporarily Unavailable"
+      ? "This restaurant is temporarily unavailable and is not accepting orders."
+      : "This restaurant is currently closed and is not accepting orders."
+  );
+
+  return;
+}
 
     const rawText =
       await response.text();

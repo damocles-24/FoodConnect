@@ -37,6 +37,7 @@ const modalBody = document.getElementById("modalBody");
 const closeModal = document.getElementById("closeModal");
 
 const sidebar = document.getElementById("sidebar");
+
 const menuToggle = document.getElementById("menuToggle");
 const closeSidebar = document.getElementById("closeSidebar");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -99,7 +100,99 @@ const settingsOpeningHours = document.getElementById("settingsOpeningHours");
 const settingsDeliveryFee = document.getElementById("settingsDeliveryFee");
 const settingsBusinessStatus = document.getElementById("settingsBusinessStatus");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+const settingsStatusRadios =
+  document.querySelectorAll(
+    'input[name="restaurantBusinessStatus"]'
+  );
 
+const settingsPreviewName =
+  document.getElementById(
+    "settingsPreviewName"
+  );
+
+const settingsPreviewStatus =
+  document.getElementById(
+    "settingsPreviewStatus"
+  );
+
+const settingsPreviewContact =
+  document.getElementById(
+    "settingsPreviewContact"
+  );
+
+const settingsPreviewAddress =
+  document.getElementById(
+    "settingsPreviewAddress"
+  );
+
+const settingsPreviewHours =
+  document.getElementById(
+    "settingsPreviewHours"
+  );
+
+const settingsPreviewFee =
+  document.getElementById(
+    "settingsPreviewFee"
+  );
+
+const settingsSaveState =
+  document.getElementById(
+    "settingsSaveState"
+  );
+
+const settingsSaveStateText =
+  document.getElementById(
+    "settingsSaveStateText"
+  );
+
+const settingsFormControls = [
+  settingsRestaurantName,
+  settingsContactNumber,
+  settingsAddress,
+  settingsOpeningHours,
+  settingsDeliveryFee
+].filter(Boolean);
+
+let savedRestaurantSettings = null;
+let restaurantSettingsLoading = false;
+
+
+settingsFormControls.forEach(control => {
+  control.addEventListener(
+    "input",
+    handleSettingsChange
+  );
+
+  control.addEventListener(
+    "change",
+    handleSettingsChange
+  );
+});
+
+settingsStatusRadios.forEach(radio => {
+  radio.addEventListener(
+    "change",
+    () => {
+      if (!radio.checked) {
+        return;
+      }
+
+      if (settingsBusinessStatus) {
+        settingsBusinessStatus.value =
+          radio.value;
+      }
+
+      handleSettingsChange();
+    }
+  );
+});
+
+if (saveSettingsBtn) {
+  saveSettingsBtn.addEventListener(
+    "click",
+    saveRestaurantSettings
+  );
+}
 
 
 /* =========================
@@ -305,25 +398,105 @@ async function fetchJSON(url, options = {}) {
    DASHBOARD SUMMARY
 ========================= */
 async function loadDashboardSummary() {
-  const data = await fetchJSON("http://localhost/FoodConnect/api/get_dashboard_summary.php");
+  const salesToday =
+    document.getElementById("salesToday");
 
-  const salesToday = document.getElementById("salesToday");
-  const totalOrders = document.getElementById("totalOrders");
-  const pendingOrders = document.getElementById("pendingOrders");
-  const totalProducts = document.getElementById("totalProducts");
-  const completedOrders = document.getElementById("completedOrders");
-  const cancelledOrders = document.getElementById("cancelledOrders");
-  const averageOrderValue = document.getElementById("averageOrderValue");
-  const bestSeller = document.getElementById("bestSeller");
+  const totalOrders =
+    document.getElementById("totalOrders");
 
-  if (salesToday) salesToday.textContent = formatPeso(data.salesToday);
-  if (totalOrders) totalOrders.textContent = data.totalOrders || 0;
-  if (pendingOrders) pendingOrders.textContent = data.pendingOrders || 0;
-  if (totalProducts) totalProducts.textContent = data.totalProducts || 0;
-  if (completedOrders) completedOrders.textContent = data.completedOrders || 0;
-  if (cancelledOrders) cancelledOrders.textContent = data.cancelledOrders || 0;
-  if (averageOrderValue) averageOrderValue.textContent = formatPeso(data.averageOrderValue);
-  if (bestSeller) bestSeller.textContent = data.bestSeller || "-";
+  const pendingOrders =
+    document.getElementById("pendingOrders");
+
+  const totalProducts =
+    document.getElementById("totalProducts");
+
+  const completedOrders =
+    document.getElementById("completedOrders");
+
+  const cancelledOrders =
+    document.getElementById("cancelledOrders");
+
+  const averageOrderValue =
+    document.getElementById("averageOrderValue");
+
+  const bestSeller =
+    document.getElementById("bestSeller");
+
+  try {
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_dashboard_summary.php`
+    );
+
+    if (!data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to load dashboard summary."
+      );
+    }
+
+    if (salesToday) {
+      salesToday.textContent =
+        formatPeso(data.salesToday || 0);
+    }
+
+    if (totalOrders) {
+      totalOrders.textContent =
+        Number(data.totalOrders) || 0;
+    }
+
+    if (pendingOrders) {
+      pendingOrders.textContent =
+        Number(data.pendingOrders) || 0;
+    }
+
+    if (totalProducts) {
+      totalProducts.textContent =
+        Number(data.totalProducts) || 0;
+    }
+
+    if (completedOrders) {
+      completedOrders.textContent =
+        Number(data.completedOrders) || 0;
+    }
+
+    if (cancelledOrders) {
+      cancelledOrders.textContent =
+        Number(data.cancelledOrders) || 0;
+    }
+
+    if (averageOrderValue) {
+      averageOrderValue.textContent =
+        formatPeso(
+          data.averageOrderValue || 0
+        );
+    }
+
+    if (bestSeller) {
+      bestSeller.textContent =
+        data.bestSeller || "-";
+    }
+  } catch (error) {
+    console.error(
+      "Load dashboard summary failed:",
+      error
+    );
+
+    if (salesToday) {
+      salesToday.textContent = "₱0.00";
+    }
+
+    if (totalOrders) {
+      totalOrders.textContent = "0";
+    }
+
+    if (pendingOrders) {
+      pendingOrders.textContent = "0";
+    }
+
+    if (totalProducts) {
+      totalProducts.textContent = "0";
+    }
+  }
 }
 
 /* =========================
@@ -752,59 +925,198 @@ function renderOrders(list = orders) {
    PRODUCTS RENDER
 ========================= */
 function renderProducts(list = products) {
-  if (!productsGrid) return;
+  if (!productsGrid) {
+    return;
+  }
 
-  productsGrid.innerHTML = list.length
-    ? list.map(p => `
-      <div class="product-card">
-        <h3>${p.name}</h3>
+  const productOverviewTotal =
+    document.getElementById(
+      "productOverviewTotal"
+    );
 
-        <div class="product-info-grid">
-          <div class="product-info-row">
-            <span>Category</span>
-            <strong>${p.category}</strong>
+  const productOverviewAvailable =
+    document.getElementById(
+      "productOverviewAvailable"
+    );
+
+  const productOverviewLow =
+    document.getElementById(
+      "productOverviewLow"
+    );
+
+  const productOverviewOut =
+    document.getElementById(
+      "productOverviewOut"
+    );
+
+  const totalProducts = products.length;
+
+  const availableProducts =
+    products.filter(
+      product => Number(product.stock) > 5
+    ).length;
+
+  const lowStockProducts =
+    products.filter(product => {
+      const stock = Number(product.stock);
+
+      return stock > 0 && stock <= 5;
+    }).length;
+
+  const outOfStockProducts =
+    products.filter(
+      product => Number(product.stock) <= 0
+    ).length;
+
+  if (productOverviewTotal) {
+    productOverviewTotal.textContent =
+      totalProducts;
+  }
+
+  if (productOverviewAvailable) {
+    productOverviewAvailable.textContent =
+      availableProducts;
+  }
+
+  if (productOverviewLow) {
+    productOverviewLow.textContent =
+      lowStockProducts;
+  }
+
+  if (productOverviewOut) {
+    productOverviewOut.textContent =
+      outOfStockProducts;
+  }
+
+  if (!list.length) {
+    productsGrid.innerHTML = `
+      <div class="product-empty-state">
+        <div class="product-empty-icon">
+          📦
+        </div>
+
+        <h3>No products found</h3>
+
+        <p>
+          Try changing your search, category,
+          or sorting options.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  productsGrid.innerHTML = list
+    .map(product => {
+      const stock = Number(product.stock) || 0;
+
+      let stockClass = "is-available";
+      let stockLabel = "Available";
+      let stockDescription =
+        `${stock} item${stock === 1 ? "" : "s"} in stock`;
+
+      if (stock <= 0) {
+        stockClass = "is-out";
+        stockLabel = "Out of Stock";
+        stockDescription =
+          "This product is unavailable";
+      } else if (stock <= 5) {
+        stockClass = "is-low";
+        stockLabel = "Low Stock";
+        stockDescription =
+          `Only ${stock} item${stock === 1 ? "" : "s"} remaining`;
+      }
+
+      const variant =
+        String(product.size || "").trim() ||
+        "Standard";
+
+      return `
+        <article class="product-card">
+          <div class="product-card-header">
+            <div class="product-title-group">
+              <span class="product-card-category">
+                ${product.category}
+              </span>
+
+              <h3 title="${product.name}">
+                ${product.name}
+              </h3>
+            </div>
+
+            <span
+              class="product-availability-badge ${stockClass}"
+            >
+              <span class="product-status-dot"></span>
+              ${stockLabel}
+            </span>
           </div>
 
-          <div class="product-info-row">
-            <span>Variant</span>
-            <strong>${p.size || "-"}</strong>
-          </div>
+          <div class="product-card-body">
+            <div class="product-price-block">
+              <span>Price</span>
 
-          <div class="product-info-row">
-            <span>Price</span>
-            <strong>${formatPeso(p.price)}</strong>
-          </div>
+              <strong>
+                ${formatPeso(product.price)}
+              </strong>
+            </div>
 
-          <div class="product-info-row">
-            <span>Stock</span>
-            <strong class="${p.stock <= 5 ? "product-stock low" : "product-stock ok"}">
-              ${p.stock}
-            </strong>
-          </div>
+            <div class="product-details-grid">
+              <div class="product-detail-item">
+                <span>Variant</span>
+                <strong>${variant}</strong>
+              </div>
 
-          <div class="product-info-row">
-            <span>Status</span>
-            <strong>
-              <span class="product-status-badge 
-              ${p.stock > 0 ? "product-status-available" : "product-status-unavailable"}">
+              <div class="product-detail-item">
+                <span>Stock</span>
+
+                <strong class="product-stock-value ${stockClass}">
+                  ${stock}
+                </strong>
+              </div>
+            </div>
+
+            <div class="product-stock-summary ${stockClass}">
+              <span class="product-stock-summary-icon">
                 ${
-                  p.status.toLowerCase() === "available" &&
-                  p.stock > 0
-                  ? "🟢 Available"
-                  : "🔴 Unavailable"
+                  stock <= 0
+                    ? "!"
+                    : stock <= 5
+                      ? "↓"
+                      : "✓"
                 }
               </span>
-            </strong>
-          </div>
-        </div>
 
-        <div class="product-actions">
-          <button class="action-btn" onclick="openEditProductModal(${p.id})">Edit</button>
-          <button class="action-btn secondary" onclick="deleteProduct(${p.id})">Delete</button>
-        </div>
-      </div>
-    `).join("")
-    : `<p>No products found.</p>`;
+              <span>
+                ${stockDescription}
+              </span>
+            </div>
+          </div>
+
+          <div class="product-actions">
+            <button
+              type="button"
+              class="product-action-btn product-edit-btn"
+              onclick="openEditProductModal(${product.id})"
+            >
+              <span>✎</span>
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="product-action-btn product-delete-btn"
+              onclick="deleteProduct(${product.id})"
+            >
+              <span>⌫</span>
+              Delete
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function populateProductCategories() {
@@ -1640,13 +1952,90 @@ alert("Stock updated successfully.");
 ========================= */
 navItems.forEach(btn => {
   btn.addEventListener("click", () => {
-    const target = btn.dataset.section;
+    const targetSection =
+      btn.dataset.section;
 
-    navItems.forEach(item => item.classList.remove("active"));
+    const currentSection =
+      document.querySelector(
+        ".content-section.active-section"
+      );
+
+    if (
+      currentSection?.id ===
+        "settingsSection" &&
+      targetSection !==
+        "settingsSection" &&
+      settingsHaveChanges()
+    ) {
+      const shouldLeave =
+        window.confirm(
+          "You have unsaved restaurant settings. Leave without saving?"
+        );
+
+      if (!shouldLeave) {
+        return;
+      }
+
+      /*
+       * Reset the form to the last saved data
+       * when the owner chooses to leave.
+       */
+      if (savedRestaurantSettings) {
+        if (settingsRestaurantName) {
+          settingsRestaurantName.value =
+            savedRestaurantSettings.name;
+        }
+
+        if (settingsContactNumber) {
+          settingsContactNumber.value =
+            savedRestaurantSettings.contact_number;
+        }
+
+        if (settingsAddress) {
+          settingsAddress.value =
+            savedRestaurantSettings.address;
+        }
+
+        if (settingsOpeningHours) {
+          settingsOpeningHours.value =
+            savedRestaurantSettings.opening_hours;
+        }
+
+        if (settingsDeliveryFee) {
+          settingsDeliveryFee.value =
+            Number(
+              savedRestaurantSettings.delivery_fee
+            ).toFixed(2);
+        }
+
+        setSelectedBusinessStatus(
+          savedRestaurantSettings.business_status
+        );
+
+        updateSettingsPreview();
+
+        setSettingsSaveState(
+          "saved",
+          "All changes saved"
+        );
+
+        if (saveSettingsBtn) {
+          saveSettingsBtn.disabled = true;
+        }
+      }
+    }
+
+    navItems.forEach(item => {
+      item.classList.remove("active");
+    });
+
     btn.classList.add("active");
 
     sections.forEach(section => {
-      section.classList.toggle("active-section", section.id === target);
+      section.classList.toggle(
+        "active-section",
+        section.id === targetSection
+      );
     });
 
     sidebar?.classList.remove("show");
@@ -1682,8 +2071,6 @@ exportPdfBtn?.addEventListener("click", exportSalesReportPDF);
 salesRange?.addEventListener("change", () => {
   loadSalesChart(salesRange.value);
 });
-
-saveSettingsBtn?.addEventListener("click", saveRestaurantSettings);
 
 statusFilter?.addEventListener("change", () => {
   const value = statusFilter.value;
@@ -2079,83 +2466,516 @@ function exportSalesReportPDF() {
   reportWindow.document.close();
 }
 
+function normalizeBusinessStatus(value) {
+  const normalized = String(value || "")
+    .toLowerCase()
+    .trim();
+
+  if (normalized === "closed") {
+    return "Closed";
+  }
+
+  if (
+    normalized === "temporarily unavailable" ||
+    normalized === "temporary" ||
+    normalized === "temporarily_unavailable"
+  ) {
+    return "Temporarily Unavailable";
+  }
+
+  return "Open";
+}
+
+function getSelectedBusinessStatus() {
+  const checkedRadio =
+    document.querySelector(
+      'input[name="restaurantBusinessStatus"]:checked'
+    );
+
+  return normalizeBusinessStatus(
+    checkedRadio?.value ||
+    settingsBusinessStatus?.value ||
+    "Open"
+  );
+}
+
+function setSelectedBusinessStatus(status) {
+  const normalizedStatus =
+    normalizeBusinessStatus(status);
+
+  if (settingsBusinessStatus) {
+    settingsBusinessStatus.value =
+      normalizedStatus;
+  }
+
+  settingsStatusRadios.forEach(radio => {
+    radio.checked =
+      radio.value === normalizedStatus;
+  });
+}
+
+function getCurrentRestaurantSettings() {
+  return {
+    name:
+      settingsRestaurantName?.value.trim() ||
+      "",
+
+    contact_number:
+      settingsContactNumber?.value.trim() ||
+      "",
+
+    address:
+      settingsAddress?.value.trim() ||
+      "",
+
+    opening_hours:
+      settingsOpeningHours?.value.trim() ||
+      "",
+
+    delivery_fee:
+      Number(
+        settingsDeliveryFee?.value || 0
+      ),
+
+    business_status:
+      getSelectedBusinessStatus()
+  };
+}
+
+function formatSettingsDeliveryFee(value) {
+  return Number(value || 0).toLocaleString(
+    "en-PH",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
+}
+
+function updateSettingsPreview() {
+  const settings =
+    getCurrentRestaurantSettings();
+
+  if (settingsPreviewName) {
+    settingsPreviewName.textContent =
+      settings.name ||
+      "Restaurant Name";
+  }
+
+  if (settingsPreviewContact) {
+    settingsPreviewContact.textContent =
+      settings.contact_number ||
+      "Not provided";
+  }
+
+  if (settingsPreviewAddress) {
+    settingsPreviewAddress.textContent =
+      settings.address ||
+      "Not provided";
+  }
+
+  if (settingsPreviewHours) {
+    settingsPreviewHours.textContent =
+      settings.opening_hours ||
+      "Not provided";
+  }
+
+  if (settingsPreviewFee) {
+    settingsPreviewFee.textContent =
+      `₱${formatSettingsDeliveryFee(
+        settings.delivery_fee
+      )}`;
+  }
+
+  if (settingsPreviewStatus) {
+    settingsPreviewStatus.textContent =
+      settings.business_status;
+
+    settingsPreviewStatus.classList.remove(
+      "is-open",
+      "is-closed",
+      "is-temporary"
+    );
+
+    if (
+      settings.business_status === "Closed"
+    ) {
+      settingsPreviewStatus.classList.add(
+        "is-closed"
+      );
+    } else if (
+      settings.business_status ===
+      "Temporarily Unavailable"
+    ) {
+      settingsPreviewStatus.classList.add(
+        "is-temporary"
+      );
+    } else {
+      settingsPreviewStatus.classList.add(
+        "is-open"
+      );
+    }
+  }
+}
+
+function settingsHaveChanges() {
+  if (!savedRestaurantSettings) {
+    return false;
+  }
+
+  const current =
+    getCurrentRestaurantSettings();
+
+  return (
+    current.name !==
+      savedRestaurantSettings.name ||
+
+    current.contact_number !==
+      savedRestaurantSettings.contact_number ||
+
+    current.address !==
+      savedRestaurantSettings.address ||
+
+    current.opening_hours !==
+      savedRestaurantSettings.opening_hours ||
+
+    Number(current.delivery_fee) !==
+      Number(
+        savedRestaurantSettings.delivery_fee
+      ) ||
+
+    current.business_status !==
+      savedRestaurantSettings.business_status
+  );
+}
+
+function setSettingsSaveState(
+  state,
+  message
+) {
+  if (!settingsSaveState) {
+    return;
+  }
+
+  settingsSaveState.classList.remove(
+    "is-saved",
+    "is-unsaved",
+    "is-saving",
+    "is-error"
+  );
+
+  settingsSaveState.classList.add(
+    `is-${state}`
+  );
+
+  if (settingsSaveStateText) {
+    settingsSaveStateText.textContent =
+      message;
+  }
+}
+
+function handleSettingsChange() {
+  if (restaurantSettingsLoading) {
+    return;
+  }
+
+  updateSettingsPreview();
+
+  if (settingsHaveChanges()) {
+    setSettingsSaveState(
+      "unsaved",
+      "Unsaved changes"
+    );
+
+    if (saveSettingsBtn) {
+      saveSettingsBtn.disabled = false;
+    }
+  } else {
+    setSettingsSaveState(
+      "saved",
+      "All changes saved"
+    );
+
+    if (saveSettingsBtn) {
+      saveSettingsBtn.disabled = true;
+    }
+  }
+}
+
+function validateRestaurantSettings(
+  settings
+) {
+  if (!settings.name) {
+    settingsRestaurantName?.focus();
+
+    return "Restaurant name is required.";
+  }
+
+  if (!settings.contact_number) {
+    settingsContactNumber?.focus();
+
+    return "Contact number is required.";
+  }
+
+  const phonePattern =
+    /^[0-9+\-\s()]{7,20}$/;
+
+  if (
+    !phonePattern.test(
+      settings.contact_number
+    )
+  ) {
+    settingsContactNumber?.focus();
+
+    return "Enter a valid contact number.";
+  }
+
+  if (!settings.address) {
+    settingsAddress?.focus();
+
+    return "Restaurant address is required.";
+  }
+
+  if (!settings.opening_hours) {
+    settingsOpeningHours?.focus();
+
+    return "Opening hours are required.";
+  }
+
+  if (
+    !Number.isFinite(
+      settings.delivery_fee
+    ) ||
+    settings.delivery_fee < 0
+  ) {
+    settingsDeliveryFee?.focus();
+
+    return "Delivery fee cannot be negative.";
+  }
+
+  return "";
+}
+
 async function loadRestaurantSettings() {
+  restaurantSettingsLoading = true;
+
+  setSettingsSaveState(
+    "saving",
+    "Loading settings..."
+  );
+
   try {
-    const data = await fetchJSON("http://localhost/FoodConnect/api/get_restaurant_settings.php");
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_restaurant_settings.php`
+    );
 
     if (!data.success) {
-      console.error(data.message || "Failed to load restaurant settings.");
-      return;
+      throw new Error(
+        data.message ||
+        "Failed to load restaurant settings."
+      );
     }
 
-    const restaurant = data.restaurant || {};
+    const restaurant =
+      data.restaurant || {};
 
-    if (settingsRestaurantName) settingsRestaurantName.value = restaurant.name || "";
-    if (settingsContactNumber) settingsContactNumber.value = restaurant.contact_number || "";
-    if (settingsAddress) settingsAddress.value = restaurant.address || "";
-    if (settingsOpeningHours) settingsOpeningHours.value = restaurant.opening_hours || "";
-    if (settingsDeliveryFee) settingsDeliveryFee.value = restaurant.delivery_fee || 0;
-    if (settingsBusinessStatus) settingsBusinessStatus.value = restaurant.business_status || "Open";
+    const loadedSettings = {
+      name: String(
+        restaurant.name || ""
+      ).trim(),
 
+      contact_number: String(
+        restaurant.contact_number || ""
+      ).trim(),
+
+      address: String(
+        restaurant.address || ""
+      ).trim(),
+
+      opening_hours: String(
+        restaurant.opening_hours || ""
+      ).trim(),
+
+      delivery_fee:
+        Number(
+          restaurant.delivery_fee || 0
+        ),
+
+      business_status:
+        normalizeBusinessStatus(
+          restaurant.business_status
+        )
+    };
+
+    if (settingsRestaurantName) {
+      settingsRestaurantName.value =
+        loadedSettings.name;
+    }
+
+    if (settingsContactNumber) {
+      settingsContactNumber.value =
+        loadedSettings.contact_number;
+    }
+
+    if (settingsAddress) {
+      settingsAddress.value =
+        loadedSettings.address;
+    }
+
+    if (settingsOpeningHours) {
+      settingsOpeningHours.value =
+        loadedSettings.opening_hours;
+    }
+
+    if (settingsDeliveryFee) {
+      settingsDeliveryFee.value =
+        loadedSettings.delivery_fee.toFixed(
+          2
+        );
+    }
+
+    setSelectedBusinessStatus(
+      loadedSettings.business_status
+    );
+
+    savedRestaurantSettings = {
+      ...loadedSettings
+    };
+
+    updateSettingsPreview();
+
+    setSettingsSaveState(
+      "saved",
+      "All changes saved"
+    );
+
+    if (saveSettingsBtn) {
+      saveSettingsBtn.disabled = true;
+    }
   } catch (error) {
-    console.error("Load restaurant settings failed:", error);
+    console.error(
+      "Load restaurant settings failed:",
+      error
+    );
+
+    setSettingsSaveState(
+      "error",
+      "Unable to load settings"
+    );
+  } finally {
+    restaurantSettingsLoading = false;
   }
 }
 
 async function saveRestaurantSettings() {
-  const payload = {
-    name: settingsRestaurantName?.value.trim() || "",
-    contact_number: settingsContactNumber?.value.trim() || "",
-    address: settingsAddress?.value.trim() || "",
-    opening_hours: settingsOpeningHours?.value.trim() || "",
-    delivery_fee: settingsDeliveryFee?.value || 0,
-    business_status: settingsBusinessStatus?.value || "Open"
-  };
-
-  if (
-    !payload.name ||
-    !payload.contact_number ||
-    !payload.address ||
-    !payload.opening_hours ||
-    Number(payload.delivery_fee) < 0
-  ) {
-    alert("Please complete all restaurant settings correctly.");
+  if (!saveSettingsBtn) {
     return;
   }
 
+  const payload =
+    getCurrentRestaurantSettings();
+
+  const validationMessage =
+    validateRestaurantSettings(payload);
+
+  if (validationMessage) {
+    setSettingsSaveState(
+      "error",
+      validationMessage
+    );
+
+    return;
+  }
+
+  if (!settingsHaveChanges()) {
+    setSettingsSaveState(
+      "saved",
+      "No changes to save"
+    );
+
+    return;
+  }
+
+  const originalButtonHTML =
+    saveSettingsBtn.innerHTML;
+
   try {
     saveSettingsBtn.disabled = true;
-    saveSettingsBtn.textContent = "Saving...";
 
-    const result = await fetchJSON("http://localhost/FoodConnect/api/update_restaurant_settings.php", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+    saveSettingsBtn.innerHTML = `
+      <span class="settings-button-spinner"></span>
+      Saving Changes...
+    `;
+
+    setSettingsSaveState(
+      "saving",
+      "Saving changes..."
+    );
+
+    const result = await fetchJSON(
+      `${OWNER_API_BASE}/update_restaurant_settings.php`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }
+    );
 
     if (!result.success) {
-      alert(result.message || "Failed to update settings.");
-      return;
+      throw new Error(
+        result.message ||
+        "Failed to update restaurant settings."
+      );
     }
 
-    await loadRestaurantSettings();
+    savedRestaurantSettings = {
+      ...payload
+    };
+
+    setSelectedBusinessStatus(
+      payload.business_status
+    );
+
+    updateSettingsPreview();
+
+    setSettingsSaveState(
+      "saved",
+      "Settings saved successfully"
+    );
 
     await addActivityLog(
-  "system",
-  "⚙️",
-  "Settings Updated",
-  "Restaurant settings were updated."
-);
+      "system",
+      "⚙️",
+      "Settings Updated",
+      "Restaurant settings were updated."
+    );
 
-await loadActivityLogs();
+    await loadActivityLogs();
 
-    alert("Restaurant settings saved successfully.");
-
+    window.setTimeout(() => {
+      if (!settingsHaveChanges()) {
+        setSettingsSaveState(
+          "saved",
+          "All changes saved"
+        );
+      }
+    }, 2500);
   } catch (error) {
-    console.error("Save restaurant settings failed:", error);
-    alert("Error saving settings. Check console.");
+    console.error(
+      "Save restaurant settings failed:",
+      error
+    );
+
+    setSettingsSaveState(
+      "error",
+      error.message ||
+      "Unable to save settings."
+    );
   } finally {
-    saveSettingsBtn.disabled = false;
-    saveSettingsBtn.textContent = "Save Settings";
+    saveSettingsBtn.innerHTML =
+      originalButtonHTML;
+
+    saveSettingsBtn.disabled =
+      !settingsHaveChanges();
   }
 }
 
@@ -2224,7 +3044,7 @@ function startOwnerDashboardRefresh() {
         refreshOwnerOperationalData();
       }
     },
-    5000
+    15000
   );
 }
 
@@ -2254,6 +3074,18 @@ window.addEventListener(
 window.addEventListener(
   "beforeunload",
   stopOwnerDashboardRefresh
+);
+
+window.addEventListener(
+  "beforeunload",
+  event => {
+    if (!settingsHaveChanges()) {
+      return;
+    }
+
+    event.preventDefault();
+    event.returnValue = "";
+  }
 );
 
 async function initDashboard() {

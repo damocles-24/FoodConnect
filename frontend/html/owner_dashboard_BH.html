@@ -74,10 +74,10 @@
       <section id="dashboardSection" class="content-section active-section">
         <div class="stats-grid">
           <div class="stat-card">
-            <h3>Total Sales</h3>
-            <p class="stat-value" id="salesToday">₱0</p>
-            <span>From completed orders</span>
-          </div>
+          <h3>Today's Sales</h3>
+          <p class="stat-value" id="salesToday">₱0.00</p>
+          <span>Completed orders today</span>
+        </div>
 
           <div class="stat-card">
             <h3>Total Orders</h3>
@@ -182,37 +182,134 @@
       </section>
 
       <!-- PRODUCTS -->
-   <section id="productsSection" class="content-section">
-  <div class="section-header">
-    <h2>Product Management</h2>
+   <section
+  id="productsSection"
+  class="content-section"
+>
+  <div class="section-header product-section-header">
+    <div>
+      <span class="section-overline">
+        Menu Management
+      </span>
+
+      <h2>Product Management</h2>
+
+      <p class="section-description">
+        Manage menu items, prices, variants, stock, and availability.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="primary-btn product-add-btn"
+      id="openAddProductModal"
+    >
+      <span class="product-add-icon">+</span>
+      <span>Add Product</span>
+    </button>
+  </div>
+
+  <div
+    class="product-overview"
+    aria-label="Product overview"
+  >
+    <article class="product-overview-card">
+      <div class="product-overview-icon">
+        📦
+      </div>
+
+      <div>
+        <span>Total Products</span>
+        <strong id="productOverviewTotal">0</strong>
+      </div>
+    </article>
+
+    <article class="product-overview-card">
+      <div class="product-overview-icon">
+        🟢
+      </div>
+
+      <div>
+        <span>Available</span>
+        <strong id="productOverviewAvailable">0</strong>
+      </div>
+    </article>
+
+    <article class="product-overview-card">
+      <div class="product-overview-icon">
+        🟡
+      </div>
+
+      <div>
+        <span>Low Stock</span>
+        <strong id="productOverviewLow">0</strong>
+      </div>
+    </article>
+
+    <article class="product-overview-card">
+      <div class="product-overview-icon">
+        🔴
+      </div>
+
+      <div>
+        <span>Out of Stock</span>
+        <strong id="productOverviewOut">0</strong>
+      </div>
+    </article>
   </div>
 
   <div class="product-toolbar">
-    <button class="primary-btn" id="openAddProductModal">
-      + Add Product
-    </button>
+    <div class="product-search-box">
+      <span class="product-search-icon">
+        ⌕
+      </span>
 
-    <input type="text" id="productSearch" placeholder="Search product, category, variant...">
+      <input
+        type="search"
+        id="productSearch"
+        placeholder="Search products..."
+        autocomplete="off"
+      />
+    </div>
 
-    <select id="productCategoryFilter">
-      <option value="all">All Categories</option>
+    <select
+      id="productCategoryFilter"
+      aria-label="Filter products by category"
+    >
+      <option value="all">
+        All Categories
+      </option>
     </select>
 
-    <select id="productSort">
+    <select
+      id="productSort"
+      aria-label="Sort products"
+    >
       <option value="newest">Newest</option>
       <option value="oldest">Oldest</option>
-      <option value="name-az">Name A-Z</option>
-      <option value="name-za">Name Z-A</option>
-      <option value="price-low">Price Low to High</option>
-      <option value="price-high">Price High to Low</option>
-      <option value="stock-low">Stock Low to High</option>
-      <option value="stock-high">Stock High to Low</option>
+      <option value="name-az">Name A–Z</option>
+      <option value="name-za">Name Z–A</option>
+      <option value="price-low">
+        Price: Low to High
+      </option>
+      <option value="price-high">
+        Price: High to Low
+      </option>
+      <option value="stock-low">
+        Stock: Low to High
+      </option>
+      <option value="stock-high">
+        Stock: High to Low
+      </option>
     </select>
   </div>
 
-  <div class="products-grid" id="productsGrid"></div>
+  <div
+    class="products-grid"
+    id="productsGrid"
+    aria-live="polite"
+  ></div>
 </section>
-
 <section id="inventorySection" class="content-section">
   <div class="section-header">
     <h2>Inventory Management</h2>
@@ -478,61 +575,410 @@
 </section>
 
         <!-- SETTINGS -->
-  <section id="settingsSection" class="content-section">
-  <div class="section-header">
+  <section
+  id="settingsSection"
+  class="content-section"
+>
+  <div class="section-header settings-page-header">
     <div>
+      <span class="section-overline">
+        Restaurant Configuration
+      </span>
+
       <h2>Restaurant Settings</h2>
-      <p>Manage restaurant profile, delivery fee, and business availability.</p>
+
+      <p class="section-description">
+        Update your public restaurant information,
+        operating details, delivery charge, and availability.
+      </p>
+    </div>
+
+    <div
+      class="settings-save-state"
+      id="settingsSaveState"
+      aria-live="polite"
+    >
+      <span class="settings-save-dot"></span>
+      <span id="settingsSaveStateText">
+        All changes saved
+      </span>
     </div>
   </div>
 
-  <div class="settings-layout">
-    <div class="panel settings-card">
-      <div class="settings-card-header">
-        <h3>Restaurant Information</h3>
-        <p>Basic details shown to customers.</p>
-      </div>
+  <div class="settings-workspace">
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Restaurant Name</label>
-          <input type="text" id="settingsRestaurantName">
+    <!-- LEFT SIDE: SETTINGS FORM -->
+    <div class="settings-main-column">
+
+      <!-- RESTAURANT PROFILE -->
+      <section class="settings-panel">
+        <div class="settings-panel-header">
+          <div class="settings-panel-icon">
+            🏪
+          </div>
+
+          <div>
+            <span class="settings-step-label">
+              Section 1
+            </span>
+
+            <h3>Restaurant Profile</h3>
+
+            <p>
+              Information customers will see when viewing
+              your restaurant.
+            </p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Contact Number</label>
-          <input type="text" id="settingsContactNumber">
+        <div class="settings-form-grid">
+          <div class="settings-field">
+            <label for="settingsRestaurantName">
+              Restaurant Name
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              type="text"
+              id="settingsRestaurantName"
+              maxlength="150"
+              autocomplete="organization"
+              placeholder="Enter restaurant name"
+            />
+
+            <small>
+              This appears on the restaurant listing,
+              menu, and customer orders.
+            </small>
+          </div>
+
+          <div class="settings-field">
+            <label for="settingsContactNumber">
+              Contact Number
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              type="tel"
+              id="settingsContactNumber"
+              maxlength="20"
+              autocomplete="tel"
+              inputmode="tel"
+              placeholder="Example: 09123456789"
+            />
+
+            <small>
+              Customers may use this number for restaurant inquiries.
+            </small>
+          </div>
+
+          <div class="settings-field settings-field-full">
+            <label for="settingsAddress">
+              Restaurant Address
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <textarea
+              id="settingsAddress"
+              rows="3"
+              maxlength="255"
+              autocomplete="street-address"
+              placeholder="Enter the complete restaurant address"
+            ></textarea>
+
+            <small>
+              Use a complete and recognizable address.
+            </small>
+          </div>
+        </div>
+      </section>
+
+      <!-- OPERATING DETAILS -->
+      <section class="settings-panel">
+        <div class="settings-panel-header">
+          <div class="settings-panel-icon">
+            🕒
+          </div>
+
+          <div>
+            <span class="settings-step-label">
+              Section 2
+            </span>
+
+            <h3>Operating Details</h3>
+
+            <p>
+              Set the schedule shown to customers.
+            </p>
+          </div>
         </div>
 
-        <div class="form-group full-width">
-          <label>Address</label>
-          <input type="text" id="settingsAddress">
+        <div class="settings-form-grid">
+          <div class="settings-field settings-field-full">
+            <label for="settingsOpeningHours">
+              Opening Hours
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              type="text"
+              id="settingsOpeningHours"
+              maxlength="100"
+              placeholder="Example: 8:00 AM - 10:00 PM"
+            />
+
+            <small>
+              Enter the normal daily operating schedule.
+            </small>
+          </div>
+        </div>
+      </section>
+
+      <!-- DELIVERY SETTINGS -->
+      <section class="settings-panel">
+        <div class="settings-panel-header">
+          <div class="settings-panel-icon">
+            🛵
+          </div>
+
+          <div>
+            <span class="settings-step-label">
+              Section 3
+            </span>
+
+            <h3>Delivery Settings</h3>
+
+            <p>
+              Configure the fixed delivery charge collected
+              from delivery customers.
+            </p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Opening Hours</label>
-          <input type="text" id="settingsOpeningHours" placeholder="8:00 AM - 10:00 PM">
+        <div class="settings-form-grid">
+          <div class="settings-field">
+            <label for="settingsDeliveryFee">
+              Delivery Fee
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <div class="settings-money-input">
+              <span>₱</span>
+
+              <input
+                type="number"
+                id="settingsDeliveryFee"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="0.00"
+              />
+            </div>
+
+            <small>
+              This fixed amount is added to eligible delivery orders.
+            </small>
+          </div>
+
+          <div class="settings-info-card">
+            <div class="settings-info-icon">
+              ℹ
+            </div>
+
+            <div>
+              <strong>Restaurant-owned delivery</strong>
+
+              <p>
+                The cashier cannot modify this fee while assigning
+                an internal restaurant rider.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUSINESS AVAILABILITY -->
+      <section class="settings-panel">
+        <div class="settings-panel-header">
+          <div class="settings-panel-icon">
+            ●
+          </div>
+
+          <div>
+            <span class="settings-step-label">
+              Section 4
+            </span>
+
+            <h3>Business Availability</h3>
+
+            <p>
+              Control whether customers can currently place orders.
+            </p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Delivery Fee</label>
-          <input type="number" id="settingsDeliveryFee" min="0">
+        <div class="settings-status-options">
+
+          <label class="settings-status-option">
+            <input
+              type="radio"
+              name="restaurantBusinessStatus"
+              value="Open"
+            />
+
+            <span class="settings-status-card is-open">
+              <span class="settings-status-indicator"></span>
+
+              <span>
+                <strong>Open</strong>
+                <small>
+                  Customers may view the menu and place orders.
+                </small>
+              </span>
+            </span>
+          </label>
+
+          <label class="settings-status-option">
+            <input
+              type="radio"
+              name="restaurantBusinessStatus"
+              value="Closed"
+            />
+
+            <span class="settings-status-card is-closed">
+              <span class="settings-status-indicator"></span>
+
+              <span>
+                <strong>Closed</strong>
+                <small>
+                  The restaurant is currently not accepting orders.
+                </small>
+              </span>
+            </span>
+          </label>
+
+          <label class="settings-status-option">
+            <input
+              type="radio"
+              name="restaurantBusinessStatus"
+              value="Temporarily Unavailable"
+            />
+
+            <span class="settings-status-card is-temporary">
+              <span class="settings-status-indicator"></span>
+
+              <span>
+                <strong>Temporarily Unavailable</strong>
+                <small>
+                  Use this during temporary service interruptions.
+                </small>
+              </span>
+            </span>
+          </label>
         </div>
 
-        <div class="form-group full-width">
-          <label>Business Status</label>
-          <select id="settingsBusinessStatus">
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="Temporarily Unavailable">Temporarily Unavailable</option>
-          </select>
-        </div>
-      </div>
+        <!-- Keep existing select ID for API compatibility -->
+        <select
+          id="settingsBusinessStatus"
+          class="settings-hidden-select"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
+          <option value="Temporarily Unavailable">
+            Temporarily Unavailable
+          </option>
+        </select>
+      </section>
 
-      <button class="primary-btn save-btn" id="saveSettingsBtn">
-        Save Settings
-      </button>
     </div>
+
+    <!-- RIGHT SIDE: PREVIEW AND SAVE -->
+    <aside class="settings-side-column">
+
+      <section class="settings-preview-card">
+        <span class="settings-preview-overline">
+          Customer Preview
+        </span>
+
+        <div class="settings-preview-heading">
+          <div class="settings-preview-logo">
+            BH
+          </div>
+
+          <div>
+            <h3 id="settingsPreviewName">
+              Restaurant Name
+            </h3>
+
+            <span
+              class="settings-preview-status"
+              id="settingsPreviewStatus"
+            >
+              Open
+            </span>
+          </div>
+        </div>
+
+        <div class="settings-preview-list">
+          <div>
+            <span>Contact</span>
+            <strong id="settingsPreviewContact">
+              Not provided
+            </strong>
+          </div>
+
+          <div>
+            <span>Address</span>
+            <strong id="settingsPreviewAddress">
+              Not provided
+            </strong>
+          </div>
+
+          <div>
+            <span>Opening Hours</span>
+            <strong id="settingsPreviewHours">
+              Not provided
+            </strong>
+          </div>
+
+          <div>
+            <span>Delivery Fee</span>
+            <strong id="settingsPreviewFee">
+              ₱0.00
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-save-card">
+        <div>
+          <h3>Save Restaurant Settings</h3>
+
+          <p>
+            Review your information before applying changes
+            to the restaurant.
+          </p>
+        </div>
+
+        <p
+          class="settings-form-message"
+          id="settingsFormMessage"
+          hidden
+        ></p>
+
+        <button
+          type="button"
+          class="primary-btn settings-save-btn"
+          id="saveSettingsBtn"
+          disabled
+        >
+          <span>Save Changes</span>
+        </button>
+      </section>
+
+    </aside>
   </div>
 </section>
 

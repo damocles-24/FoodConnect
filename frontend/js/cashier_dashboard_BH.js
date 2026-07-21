@@ -164,12 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   document
-    .getElementById("markReadyBtn")
-    ?.addEventListener("click", () => {
-      updateOrderStatus("ready");
-    });
-
-  document
     .getElementById("markCompletedBtn")
     ?.addEventListener("click", () => {
       updateOrderStatus("completed");
@@ -505,8 +499,15 @@ async function loadOrders() {
         const message =
           `Queue #${order.queue_number || "N/A"} • Order #${order.order_id} from ${order.customer_name || "Customer"}`;
 
-        addNotification("New order received", message);
-        showToast("New Order Received", message);
+        addNotification(
+  "New pending order",
+  message
+);
+
+showToast(
+  "New Pending Order",
+  message
+);
       });
     }
 
@@ -576,11 +577,11 @@ function renderOrders() {
   let filteredOrders = [...orders];
 
   /*
-   * Public cashier status filtering.
-   *
-   * Internal ready and assigned orders are displayed
-   * under Preparing.
-   */
+ * Public cashier status filtering.
+ *
+ * Existing ready and assigned records remain
+ * displayed under Preparing for compatibility.
+ */
   if (currentStatusFilter !== "all") {
     filteredOrders =
       filteredOrders.filter(order => {
@@ -1378,11 +1379,6 @@ function updateModalButtons(status) {
       "markPreparingBtn"
     );
 
-  const readyBtn =
-    document.getElementById(
-      "markReadyBtn"
-    );
-
   const completedBtn =
     document.getElementById(
       "markCompletedBtn"
@@ -1398,12 +1394,13 @@ function updateModalButtons(status) {
       "markCancelledBtn"
     );
 
+  /*
+   * Hide every workflow button first.
+   * Only the valid actions for the current
+   * order status will be shown below.
+   */
   if (preparingBtn) {
     preparingBtn.style.display = "none";
-  }
-
-  if (readyBtn) {
-    readyBtn.style.display = "none";
   }
 
   if (completedBtn) {
@@ -1433,11 +1430,14 @@ function updateModalButtons(status) {
       .trim();
 
   /*
-   * New order:
-   * Cashier begins preparation.
+   * Pending:
+   * Begin preparing the order.
    */
   if (normalizedStatus === "pending") {
     if (preparingBtn) {
+      preparingBtn.textContent =
+        "Mark as Preparing";
+
       preparingBtn.style.display =
         "inline-flex";
     }
@@ -1451,18 +1451,26 @@ function updateModalButtons(status) {
   }
 
   /*
-   * The internal Ready status is still required,
-   * but publicly it remains displayed as Preparing.
+   * Preparing delivery order:
+   * The next cashier action is rider assignment.
+   *
+   * Preparing dine-in/take-out:
+   * The next action is customer pickup/completion.
    */
-  if (
-    normalizedStatus === "preparing"
-  ) {
-    if (readyBtn) {
-      readyBtn.textContent =
-        "Finish Preparing";
+  if (normalizedStatus === "preparing") {
+    if (orderType === "delivery") {
+      if (assignRiderBtn) {
+        assignRiderBtn.style.display =
+          "inline-flex";
+      }
+    } else {
+      if (completedBtn) {
+        completedBtn.textContent =
+          "Picked Up by Customer";
 
-      readyBtn.style.display =
-        "inline-flex";
+        completedBtn.style.display =
+          "inline-flex";
+      }
     }
 
     if (cancelBtn) {
@@ -1474,7 +1482,12 @@ function updateModalButtons(status) {
   }
 
   /*
-   * Internally ready, publicly still Preparing.
+   * Backward compatibility:
+   *
+   * Existing orders may still have the old
+   * internal ready status. Allow the cashier
+   * to complete those orders without exposing
+   * a Finish Preparing action.
    */
   if (normalizedStatus === "ready") {
     if (orderType === "delivery") {
@@ -1501,8 +1514,9 @@ function updateModalButtons(status) {
   }
 
   /*
-   * assigned, out_for_delivery, completed,
-   * and cancelled have no cashier status button.
+   * assigned, out_for_delivery,
+   * completed, and cancelled do not
+   * require another cashier action.
    */
 }
 
@@ -1560,14 +1574,19 @@ async function openAssignRiderModal() {
     return;
   }
 
-  if (orderStatus !== "ready") {
-    showToast(
-      "Order Not Ready",
-      "The order must be ready before assigning a rider."
-    );
+  if (
+  ![
+    "preparing",
+    "ready"
+  ].includes(orderStatus)
+) {
+  showToast(
+    "Order Not Preparing",
+    "The order must be in Preparing status before assigning a rider."
+  );
 
-    return;
-  }
+  return;
+}
 
   /*
    * The delivery fee must come from the order returned
@@ -3033,7 +3052,7 @@ function getStatusDisplayLabel(
    */
   const labels = {
     pending:
-      "Order Received",
+      "Pending",
 
     preparing:
       "Preparing",
@@ -3056,7 +3075,7 @@ function getStatusDisplayLabel(
 
   return (
     labels[normalizedStatus] ||
-    "Order Received"
+    "Pending"
   );
 }
 

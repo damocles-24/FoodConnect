@@ -1,102 +1,346 @@
 <?php
+
 header("Content-Type: application/json; charset=utf-8");
+header(
+    "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
+);
+
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 
-if (!isset($_SESSION["user_id"])) {
-    echo json_encode([]);
+/* =========================================================
+   JSON RESPONSE
+========================================================= */
+
+function respond_json(
+    array $data,
+    int $statusCode = 200
+): void {
+    http_response_code($statusCode);
+
+    echo json_encode(
+        $data,
+        JSON_UNESCAPED_UNICODE
+    );
+
     exit;
 }
 
-$restaurant_id = isset($_SESSION["restaurant_id"]) ? (int)$_SESSION["restaurant_id"] : 1;
+/* =========================================================
+   REQUEST METHOD
+========================================================= */
 
-function getOne($conn, $sql, $restaurant_id) {
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) return null;
-
-    $stmt->bind_param("i", $restaurant_id);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    return $result;
+if (
+    strtoupper(
+        (string) ($_SERVER["REQUEST_METHOD"] ?? "")
+    ) !== "GET"
+) {
+    respond_json([
+        "success" => false,
+        "message" => "Method not allowed."
+    ], 405);
 }
 
-$sales = getOne($conn, "
-    SELECT COALESCE(SUM(total_amount), 0) AS total_sales
-    FROM tbl_orders
-    WHERE restaurant_id = ? AND order_status = 'completed'
-", $restaurant_id);
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
 
-$totalOrders = getOne($conn, "
-    SELECT COUNT(*) AS total_orders
-    FROM tbl_orders
-    WHERE restaurant_id = ?
-", $restaurant_id);
+if (
+    empty($_SESSION["user_id"]) ||
+    empty($_SESSION["restaurant_id"])
+) {
+    respond_json([
+        "success" => false,
+        "message" => "Unauthorized access."
+    ], 401);
+}
 
-$pending = getOne($conn, "
-    SELECT COUNT(*) AS pending_orders
-    FROM tbl_orders
-    WHERE restaurant_id = ? AND order_status = 'pending'
-", $restaurant_id);
+$user_id = (int) $_SESSION["user_id"];
+$restaurant_id = (int) $_SESSION["restaurant_id"];
 
-$completed = getOne($conn, "
-    SELECT COUNT(*) AS completed_orders
-    FROM tbl_orders
-    WHERE restaurant_id = ? AND order_status = 'completed'
-", $restaurant_id);
+$role = strtolower(
+    trim(
+        (string) ($_SESSION["role"] ?? "")
+    )
+);
 
-$cancelled = getOne($conn, "
-    SELECT COUNT(*) AS cancelled_orders
-    FROM tbl_orders
-    WHERE restaurant_id = ? AND order_status = 'cancelled'
-", $restaurant_id);
+if (
+    $user_id <= 0 ||
+    $restaurant_id <= 0 ||
+    $role !== "owner"
+) {
+    respond_json([
+        "success" => false,
+        "message" => "Owner access is required."
+    ], 403);
+}
 
-$avg = getOne($conn, "
-    SELECT COALESCE(AVG(total_amount), 0) AS avg_order
-    FROM tbl_orders
-    WHERE restaurant_id = ?
-      AND order_status = 'completed'
-", $restaurant_id);
+/* =========================================================
+   VERIFY OWNER AND RESTAURANT
+========================================================= */
 
-$products = getOne($conn, "
-    SELECT COUNT(*) AS total_products
-    FROM tbl_products
-    WHERE restaurant_id = ?
-", $restaurant_id);
-
-$bestStmt = $conn->prepare("
+$ownerStmt = $conn->prepare("
     SELECT
-        oi.product_name,
-        SUM(oi.quantity) AS total_qty
-    FROM tbl_order_items oi
-    INNER JOIN tbl_orders o
-        ON oi.order_id = o.order_id
-    WHERE o.restaurant_id = ?
-  AND o.order_status = 'completed'
-      AND o.order_status = 'completed'
-    GROUP BY oi.product_name
-    ORDER BY total_qty DESC
+        u.user_id,
+        u.full_name,
+        r.restaurant_id,
+        r.name AS restaurant_name    FROM tbl_users u
+    INNER JOIN tbl_restaurants r
+        ON r.restaurant_id = u.restaurant_id
+    WHERE u.user_id = ?
+      AND u.restaurant_id = ?
+      AND LOWER(u.role) = 'owner'
+      AND u.status = 1
+      AND r.owner_id = u.user_id
     LIMIT 1
 ");
 
-$bestSeller = "-";
+if (!$ownerStmt) {
+    error_log(
+        "get_dashboard_summary.php owner prepare error: " .
+        $conn->error
+    );
 
-if ($bestStmt) {
-    $bestStmt->bind_param("i", $restaurant_id);
-    $bestStmt->execute();
-    $best = $bestStmt->get_result()->fetch_assoc();
-    $bestSeller = $best["product_name"] ?? "-";
-    $bestStmt->close();
+    respond_json([
+        "success" => false,
+        "message" => "Unable to verify the owner account."
+    ], 500);
 }
 
-echo json_encode([
-    "salesToday" => (float)$sales["total_sales"],
-    "totalOrders" => (int)$totalOrders["total_orders"],
-    "pendingOrders" => (int)$pending["pending_orders"],
-    "completedOrders" => (int)$completed["completed_orders"],
-    "cancelledOrders" => (int)$cancelled["cancelled_orders"],
-    "averageOrderValue" => (float)$avg["avg_order"],
-    "bestSeller" => $bestSeller,
-    "totalProducts" => (int)$products["total_products"]
+$ownerStmt->bind_param(
+    "ii",
+    $user_id,
+    $restaurant_id
+);
+
+$ownerStmt->execute();
+
+$owner = $ownerStmt
+    ->get_result()
+    ->fetch_assoc();
+
+$ownerStmt->close();
+
+if (!$owner) {
+    respond_json([
+        "success" => false,
+        "message" => "Invalid owner restaurant session."
+    ], 403);
+}
+
+/* =========================================================
+   SUMMARY QUERY
+========================================================= */
+
+$summaryStmt = $conn->prepare("
+    SELECT
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN order_status = 'completed'
+                     AND DATE(created_at) = CURDATE()
+                    THEN total_amount
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS sales_today,
+
+        COUNT(*) AS total_orders,
+
+        SUM(
+            CASE
+                WHEN order_status = 'pending'
+                THEN 1
+                ELSE 0
+            END
+        ) AS pending_orders,
+
+        SUM(
+            CASE
+                WHEN order_status = 'completed'
+                THEN 1
+                ELSE 0
+            END
+        ) AS completed_orders,
+
+        SUM(
+            CASE
+                WHEN order_status = 'cancelled'
+                THEN 1
+                ELSE 0
+            END
+        ) AS cancelled_orders,
+
+        COALESCE(
+            AVG(
+                CASE
+                    WHEN order_status = 'completed'
+                    THEN total_amount
+                    ELSE NULL
+                END
+            ),
+            0
+        ) AS average_order_value
+
+    FROM tbl_orders
+    WHERE restaurant_id = ?
+");
+
+if (!$summaryStmt) {
+    error_log(
+        "get_dashboard_summary.php summary prepare error: " .
+        $conn->error
+    );
+
+    respond_json([
+        "success" => false,
+        "message" => "Unable to load dashboard summary."
+    ], 500);
+}
+
+$summaryStmt->bind_param(
+    "i",
+    $restaurant_id
+);
+
+$summaryStmt->execute();
+
+$summary = $summaryStmt
+    ->get_result()
+    ->fetch_assoc();
+
+$summaryStmt->close();
+
+/* =========================================================
+   TOTAL PRODUCTS
+========================================================= */
+
+$productStmt = $conn->prepare("
+    SELECT COUNT(*) AS total_products
+    FROM tbl_products
+    WHERE restaurant_id = ?
+");
+
+if (!$productStmt) {
+    error_log(
+        "get_dashboard_summary.php product prepare error: " .
+        $conn->error
+    );
+
+    respond_json([
+        "success" => false,
+        "message" => "Unable to load product total."
+    ], 500);
+}
+
+$productStmt->bind_param(
+    "i",
+    $restaurant_id
+);
+
+$productStmt->execute();
+
+$productSummary = $productStmt
+    ->get_result()
+    ->fetch_assoc();
+
+$productStmt->close();
+
+/* =========================================================
+   BEST-SELLING PRODUCT
+========================================================= */
+
+$bestSeller = "-";
+
+$bestSellerStmt = $conn->prepare("
+    SELECT
+        oi.product_name,
+        SUM(oi.quantity) AS total_quantity
+    FROM tbl_order_items oi
+    INNER JOIN tbl_orders o
+        ON o.order_id = oi.order_id
+    WHERE o.restaurant_id = ?
+      AND o.order_status = 'completed'
+    GROUP BY oi.product_name
+    ORDER BY total_quantity DESC
+    LIMIT 1
+");
+
+if ($bestSellerStmt) {
+    $bestSellerStmt->bind_param(
+        "i",
+        $restaurant_id
+    );
+
+    $bestSellerStmt->execute();
+
+    $bestSellerRow = $bestSellerStmt
+        ->get_result()
+        ->fetch_assoc();
+
+    if (
+        !empty(
+            $bestSellerRow["product_name"]
+        )
+    ) {
+        $bestSeller =
+            $bestSellerRow["product_name"];
+    }
+
+    $bestSellerStmt->close();
+}
+
+/* =========================================================
+   RESPONSE
+========================================================= */
+
+respond_json([
+    "success" => true,
+
+    "restaurant" => [
+        "restaurant_id" => $restaurant_id,
+        "restaurant_name" =>
+            $owner["restaurant_name"],
+        "owner_name" =>
+            $owner["full_name"]
+    ],
+
+    "salesToday" =>
+        (float) (
+            $summary["sales_today"] ?? 0
+        ),
+
+    "totalOrders" =>
+        (int) (
+            $summary["total_orders"] ?? 0
+        ),
+
+    "pendingOrders" =>
+        (int) (
+            $summary["pending_orders"] ?? 0
+        ),
+
+    "completedOrders" =>
+        (int) (
+            $summary["completed_orders"] ?? 0
+        ),
+
+    "cancelledOrders" =>
+        (int) (
+            $summary["cancelled_orders"] ?? 0
+        ),
+
+    "averageOrderValue" =>
+        (float) (
+            $summary["average_order_value"] ?? 0
+        ),
+
+    "bestSeller" =>
+        $bestSeller,
+
+    "totalProducts" =>
+        (int) (
+            $productSummary["total_products"] ?? 0
+        )
 ]);
