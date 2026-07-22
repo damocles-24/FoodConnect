@@ -95,7 +95,8 @@ This repository contains the ongoing development of the FoodConnect Capstone Pro
 # 👨‍💻 Developers
 
 - Carlos Jay Miguel T. Porto
-- Angel Reception
+- Angel Recepcion
+- Ian Dela Cruz
 
 ---
 
