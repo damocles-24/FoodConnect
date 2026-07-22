@@ -501,27 +501,19 @@ if ($trustDevice) {
             (string) $_SERVER["HTTPS"]
         ) !== "off";
 
-    $cookieCreated =
-        setcookie(
-            "FOODCONNECT_OWNER_TRUST",
-            $cookieValue,
-            [
-                "expires" =>
-                    $trustedExpiresTimestamp,
+    $cookiePath =
+    "/FoodConnect; SameSite=Lax";
 
-                "path" =>
-                    "/FoodConnect",
-
-                "secure" =>
-                    $isHttps,
-
-                "httponly" =>
-                    true,
-
-                "samesite" =>
-                    "Lax"
-            ]
-        );
+$cookieCreated =
+    setcookie(
+        "FOODCONNECT_OWNER_TRUST",
+        $cookieValue,
+        $trustedExpiresTimestamp,
+        $cookiePath,
+        "",
+        $isHttps,
+        true
+    );
 
     if (!$cookieCreated) {
     /*
