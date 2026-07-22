@@ -1118,43 +1118,56 @@
 
     </div>
 
-    <!-- PARTNER ACCESS CODE -->
+        <!-- OWNER ACCOUNT LOGIN -->
 
     <div
-      id="partnerAccessCodeBox"
+      id="ownerLoginBox"
       style="display: none;"
     >
       <div class="owner-login-description">
         <p>
-          Enter the private FoodConnect Partner Portal
-          access code to continue.
+          Log in using your verified restaurant owner account.
+          Your application status determines which page you can access.
         </p>
       </div>
 
       <div class="staff-input-group">
-        <label for="partnerAccessCode">
-          Partner Access Code
+        <label for="ownerEmail">
+          Owner Email Address
+        </label>
+
+        <input
+          type="email"
+          id="ownerEmail"
+          placeholder="Enter owner email"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerPassword">
+          Password
         </label>
 
         <input
           type="password"
-          id="partnerAccessCode"
-          placeholder="Enter partner access code"
-          autocomplete="off"
+          id="ownerPassword"
+          placeholder="Enter password"
+          autocomplete="current-password"
         >
       </div>
 
       <button
         type="button"
-        id="verifyPartnerAccessBtn"
+        id="ownerLoginBtn"
         class="staff-login-btn"
       >
-        Continue
+        Login as Restaurant Owner
       </button>
 
       <button
         type="button"
-        id="backFromPartnerAccessBtn"
+        id="backToStaffPortalBtn"
         class="portal-secondary-btn"
       >
         <i class="fa-solid fa-arrow-left"></i>

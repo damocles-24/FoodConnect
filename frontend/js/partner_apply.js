@@ -1,3 +1,6 @@
+const API_BASE =
+    "/FoodConnect/api";
+
 const partnerForm =
     document.getElementById("partnerForm");
 
@@ -8,79 +11,365 @@ const submitButton =
     document.getElementById("submitButton");
 
 const buttonText =
-    submitButton.querySelector(".button-text");
+    submitButton?.querySelector(".button-text");
+
+const verificationSuccessPanel =
+    document.getElementById(
+        "verificationSuccessPanel"
+    );
+
+const submittedPartnerEmail =
+    document.getElementById(
+        "submittedPartnerEmail"
+    );
+
+const resendVerificationMessage =
+    document.getElementById(
+        "resendVerificationMessage"
+    );
+
+const resendPartnerVerificationButton =
+    document.getElementById(
+        "resendPartnerVerificationButton"
+    );
+
+const registerAnotherPartnerButton =
+    document.getElementById(
+        "registerAnotherPartnerButton"
+    );
+
+let registeredPartnerEmail = "";
+
+let resendCooldownInterval = null;
+
+/* =========================================================
+   MESSAGE HELPERS
+   ========================================================= */
 
 function showMessage(type, message) {
-    formMessage.className = `form-message ${type}`;
-    formMessage.textContent = message;
+    if (!formMessage) {
+        return;
+    }
+
+    formMessage.className =
+        `form-message ${type}`;
+
+    formMessage.textContent =
+        message;
 }
 
 function clearMessage() {
-    formMessage.className = "form-message";
-    formMessage.textContent = "";
+    if (!formMessage) {
+        return;
+    }
+
+    formMessage.className =
+        "form-message";
+
+    formMessage.textContent =
+        "";
 }
+
+function showResendMessage(
+    type,
+    message
+) {
+    if (!resendVerificationMessage) {
+        return;
+    }
+
+    resendVerificationMessage.className =
+        `form-message ${type}`;
+
+    resendVerificationMessage.textContent =
+        message;
+}
+
+function clearResendMessage() {
+    if (!resendVerificationMessage) {
+        return;
+    }
+
+    resendVerificationMessage.className =
+        "form-message";
+
+    resendVerificationMessage.textContent =
+        "";
+}
+
+/* =========================================================
+   BUTTON LOADING
+   ========================================================= */
 
 function setLoading(isLoading) {
-    submitButton.disabled = isLoading;
+    if (!submitButton) {
+        return;
+    }
 
-    buttonText.textContent = isLoading
-        ? "Submitting Application..."
-        : "Submit Partner Application";
+    submitButton.disabled =
+        isLoading;
+
+    if (buttonText) {
+        buttonText.textContent =
+            isLoading
+                ? "Submitting Application..."
+                : "Submit Partner Application";
+    }
 }
+
+function setResendButtonLoading(isLoading) {
+    if (!resendPartnerVerificationButton) {
+        return;
+    }
+
+    const label =
+        resendPartnerVerificationButton
+            .querySelector(".button-text");
+
+    resendPartnerVerificationButton.disabled =
+        isLoading;
+
+    if (label) {
+        label.textContent =
+            isLoading
+                ? "Sending Verification..."
+                : "Resend Verification Email";
+    }
+}
+
+/* =========================================================
+   RESPONSE HELPER
+   ========================================================= */
+
+async function readJsonResponse(response) {
+    const rawResponse =
+        await response.text();
+
+    try {
+        return JSON.parse(rawResponse);
+    } catch (error) {
+        console.error(
+            "Invalid JSON response:",
+            rawResponse
+        );
+
+        throw new Error(
+            "The server returned an invalid response."
+        );
+    }
+}
+
+/* =========================================================
+   SUCCESS PANEL
+   ========================================================= */
+
+function showVerificationSuccess(email) {
+    registeredPartnerEmail =
+        email;
+
+    if (submittedPartnerEmail) {
+        submittedPartnerEmail.textContent =
+            email;
+    }
+
+    partnerForm?.setAttribute(
+        "hidden",
+        ""
+    );
+
+    verificationSuccessPanel?.removeAttribute(
+        "hidden"
+    );
+
+    clearMessage();
+    clearResendMessage();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function showApplicationForm() {
+    registeredPartnerEmail = "";
+
+    if (resendCooldownInterval) {
+        window.clearInterval(
+            resendCooldownInterval
+        );
+
+        resendCooldownInterval = null;
+    }
+
+    verificationSuccessPanel?.setAttribute(
+        "hidden",
+        ""
+    );
+
+    partnerForm?.removeAttribute(
+        "hidden"
+    );
+
+    partnerForm?.reset();
+
+    clearMessage();
+    clearResendMessage();
+
+    if (
+        resendPartnerVerificationButton
+    ) {
+        resendPartnerVerificationButton.disabled =
+            false;
+
+        const label =
+            resendPartnerVerificationButton
+                .querySelector(".button-text");
+
+        if (label) {
+            label.textContent =
+                "Resend Verification Email";
+        }
+    }
+
+    document
+        .getElementById("full_name")
+        ?.focus();
+}
+
+/* =========================================================
+   PASSWORD VISIBILITY
+   ========================================================= */
 
 document
     .querySelectorAll(".toggle-password")
     .forEach((button) => {
-        button.addEventListener("click", () => {
-            const targetId =
-                button.dataset.target;
+        button.addEventListener(
+            "click",
+            () => {
+                const targetId =
+                    button.dataset.target;
 
-            const input =
-                document.getElementById(targetId);
+                const input =
+                    document.getElementById(
+                        targetId
+                    );
 
-            const icon =
-                button.querySelector("i");
+                const icon =
+                    button.querySelector("i");
 
-            const isPassword =
-                input.type === "password";
+                if (!input || !icon) {
+                    return;
+                }
 
-            input.type =
-                isPassword ? "text" : "password";
+                const isPassword =
+                    input.type === "password";
 
-            icon.className = isPassword
-                ? "fa-regular fa-eye-slash"
-                : "fa-regular fa-eye";
+                input.type =
+                    isPassword
+                        ? "text"
+                        : "password";
 
-            button.setAttribute(
-                "aria-label",
-                isPassword
-                    ? "Hide password"
-                    : "Show password"
-            );
-        });
+                icon.className =
+                    isPassword
+                        ? "fa-regular fa-eye-slash"
+                        : "fa-regular fa-eye";
+
+                button.setAttribute(
+                    "aria-label",
+                    isPassword
+                        ? "Hide password"
+                        : "Show password"
+                );
+            }
+        );
     });
 
-partnerForm.addEventListener(
+/* =========================================================
+   PARTNER REGISTRATION
+   ========================================================= */
+
+partnerForm?.addEventListener(
     "submit",
     async (event) => {
         event.preventDefault();
 
         clearMessage();
 
+        const fullName =
+            document
+                .getElementById("full_name")
+                ?.value
+                .trim() || "";
+
+        const email =
+            document
+                .getElementById("email")
+                ?.value
+                .trim()
+                .toLowerCase() || "";
+
+        const contactNumber =
+            document
+                .getElementById("contact_number")
+                ?.value
+                .trim() || "";
+
         const password =
             document
                 .getElementById("password")
-                .value;
+                ?.value || "";
 
         const confirmPassword =
             document
                 .getElementById("confirm_password")
-                .value;
+                ?.value || "";
+
+        const restaurantName =
+            document
+                .getElementById("restaurant_name")
+                ?.value
+                .trim() || "";
+
+        const restaurantAddress =
+            document
+                .getElementById("restaurant_address")
+                ?.value
+                .trim() || "";
+
+        const restaurantContact =
+            document
+                .getElementById("restaurant_contact")
+                ?.value
+                .trim() || "";
+
+        const cuisine =
+            document
+                .getElementById("cuisine")
+                ?.value || "";
 
         const agreement =
             document
                 .getElementById("agreement")
-                .checked;
+                ?.checked || false;
+
+        if (
+            !fullName ||
+            !email ||
+            !contactNumber ||
+            !password ||
+            !confirmPassword ||
+            !restaurantName ||
+            !restaurantAddress ||
+            !restaurantContact ||
+            !cuisine
+        ) {
+            showMessage(
+                "error",
+                "Please complete all required fields."
+            );
+
+            return;
+        }
 
         if (password.length < 8) {
             showMessage(
@@ -91,7 +380,10 @@ partnerForm.addEventListener(
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (
+            password !==
+            confirmPassword
+        ) {
             showMessage(
                 "error",
                 "Passwords do not match."
@@ -110,60 +402,30 @@ partnerForm.addEventListener(
         }
 
         const payload = {
-            full_name:
-                document
-                    .getElementById("full_name")
-                    .value
-                    .trim(),
-
-            email:
-                document
-                    .getElementById("email")
-                    .value
-                    .trim(),
-
-            contact_number:
-                document
-                    .getElementById("contact_number")
-                    .value
-                    .trim(),
-
+            full_name: fullName,
+            email,
+            contact_number: contactNumber,
             password,
-
-            restaurant_name:
-                document
-                    .getElementById("restaurant_name")
-                    .value
-                    .trim(),
-
-            restaurant_address:
-                document
-                    .getElementById("restaurant_address")
-                    .value
-                    .trim(),
-
+            restaurant_name: restaurantName,
+            restaurant_address: restaurantAddress,
             restaurant_contact:
-                document
-                    .getElementById("restaurant_contact")
-                    .value
-                    .trim(),
-
-            cuisine:
-                document
-                    .getElementById("cuisine")
-                    .value
+                restaurantContact,
+            cuisine
         };
 
         setLoading(true);
 
         try {
             const response = await fetch(
-                "/FoodConnect/api/partner_register.php",
+                `${API_BASE}/partner_register.php`,
                 {
                     method: "POST",
 
                     headers: {
                         "Content-Type":
+                            "application/json",
+
+                        "Accept":
                             "application/json"
                     },
 
@@ -173,19 +435,27 @@ partnerForm.addEventListener(
             );
 
             const result =
-                await response.json();
+                await readJsonResponse(
+                    response
+                );
 
-            if (!response.ok || !result.success) {
+            if (
+                !response.ok ||
+                !result.success
+            ) {
                 throw new Error(
                     result.message ||
                     "Unable to submit the application."
                 );
             }
 
-            showMessage(
-                "success",
-                result.message ||
-                "Application submitted successfully."
+            /*
+            Do not reset the form before preserving
+            the registered owner email.
+            */
+
+            showVerificationSuccess(
+                email
             );
 
             partnerForm.reset();
@@ -205,3 +475,153 @@ partnerForm.addEventListener(
         }
     }
 );
+
+/* =========================================================
+   RESEND VERIFICATION
+   ========================================================= */
+
+function startResendCooldown(seconds) {
+    if (
+        !resendPartnerVerificationButton
+    ) {
+        return;
+    }
+
+    if (resendCooldownInterval) {
+        window.clearInterval(
+            resendCooldownInterval
+        );
+    }
+
+    let remaining =
+        seconds;
+
+    const label =
+        resendPartnerVerificationButton
+            .querySelector(".button-text");
+
+    resendPartnerVerificationButton.disabled =
+        true;
+
+    if (label) {
+        label.textContent =
+            `Resend in ${remaining}s`;
+    }
+
+    resendCooldownInterval =
+        window.setInterval(() => {
+            remaining -= 1;
+
+            if (remaining <= 0) {
+                window.clearInterval(
+                    resendCooldownInterval
+                );
+
+                resendCooldownInterval =
+                    null;
+
+                resendPartnerVerificationButton.disabled =
+                    false;
+
+                if (label) {
+                    label.textContent =
+                        "Resend Verification Email";
+                }
+
+                return;
+            }
+
+            if (label) {
+                label.textContent =
+                    `Resend in ${remaining}s`;
+            }
+        }, 1000);
+}
+
+resendPartnerVerificationButton
+    ?.addEventListener(
+        "click",
+        async () => {
+            clearResendMessage();
+
+            if (!registeredPartnerEmail) {
+                showResendMessage(
+                    "error",
+                    "The registered partner email is unavailable."
+                );
+
+                return;
+            }
+
+            setResendButtonLoading(true);
+
+            try {
+                const response = await fetch(
+                    `${API_BASE}/resend_verification.php`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "Accept":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email:
+                                registeredPartnerEmail
+                        })
+                    }
+                );
+
+                const result =
+                    await readJsonResponse(
+                        response
+                    );
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
+                    throw new Error(
+                        result.message ||
+                        result.error ||
+                        "Unable to resend the verification email."
+                    );
+                }
+
+                showResendMessage(
+                    "success",
+                    result.message ||
+                    "Verification email sent. Please check your inbox."
+                );
+
+                startResendCooldown(30);
+            } catch (error) {
+                console.error(
+                    "Partner resend verification error:",
+                    error
+                );
+
+                showResendMessage(
+                    "error",
+                    error.message ||
+                    "Unable to resend the verification email."
+                );
+
+                setResendButtonLoading(false);
+            }
+        }
+    );
+
+/* =========================================================
+   REGISTER ANOTHER PARTNER
+   ========================================================= */
+
+registerAnotherPartnerButton
+    ?.addEventListener(
+        "click",
+        showApplicationForm
+    );

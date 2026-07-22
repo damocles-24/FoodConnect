@@ -977,3 +977,141 @@ a {
         font-size: 16px;
     }
 }
+
+/* =========================================================
+   PARTNER VERIFICATION SUCCESS
+   ========================================================= */
+
+.verification-success-panel {
+    padding: 34px 8px 10px;
+
+    text-align: center;
+}
+
+.verification-success-panel[hidden] {
+    display: none;
+}
+
+.verification-success-icon {
+    width: 78px;
+    height: 78px;
+
+    display: grid;
+    place-items: center;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+
+    color: #f58220;
+    background: #fff1e5;
+
+    font-size: 31px;
+}
+
+.verification-success-kicker {
+    margin: 0 0 7px;
+
+    color: #43b047;
+
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.verification-success-panel h2 {
+    margin: 0;
+
+    color: #2f4149;
+
+    font-size: 28px;
+}
+
+.verification-success-description {
+    margin: 16px 0 6px;
+
+    color: #71828a;
+
+    font-size: 14px;
+}
+
+.submitted-partner-email {
+    display: block;
+
+    margin-bottom: 17px;
+
+    color: #2f4149;
+
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+
+.verification-success-note {
+    max-width: 470px;
+
+    margin: 0 auto 22px;
+
+    color: #60727a;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.verification-action-button {
+    width: 100%;
+
+    margin-top: 4px;
+}
+
+.partner-portal-link {
+    min-height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    margin-top: 12px;
+    padding: 12px 18px;
+
+    border: 1px solid #f58220;
+    border-radius: 12px;
+
+    color: #f58220;
+    background: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.partner-portal-link:hover {
+    color: #ffffff;
+    background: #f58220;
+}
+
+.register-another-button {
+    margin-top: 18px;
+    padding: 5px;
+
+    border: 0;
+
+    color: #71828a;
+    background: transparent;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.register-another-button:hover {
+    color: #f58220;
+    text-decoration: underline;
+}

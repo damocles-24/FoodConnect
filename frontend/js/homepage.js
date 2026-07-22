@@ -121,11 +121,6 @@ document.addEventListener(
         "staffAccessPanel"
       );
 
-    const partnerAccessCodeBox =
-      document.getElementById(
-        "partnerAccessCodeBox"
-      );
-
     const ownerLoginBox =
       document.getElementById(
         "ownerLoginBox"
@@ -136,24 +131,9 @@ document.addEventListener(
         "openPartnerPortalBtn"
       );
 
-    const partnerAccessCode =
+          const backToStaffPortalBtn =
       document.getElementById(
-        "partnerAccessCode"
-      );
-
-    const verifyPartnerAccessBtn =
-      document.getElementById(
-        "verifyPartnerAccessBtn"
-      );
-
-    const backFromPartnerAccessBtn =
-      document.getElementById(
-        "backFromPartnerAccessBtn"
-      );
-
-    const backToPartnerAccessBtn =
-      document.getElementById(
-        "backToPartnerAccessBtn"
+        "backToStaffPortalBtn"
       );
 
     const backToAccessCodeBtn =
@@ -280,7 +260,7 @@ document.addEventListener(
           : "#ff777b";
     }
 
-    /* =========================
+        /* =========================
        PORTAL VIEWS
     ========================= */
 
@@ -288,11 +268,6 @@ document.addEventListener(
       if (staffAccessPanel) {
         staffAccessPanel.style.display =
           "block";
-      }
-
-      if (partnerAccessCodeBox) {
-        partnerAccessCodeBox.style.display =
-          "none";
       }
 
       if (ownerLoginBox) {
@@ -354,20 +329,15 @@ document.addEventListener(
       }, 50);
     }
 
-    function showPartnerAccessView() {
+    function showOwnerLoginView() {
       if (staffAccessPanel) {
         staffAccessPanel.style.display =
           "none";
       }
 
-      if (partnerAccessCodeBox) {
-        partnerAccessCodeBox.style.display =
-          "block";
-      }
-
       if (ownerLoginBox) {
         ownerLoginBox.style.display =
-          "none";
+          "block";
       }
 
       staffAccessCard?.classList.add(
@@ -381,49 +351,7 @@ document.addEventListener(
 
       if (staffPortalSubtitle) {
         staffPortalSubtitle.textContent =
-          "Private restaurant partner access";
-      }
-
-      if (staffPortalIcon) {
-        staffPortalIcon.className =
-          "fa-solid fa-shield-halved";
-      }
-
-      setStaffMessage("");
-
-      window.setTimeout(() => {
-        partnerAccessCode?.focus();
-      }, 50);
-    }
-
-    function showOwnerLoginView() {
-      if (staffAccessPanel) {
-        staffAccessPanel.style.display =
-          "none";
-      }
-
-      if (partnerAccessCodeBox) {
-        partnerAccessCodeBox.style.display =
-          "none";
-      }
-
-      if (ownerLoginBox) {
-        ownerLoginBox.style.display =
-          "block";
-      }
-
-      staffAccessCard?.classList.add(
-        "partner-mode"
-      );
-
-      if (staffPortalTitle) {
-        staffPortalTitle.textContent =
-          "Restaurant Owner Login";
-      }
-
-      if (staffPortalSubtitle) {
-        staffPortalSubtitle.textContent =
-          "Partner access verified";
+          "Restaurant owner account access";
       }
 
       if (staffPortalIcon) {
@@ -467,10 +395,6 @@ document.addEventListener(
 
       if (staffPassword) {
         staffPassword.value = "";
-      }
-
-      if (partnerAccessCode) {
-        partnerAccessCode.value = "";
       }
 
       if (ownerEmail) {
@@ -1361,6 +1285,34 @@ function updateAllRestaurantCards() {
     );
 
     /* =========================
+   OPEN PARTNER PORTAL FROM URL
+========================= */
+
+const pageParams =
+  new URLSearchParams(
+    window.location.search
+  );
+
+if (
+  pageParams.get("open") ===
+  "partner-portal"
+) {
+  openStaffModal();
+  showOwnerLoginView();
+
+  /*
+  Remove the query parameter so refreshing the
+  homepage does not repeatedly reopen the portal.
+  */
+
+  window.history.replaceState(
+    {},
+    document.title,
+    window.location.pathname
+  );
+}
+
+    /* =========================
        CLOSE STAFF MODAL
     ========================= */
 
@@ -1373,123 +1325,20 @@ function updateAllRestaurantCards() {
        PORTAL NAVIGATION
     ========================= */
 
-    openPartnerPortalBtn?.addEventListener(
+        openPartnerPortalBtn?.addEventListener(
       "click",
-      showPartnerAccessView
+      showOwnerLoginView
     );
 
-    backFromPartnerAccessBtn?.addEventListener(
+    backToStaffPortalBtn?.addEventListener(
       "click",
       showStaffAccessView
-    );
-
-    backToPartnerAccessBtn?.addEventListener(
-      "click",
-      showPartnerAccessView
     );
 
     backToAccessCodeBtn?.addEventListener(
       "click",
       showStaffAccessView
     );
-
-    /* =========================
-       VERIFY PARTNER ACCESS
-    ========================= */
-
-    verifyPartnerAccessBtn
-      ?.addEventListener(
-        "click",
-        async () => {
-          const accessCode =
-            partnerAccessCode
-              ?.value.trim() || "";
-
-          setStaffMessage("");
-
-          if (!accessCode) {
-            setStaffMessage(
-              "Enter the partner portal access code."
-            );
-
-            partnerAccessCode?.focus();
-
-            return;
-          }
-
-          verifyPartnerAccessBtn.disabled =
-            true;
-
-          verifyPartnerAccessBtn.textContent =
-            "Verifying...";
-
-          try {
-            const response =
-              await fetch(
-                `${window.API}/verify_partner_access.php`,
-                {
-                  method: "POST",
-                  credentials: "include",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json",
-
-                    "Accept":
-                      "application/json"
-                  },
-
-                  body: JSON.stringify({
-                    access_code:
-                      accessCode
-                  })
-                }
-              );
-
-            const data =
-              await readJsonResponse(
-                response
-              );
-
-            if (
-              !response.ok ||
-              !data.success
-            ) {
-              setStaffMessage(
-                data.message ||
-                "Invalid partner access code."
-              );
-
-              partnerAccessCode?.select();
-
-              return;
-            }
-
-            if (partnerAccessCode) {
-              partnerAccessCode.value =
-                "";
-            }
-
-            showOwnerLoginView();
-          } catch (error) {
-            console.error(
-              "Partner access verification failed:",
-              error
-            );
-
-            setStaffMessage(
-              error.message ||
-              "Cannot connect to the server."
-            );
-          } finally {
-            verifyPartnerAccessBtn.disabled =
-              false;
-
-            verifyPartnerAccessBtn.textContent =
-              "Continue";
-          }
-        }
-      );
 
     /* =========================
        VERIFY STAFF ACCESS CODE
@@ -1915,17 +1764,6 @@ function updateAllRestaurantCards() {
           event.preventDefault();
 
           staffLoginBtn?.click();
-        }
-      }
-    );
-
-    partnerAccessCode?.addEventListener(
-      "keydown",
-      (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-
-          verifyPartnerAccessBtn?.click();
         }
       }
     );

@@ -603,36 +603,101 @@
             </label>
 
             <div
-                id="formMessage"
-                class="form-message"
-                aria-live="polite"
-            ></div>
+    id="formMessage"
+    class="form-message"
+    aria-live="polite"
+></div>
 
-            <button
-                type="submit"
-                id="submitButton"
-                class="submit-button"
-            >
+<button
+    type="submit"
+    id="submitButton"
+    class="submit-button"
+>
+    <span class="button-text">
+        Submit Partner Application
+    </span>
 
-                <span class="button-text">
-                    Submit Partner Application
-                </span>
+    <i class="fa-solid fa-arrow-right"></i>
+</button>
 
-                <i class="fa-solid fa-arrow-right"></i>
+<p class="login-text">
 
-            </button>
+    Already have a partner account?
 
-            <p class="login-text">
+    <a href="index.html?open=partner-portal">
+        Open Partner Access Portal
+    </a>
 
-                Already submitted an application?
-
-                <a href="login.html">
-                    Log in to check your status
-                </a>
-
-            </p>
+</p>
 
         </form>
+
+        <div
+    id="verificationSuccessPanel"
+    class="verification-success-panel"
+    hidden
+>
+    <div class="verification-success-icon">
+        <i class="fa-regular fa-envelope"></i>
+    </div>
+
+    <p class="verification-success-kicker">
+        Application Received
+    </p>
+
+    <h2>
+        Check your email
+    </h2>
+
+    <p class="verification-success-description">
+        We sent a verification link to:
+    </p>
+
+    <strong
+        id="submittedPartnerEmail"
+        class="submitted-partner-email"
+    ></strong>
+
+    <p class="verification-success-note">
+        Verify your email to continue setting up your restaurant.
+        The verification link is valid for 24 hours.
+    </p>
+
+    <div
+        id="resendVerificationMessage"
+        class="form-message"
+        aria-live="polite"
+    ></div>
+
+    <button
+        type="button"
+        id="resendPartnerVerificationButton"
+        class="submit-button verification-action-button"
+    >
+        <span class="button-text">
+            Resend Verification Email
+        </span>
+
+        <i class="fa-regular fa-paper-plane"></i>
+    </button>
+
+    <a
+        href="index.html?open=partner-portal"
+        class="partner-portal-link"
+    >
+        <i class="fa-solid fa-lock"></i>
+
+        Open Partner Access Portal
+    </a>
+
+    <button
+        type="button"
+        id="registerAnotherPartnerButton"
+        class="register-another-button"
+    >
+        Register another restaurant
+    </button>
+</div>
 
     </section>
 
@@ -648,7 +713,6 @@
 
 </footer>
 
-<script src="../js/partner_apply.js"></script>
-
+<script src="../js/partner_apply.js?v=2"></script>
 </body>
 </html>

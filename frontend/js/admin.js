@@ -1315,33 +1315,449 @@ function openApplicationDetails(
       }
     </div>
 
-    ${
+        ${
       application.application_status ===
       "submitted"
         ? `
-          <div
-            style="
-              margin-top:22px;
-              padding:15px;
-              border-radius:12px;
-              background:#fff6e8;
-              color:#89520e;
-            "
-          >
-            Approval and rejection controls
-            will be added next.
+          <div class="application-review-panel">
+            <h3>
+              Review application
+            </h3>
+
+            <p>
+              Approving this application will create
+              the restaurant account and connect it
+              to the owner.
+            </p>
+
+            <div
+              id="rejectionReasonGroup"
+              class="rejection-reason-group hidden"
+            >
+              <label for="applicationRejectionReason">
+                Rejection reason
+              </label>
+
+              <textarea
+                id="applicationRejectionReason"
+                rows="4"
+                maxlength="1000"
+                placeholder="Explain what the owner must correct before resubmitting."
+              ></textarea>
+
+              <small>
+                Use at least 10 characters.
+              </small>
+            </div>
+
+            <p
+              id="applicationReviewMessage"
+              class="application-review-message"
+            ></p>
+
+            <div class="application-review-actions">
+              <button
+                type="button"
+                id="approveApplicationButton"
+                class="approve-button"
+              >
+                <i class="fa-solid fa-check"></i>
+                Approve Application
+              </button>
+
+              <button
+                type="button"
+                id="showRejectApplicationButton"
+                class="reject-button"
+              >
+                <i class="fa-solid fa-xmark"></i>
+                Reject Application
+              </button>
+
+              <button
+                type="button"
+                id="confirmRejectApplicationButton"
+                class="reject-button hidden"
+              >
+                Confirm Rejection
+              </button>
+
+              <button
+                type="button"
+                id="cancelRejectApplicationButton"
+                class="secondary-button hidden"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         `
         : ""
     }
+      
   `;
 
-  applicationModal?.classList.remove(
+    applicationModal?.classList.remove(
     "hidden"
   );
 
   document.body.style.overflow =
     "hidden";
+
+  bindApplicationReviewControls(
+    application
+  );
+}
+
+function bindApplicationReviewControls(
+  application
+) {
+  if (
+    application.application_status !==
+    "submitted"
+  ) {
+    return;
+  }
+
+  const approveButton =
+    document.getElementById(
+      "approveApplicationButton"
+    );
+
+  const showRejectButton =
+    document.getElementById(
+      "showRejectApplicationButton"
+    );
+
+  const confirmRejectButton =
+    document.getElementById(
+      "confirmRejectApplicationButton"
+    );
+
+  const cancelRejectButton =
+    document.getElementById(
+      "cancelRejectApplicationButton"
+    );
+
+  const rejectionReasonGroup =
+    document.getElementById(
+      "rejectionReasonGroup"
+    );
+
+  const rejectionReasonInput =
+    document.getElementById(
+      "applicationRejectionReason"
+    );
+
+  approveButton?.addEventListener(
+    "click",
+    async () => {
+      const confirmed =
+        window.confirm(
+          `Approve ${application.restaurant_name}? This will create its restaurant account.`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      await reviewPartnerApplication({
+        applicationId:
+          application.application_id,
+
+        decision:
+          "approve"
+      });
+    }
+  );
+
+  showRejectButton?.addEventListener(
+    "click",
+    () => {
+      rejectionReasonGroup
+        ?.classList.remove(
+          "hidden"
+        );
+
+      showRejectButton.classList.add(
+        "hidden"
+      );
+
+      confirmRejectButton
+        ?.classList.remove(
+          "hidden"
+        );
+
+      cancelRejectButton
+        ?.classList.remove(
+          "hidden"
+        );
+
+      rejectionReasonInput?.focus();
+    }
+  );
+
+  cancelRejectButton?.addEventListener(
+    "click",
+    () => {
+      rejectionReasonGroup
+        ?.classList.add(
+          "hidden"
+        );
+
+      showRejectButton
+        ?.classList.remove(
+          "hidden"
+        );
+
+      confirmRejectButton
+        ?.classList.add(
+          "hidden"
+        );
+
+      cancelRejectButton.classList.add(
+        "hidden"
+      );
+
+      if (rejectionReasonInput) {
+        rejectionReasonInput.value = "";
+      }
+
+      setApplicationReviewMessage("");
+    }
+  );
+
+  confirmRejectButton?.addEventListener(
+    "click",
+    async () => {
+      const reason =
+        rejectionReasonInput
+          ?.value
+          .trim() || "";
+
+      if (reason.length < 10) {
+        setApplicationReviewMessage(
+          "Enter a clear rejection reason with at least 10 characters."
+        );
+
+        rejectionReasonInput?.focus();
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          `Reject ${application.restaurant_name}'s application?`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      await reviewPartnerApplication({
+        applicationId:
+          application.application_id,
+
+        decision:
+          "reject",
+
+        rejectionReason:
+          reason
+      });
+    }
+  );
+}
+
+async function reviewPartnerApplication({
+  applicationId,
+  decision,
+  rejectionReason = ""
+}) {
+  const approveButton =
+    document.getElementById(
+      "approveApplicationButton"
+    );
+
+  const showRejectButton =
+    document.getElementById(
+      "showRejectApplicationButton"
+    );
+
+  const confirmRejectButton =
+    document.getElementById(
+      "confirmRejectApplicationButton"
+    );
+
+  const cancelRejectButton =
+    document.getElementById(
+      "cancelRejectApplicationButton"
+    );
+
+  const reviewButtons = [
+    approveButton,
+    showRejectButton,
+    confirmRejectButton,
+    cancelRejectButton
+  ];
+
+  reviewButtons.forEach(
+    (button) => {
+      if (button) {
+        button.disabled = true;
+      }
+    }
+  );
+
+  setApplicationReviewMessage(
+    decision === "approve"
+      ? "Approving restaurant application..."
+      : "Rejecting restaurant application...",
+    "loading"
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/review_partner_application.php`,
+      {
+        method: "POST",
+        credentials: "include",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          "Accept":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          application_id:
+            Number(applicationId),
+
+          decision,
+
+          rejection_reason:
+            rejectionReason
+        })
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      closeDetailsModal();
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to review the application."
+      );
+    }
+
+    setApplicationReviewMessage(
+      data.message,
+      "success"
+    );
+
+    showDashboardMessage(
+      data.message,
+      "success"
+    );
+
+    window.setTimeout(
+      async () => {
+        closeDetailsModal();
+
+        await loadApplications();
+      },
+      700
+    );
+  } catch (error) {
+    console.error(
+      "Application review failed:",
+      error
+    );
+
+    setApplicationReviewMessage(
+      error.message ||
+      "Unable to review the application."
+    );
+
+    reviewButtons.forEach(
+      (button) => {
+        if (button) {
+          button.disabled = false;
+        }
+      }
+    );
+  }
+}
+
+function setApplicationReviewMessage(
+  message = "",
+  type = "error"
+) {
+  const messageElement =
+    document.getElementById(
+      "applicationReviewMessage"
+    );
+
+  if (!messageElement) {
+    return;
+  }
+
+  messageElement.textContent =
+    message;
+
+  messageElement.classList.remove(
+    "success",
+    "error",
+    "loading"
+  );
+
+  if (message) {
+    messageElement.classList.add(
+      type
+    );
+  }
+}
+
+function showDashboardMessage(
+  message,
+  type = "success"
+) {
+  const dashboardMessage =
+    document.getElementById(
+      "dashboardMessage"
+    );
+
+  if (!dashboardMessage) {
+    return;
+  }
+
+  dashboardMessage.textContent =
+    message;
+
+  dashboardMessage.className =
+    `dashboard-message ${type}`;
+
+  window.setTimeout(
+    () => {
+      dashboardMessage.classList.add(
+        "hidden"
+      );
+    },
+    4000
+  );
 }
 
 function closeDetailsModal() {

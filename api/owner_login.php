@@ -8,9 +8,9 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", "0");
 
 /* =========================================================
-   SESSION CONFIGURATION
-   Must match verify_partner_access.php exactly.
+   SESSION AND DATABASE CONFIGURATION
    ========================================================= */
+
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 
@@ -47,49 +47,6 @@ if (
             "message" => "Method not allowed."
         ],
         405
-    );
-}
-
-/* =========================================================
-   REQUIRE PARTNER PORTAL ACCESS
-   ========================================================= */
-
-$partnerAccessVerified =
-    !empty(
-        $_SESSION["partner_access_verified"]
-    );
-
-$partnerAccessVerifiedAt =
-    (int) (
-        $_SESSION["partner_access_verified_at"]
-        ?? 0
-    );
-
-$partnerAccessAge =
-    $partnerAccessVerifiedAt > 0
-        ? time() - $partnerAccessVerifiedAt
-        : PHP_INT_MAX;
-
-$partnerAccessExpired =
-    $partnerAccessAge > 600;
-
-if (
-    !$partnerAccessVerified ||
-    $partnerAccessVerifiedAt <= 0 ||
-    $partnerAccessExpired
-) {
-    unset(
-        $_SESSION["partner_access_verified"],
-        $_SESSION["partner_access_verified_at"]
-    );
-
-    respond_json(
-        [
-            "success" => false,
-            "message" =>
-                "Partner portal access verification is required."
-        ],
-        403
     );
 }
 
@@ -532,15 +489,9 @@ $_SESSION["restaurant_id"] =
 $_SESSION["full_name"] =
     (string) $user["full_name"];
 
-    $_SESSION["logged_in"] = true;
+   $_SESSION["logged_in"] = true;
 $_SESSION["authenticated_at"] = time();
 
-/*
-Consume the temporary partner access verification.
-
-The partner access code must be entered again during the next
-owner login.
-*/
 
 /*
 |--------------------------------------------------------------------------
