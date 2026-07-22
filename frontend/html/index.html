@@ -1176,63 +1176,78 @@
       </button>
     </div>
 
-    <!-- OWNER ACCOUNT LOGIN -->
+    <!-- OWNER EMAIL CODE VERIFICATION -->
 
-    <div
-      id="ownerLoginBox"
-      style="display: none;"
+<div
+  id="ownerVerificationBox"
+  style="display: none;"
+>
+  <div class="owner-login-description">
+    <p>
+      We sent a 6-digit verification code to:
+    </p>
+
+    <strong id="ownerVerificationEmail">
+      Your registered email
+    </strong>
+  </div>
+
+  <div class="staff-input-group">
+    <label for="ownerVerificationCode">
+      Email Verification Code
+    </label>
+
+    <input
+      type="text"
+      id="ownerVerificationCode"
+      placeholder="Enter 6-digit code"
+      inputmode="numeric"
+      autocomplete="one-time-code"
+      maxlength="6"
+      pattern="[0-9]{6}"
     >
-      <div class="owner-login-description">
-        <p>
-          Partner access verified. Log in using your
-          registered restaurant owner account.
-        </p>
-      </div>
+  </div>
 
-      <div class="staff-input-group">
-        <label for="ownerEmail">
-          Owner Email Address
-        </label>
+  <label
+  class="owner-trusted-device-option"
+  for="trustOwnerDevice"
+>
+  <input
+    type="checkbox"
+    id="trustOwnerDevice"
+  >
 
-        <input
-          type="email"
-          id="ownerEmail"
-          placeholder="Enter owner email"
-          autocomplete="email"
-        >
-      </div>
+  <span>
+    Trust this device for 30 days
+  </span>
+</label>
 
-      <div class="staff-input-group">
-        <label for="ownerPassword">
-          Password
-        </label>
+  <button
+    type="button"
+    id="verifyOwnerCodeBtn"
+    class="staff-login-btn"
+  >
+    Verify and Continue
+  </button>
 
-        <input
-          type="password"
-          id="ownerPassword"
-          placeholder="Enter password"
-          autocomplete="current-password"
-        >
-      </div>
+  <button
+    type="button"
+    id="resendOwnerCodeBtn"
+    class="portal-secondary-btn"
+  >
+    Resend Code
+  </button>
 
-      <button
-        type="button"
-        id="ownerLoginBtn"
-        class="staff-login-btn"
-      >
-        Login as Restaurant Owner
-      </button>
+  <button
+    type="button"
+    id="backToOwnerLoginBtn"
+    class="portal-secondary-btn"
+  >
+    <i class="fa-solid fa-arrow-left"></i>
 
-      <button
-        type="button"
-        id="backToPartnerAccessBtn"
-        class="portal-secondary-btn"
-      >
-        <i class="fa-solid fa-arrow-left"></i>
-
-        Back to Partner Access Code
-      </button>
-    </div>
+    Back to Owner Login
+  </button>
+</div>
 
     <p
       id="staffLoginMsg"

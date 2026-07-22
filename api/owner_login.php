@@ -1,18 +1,35 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Pragma: no-cache");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ini_set("display_errors", "0");
+header(
+    "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
+);
+
+header(
+    "Pragma: no-cache"
+);
+
+error_reporting(
+    E_ALL &
+    ~E_NOTICE &
+    ~E_WARNING
+);
+
+ini_set(
+    "display_errors",
+    "0"
+);
 
 /* =========================================================
-   SESSION AND DATABASE CONFIGURATION
+   SESSION, DATABASE, AND MAIL CONFIGURATION
    ========================================================= */
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/mailer.php";
 
 /* =========================================================
    RESPONSE HELPER
@@ -22,7 +39,9 @@ function respond_json(
     array $data,
     int $statusCode = 200
 ): void {
-    http_response_code($statusCode);
+    http_response_code(
+        $statusCode
+    );
 
     echo json_encode(
         $data,
@@ -33,18 +52,122 @@ function respond_json(
 }
 
 /* =========================================================
+   EMAIL MASKING
+   ========================================================= */
+
+function mask_email_address(
+    string $email
+): string {
+    $parts =
+        explode(
+            "@",
+            $email,
+            2
+        );
+
+    if (count($parts) !== 2) {
+        return $email;
+    }
+
+    [$localPart, $domain] =
+        $parts;
+
+    $localLength =
+        strlen(
+            $localPart
+        );
+
+    if ($localLength <= 2) {
+        $maskedLocal =
+            substr(
+                $localPart,
+                0,
+                1
+            ) .
+            "*";
+    } else {
+        $maskedLocal =
+            substr(
+                $localPart,
+                0,
+                2
+            ) .
+            str_repeat(
+                "*",
+                max(
+                    1,
+                    $localLength - 2
+                )
+            );
+    }
+
+    return
+        $maskedLocal .
+        "@" .
+        $domain;
+}
+
+/* =========================================================
+   HTTPS CHECK
+   ========================================================= */
+
+function request_is_https(): bool
+{
+    return
+        !empty(
+            $_SERVER["HTTPS"]
+        ) &&
+        strtolower(
+            (string) $_SERVER["HTTPS"]
+        ) !== "off";
+}
+
+/* =========================================================
+   REMOVE TRUSTED-DEVICE COOKIE
+   ========================================================= */
+
+function clear_owner_trusted_cookie(): void
+{
+    setcookie(
+        "FOODCONNECT_OWNER_TRUST",
+        "",
+        [
+            "expires" =>
+                time() - 3600,
+
+            "path" =>
+                "/FoodConnect",
+
+            "secure" =>
+                request_is_https(),
+
+            "httponly" =>
+                true,
+
+            "samesite" =>
+                "Lax"
+        ]
+    );
+}
+
+/* =========================================================
    REQUIRE POST REQUEST
    ========================================================= */
 
-if (
+$requestMethod =
     strtoupper(
-        (string) ($_SERVER["REQUEST_METHOD"] ?? "")
-    ) !== "POST"
-) {
+        (string) (
+            $_SERVER["REQUEST_METHOD"]
+            ?? ""
+        )
+    );
+
+if ($requestMethod !== "POST") {
     respond_json(
         [
             "success" => false,
-            "message" => "Method not allowed."
+            "message" =>
+                "Method not allowed."
         ],
         405
     );
@@ -55,7 +178,9 @@ if (
    ========================================================= */
 
 $rawInput =
-    file_get_contents("php://input");
+    file_get_contents(
+        "php://input"
+    );
 
 $input =
     json_decode(
@@ -67,22 +192,33 @@ if (!is_array($input)) {
     respond_json(
         [
             "success" => false,
-            "message" => "Invalid request data."
+            "message" =>
+                "Invalid request data."
         ],
         400
     );
 }
 
-$email = strtolower(
-    trim(
-        (string) ($input["email"] ?? "")
-    )
-);
+$email =
+    strtolower(
+        trim(
+            (string) (
+                $input["email"]
+                ?? ""
+            )
+        )
+    );
 
 $password =
-    (string) ($input["password"] ?? "");
+    (string) (
+        $input["password"]
+        ?? ""
+    );
 
-if ($email === "" || $password === "") {
+if (
+    $email === "" ||
+    $password === ""
+) {
     respond_json(
         [
             "success" => false,
@@ -113,20 +249,23 @@ if (
    FIND OWNER ACCOUNT
    ========================================================= */
 
-$accountStmt = $conn->prepare("
-    SELECT
-        user_id,
-        restaurant_id,
-        role,
-        full_name,
-        email,
-        password_hash,
-        status,
-        is_verified
-    FROM tbl_users
-    WHERE email = ?
-    LIMIT 1
-");
+$accountStmt =
+    $conn->prepare("
+        SELECT
+            user_id,
+            restaurant_id,
+            role,
+            full_name,
+            email,
+            password_hash,
+            status,
+            is_verified
+        FROM
+            tbl_users
+        WHERE
+            email = ?
+        LIMIT 1
+    ");
 
 if (!$accountStmt) {
     error_log(
@@ -175,15 +314,17 @@ $user =
 $accountStmt->close();
 
 /*
-Use one generic message when either the email or password is
-incorrect. This prevents revealing whether an email exists.
+Use one generic message when either the email or password
+is incorrect. This avoids revealing whether an email exists.
 */
 
 if (
     !$user ||
     !password_verify(
         $password,
-        (string) $user["password_hash"]
+        (string) $user[
+            "password_hash"
+        ]
     )
 ) {
     respond_json(
@@ -197,14 +338,15 @@ if (
 }
 
 /* =========================================================
-   OWNER ROLE VALIDATION
+   OWNER ROLE AND STATUS VALIDATION
    ========================================================= */
 
-$role = strtolower(
-    trim(
-        (string) $user["role"]
-    )
-);
+$role =
+    strtolower(
+        trim(
+            (string) $user["role"]
+        )
+    );
 
 if ($role !== "owner") {
     respond_json(
@@ -247,35 +389,40 @@ $userId =
     (int) $user["user_id"];
 
 $restaurantId =
-    !empty($user["restaurant_id"])
-        ? (int) $user["restaurant_id"]
+    !empty(
+        $user["restaurant_id"]
+    )
+        ? (int) $user[
+            "restaurant_id"
+        ]
         : null;
 
-$restaurant = null;
+$restaurant =
+    null;
 
 /* =========================================================
    CHECK FOR OWNER RESTAURANT
-
-   This checks tbl_restaurants through owner_id instead of
-   trusting only tbl_users.restaurant_id. This supports older
-   accounts whose restaurant_id may not yet be synchronized.
    ========================================================= */
 
-$restaurantStmt = $conn->prepare("
-    SELECT
-        restaurant_id,
-        name,
-        address,
-        contact_number,
-        opening_hours,
-        delivery_fee,
-        business_status,
-        owner_id
-    FROM tbl_restaurants
-    WHERE owner_id = ?
-    ORDER BY restaurant_id ASC
-    LIMIT 1
-");
+$restaurantStmt =
+    $conn->prepare("
+        SELECT
+            restaurant_id,
+            name,
+            address,
+            contact_number,
+            opening_hours,
+            delivery_fee,
+            business_status,
+            owner_id
+        FROM
+            tbl_restaurants
+        WHERE
+            owner_id = ?
+        ORDER BY
+            restaurant_id ASC
+        LIMIT 1
+    ");
 
 if (!$restaurantStmt) {
     error_log(
@@ -329,23 +476,34 @@ $restaurantStmt->close();
 
 if ($restaurant) {
     $restaurantId =
-        (int) $restaurant["restaurant_id"];
+        (int) $restaurant[
+            "restaurant_id"
+        ];
 
     $storedRestaurantId =
-        !empty($user["restaurant_id"])
-            ? (int) $user["restaurant_id"]
+        !empty(
+            $user["restaurant_id"]
+        )
+            ? (int) $user[
+                "restaurant_id"
+            ]
             : null;
 
     if (
         $storedRestaurantId === null ||
-        $storedRestaurantId !== $restaurantId
+        $storedRestaurantId !==
+            $restaurantId
     ) {
-        $syncStmt = $conn->prepare("
-            UPDATE tbl_users
-            SET restaurant_id = ?
-            WHERE user_id = ?
-            LIMIT 1
-        ");
+        $syncStmt =
+            $conn->prepare("
+                UPDATE
+                    tbl_users
+                SET
+                    restaurant_id = ?
+                WHERE
+                    user_id = ?
+                LIMIT 1
+            ");
 
         if (!$syncStmt) {
             error_log(
@@ -359,7 +517,9 @@ if ($restaurant) {
                 $userId
             );
 
-            if (!$syncStmt->execute()) {
+            if (
+                !$syncStmt->execute()
+            ) {
                 error_log(
                     "owner_login.php sync execute error: " .
                     $syncStmt->error
@@ -375,26 +535,35 @@ if ($restaurant) {
    GET LATEST PARTNER APPLICATION
    ========================================================= */
 
-$application = null;
-$applicationStatus = null;
-$rejectionReason = null;
+$application =
+    null;
 
-$applicationStmt = $conn->prepare("
-    SELECT
-        application_id,
-        restaurant_name,
-        application_status,
-        rejection_reason,
-        submitted_at,
-        reviewed_at,
-        reviewed_by,
-        created_at,
-        updated_at
-    FROM tbl_partner_applications
-    WHERE owner_id = ?
-    ORDER BY application_id DESC
-    LIMIT 1
-");
+$applicationStatus =
+    null;
+
+$rejectionReason =
+    null;
+
+$applicationStmt =
+    $conn->prepare("
+        SELECT
+            application_id,
+            restaurant_name,
+            application_status,
+            rejection_reason,
+            submitted_at,
+            reviewed_at,
+            reviewed_by,
+            created_at,
+            updated_at
+        FROM
+            tbl_partner_applications
+        WHERE
+            owner_id = ?
+        ORDER BY
+            application_id DESC
+        LIMIT 1
+    ");
 
 if (!$applicationStmt) {
     error_log(
@@ -407,7 +576,9 @@ if (!$applicationStmt) {
         $userId
     );
 
-    if (!$applicationStmt->execute()) {
+    if (
+        !$applicationStmt->execute()
+    ) {
         error_log(
             "owner_login.php application execute error: " .
             $applicationStmt->error
@@ -419,14 +590,19 @@ if (!$applicationStmt) {
                 ->fetch_assoc();
 
         if ($application) {
-            $applicationStatus = strtolower(
-                trim(
-                    (string) $application["application_status"]
-                )
-            );
+            $applicationStatus =
+                strtolower(
+                    trim(
+                        (string) $application[
+                            "application_status"
+                        ]
+                    )
+                );
 
             $rejectionReason =
-                $application["rejection_reason"];
+                $application[
+                    "rejection_reason"
+                ];
         }
     }
 
@@ -437,33 +613,16 @@ if (!$applicationStmt) {
    DETERMINE OWNER DESTINATION
    ========================================================= */
 
-if ($restaurantId !== null && $restaurantId > 0) {
+if (
+    $restaurantId !== null &&
+    $restaurantId > 0
+) {
     $redirectUrl =
         "/FoodConnect/frontend/html/owner_dashboard_BH.html";
 
     $onboardingRequired =
         false;
 } else {
-    /*
-    The restaurant setup page handles:
-
-    email_pending:
-        Owner should normally verify the email first.
-
-    draft:
-        Owner can continue restaurant setup.
-
-    submitted:
-        Page becomes read-only while awaiting review.
-
-    rejected:
-        Owner can edit and resubmit.
-
-    approved without restaurant:
-        Treat as onboarding until the admin approval process
-        creates the final tbl_restaurants record.
-    */
-
     $redirectUrl =
         "/FoodConnect/frontend/html/create_restaurant.html";
 
@@ -472,126 +631,622 @@ if ($restaurantId !== null && $restaurantId > 0) {
 }
 
 /* =========================================================
-   CREATE AUTHENTICATED OWNER SESSION
+   REMOVE EXPIRED TRUSTED DEVICES
    ========================================================= */
 
-session_regenerate_id(true);
+$cleanupStmt =
+    $conn->prepare("
+        DELETE FROM
+            tbl_owner_trusted_devices
+        WHERE
+            expires_at <= NOW()
+    ");
 
-$_SESSION["user_id"] =
-    $userId;
+if ($cleanupStmt) {
+    if (
+        !$cleanupStmt->execute()
+    ) {
+        error_log(
+            "owner_login.php trusted cleanup execute error: " .
+            $cleanupStmt->error
+        );
+    }
 
-$_SESSION["role"] =
-    "owner";
+    $cleanupStmt->close();
+} else {
+    error_log(
+        "owner_login.php trusted cleanup prepare error: " .
+        $conn->error
+    );
+}
 
-$_SESSION["restaurant_id"] =
-    $restaurantId;
+/* =========================================================
+   CHECK TRUSTED OWNER DEVICE
+   ========================================================= */
 
-$_SESSION["full_name"] =
-    (string) $user["full_name"];
+$trustedCookie =
+    trim(
+        (string) (
+            $_COOKIE[
+                "FOODCONNECT_OWNER_TRUST"
+            ]
+            ?? ""
+        )
+    );
 
-   $_SESSION["logged_in"] = true;
-$_SESSION["authenticated_at"] = time();
+if ($trustedCookie !== "") {
+    $cookieParts =
+        explode(
+            ":",
+            $trustedCookie,
+            2
+        );
 
+    $trustedSelector =
+        "";
 
-/*
-|--------------------------------------------------------------------------
-| Save the authenticated owner session before returning the response
-|--------------------------------------------------------------------------
-*/
+    $trustedToken =
+        "";
+
+    if (
+        count($cookieParts) === 2
+    ) {
+        $trustedSelector =
+            strtolower(
+                trim(
+                    (string) $cookieParts[0]
+                )
+            );
+
+        $trustedToken =
+            strtolower(
+                trim(
+                    (string) $cookieParts[1]
+                )
+            );
+    }
+
+    $selectorIsValid =
+        preg_match(
+            "/^[a-f0-9]{32}$/",
+            $trustedSelector
+        ) === 1;
+
+    $tokenIsValid =
+        preg_match(
+            "/^[a-f0-9]{64}$/",
+            $trustedToken
+        ) === 1;
+
+    if (
+        $selectorIsValid &&
+        $tokenIsValid
+    ) {
+        $trustedStmt =
+            $conn->prepare("
+                SELECT
+                    trusted_device_id,
+                    owner_id,
+                    token_hash,
+                    expires_at
+                FROM
+                    tbl_owner_trusted_devices
+                WHERE
+                    selector = ?
+                LIMIT 1
+            ");
+
+        if (!$trustedStmt) {
+            error_log(
+                "owner_login.php trusted-device prepare error: " .
+                $conn->error
+            );
+        } else {
+            $trustedStmt->bind_param(
+                "s",
+                $trustedSelector
+            );
+
+            if (
+                !$trustedStmt->execute()
+            ) {
+                error_log(
+                    "owner_login.php trusted-device execute error: " .
+                    $trustedStmt->error
+                );
+            } else {
+                $trustedDevice =
+                    $trustedStmt
+                        ->get_result()
+                        ->fetch_assoc();
+
+                if ($trustedDevice) {
+                    $storedOwnerId =
+                        (int) $trustedDevice[
+                            "owner_id"
+                        ];
+
+                    $storedTokenHash =
+                        (string) $trustedDevice[
+                            "token_hash"
+                        ];
+
+                    $storedExpiresAt =
+                        strtotime(
+                            (string) $trustedDevice[
+                                "expires_at"
+                            ]
+                        );
+
+                    $providedTokenHash =
+                        hash(
+                            "sha256",
+                            $trustedToken
+                        );
+
+                    $ownerMatches =
+                        $storedOwnerId ===
+                        $userId;
+
+                    $tokenMatches =
+                        $storedTokenHash !== "" &&
+                        hash_equals(
+                            $storedTokenHash,
+                            $providedTokenHash
+                        );
+
+                    $tokenNotExpired =
+                        $storedExpiresAt !== false &&
+                        $storedExpiresAt >
+                            time();
+
+                    if (
+                        $ownerMatches &&
+                        $tokenMatches &&
+                        $tokenNotExpired
+                    ) {
+                        $trustedDeviceId =
+                            (int) $trustedDevice[
+                                "trusted_device_id"
+                            ];
+
+                        $updateTrustedStmt =
+                            $conn->prepare("
+                                UPDATE
+                                    tbl_owner_trusted_devices
+                                SET
+                                    last_used_at = NOW()
+                                WHERE
+                                    trusted_device_id = ?
+                                LIMIT 1
+                            ");
+
+                        if (
+                            $updateTrustedStmt
+                        ) {
+                            $updateTrustedStmt
+                                ->bind_param(
+                                    "i",
+                                    $trustedDeviceId
+                                );
+
+                            if (
+                                !$updateTrustedStmt
+                                    ->execute()
+                            ) {
+                                error_log(
+                                    "owner_login.php trusted update error: " .
+                                    $updateTrustedStmt
+                                        ->error
+                                );
+                            }
+
+                            $updateTrustedStmt
+                                ->close();
+                        }
+
+                        unset(
+                            $_SESSION[
+                                "pending_owner_login"
+                            ]
+                        );
+
+                        session_regenerate_id(
+                            true
+                        );
+
+                        $_SESSION["user_id"] =
+                            $userId;
+
+                        $_SESSION["role"] =
+                            "owner";
+
+                        $_SESSION[
+                            "restaurant_id"
+                        ] =
+                            $restaurantId;
+
+                        $_SESSION["full_name"] =
+                            (string) $user[
+                                "full_name"
+                            ];
+
+                        $_SESSION["logged_in"] =
+                            true;
+
+                        $_SESSION[
+                            "authenticated_at"
+                        ] =
+                            time();
+
+                        $_SESSION[
+                            "owner_email_verified_at"
+                        ] =
+                            time();
+
+                        $_SESSION[
+                            "owner_trusted_device"
+                        ] =
+                            true;
+
+                        $trustedStmt->close();
+
+                        session_write_close();
+
+                        respond_json(
+                            [
+                                "success" =>
+                                    true,
+
+                                "verification_required" =>
+                                    false,
+
+                                "trusted_device" =>
+                                    true,
+
+                                "message" =>
+                                    "Trusted device recognized. Redirecting to your owner account.",
+
+                                "redirect_url" =>
+                                    $redirectUrl,
+
+                                "onboarding_required" =>
+                                    $onboardingRequired,
+
+                                "application_status" =>
+                                    $applicationStatus,
+
+                                "user" => [
+                                    "user_id" =>
+                                        $userId,
+
+                                    "restaurant_id" =>
+                                        $restaurantId,
+
+                                    "role" =>
+                                        "owner",
+
+                                    "full_name" =>
+                                        (string) $user[
+                                            "full_name"
+                                        ],
+
+                                    "email" =>
+                                        (string) $user[
+                                            "email"
+                                        ]
+                                ]
+                            ]
+                        );
+                    }
+                }
+            }
+
+            $trustedStmt->close();
+        }
+    }
+
+    /*
+    The cookie is malformed, invalid, expired, or belongs
+    to another owner. Remove it and continue with OTP.
+    */
+
+    if ($selectorIsValid) {
+        $deleteInvalidStmt =
+            $conn->prepare("
+                DELETE FROM
+                    tbl_owner_trusted_devices
+                WHERE
+                    selector = ?
+                LIMIT 1
+            ");
+
+        if ($deleteInvalidStmt) {
+            $deleteInvalidStmt
+                ->bind_param(
+                    "s",
+                    $trustedSelector
+                );
+
+            if (
+                !$deleteInvalidStmt
+                    ->execute()
+            ) {
+                error_log(
+                    "owner_login.php invalid trusted-device deletion error: " .
+                    $deleteInvalidStmt
+                        ->error
+                );
+            }
+
+            $deleteInvalidStmt
+                ->close();
+        }
+    }
+
+    clear_owner_trusted_cookie();
+}
+
+/* =========================================================
+   GENERATE OWNER LOGIN VERIFICATION CODE
+   ========================================================= */
+
+$verificationCode = "";
+
+try {
+    $verificationCode =
+        (string) random_int(
+            100000,
+            999999
+        );
+} catch (Throwable $error) {
+    error_log(
+        "owner_login.php verification-code generation error: " .
+        $error->getMessage()
+    );
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to prepare owner verification."
+        ],
+        500
+    );
+}
+
+$verificationCodeHash =
+    password_hash(
+        $verificationCode,
+        PASSWORD_DEFAULT
+    );
+
+if ($verificationCodeHash === false) {
+    error_log(
+        "owner_login.php failed to hash login code."
+    );
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to prepare owner verification."
+        ],
+        500
+    );
+}
+
+/* =========================================================
+   CREATE PENDING OWNER LOGIN
+   ========================================================= */
+
+session_regenerate_id(
+    true
+);
+
+unset(
+    $_SESSION["user_id"],
+    $_SESSION["role"],
+    $_SESSION["restaurant_id"],
+    $_SESSION["full_name"],
+    $_SESSION["logged_in"],
+    $_SESSION["authenticated_at"],
+    $_SESSION["owner_email_verified_at"],
+    $_SESSION["owner_trusted_device"]
+);
+
+$_SESSION["pending_owner_login"] = [
+    "user_id" =>
+        $userId,
+
+    "restaurant_id" =>
+        $restaurantId,
+
+    "full_name" =>
+        (string) $user[
+            "full_name"
+        ],
+
+    "email" =>
+        (string) $user[
+            "email"
+        ],
+
+    "code_hash" =>
+        $verificationCodeHash,
+
+    "expires_at" =>
+        time() + 300,
+
+    "attempts" =>
+        0,
+
+    "last_sent_at" =>
+        time(),
+
+    "redirect_url" =>
+        $redirectUrl,
+
+    "onboarding_required" =>
+        $onboardingRequired,
+
+    "application_status" =>
+        $applicationStatus
+];
+
+/* =========================================================
+   SEND VERIFICATION EMAIL
+   ========================================================= */
+
+$safeOwnerName =
+    htmlspecialchars(
+        (string) $user[
+            "full_name"
+        ],
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+$safeCode =
+    htmlspecialchars(
+        $verificationCode,
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+$emailSubject =
+    "Your FoodConnect Owner Login Code";
+
+$emailBody = "
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\">
+    <meta
+        name=\"viewport\"
+        content=\"width=device-width, initial-scale=1.0\"
+    >
+</head>
+
+<body
+    style=\"
+        margin: 0;
+        padding: 24px;
+        background: #f4f6f8;
+        font-family: Arial, sans-serif;
+        color: #1f2937;
+    \"
+>
+    <div
+        style=\"
+            max-width: 520px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        \"
+    >
+        <h2
+            style=\"
+                margin-top: 0;
+                margin-bottom: 12px;
+            \"
+        >
+            FoodConnect Owner Login
+        </h2>
+
+        <p>
+            Hello {$safeOwnerName},
+        </p>
+
+        <p>
+            Use the verification code below to complete your
+            restaurant owner login:
+        </p>
+
+        <div
+            style=\"
+                margin: 24px 0;
+                padding: 18px;
+                text-align: center;
+                background: #f3f4f6;
+                border-radius: 10px;
+                font-size: 32px;
+                font-weight: bold;
+                letter-spacing: 8px;
+            \"
+        >
+            {$safeCode}
+        </div>
+
+        <p>
+            This code expires in <strong>5 minutes</strong>
+            and can only be used once.
+        </p>
+
+        <p
+            style=\"
+                color: #6b7280;
+                font-size: 14px;
+            \"
+        >
+            If you did not attempt to log in, do not share this
+            code with anyone. You may safely ignore this email.
+        </p>
+    </div>
+</body>
+</html>
+";
+
+$emailSent =
+    sendBrevoSMTP(
+        (string) $user["email"],
+        $emailSubject,
+        $emailBody
+    );
+
+if (!$emailSent) {
+    unset(
+        $_SESSION["pending_owner_login"]
+    );
+
+    session_write_close();
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Your password was correct, but FoodConnect could not send the verification email. Please try again."
+        ],
+        500
+    );
+}
 
 session_write_close();
 
 /* =========================================================
-   FORMAT RESPONSE
+   RESPONSE
    ========================================================= */
 
-$response = [
-    "success" => true,
-    "message" => "Owner login successful.",
-    "redirect_url" => $redirectUrl,
-    "onboarding_required" => $onboardingRequired,
-
-    "user" => [
-        "user_id" =>
-            $userId,
-
-        "restaurant_id" =>
-            $restaurantId,
-
-        "role" =>
-            "owner",
-
-        "full_name" =>
-            $user["full_name"],
-
-        "email" =>
-            $user["email"]
-    ],
-
-    "restaurant" =>
-        $restaurant
-            ? [
-                "restaurant_id" =>
-                    (int) $restaurant["restaurant_id"],
-
-                "name" =>
-                    $restaurant["name"],
-
-                "address" =>
-                    $restaurant["address"],
-
-                "contact_number" =>
-                    $restaurant["contact_number"],
-
-                "opening_hours" =>
-                    $restaurant["opening_hours"],
-
-                "delivery_fee" =>
-                    (float) $restaurant["delivery_fee"],
-
-                "business_status" =>
-                    $restaurant["business_status"],
-
-                "owner_id" =>
-                    (int) $restaurant["owner_id"]
-            ]
-            : null,
-
-    "application" =>
-        $application
-            ? [
-                "application_id" =>
-                    (int) $application["application_id"],
-
-                "restaurant_name" =>
-                    $application["restaurant_name"],
-
-                "status" =>
-                    $applicationStatus,
-
-                "rejection_reason" =>
-                    $rejectionReason,
-
-                "submitted_at" =>
-                    $application["submitted_at"],
-
-                "reviewed_at" =>
-                    $application["reviewed_at"],
-
-                "reviewed_by" =>
-                    !empty($application["reviewed_by"])
-                        ? (int) $application["reviewed_by"]
-                        : null,
-
-                "created_at" =>
-                    $application["created_at"],
-
-                "updated_at" =>
-                    $application["updated_at"]
-            ]
-            : null
-];
-
 respond_json(
-    $response
+    [
+        "success" => true,
+
+        "verification_required" =>
+            true,
+
+        "message" =>
+            "A 6-digit verification code was sent to your registered email address.",
+
+        "masked_email" =>
+            mask_email_address(
+                (string) $user[
+                    "email"
+                ]
+            ),
+
+        "expires_in" =>
+            300
+    ]
 );

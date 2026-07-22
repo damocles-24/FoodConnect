@@ -7,36 +7,87 @@ require_once __DIR__ . "/PHPMailer/Exception.php";
 require_once __DIR__ . "/PHPMailer/PHPMailer.php";
 require_once __DIR__ . "/PHPMailer/SMTP.php";
 
-function sendBrevoSMTP($toEmail, $subject, $htmlBody) {
+function sendBrevoSMTP(
+    string $toEmail,
+    string $subject,
+    string $htmlBody
+): bool {
+    $mail =
+        new PHPMailer(
+            true
+        );
 
-  $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
 
-  try {
-    $mail->isSMTP();
-    $mail->Host = "smtp-relay.brevo.com";
-    $mail->SMTPAuth = true;
+        $mail->Host =
+            "smtp-relay.brevo.com";
 
-    // 🔴 paste Brevo SMTP login here
-    $mail->Username = "a35383001@smtp-brevo.com";
+        $mail->SMTPAuth =
+            true;
 
-    // 🔴 paste SMTP key here
-    $mail->Password = "xsmtpsib-4426a24d8d70ba0b5b3f307ccfba826bf7beceb842c3a93560226fbfcb1a0fe6-g55SQZXT9jlIJaBw";
+        $config = require __DIR__ . "/config.local.php";
 
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+        $mail->Username = $config["brevo_username"];
+        $mail->Password = $config["brevo_password"];
 
-    $mail->setFrom("carlosjaymiguel67@gmail.com", "FoodConnect");
-    $mail->addAddress($toEmail);
 
-    $mail->isHTML(true);
-    $mail->Subject = $subject;
-    $mail->Body = $htmlBody;
+        $mail->SMTPSecure =
+            PHPMailer::ENCRYPTION_STARTTLS;
 
-    $mail->send();
-    return true;
+        $mail->Port =
+            587;
 
-  } catch (Exception $e) {
-    error_log($mail->ErrorInfo);
-    return false;
-  }
+        $mail->CharSet =
+            "UTF-8";
+
+        /*
+        This must be the exact sender email verified
+        in your current Brevo account.
+        */
+
+        $mail->setFrom(
+          "foodconnectv1@gmail.com",
+          "FoodConnect"
+        );
+
+        /*
+        Optional: replies will go to this address.
+        */
+
+        $mail->addReplyTo(
+            "YOUR_VERIFIED_SENDER_EMAIL@gmail.com",
+            "FoodConnect Support"
+        );
+
+        $mail->addAddress(
+            $toEmail
+        );
+
+        $mail->isHTML(
+            true
+        );
+
+        $mail->Subject =
+            $subject;
+
+        $mail->Body =
+            $htmlBody;
+
+        $mail->AltBody =
+            strip_tags(
+                $htmlBody
+            );
+
+        $mail->send();
+
+        return true;
+    } catch (Exception $error) {
+        error_log(
+            "Brevo SMTP error: " .
+            $mail->ErrorInfo
+        );
+
+        return false;
+    }
 }

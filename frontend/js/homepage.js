@@ -131,6 +131,41 @@ document.addEventListener(
         "openPartnerPortalBtn"
       );
 
+      const trustOwnerDevice =
+  document.getElementById(
+    "trustOwnerDevice"
+  );
+
+      const ownerVerificationBox =
+  document.getElementById(
+    "ownerVerificationBox"
+  );
+
+const ownerVerificationEmail =
+  document.getElementById(
+    "ownerVerificationEmail"
+  );
+
+const ownerVerificationCode =
+  document.getElementById(
+    "ownerVerificationCode"
+  );
+
+const verifyOwnerCodeBtn =
+  document.getElementById(
+    "verifyOwnerCodeBtn"
+  );
+
+const resendOwnerCodeBtn =
+  document.getElementById(
+    "resendOwnerCodeBtn"
+  );
+
+const backToOwnerLoginBtn =
+  document.getElementById(
+    "backToOwnerLoginBtn"
+  );
+
           const backToStaffPortalBtn =
       document.getElementById(
         "backToStaffPortalBtn"
@@ -275,6 +310,11 @@ document.addEventListener(
           "none";
       }
 
+      if (ownerVerificationBox) {
+  ownerVerificationBox.style.display =
+    "none";
+}
+
       if (staffCodeBox) {
         staffCodeBox.style.display =
           "block";
@@ -329,11 +369,71 @@ document.addEventListener(
       }, 50);
     }
 
+    function showOwnerVerificationView(
+  maskedEmail = ""
+) {
+  
+  if (staffAccessPanel) {
+    staffAccessPanel.style.display =
+      "none";
+  }
+
+  if (ownerLoginBox) {
+    ownerLoginBox.style.display =
+      "none";
+  }
+
+  if (ownerVerificationBox) {
+    ownerVerificationBox.style.display =
+      "block";
+  }
+
+  if (ownerVerificationEmail) {
+    ownerVerificationEmail.textContent =
+      maskedEmail ||
+      "your registered email";
+  }
+
+  if (staffPortalTitle) {
+    staffPortalTitle.textContent =
+      "Verify Owner Login";
+  }
+
+  if (staffPortalSubtitle) {
+    staffPortalSubtitle.textContent =
+      "Enter the code sent to your email";
+  }
+
+  if (staffPortalIcon) {
+    staffPortalIcon.className =
+      "fa-solid fa-envelope-circle-check";
+  }
+
+  if (ownerVerificationCode) {
+    ownerVerificationCode.value = "";
+  }
+
+  if (trustOwnerDevice) {
+  trustOwnerDevice.checked = false;
+}
+
+  setStaffMessage("");
+
+  window.setTimeout(() => {
+    ownerVerificationCode?.focus();
+  }, 50);
+}
+
     function showOwnerLoginView() {
       if (staffAccessPanel) {
         staffAccessPanel.style.display =
           "none";
       }
+
+      if (ownerVerificationBox) {
+  ownerVerificationBox.style.display =
+    "none";
+}
 
       if (ownerLoginBox) {
         ownerLoginBox.style.display =
@@ -404,6 +504,10 @@ document.addEventListener(
       if (ownerPassword) {
         ownerPassword.value = "";
       }
+
+      if (ownerVerificationCode) {
+  ownerVerificationCode.value = "";
+}
 
       showStaffAccessView();
     }
@@ -1522,50 +1626,57 @@ if (
               "Invalid owner login credentials."
             );
 
-            const errorMessage =
-              String(
-                data.message || ""
-              ).toLowerCase();
-
-            if (
-              response.status === 403 &&
-              errorMessage.includes(
-                "access verification"
-              )
-            ) {
-              window.setTimeout(() => {
-                showPartnerAccessView();
-              }, 1000);
-            }
-
             return;
           }
 
-          if (!data.redirect_url) {
-            throw new Error(
-              "The server did not provide an owner destination."
-            );
-          }
+         /*
+A trusted browser may be authenticated immediately
+without sending another email code.
+*/
 
-          localStorage.setItem(
-            "user_full_name",
-            data.user?.full_name || ""
-          );
+if (
+  data.verification_required === false &&
+  data.redirect_url
+) {
+  localStorage.setItem(
+    "user_full_name",
+    data.user?.full_name || ""
+  );
 
-          localStorage.setItem(
-            "user_role",
-            "owner"
-          );
+  localStorage.setItem(
+    "user_role",
+    "owner"
+  );
 
-          setStaffMessage(
-            "Owner login successful. Redirecting...",
-            "success"
-          );
+  setStaffMessage(
+    data.message ||
+    "Trusted device recognized. Redirecting...",
+    "success"
+  );
 
-          window.setTimeout(() => {
-            window.location.href =
-              data.redirect_url;
-          }, 500);
+  window.setTimeout(() => {
+    window.location.href =
+      data.redirect_url;
+  }, 500);
+
+  return;
+}
+
+if (!data.verification_required) {
+  throw new Error(
+    "The server did not provide a valid owner login response."
+  );
+}
+
+showOwnerVerificationView(
+  data.masked_email || ""
+);
+
+setStaffMessage(
+  data.message ||
+  "Check your email for the verification code.",
+  "success"
+);
         } catch (error) {
           console.error(
             "Owner login failed:",
@@ -1585,6 +1696,243 @@ if (
         }
       }
     );
+
+    /* =========================
+   VERIFY OWNER EMAIL CODE
+========================= */
+
+verifyOwnerCodeBtn?.addEventListener(
+  "click",
+  async () => {
+    const code =
+      ownerVerificationCode
+        ?.value
+        .replace(/\D/g, "")
+        .slice(0, 6) || "";
+
+    setStaffMessage("");
+
+    if (code.length !== 6) {
+      setStaffMessage(
+        "Enter the complete 6-digit verification code."
+      );
+
+      ownerVerificationCode?.focus();
+
+      return;
+    }
+
+    verifyOwnerCodeBtn.disabled =
+      true;
+
+    verifyOwnerCodeBtn.textContent =
+      "Verifying...";
+
+    try {
+      const response =
+        await fetch(
+          `${window.API}/verify_owner_login_code.php`,
+          {
+            method: "POST",
+            credentials: "include",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+            code,
+
+            trust_device:
+              Boolean(
+                trustOwnerDevice?.checked
+    )
+})
+          }
+        );
+
+      const data =
+        await readJsonResponse(
+          response
+        );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        setStaffMessage(
+          data.message ||
+          "The verification code is invalid."
+        );
+
+        if (data.login_required) {
+          window.setTimeout(() => {
+            showOwnerLoginView();
+          }, 1200);
+        }
+
+        return;
+      }
+
+      if (!data.redirect_url) {
+        throw new Error(
+          "The server did not provide an owner destination."
+        );
+      }
+
+      localStorage.setItem(
+        "user_full_name",
+        data.user?.full_name || ""
+      );
+
+      localStorage.setItem(
+        "user_role",
+        "owner"
+      );
+
+      setStaffMessage(
+        "Owner verified. Redirecting...",
+        "success"
+      );
+
+      window.setTimeout(() => {
+        window.location.href =
+          data.redirect_url;
+      }, 500);
+    } catch (error) {
+      console.error(
+        "Owner code verification failed:",
+        error
+      );
+
+      setStaffMessage(
+        error.message ||
+        "Cannot connect to the server."
+      );
+    } finally {
+      verifyOwnerCodeBtn.disabled =
+        false;
+
+      verifyOwnerCodeBtn.textContent =
+        "Verify and Continue";
+    }
+  }
+);
+
+/* =========================
+   RESEND OWNER EMAIL CODE
+========================= */
+
+resendOwnerCodeBtn?.addEventListener(
+  "click",
+  async () => {
+    setStaffMessage("");
+
+    resendOwnerCodeBtn.disabled =
+      true;
+
+    resendOwnerCodeBtn.textContent =
+      "Sending...";
+
+    try {
+      const response =
+        await fetch(
+          `${window.API}/resend_owner_login_code.php`,
+          {
+            method: "POST",
+            credentials: "include",
+
+            headers: {
+              "Accept":
+                "application/json"
+            }
+          }
+        );
+
+      const data =
+        await readJsonResponse(
+          response
+        );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        setStaffMessage(
+          data.message ||
+          "Unable to resend the code."
+        );
+
+        if (data.login_required) {
+          window.setTimeout(() => {
+            showOwnerLoginView();
+          }, 1200);
+        }
+
+        return;
+      }
+
+      if (ownerVerificationCode) {
+        ownerVerificationCode.value =
+          "";
+
+        ownerVerificationCode.focus();
+      }
+
+      setStaffMessage(
+        data.message ||
+        "A new code was sent.",
+        "success"
+      );
+    } catch (error) {
+      console.error(
+        "Resend owner code failed:",
+        error
+      );
+
+      setStaffMessage(
+        error.message ||
+        "Cannot connect to the server."
+      );
+    } finally {
+      resendOwnerCodeBtn.disabled =
+        false;
+
+      resendOwnerCodeBtn.textContent =
+        "Resend Code";
+    }
+  }
+);
+
+backToOwnerLoginBtn?.addEventListener(
+  "click",
+  showOwnerLoginView
+);
+
+ownerVerificationCode?.addEventListener(
+  "input",
+  () => {
+    ownerVerificationCode.value =
+      ownerVerificationCode.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+  }
+);
+
+ownerVerificationCode?.addEventListener(
+  "keydown",
+  (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+
+      verifyOwnerCodeBtn?.click();
+    }
+  }
+);
 
     /* =========================
        STAFF LOGIN

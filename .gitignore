@@ -1,0 +1,13 @@
+# Local secrets
+api/config.local.php
+# IDE
+.vscode/
+
+# Logs
+*.log
+
+# Windows
+Thumbs.db
+
+# macOS
+.DS_Store
