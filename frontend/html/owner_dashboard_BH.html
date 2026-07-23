@@ -32,11 +32,9 @@
         <button class="nav-item" data-section="ordersSection">Orders</button>
         <button class="nav-item" data-section="productsSection">Products</button>
         <button class="nav-item" data-section="inventorySection">Inventory</button>
-<button class="nav-item" data-section="notificationsSection">
-  Notifications
-  <span class="sidebar-badge" id="sidebarNotificationBadge">0</span>
-</button>
-<button class="nav-item" data-section="logsSection">Activity Logs</button>
+        <button class="nav-item" data-section="logsSection">
+          Activity Logs
+        </button>
         <button class="nav-item" data-section="reportsSection">Sales Report</button>
         <button class="nav-item" data-section="usersSection">Users</button>
         <button class="nav-item" data-section="settingsSection">Settings</button>
@@ -432,34 +430,6 @@
   </div>
 </section>
 
-<section id="notificationsSection" class="content-section">
-  <div class="section-header">
-    <div>
-      <h2>Notifications <span id="notificationCount">(0)</span></h2>
-      <p>Monitor new orders, low stock, staff updates, and system alerts.</p>
-    </div>
-
-    <button class="primary-btn" id="clearNotificationsBtn">
-      Clear All
-    </button>
-  </div>
-
-  <div class="notifications-filter">
-    <button class="notification-filter-btn active" data-type="all">All</button>
-    <button class="notification-filter-btn" data-type="order">Orders</button>
-    <button class="notification-filter-btn" data-type="stock">Low Stock</button>
-    <button class="notification-filter-btn" data-type="staff">Staff</button>
-    <button class="notification-filter-btn" data-type="system">System</button>
-  </div>
-
-  <div class="notifications-list" id="notificationsList">
-    <div class="empty-notification">
-      <h3>No Notifications Yet</h3>
-      <p>Important restaurant updates will appear here.</p>
-    </div>
-  </div>
-</section>
-
 <section id="logsSection" class="content-section">
   <div class="section-header">
     <div>
@@ -572,6 +542,132 @@
       </div>
     </div>
   </div>
+
+  <!-- CASHIER PERFORMANCE -->
+  <div class="performance-section">
+    <div class="performance-header">
+      <div>
+        <span class="section-overline">
+          Staff Analytics
+        </span>
+
+        <h2>Cashier Performance</h2>
+
+        <p class="section-description">
+          Review orders and sales handled by each cashier.
+        </p>
+      </div>
+
+      <select
+        id="cashierPerformanceRange"
+        class="performance-range"
+        aria-label="Cashier performance range"
+      >
+        <option value="daily">Daily</option>
+        <option value="weekly" selected>Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+
+    <div class="panel performance-panel">
+      <div class="performance-range-label">
+        <span>Report period:</span>
+        <strong id="cashierRangeLabel">
+          Last 7 Days
+        </strong>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="performance-table">
+          <thead>
+            <tr>
+              <th>Cashier</th>
+              <th>Handled Orders</th>
+              <th>Completed Orders</th>
+              <th>Total Sales Handled</th>
+              <th>Cancelled Orders</th>
+              <th>Average Order Value</th>
+            </tr>
+          </thead>
+
+          <tbody id="cashierPerformanceBody">
+           <tr>
+  <td
+    colspan="6"
+    class="performance-loading-cell"
+  >
+    Loading cashier performance...
+  </td>
+</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERY PERFORMANCE -->
+  <div class="performance-section">
+    <div class="performance-header">
+      <div>
+        <span class="section-overline">
+          Delivery Analytics
+        </span>
+
+        <h2>Delivery Performance</h2>
+
+        <p class="section-description">
+          Review delivery assignments, completed deliveries,
+          COD handled, and rider completion rates.
+        </p>
+      </div>
+
+      <select
+        id="deliveryPerformanceRange"
+        class="performance-range"
+        aria-label="Delivery performance range"
+      >
+        <option value="daily">Daily</option>
+        <option value="weekly" selected>Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+
+    <div class="panel performance-panel">
+      <div class="performance-range-label">
+        <span>Report period:</span>
+        <strong id="deliveryRangeLabel">
+          Last 7 Days
+        </strong>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="performance-table">
+          <thead>
+            <tr>
+              <th>Delivery Rider</th>
+              <th>Assigned Deliveries</th>
+              <th>Completed Deliveries</th>
+              <th>Failed/Cancelled</th>
+              <th>COD Amount Handled</th>
+              <th>Completion Rate</th>
+            </tr>
+          </thead>
+
+          <tbody id="deliveryPerformanceBody">
+            <tr>
+  <td
+    colspan="6"
+    class="performance-loading-cell"
+  >
+    Loading delivery performance...
+  </td>
+</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </section>
 
         <!-- SETTINGS -->

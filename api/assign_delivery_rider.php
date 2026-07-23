@@ -265,29 +265,31 @@ try {
     */
 
     $insertSql = "
-        INSERT INTO tbl_delivery_assignments (
-            order_id,
-            restaurant_id,
-            rider_id,
-            assigned_by,
-            assignment_type,
-            delivery_status,
-            delivery_fee,
-            rider_payment,
-            assigned_at
-        )
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            'internal',
-            'assigned',
-            ?,
-            ?,
-            NOW()
-        )
-    ";
+    INSERT INTO tbl_delivery_assignments (
+        order_id,
+        restaurant_id,
+        rider_id,
+        assigned_by,
+        assignment_type,
+        delivery_status,
+        delivery_fee,
+        rider_payment,
+        assigned_at,
+        accepted_at
+    )
+    VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        'internal',
+        'accepted',
+        ?,
+        ?,
+        NOW(),
+        NOW()
+    )
+";
 
     $insertStmt = $conn->prepare($insertSql);
 
@@ -328,15 +330,15 @@ try {
     */
 
     $updateOrderSql = "
-        UPDATE tbl_orders
-        SET order_status = 'out_for_delivery'
-        WHERE order_id = ?
-          AND restaurant_id = ?
-        AND order_status IN (
-        'preparing',
-        'ready'
-)  
-    ";
+    UPDATE tbl_orders
+    SET order_status = 'assigned'
+    WHERE order_id = ?
+      AND restaurant_id = ?
+      AND order_status IN (
+          'preparing',
+          'ready'
+      )
+";
 
     $updateOrderStmt = $conn->prepare($updateOrderSql);
 
@@ -375,7 +377,7 @@ $action_title = "Rider Assigned";
 
 $action_description =
     $rider["full_name"] .
-    " was assigned to delivery Order #" .
+    " was assigned and automatically accepted delivery Order #" .
     $order_id .
     ".";
 
@@ -425,14 +427,14 @@ $logStmt->close();
 
     respond_json([
         "success" => true,
-        "message" => "Rider assigned successfully.",
+        "message" => "Rider assigned successfully. The delivery was automatically accepted.",
         "assignment" => [
             "assignment_id" => $assignment_id,
             "order_id" => $order_id,
             "rider_id" => $rider_id,
             "rider_name" => $rider["full_name"],
             "assignment_type" => "internal",
-            "delivery_status" => "assigned",
+            "delivery_status" => "accepted",
             "delivery_fee" => $delivery_fee,
             "rider_payment" => $rider_payment
         ]

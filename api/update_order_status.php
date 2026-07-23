@@ -171,14 +171,15 @@ try {
     ===================================================== */
 
     $checkStmt = $conn->prepare("
-        SELECT
-    order_id,
-    queue_number,
-    restaurant_id,
-    user_id,
-    customer_name,
-    order_type,
-    order_status
+    SELECT
+            order_id,
+            queue_number,
+            restaurant_id,
+            processed_by_cashier_id,
+            user_id,
+            customer_name,
+            order_type,
+            order_status
 
         FROM tbl_orders
 
@@ -429,6 +430,19 @@ $customer_name = "Customer";
 
 $cancelled_by = null;
 
+/*
+ * Save the first cashier who handles the order.
+ *
+ * COALESCE in the UPDATE query ensures that another
+ * cashier cannot overwrite the original cashier.
+ *
+ * Owner actions do not assign a cashier.
+ */
+$processed_by_cashier_id =
+    $role === "cashier"
+        ? $user_id
+        : null;
+
 if ($new_status === "cancelled") {
     $cancelled_by =
         $role === "owner"
@@ -442,7 +456,13 @@ if ($new_status === "cancelled") {
             order_status = 'cancelled',
             cancellation_reason = ?,
             cancelled_by = ?,
-            cancelled_at = NOW()
+            cancelled_at = NOW(),
+
+            processed_by_cashier_id =
+                COALESCE(
+                    processed_by_cashier_id,
+                    ?
+                )
 
         WHERE order_id = ?
           AND restaurant_id = ?
@@ -456,14 +476,16 @@ if ($new_status === "cancelled") {
     }
 
     $updateStmt->bind_param(
-        "ssiis",
+        "ssiiis",
         $cancellation_reason,
         $cancelled_by,
+        $processed_by_cashier_id,
         $order_id,
         $restaurant_id,
         $current_status
     );
-} else {
+}
+ else {
     $updateStmt = $conn->prepare("
         UPDATE tbl_orders
 
@@ -471,7 +493,13 @@ if ($new_status === "cancelled") {
             order_status = ?,
             cancellation_reason = NULL,
             cancelled_by = NULL,
-            cancelled_at = NULL
+            cancelled_at = NULL,
+
+            processed_by_cashier_id =
+                COALESCE(
+                    processed_by_cashier_id,
+                    ?
+                )
 
         WHERE order_id = ?
           AND restaurant_id = ?
@@ -485,8 +513,9 @@ if ($new_status === "cancelled") {
     }
 
     $updateStmt->bind_param(
-        "siis",
+        "siiis",
         $new_status,
+        $processed_by_cashier_id,
         $order_id,
         $restaurant_id,
         $current_status
@@ -616,6 +645,18 @@ $updateStmt->close();
 
         "order_type" =>
     $order_type,
+
+    "processed_by_cashier_id" =>
+    $processed_by_cashier_id ??
+    (
+        isset(
+            $order["processed_by_cashier_id"]
+        )
+            ? (int) $order[
+                "processed_by_cashier_id"
+            ]
+            : null
+    ),
 
 "cancellation_reason" =>
     $new_status === "cancelled"

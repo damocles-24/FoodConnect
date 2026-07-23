@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 20, 2026 at 01:44 PM
+-- Generation Time: Jul 23, 2026 at 06:41 AM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -110,7 +110,36 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (64, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #13 from pending to preparing.', '2026-07-20 06:41:33'),
 (65, 1, 14, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #8 was completed successfully.', '2026-07-20 06:42:05'),
 (66, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #39 / Queue #1.', '2026-07-20 11:12:39'),
-(67, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #40 / Queue #2.', '2026-07-20 11:39:15');
+(67, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #40 / Queue #2.', '2026-07-20 11:39:15'),
+(68, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #41 / Queue #3.', '2026-07-20 14:31:00'),
+(69, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #41 from pending to preparing.', '2026-07-20 14:32:37'),
+(70, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #41 from preparing to ready.', '2026-07-20 14:32:48'),
+(71, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #41 from ready to completed.', '2026-07-20 14:33:11'),
+(72, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto2222 placed Order #42 / Queue #4.', '2026-07-20 14:58:37'),
+(73, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #42 from pending to preparing.', '2026-07-20 14:59:21'),
+(74, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #42 from preparing to ready.', '2026-07-20 14:59:29'),
+(75, 1, 15, NULL, 'delivery_assignment', 'Rider Assigned', 'deliver was assigned to delivery Order #42.', '2026-07-20 14:59:56'),
+(76, 1, 14, NULL, 'delivery_status', 'Delivery Accepted', 'The rider accepted delivery Order #42.', '2026-07-20 15:18:25'),
+(77, 1, 14, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #42 from the restaurant.', '2026-07-20 15:18:27'),
+(78, 1, 14, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #42 is now out for delivery.', '2026-07-20 15:18:29'),
+(79, 1, 14, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #42 was completed successfully.', '2026-07-20 15:18:32'),
+(80, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo placed Order #43 / Queue #5.', '2026-07-20 15:19:28'),
+(81, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #43 from pending to preparing.', '2026-07-20 15:19:53'),
+(82, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #43 from preparing to ready.', '2026-07-20 15:20:13'),
+(83, 1, 11, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-07-20 15:34:12'),
+(84, 1, 11, 'owner', 'product', 'Product Added', 'weare - Solo was added to the menu.', '2026-07-21 03:16:50'),
+(85, 1, 11, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-07-21 04:48:08'),
+(86, 1, 11, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-07-21 04:48:13'),
+(87, 1, 11, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-07-21 04:48:36'),
+(88, 1, 11, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-07-21 05:40:14'),
+(89, 1, 12, 'customer', 'order', 'New Customer Order', 'yobabs placed Order #44 / Queue #1.', '2026-07-22 06:05:20'),
+(90, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #44 from pending to preparing.', '2026-07-22 06:08:12'),
+(91, 1, 15, NULL, 'delivery_assignment', 'Rider Assigned', 'deliver was assigned to delivery Order #44.', '2026-07-22 06:08:42'),
+(92, 1, 14, NULL, 'delivery_status', 'Delivery Accepted', 'The rider accepted delivery Order #44.', '2026-07-22 06:10:12'),
+(93, 1, 14, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #44 from the restaurant.', '2026-07-22 06:10:49'),
+(94, 1, 14, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #44 is now out for delivery.', '2026-07-22 06:11:07'),
+(95, 1, 14, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #44 was completed successfully.', '2026-07-22 06:11:14'),
+(96, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #40 from pending to preparing.', '2026-07-23 04:13:45');
 
 -- --------------------------------------------------------
 
@@ -135,8 +164,12 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (4, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 0, '2026-07-17 07:52:51'),
 (2, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-16 06:46:59'),
 (5, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-17 07:53:15'),
+(7, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-22 01:58:42'),
+(9, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-22 04:32:14'),
 (1, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-16 06:46:30'),
-(3, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-17 07:52:03');
+(3, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-17 07:52:03'),
+(6, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-22 01:57:58'),
+(8, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-22 04:32:01');
 
 -- --------------------------------------------------------
 
@@ -157,13 +190,6 @@ CREATE TABLE `tbl_cart` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `tbl_cart`
---
-
-INSERT INTO `tbl_cart` (`cart_id`, `user_id`, `restaurant_id`, `product_id`, `addon_ids`, `combo_choice_ids_json`, `quantity`, `price_at_time`, `subtotal`, `created_at`, `updated_at`) VALUES
-(4, 12, 1, 70, '[]', '[]', 1, '39.00', '39.00', '2026-07-20 11:39:48', '2026-07-20 11:39:48');
 
 -- --------------------------------------------------------
 
@@ -423,7 +449,9 @@ CREATE TABLE `tbl_delivery_assignments` (
 --
 
 INSERT INTO `tbl_delivery_assignments` (`assignment_id`, `order_id`, `restaurant_id`, `rider_id`, `assigned_by`, `assignment_type`, `delivery_status`, `delivery_fee`, `rider_payment`, `assigned_at`, `accepted_at`, `picked_up_at`, `out_for_delivery_at`, `completed_at`, `cancelled_at`, `created_at`, `updated_at`) VALUES
-(1, 8, 1, 14, 15, 'internal', 'completed', '60.06', '0.00', '2026-07-10 12:30:01', '2026-07-10 14:11:43', '2026-07-10 21:59:42', '2026-07-10 21:59:49', '2026-07-20 14:42:05', NULL, '2026-07-10 04:30:01', '2026-07-20 06:42:05');
+(1, 8, 1, 14, 15, 'internal', 'completed', '60.06', '0.00', '2026-07-10 12:30:01', '2026-07-10 14:11:43', '2026-07-10 21:59:42', '2026-07-10 21:59:49', '2026-07-20 14:42:05', NULL, '2026-07-10 04:30:01', '2026-07-20 06:42:05'),
+(2, 42, 1, 14, 15, 'internal', 'completed', '100.00', '0.00', '2026-07-20 22:59:56', '2026-07-20 23:18:25', '2026-07-20 23:18:27', '2026-07-20 23:18:29', '2026-07-20 23:18:32', NULL, '2026-07-20 14:59:56', '2026-07-20 15:18:32'),
+(3, 44, 1, 14, 15, 'internal', 'completed', '50.00', '0.00', '2026-07-22 14:08:42', '2026-07-22 14:10:12', '2026-07-22 14:10:49', '2026-07-22 14:11:07', '2026-07-22 14:11:14', NULL, '2026-07-22 06:08:42', '2026-07-22 06:11:14');
 
 -- --------------------------------------------------------
 
@@ -481,7 +509,23 @@ INSERT INTO `tbl_notification_reads` (`notification_read_id`, `log_id`, `user_id
 (21, 41, 11, 1, '2026-07-15 22:48:46'),
 (22, 52, 11, 1, '2026-07-17 22:09:31'),
 (23, 63, 11, 1, '2026-07-20 14:40:00'),
-(24, 59, 15, 1, '2026-07-20 14:41:41');
+(24, 59, 15, 1, '2026-07-20 14:41:41'),
+(25, 89, 15, 1, '2026-07-22 14:07:16'),
+(26, 80, 15, 1, '2026-07-22 14:07:18'),
+(27, 72, 15, 1, '2026-07-22 14:07:20'),
+(28, 68, 15, 1, '2026-07-22 14:07:21'),
+(29, 67, 15, 1, '2026-07-22 14:07:22'),
+(30, 66, 15, 1, '2026-07-22 14:07:25'),
+(31, 61, 15, 1, '2026-07-22 14:07:26'),
+(32, 58, 15, 1, '2026-07-22 14:07:28'),
+(33, 57, 15, 1, '2026-07-22 14:07:29'),
+(34, 56, 15, 1, '2026-07-22 14:07:30'),
+(35, 55, 15, 1, '2026-07-22 14:07:31'),
+(36, 54, 15, 1, '2026-07-22 14:07:33'),
+(37, 53, 15, 1, '2026-07-22 14:07:33'),
+(38, 49, 15, 1, '2026-07-22 14:07:34'),
+(39, 46, 15, 1, '2026-07-22 14:07:36'),
+(40, 42, 15, 1, '2026-07-22 14:07:36');
 
 -- --------------------------------------------------------
 
@@ -493,6 +537,7 @@ CREATE TABLE `tbl_orders` (
   `order_id` int(11) NOT NULL,
   `queue_number` int(11) DEFAULT NULL,
   `restaurant_id` int(11) NOT NULL,
+  `processed_by_cashier_id` int(11) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `customer_name` varchar(100) NOT NULL,
   `contact_number` varchar(30) NOT NULL,
@@ -517,40 +562,44 @@ CREATE TABLE `tbl_orders` (
 -- Dumping data for table `tbl_orders`
 --
 
-INSERT INTO `tbl_orders` (`order_id`, `queue_number`, `restaurant_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
-(4, 101, 1, 12, 'Test Customer', '09123456789', 'delivery', 'completed', NULL, NULL, NULL, '250.00', '0.00', '0.00', 'COD', 'Test Address', 'Near Test Store', NULL, NULL, 'Test order for cashier dashboard', '2026-07-06 12:32:23'),
-(5, NULL, 1, 12, 'www', '09457309228', 'dine-in', 'completed', NULL, NULL, NULL, '0.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'ewewe', '2026-07-08 15:45:45'),
-(6, 1, 1, 12, 'weadawdad', '2231231414', 'dine-in', 'cancelled', NULL, NULL, NULL, '75.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'adaaddada', '2026-07-09 02:58:48'),
-(7, 2, 1, 12, 'fgjkk', '12325123432', 'takeout', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', NULL, '12:18', 'wahtjghhjgh', '2026-07-09 03:19:09'),
-(8, 1, 1, 12, 'salsal', '12345678912', 'delivery', 'completed', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', 'pasalsal', '2026-07-10 04:14:50'),
-(9, 2, 1, 12, 'Carlos Jay Miguel T. Porto', '09872212345', 'dine-in', 'completed', NULL, NULL, NULL, '525.00', '0.00', '0.00', 'Cash', '', '', NULL, '', '', '2026-07-10 13:54:28'),
-(10, 3, 1, 12, 'helloworld', '12312415236346', 'delivery', 'ready', NULL, NULL, NULL, '130.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', 'Malapit sa novo', '2026-07-10 13:57:24'),
-(11, 1, 1, 12, 'Cj Tamayo Porto', '111111111', 'delivery', 'cancelled', NULL, NULL, NULL, '184.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', '', '2026-07-11 02:22:18'),
-(12, 2, 1, 12, 'angel', '09985783488993775877666623228', 'dine-in', 'preparing', NULL, NULL, NULL, '130.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'ggg', '2026-07-11 04:39:58'),
-(13, 3, 1, 12, 'asgsddwa', '12312313123', 'dine-in', 'preparing', NULL, NULL, NULL, '88.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'adwada', '2026-07-11 11:11:55'),
-(14, 4, 1, 12, 'wadsdwad', 'awda123231231', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-11 11:28:38'),
-(15, 5, 1, 12, 'wwwwww', 'wwwww', 'dine-in', 'pending', NULL, NULL, NULL, '49.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wwwww', '2026-07-11 12:40:19'),
-(16, 6, 1, 12, 'ewqa2sqazr bf', '131233534534534', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', 'eadawda', '2026-07-11 14:02:26'),
-(17, 7, 1, 12, '23AWDASD', 'DWASDA', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', 'DASDASD', '2026-07-11 14:08:34'),
-(18, 1, 1, 12, 'dwadawdaw', '13141414', 'dine-in', 'preparing', NULL, NULL, NULL, '114.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-12 05:53:38'),
-(23, 2, 1, 12, '213122131', '3123ed 3e4214e1', 'dine-in', 'ready', NULL, NULL, NULL, '134.00', '0.00', '0.00', 'Cash', '', '', '', '', '2311a', '2026-07-12 06:12:59'),
-(24, 3, 1, 12, 'cj', '09457309228', 'dine-in', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'no pita', '2026-07-12 06:59:43'),
-(25, 1, 1, 12, 'wwadadadawdasdwa', '43256456742', 'dine-in', 'completed', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wwwwww', '2026-07-13 05:46:17'),
-(26, 2, 1, 12, 'wwwww', '23123123123', 'dine-in', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wdawdawdaw', '2026-07-13 06:12:02'),
-(27, 3, 1, 12, 'dwadadaw', '23131313122', 'dine-in', 'cancelled', NULL, NULL, NULL, '98.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-13 06:18:37'),
-(28, 4, 1, 12, 'cjh', '23123124125', 'dine-in', 'ready', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-13 06:29:48'),
-(29, 1, 1, 12, 'dwadadwad', '12312312312', 'dine-in', 'cancelled', NULL, NULL, NULL, '110.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-14 13:37:50'),
-(30, 1, 1, 12, 'Cj Tamayo Porto', '09457309228', 'dine-in', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-17 07:47:12'),
-(31, 2, 1, 17, 'Cj Tamayo Porto', '09878764435', 'delivery', 'ready', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', '', '', '', '', '2026-07-17 08:26:40'),
-(32, 1, 1, 12, 'Cj Tamayo Porto', '09445730933', 'dine-in', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 22:26:20'),
-(33, 2, 1, 12, 'wdadadadwada', '09876632114', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 22:28:57'),
-(34, 3, 1, 12, 'Cj Tamayo Porto', '09457309228', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 23:00:42'),
-(35, 4, 1, 12, 'Cj Tamayo Porto', '09212414124', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 00:15:07'),
-(36, 5, 1, 12, 'Cj Tamayo Porto', '09432918348', 'dine-in', 'cancelled', 'Want to change my order', 'customer', '2026-07-19 10:31:16', '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 02:26:59'),
-(37, 6, 1, 12, 'Cj Tamayo Porto', '09323523423', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-19 11:54:05', '117.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 03:53:43'),
-(38, 7, 1, 12, 'Cj Tamayo Porto', '09243148618', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-19 14:09:01', '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 06:08:41'),
-(39, 1, 1, 12, 'Cj Tamayo Porto', '09678578567', 'delivery', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', '', '', '', '2026-07-20 11:12:39'),
-(40, 2, 1, 12, 'Cj Tamayo Porto', '09986786867', 'delivery', 'pending', NULL, NULL, NULL, '88.00', '39.00', '49.00', 'Cash on Delivery', 'Poblacion', '', '', '', '', '2026-07-20 11:39:15');
+INSERT INTO `tbl_orders` (`order_id`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
+(4, 101, 1, NULL, 12, 'Test Customer', '09123456789', 'delivery', 'completed', NULL, NULL, NULL, '250.00', '0.00', '0.00', 'COD', 'Test Address', 'Near Test Store', NULL, NULL, 'Test order for cashier dashboard', '2026-07-06 12:32:23'),
+(5, NULL, 1, NULL, 12, 'www', '09457309228', 'dine-in', 'completed', NULL, NULL, NULL, '0.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'ewewe', '2026-07-08 15:45:45'),
+(6, 1, 1, NULL, 12, 'weadawdad', '2231231414', 'dine-in', 'cancelled', NULL, NULL, NULL, '75.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'adaaddada', '2026-07-09 02:58:48'),
+(7, 2, 1, NULL, 12, 'fgjkk', '12325123432', 'takeout', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', NULL, '12:18', 'wahtjghhjgh', '2026-07-09 03:19:09'),
+(8, 1, 1, NULL, 12, 'salsal', '12345678912', 'delivery', 'completed', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', 'pasalsal', '2026-07-10 04:14:50'),
+(9, 2, 1, NULL, 12, 'Carlos Jay Miguel T. Porto', '09872212345', 'dine-in', 'completed', NULL, NULL, NULL, '525.00', '0.00', '0.00', 'Cash', '', '', NULL, '', '', '2026-07-10 13:54:28'),
+(10, 3, 1, NULL, 12, 'helloworld', '12312415236346', 'delivery', 'ready', NULL, NULL, NULL, '130.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', 'Malapit sa novo', '2026-07-10 13:57:24'),
+(11, 1, 1, NULL, 12, 'Cj Tamayo Porto', '111111111', 'delivery', 'cancelled', NULL, NULL, NULL, '184.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', NULL, '', '', '2026-07-11 02:22:18'),
+(12, 2, 1, NULL, 12, 'angel', '09985783488993775877666623228', 'dine-in', 'preparing', NULL, NULL, NULL, '130.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'ggg', '2026-07-11 04:39:58'),
+(13, 3, 1, NULL, 12, 'asgsddwa', '12312313123', 'dine-in', 'preparing', NULL, NULL, NULL, '88.00', '0.00', '0.00', 'Cash', '', '', NULL, '', 'adwada', '2026-07-11 11:11:55'),
+(14, 4, 1, NULL, 12, 'wadsdwad', 'awda123231231', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-11 11:28:38'),
+(15, 5, 1, NULL, 12, 'wwwwww', 'wwwww', 'dine-in', 'pending', NULL, NULL, NULL, '49.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wwwww', '2026-07-11 12:40:19'),
+(16, 6, 1, NULL, 12, 'ewqa2sqazr bf', '131233534534534', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', 'eadawda', '2026-07-11 14:02:26'),
+(17, 7, 1, NULL, 12, '23AWDASD', 'DWASDA', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', 'DASDASD', '2026-07-11 14:08:34'),
+(18, 1, 1, NULL, 12, 'dwadawdaw', '13141414', 'dine-in', 'preparing', NULL, NULL, NULL, '114.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-12 05:53:38'),
+(23, 2, 1, NULL, 12, '213122131', '3123ed 3e4214e1', 'dine-in', 'ready', NULL, NULL, NULL, '134.00', '0.00', '0.00', 'Cash', '', '', '', '', '2311a', '2026-07-12 06:12:59'),
+(24, 3, 1, NULL, 12, 'cj', '09457309228', 'dine-in', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'no pita', '2026-07-12 06:59:43'),
+(25, 1, 1, NULL, 12, 'wwadadadawdasdwa', '43256456742', 'dine-in', 'completed', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wwwwww', '2026-07-13 05:46:17'),
+(26, 2, 1, NULL, 12, 'wwwww', '23123123123', 'dine-in', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', 'wdawdawdaw', '2026-07-13 06:12:02'),
+(27, 3, 1, NULL, 12, 'dwadadaw', '23131313122', 'dine-in', 'cancelled', NULL, NULL, NULL, '98.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-13 06:18:37'),
+(28, 4, 1, NULL, 12, 'cjh', '23123124125', 'dine-in', 'ready', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-13 06:29:48'),
+(29, 1, 1, NULL, 12, 'dwadadwad', '12312312312', 'dine-in', 'cancelled', NULL, NULL, NULL, '110.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-14 13:37:50'),
+(30, 1, 1, NULL, 12, 'Cj Tamayo Porto', '09457309228', 'dine-in', 'cancelled', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-17 07:47:12'),
+(31, 2, 1, NULL, 17, 'Cj Tamayo Porto', '09878764435', 'delivery', 'ready', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', '', '', '', '', '2026-07-17 08:26:40'),
+(32, 1, 1, NULL, 12, 'Cj Tamayo Porto', '09445730933', 'dine-in', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 22:26:20'),
+(33, 2, 1, NULL, 12, 'wdadadadwada', '09876632114', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 22:28:57'),
+(34, 3, 1, NULL, 12, 'Cj Tamayo Porto', '09457309228', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-18 23:00:42'),
+(35, 4, 1, NULL, 12, 'Cj Tamayo Porto', '09212414124', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 00:15:07'),
+(36, 5, 1, NULL, 12, 'Cj Tamayo Porto', '09432918348', 'dine-in', 'cancelled', 'Want to change my order', 'customer', '2026-07-19 10:31:16', '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 02:26:59'),
+(37, 6, 1, NULL, 12, 'Cj Tamayo Porto', '09323523423', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-19 11:54:05', '117.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 03:53:43'),
+(38, 7, 1, NULL, 12, 'Cj Tamayo Porto', '09243148618', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-19 14:09:01', '39.00', '0.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-19 06:08:41'),
+(39, 1, 1, NULL, 12, 'Cj Tamayo Porto', '09678578567', 'delivery', 'pending', NULL, NULL, NULL, '65.00', '0.00', '0.00', 'Cash on Delivery', 'Poblacion', 'novo', '', '', '', '2026-07-20 11:12:39'),
+(40, 2, 1, 15, 12, 'Cj Tamayo Porto', '09986786867', 'delivery', 'preparing', NULL, NULL, NULL, '88.00', '39.00', '49.00', 'Cash on Delivery', 'Poblacion', '', '', '', '', '2026-07-20 11:39:15'),
+(41, 3, 1, NULL, 12, 'Cj Tamayo Porto', '09312312312', 'dine-in', 'completed', NULL, NULL, NULL, '120.00', '120.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-20 14:31:00'),
+(42, 4, 1, NULL, 12, 'Cj Tamayo Porto2222', '09798463514', 'delivery', 'completed', NULL, NULL, NULL, '88.00', '39.00', '49.00', 'Cash on Delivery', 'Poblacion', '', '', '', 'Hhehehehhee-', '2026-07-20 14:58:37'),
+(43, 5, 1, NULL, 12, 'Cj Tamayo', '09798078907', 'delivery', 'ready', NULL, NULL, NULL, '88.00', '39.00', '49.00', 'Cash on Delivery', 'Poblacion', '', '', '', '', '2026-07-20 15:19:28'),
+(44, 1, 1, NULL, 12, 'yobabs', '09455634867', 'delivery', 'completed', NULL, NULL, NULL, '570.00', '520.00', '50.00', 'Cash on Delivery', 'Poblacion', 'novo', '', '', 'tetrdfbg gerrvwrwregesv', '2026-07-22 06:05:20');
 
 -- --------------------------------------------------------
 
@@ -618,7 +667,34 @@ INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo
 (44, 37, 62, NULL, 3, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]'),
 (45, 38, 70, NULL, 1, '39.00', 'Red Velvet', 'Regular', '', '[]', 'No Add-on', '[]'),
 (46, 39, 1, NULL, 1, '65.00', 'Shawarma Pita', '', '', '[]', 'No Add-on', '[]'),
-(47, 40, 70, NULL, 1, '39.00', 'Red Velvet', 'Regular', '', '[]', 'No Add-on', '[]');
+(47, 40, 70, NULL, 1, '39.00', 'Red Velvet', 'Regular', '', '[]', 'No Add-on', '[]'),
+(48, 41, 5, 1, 1, '120.00', 'Shawarma Pita', '', '', '[]', 'No Add-on', '[]'),
+(49, 42, 70, NULL, 1, '39.00', 'Red Velvet', 'Regular', '', '[]', 'No Add-on', '[]'),
+(50, 43, 70, NULL, 1, '39.00', 'Red Velvet', 'Regular', '', '[]', 'No Add-on', '[]'),
+(51, 44, 118, NULL, 4, '130.00', 'Fries Barkada Overload w/ Shawarma', '', '', '[]', 'No Add-on', '[]');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_owner_trusted_devices`
+--
+
+CREATE TABLE `tbl_owner_trusted_devices` (
+  `trusted_device_id` bigint(20) UNSIGNED NOT NULL,
+  `owner_id` int(11) NOT NULL,
+  `selector` char(32) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_used_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `tbl_owner_trusted_devices`
+--
+
+INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selector`, `token_hash`, `expires_at`, `created_at`, `last_used_at`) VALUES
+(1, 11, 'be44b26eeb75bfce29f22e0c32d61b88', '864beeac464fa56fdb0042004841c3d998a248270ed5fdf603fed284faecd3e9', '2026-08-21 17:02:26', '2026-07-22 23:02:26', '2026-07-23 12:14:34');
 
 -- --------------------------------------------------------
 
@@ -681,7 +757,7 @@ CREATE TABLE `tbl_products` (
 --
 
 INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `size`, `price`, `stock`, `status`) VALUES
-(1, 1, 'Shawarma Pita', 'Solo', NULL, '65.00', 3, 'Available'),
+(1, 1, 'Shawarma Pita', 'Solo', NULL, '65.00', 1, 'Unavailable'),
 (2, 1, 'Shawarma Pita Cheese', 'Solo', NULL, '70.00', 0, 'Unavailable'),
 (3, 1, 'Shawarma Pita All Meat', 'Solo', NULL, '75.00', 0, 'Unavailable'),
 (4, 1, 'Shawarma Rice', 'Solo', NULL, '80.00', 0, 'Unavailable'),
@@ -750,7 +826,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (67, 1, 'Hokkaido', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
 (68, 1, 'Cookies & Cream', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
 (69, 1, 'Salted Caramel', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
-(70, 1, 'Red Velvet', 'Milktea Classic', 'Regular', '39.00', 4, 'Available'),
+(70, 1, 'Red Velvet', 'Milktea Classic', 'Regular', '39.00', 2, 'Available'),
 (71, 1, 'Dark Oreo', 'Milktea Classic', 'Large', '49.00', 10, 'Available'),
 (72, 1, 'Avocado', 'Milktea Classic', 'Large', '49.00', 0, 'Unavailable'),
 (73, 1, 'Black Forest', 'Milktea Classic', 'Large', '49.00', 0, 'Unavailable'),
@@ -798,7 +874,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (115, 1, 'Shawarma Burger + Milktea', 'Shawarma Burger Combo', NULL, '99.00', 0, 'Unavailable'),
 (116, 1, 'Shawarma Burger + Fruit Tea', 'Shawarma Burger Combo', NULL, '89.00', 0, 'Unavailable'),
 (117, 1, 'Fries Solo Overload', 'Fries', NULL, '75.00', 0, 'Unavailable'),
-(118, 1, 'Fries Barkada Overload w/ Shawarma', 'Fries', NULL, '130.00', 24, 'Available'),
+(118, 1, 'Fries Barkada Overload w/ Shawarma', 'Fries', NULL, '130.00', 20, 'Available'),
 (119, 1, 'Fries Solo + Milktea', 'Fries Combo', NULL, '120.00', 2, 'Available'),
 (120, 1, 'Fries + Fruit Tea', 'Fries Combo', NULL, '110.00', 40, 'Available'),
 (121, 1, 'Dark Chocolate', 'Milktea Classic', 'Large', '49.00', 0, 'Unavailable'),
@@ -824,7 +900,8 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (146, 1, 'Nata', 'Milktea Classic Add-on', NULL, '10.00', 9, 'Available'),
 (147, 1, 'Fruit Jelly', 'Milktea Classic Add-on', NULL, '10.00', 8, 'Available'),
 (148, 1, 'Oreo Crushed', 'Milktea Creamcheese Add-on', NULL, '10.00', 10, 'Available'),
-(149, 1, 'More Creamcheese', 'Milktea Creamcheese Add-on', NULL, '20.00', 10, 'Available');
+(149, 1, 'More Creamcheese', 'Milktea Creamcheese Add-on', NULL, '20.00', 10, 'Available'),
+(150, 1, 'weare', 'Shawarma', 'Solo', '20.00', 1, 'Available');
 
 -- --------------------------------------------------------
 
@@ -863,7 +940,7 @@ CREATE TABLE `tbl_restaurants` (
 --
 
 INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `address`, `contact_number`, `opening_hours`, `delivery_fee`, `business_status`, `owner_id`, `staff_access_code`) VALUES
-(1, 'BlackHabit', 'Cp Garcia Street,Alaminos City', '09109970717', '8:00 AM - 10:00 PM', '49.00', 'Open', 11, 'BH20261234');
+(1, 'BlackHabit', 'Cp Garcia Street,Alaminos City', '09109970717', '8:00 AM - 10:00 PM', '50.00', 'Open', 11, 'BH20261234');
 
 -- --------------------------------------------------------
 
@@ -1027,7 +1104,8 @@ ALTER TABLE `tbl_notification_reads`
 ALTER TABLE `tbl_orders`
   ADD PRIMARY KEY (`order_id`),
   ADD KEY `restaurant_id` (`restaurant_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `idx_orders_processed_cashier` (`processed_by_cashier_id`);
 
 --
 -- Indexes for table `tbl_order_items`
@@ -1037,6 +1115,15 @@ ALTER TABLE `tbl_order_items`
   ADD KEY `order_id` (`order_id`),
   ADD KEY `product_id` (`product_id`),
   ADD KEY `combo_id` (`combo_id`);
+
+--
+-- Indexes for table `tbl_owner_trusted_devices`
+--
+ALTER TABLE `tbl_owner_trusted_devices`
+  ADD PRIMARY KEY (`trusted_device_id`),
+  ADD UNIQUE KEY `selector` (`selector`),
+  ADD KEY `idx_trusted_owner` (`owner_id`),
+  ADD KEY `idx_trusted_expiration` (`expires_at`);
 
 --
 -- Indexes for table `tbl_partner_applications`
@@ -1090,19 +1177,19 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `tbl_categories`
@@ -1150,7 +1237,7 @@ ALTER TABLE `tbl_combo_items`
 -- AUTO_INCREMENT for table `tbl_delivery_assignments`
 --
 ALTER TABLE `tbl_delivery_assignments`
-  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tbl_inventory`
@@ -1162,19 +1249,25 @@ ALTER TABLE `tbl_inventory`
 -- AUTO_INCREMENT for table `tbl_notification_reads`
 --
 ALTER TABLE `tbl_notification_reads`
-  MODIFY `notification_read_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `notification_read_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+
+--
+-- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
+--
+ALTER TABLE `tbl_owner_trusted_devices`
+  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tbl_partner_applications`
@@ -1186,7 +1279,7 @@ ALTER TABLE `tbl_partner_applications`
 -- AUTO_INCREMENT for table `tbl_products`
 --
 ALTER TABLE `tbl_products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
 
 --
 -- AUTO_INCREMENT for table `tbl_queue`
@@ -1273,6 +1366,7 @@ ALTER TABLE `tbl_notification_reads`
 -- Constraints for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
+  ADD CONSTRAINT `fk_orders_processed_cashier` FOREIGN KEY (`processed_by_cashier_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `tbl_orders_ibfk_1` FOREIGN KEY (`restaurant_id`) REFERENCES `tbl_restaurants` (`restaurant_id`),
   ADD CONSTRAINT `tbl_orders_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`);
 
@@ -1283,6 +1377,12 @@ ALTER TABLE `tbl_order_items`
   ADD CONSTRAINT `tbl_order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `tbl_orders` (`order_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `tbl_order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `tbl_products` (`product_id`),
   ADD CONSTRAINT `tbl_order_items_ibfk_3` FOREIGN KEY (`combo_id`) REFERENCES `tbl_combos` (`combo_id`);
+
+--
+-- Constraints for table `tbl_owner_trusted_devices`
+--
+ALTER TABLE `tbl_owner_trusted_devices`
+  ADD CONSTRAINT `fk_trusted_device_owner` FOREIGN KEY (`owner_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tbl_partner_applications`

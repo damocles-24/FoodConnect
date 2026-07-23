@@ -68,7 +68,10 @@ if ($assignment_id <= 0 || $new_status === "") {
 */
 
 $workflow = [
-    "assigned" => ["accepted"],
+    /*
+     * Internal restaurant riders are automatically
+     * accepted when assigned by the cashier.
+     */
     "accepted" => ["picked_up"],
     "picked_up" => ["out_for_delivery"],
     "out_for_delivery" => ["completed"],
@@ -166,11 +169,10 @@ try {
     */
 
     $timestampColumns = [
-        "accepted" => "accepted_at",
-        "picked_up" => "picked_up_at",
-        "out_for_delivery" => "out_for_delivery_at",
-        "completed" => "completed_at"
-    ];
+    "picked_up" => "picked_up_at",
+    "out_for_delivery" => "out_for_delivery_at",
+    "completed" => "completed_at"
+];
 
     $timestampColumn =
         $timestampColumns[$new_status] ?? null;
@@ -246,11 +248,10 @@ try {
     */
 
     $orderStatusMap = [
-        "accepted" => "assigned",
-        "picked_up" => "assigned",
-        "out_for_delivery" => "out_for_delivery",
-        "completed" => "completed"
-    ];
+    "picked_up" => "assigned",
+    "out_for_delivery" => "out_for_delivery",
+    "completed" => "completed"
+];
 
     $order_status =
         $orderStatusMap[$new_status] ?? null;
@@ -307,33 +308,27 @@ try {
     */
 
     $logTitles = [
-        "accepted" => "Delivery Accepted",
-        "picked_up" => "Order Picked Up",
-        "out_for_delivery" => "Out for Delivery",
-        "completed" => "Delivery Completed"
-    ];
+    "picked_up" => "Order Picked Up",
+    "out_for_delivery" => "Out for Delivery",
+    "completed" => "Delivery Completed"
+];
 
     $logDescriptions = [
-        "accepted" =>
-            "The rider accepted delivery Order #" .
-            $assignment["order_id"] .
-            ".",
+    "picked_up" =>
+        "The rider picked up delivery Order #" .
+        $assignment["order_id"] .
+        " from the restaurant.",
 
-        "picked_up" =>
-            "The rider picked up delivery Order #" .
-            $assignment["order_id"] .
-            " from the restaurant.",
+    "out_for_delivery" =>
+        "Delivery Order #" .
+        $assignment["order_id"] .
+        " is now out for delivery.",
 
-        "out_for_delivery" =>
-            "Delivery Order #" .
-            $assignment["order_id"] .
-            " is now out for delivery.",
-
-        "completed" =>
-            "Delivery Order #" .
-            $assignment["order_id"] .
-            " was completed successfully."
-    ];
+    "completed" =>
+        "Delivery Order #" .
+        $assignment["order_id"] .
+        " was completed successfully."
+];
 
     $action_type = "delivery_status";
 

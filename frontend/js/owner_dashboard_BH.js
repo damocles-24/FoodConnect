@@ -2,14 +2,18 @@ let orders = [];
 let products = [];
 let salesData = [];
 let users = [];
-let notifications = [];
-let currentNotificationFilter = "all";
 let activityLogs = [];
 let currentLogFilter = "all";
 let salesReport = {
   summary: {},
   bestProducts: [],
-  bestCategories: []
+  bestCategories: [],
+  cashierPerformance: [],
+  deliveryPerformance: [],
+  performanceRange: {
+    value: "weekly",
+    label: "Last 7 Days"
+  }
 };
 
 /* =========================
@@ -76,11 +80,6 @@ const closeEditUserModal = document.getElementById("closeEditUserModal");
 const saveUserBtn = document.getElementById("saveUserBtn");
 const updateUserBtn = document.getElementById("updateUserBtn"); 
 
-const notificationsList = document.getElementById("notificationsList");
-const notificationCount = document.getElementById("notificationCount");
-const clearNotificationsBtn = document.getElementById("clearNotificationsBtn");
-const notificationFilterBtns = document.querySelectorAll(".notification-filter-btn"); 
-
 const logsList = document.getElementById("logsList");
 const logFilter = document.getElementById("logFilter");
 
@@ -92,6 +91,36 @@ const bestCategoriesList = document.getElementById("bestCategoriesList");
 
 const exportExcelBtn = document.getElementById("exportExcelBtn");
 const exportPdfBtn = document.getElementById("exportPdfBtn");
+
+const cashierPerformanceRange =
+  document.getElementById(
+    "cashierPerformanceRange"
+  );
+
+const deliveryPerformanceRange =
+  document.getElementById(
+    "deliveryPerformanceRange"
+  );
+
+const cashierRangeLabel =
+  document.getElementById(
+    "cashierRangeLabel"
+  );
+
+const deliveryRangeLabel =
+  document.getElementById(
+    "deliveryRangeLabel"
+  );
+
+const cashierPerformanceBody =
+  document.getElementById(
+    "cashierPerformanceBody"
+  );
+
+const deliveryPerformanceBody =
+  document.getElementById(
+    "deliveryPerformanceBody"
+  );
 
 const settingsRestaurantName = document.getElementById("settingsRestaurantName");
 const settingsContactNumber = document.getElementById("settingsContactNumber");
@@ -200,6 +229,35 @@ if (saveSettingsBtn) {
 ========================= */
 function formatPeso(value) {
   return `₱${(Number(value) || 0).toLocaleString()}`;
+}
+
+function getInitials(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return "?";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map(part => part.charAt(0))
+    .join("")
+    .toUpperCase();
+}
+
+function formatCompletionRate(value) {
+  const rate = Math.max(
+    0,
+    Math.min(
+      100,
+      Number(value) || 0
+    )
+  );
+
+  return rate;
 }
 
 function normalizeStatus(status) {
@@ -532,22 +590,31 @@ async function loadProducts() {
 }
 
 async function loadUsers() {
-  const data = await fetchJSON("http://localhost/FoodConnect/api/get_users.php");
+  const data = await fetchJSON(
+    "http://localhost/FoodConnect/api/get_users.php"
+  );
 
-  users = data.success && Array.isArray(data.users) ? data.users.map(u => ({
-    id: u.user_id,
-    restaurant_id: u.restaurant_id,
-    role: u.role,
-    full_name: u.full_name,
-    email: u.email,
-    contact_number: u.contact_number || "",
-    address: u.address || "",
-    status: Number(u.status),
-    created_at: u.created_at
-  })) : [];
+  users =
+    data.success &&
+    Array.isArray(data.users)
+      ? data.users.map(u => ({
+          id: u.user_id,
+          restaurant_id: u.restaurant_id,
+          role: u.role,
+          full_name: u.full_name,
+          email: u.email,
+          contact_number:
+            u.contact_number || "",
+          address:
+            u.address || "",
+          status:
+            Number(u.status),
+          created_at:
+            u.created_at
+        }))
+      : [];
 
   applyUserFilters();
-  loadOwnerNotifications();
 }
 
 /* =========================
@@ -701,25 +768,428 @@ function renderReportSalesChart() {
   `;
 }
 
-async function loadSalesReport() {
+function renderCashierPerformance() {
+  if (!cashierPerformanceBody) {
+    return;
+  }
+
+  const cashiers =
+    salesReport.cashierPerformance || [];
+
+  if (cashierRangeLabel) {
+    cashierRangeLabel.textContent =
+      salesReport.performanceRange?.label ||
+      "Last 7 Days";
+  }
+
+  if (!cashiers.length) {
+    cashierPerformanceBody.innerHTML = `
+      <tr>
+        <td
+          colspan="6"
+          class="performance-empty-cell"
+        >
+          <div class="performance-empty-state">
+            <div class="performance-empty-icon">
+              👤
+            </div>
+
+            <strong>No cashier data</strong>
+
+            <span>
+              No cashier activity was recorded
+              for this period.
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  cashierPerformanceBody.innerHTML =
+    cashiers.map(cashier => {
+      const isActive =
+        Number(cashier.account_status) === 1;
+
+      const handledOrders =
+        Number(cashier.handled_orders) || 0;
+
+      const completedOrders =
+        Number(cashier.completed_orders) || 0;
+
+      const cancelledOrders =
+        Number(cashier.cancelled_orders) || 0;
+
+      const totalSales =
+        Number(
+          cashier.total_sales_handled
+        ) || 0;
+
+      const averageValue =
+        Number(
+          cashier.average_order_value
+        ) || 0;
+
+      return `
+        <tr>
+          <td>
+            <div class="performance-person">
+              <div class="performance-avatar">
+                ${getInitials(
+                  cashier.cashier_name
+                )}
+              </div>
+
+              <div class="performance-person-info">
+                <strong>
+                  ${cashier.cashier_name}
+                </strong>
+
+                <span
+                  class="
+                    performance-account-status
+                    ${
+                      isActive
+                        ? "is-active"
+                        : "is-inactive"
+                    }
+                  "
+                >
+                  ${
+                    isActive
+                      ? "Active"
+                      : "Inactive"
+                  }
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                handledOrders === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${handledOrders}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                completedOrders === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${completedOrders}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-money
+              ${
+                totalSales === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${formatPeso(totalSales)}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                cancelledOrders === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${cancelledOrders}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-money
+              ${
+                averageValue === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${formatPeso(averageValue)}
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join("");
+}
+
+function renderDeliveryPerformance() {
+  if (!deliveryPerformanceBody) {
+    return;
+  }
+
+  const riders =
+    salesReport.deliveryPerformance || [];
+
+  if (deliveryRangeLabel) {
+    deliveryRangeLabel.textContent =
+      salesReport.performanceRange?.label ||
+      "Last 7 Days";
+  }
+
+  if (!riders.length) {
+    deliveryPerformanceBody.innerHTML = `
+      <tr>
+        <td
+          colspan="6"
+          class="performance-empty-cell"
+        >
+          <div class="performance-empty-state">
+            <div class="performance-empty-icon">
+              🛵
+            </div>
+
+            <strong>No delivery data</strong>
+
+            <span>
+              No rider activity was recorded
+              for this period.
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  deliveryPerformanceBody.innerHTML =
+    riders.map(rider => {
+      const isActive =
+        Number(rider.account_status) === 1;
+
+      const assigned =
+        Number(
+          rider.assigned_deliveries
+        ) || 0;
+
+      const completed =
+        Number(
+          rider.completed_deliveries
+        ) || 0;
+
+      const failed =
+        Number(
+          rider.failed_cancelled_deliveries
+        ) || 0;
+
+      const codHandled =
+        Number(
+          rider.cod_amount_handled
+        ) || 0;
+
+      const completionRate =
+        formatCompletionRate(
+          rider.completion_rate
+        );
+
+      return `
+        <tr>
+          <td>
+            <div class="performance-person">
+              <div class="performance-avatar">
+                ${getInitials(
+                  rider.rider_name
+                )}
+              </div>
+
+              <div class="performance-person-info">
+                <strong>
+                  ${rider.rider_name}
+                </strong>
+
+                <span
+                  class="
+                    performance-account-status
+                    ${
+                      isActive
+                        ? "is-active"
+                        : "is-inactive"
+                    }
+                  "
+                >
+                  ${
+                    isActive
+                      ? "Active"
+                      : "Inactive"
+                  }
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                assigned === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${assigned}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                completed === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${completed}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-number
+              ${
+                failed === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${failed}
+            </span>
+          </td>
+
+          <td>
+            <span class="
+              performance-money
+              ${
+                codHandled === 0
+                  ? "performance-zero"
+                  : ""
+              }
+            ">
+              ${formatPeso(codHandled)}
+            </span>
+          </td>
+
+          <td class="completion-cell">
+            <div class="completion-rate-header">
+              <strong>
+                ${completionRate.toFixed(0)}%
+              </strong>
+            </div>
+
+            <div class="completion-progress">
+              <div
+                class="completion-progress-bar"
+                style="
+                  width:
+                    ${completionRate}%;
+                "
+              ></div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+}
+
+async function loadSalesReport(
+  range = "weekly"
+) {
   try {
-    const data = await fetchJSON("http://localhost/FoodConnect/api/get_sales_report.php");
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_sales_report.php?range=${encodeURIComponent(
+        range
+      )}`
+    );
 
     if (!data.success) {
-      console.error(data.message || "Failed to load sales report.");
-      return;
+      throw new Error(
+        data.message ||
+        "Failed to load sales report."
+      );
     }
 
     salesReport = {
-      summary: data.summary || {},
-      bestProducts: data.bestProducts || [],
-      bestCategories: data.bestCategories || []
+      summary:
+        data.summary || {},
+
+      bestProducts:
+        data.bestProducts || [],
+
+      bestCategories:
+        data.bestCategories || [],
+
+      cashierPerformance:
+        data.cashierPerformance || [],
+
+      deliveryPerformance:
+        data.deliveryPerformance || [],
+
+      performanceRange:
+        data.performanceRange || {
+          value: range,
+          label: "Last 7 Days"
+        }
     };
 
     renderSalesReport();
+    renderCashierPerformance();
+    renderDeliveryPerformance();
 
   } catch (error) {
-    console.error("Load sales report failed:", error);
+    console.error(
+      "Load sales report failed:",
+      error
+    );
+
+    if (cashierPerformanceBody) {
+      cashierPerformanceBody.innerHTML = `
+        <tr>
+          <td
+            colspan="6"
+            class="performance-empty-cell"
+          >
+            Unable to load cashier performance.
+          </td>
+        </tr>
+      `;
+    }
+
+    if (deliveryPerformanceBody) {
+      deliveryPerformanceBody.innerHTML = `
+        <tr>
+          <td
+            colspan="6"
+            class="performance-empty-cell"
+          >
+            Unable to load delivery performance.
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 
@@ -1334,209 +1804,6 @@ function renderUsers(list = users) {
     : `<tr><td colspan="8">No users found.</td></tr>`;
 }
 
-async function loadOwnerNotifications() {
-  try {
-    const data = await fetchJSON("http://localhost/FoodConnect/api/get_activity_logs.php");
-
-    if (!data.success || !Array.isArray(data.logs)) {
-      notifications = [];
-      renderNotifications();
-      return;
-    }
-
-    notifications = data.logs
-      .filter(log => {
-        const title = String(log.action_title || "").toLowerCase();
-        const type = String(log.action_type || "").toLowerCase();
-
-        return (
-          type === "order" ||
-          title.includes("cancel") ||
-          title.includes("low stock") ||
-          title.includes("out of stock")
-        );
-      })
-      .slice(0, 20)
-      .map(log => ({
-  logId: Number(log.log_id),
-  type:
-    log.action_type === "order"
-      ? "order"
-      : "system",
-
-  icon: String(log.action_title || "")
-    .toLowerCase()
-    .includes("cancel")
-      ? "🔴"
-      : "🧾",
-
-  title: log.action_title,
-  message: log.action_description,
-  time: formatLogTime(log.created_at),
-  isRead: Number(log.is_read) === 1
-}));
-
-    renderNotifications();
-
-  } catch (error) {
-    console.error("Load owner notifications failed:", error);
-  }
-}
-
-function renderNotifications() {
-  if (!notificationsList) return;
-
-  let list = [...notifications];
-
-  if (currentNotificationFilter !== "all") {
-    list = list.filter(
-      notification =>
-        notification.type === currentNotificationFilter
-    );
-  }
-
-  const unreadCount = notifications.filter(
-    notification => !notification.isRead
-  ).length;
-
-  if (notificationCount) {
-    notificationCount.textContent =
-      `(${unreadCount} unread)`;
-  }
-
-  const sidebarBadge = document.getElementById(
-    "sidebarNotificationBadge"
-  );
-
-  if (sidebarBadge) {
-    sidebarBadge.textContent = String(unreadCount);
-    sidebarBadge.style.display =
-      unreadCount > 0 ? "inline-flex" : "none";
-  }
-
-  if (!list.length) {
-    notificationsList.innerHTML = `
-      <div class="empty-notification">
-        <h3>No Notifications</h3>
-        <p>No notifications available.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-  notificationsList.innerHTML = list
-    .map(notification => `
-      <div
-        class="notification-card ${
-          notification.isRead
-            ? "is-read"
-            : "is-unread"
-        }"
-        data-log-id="${notification.logId}"
-      >
-        <div class="notification-icon ${notification.type}">
-          ${notification.icon}
-        </div>
-
-        <div class="notification-content">
-          <h3>${escapeOwnerNotificationHTML(
-            notification.title
-          )}</h3>
-
-          <p>${escapeOwnerNotificationHTML(
-            notification.message
-          )}</p>
-
-          <small>${escapeOwnerNotificationHTML(
-            notification.time
-          )}</small>
-
-          ${
-            notification.isRead
-              ? `
-                <span class="notification-read-label">
-                  Read
-                </span>
-              `
-              : `
-                <button
-                  type="button"
-                  class="mark-read-btn"
-                  onclick="markOwnerNotificationRead(${notification.logId})"
-                >
-                  Mark as Read
-                </button>
-              `
-          }
-        </div>
-      </div>
-    `)
-    .join("");
-}
-
-function escapeOwnerNotificationHTML(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-async function markOwnerNotificationRead(logId) {
-  const id = Number(logId);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    alert("Invalid notification.");
-    return;
-  }
-
-  try {
-    const result = await fetchJSON(
-      "http://localhost/FoodConnect/api/mark_notification_read.php",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          log_id: id
-        })
-      }
-    );
-
-    if (!result.success) {
-      alert(
-        result.message ||
-        "Failed to mark notification as read."
-      );
-      return;
-    }
-
-    const notification = notifications.find(
-      item => item.logId === id
-    );
-
-    if (notification) {
-      notification.isRead = true;
-    }
-
-    renderNotifications();
-
-  } catch (error) {
-    console.error(
-      "Mark owner notification read failed:",
-      error
-    );
-
-    alert(
-      error.message ||
-      "Unable to mark notification as read."
-    );
-  }
-}
-
-window.markOwnerNotificationRead =
-  markOwnerNotificationRead;
-
 function renderActivityLogs() {
 
   if (!logsList) return;
@@ -1950,10 +2217,47 @@ alert("Stock updated successfully.");
 /* =========================
    EVENTS
 ========================= */
+
+if (cashierPerformanceRange) {
+  cashierPerformanceRange.addEventListener(
+    "change",
+    () => {
+      const range =
+        cashierPerformanceRange.value;
+
+      if (deliveryPerformanceRange) {
+        deliveryPerformanceRange.value =
+          range;
+      }
+
+      loadSalesReport(range);
+    }
+  );
+}
+
+if (deliveryPerformanceRange) {
+  deliveryPerformanceRange.addEventListener(
+    "change",
+    () => {
+      const range =
+        deliveryPerformanceRange.value;
+
+      if (cashierPerformanceRange) {
+        cashierPerformanceRange.value =
+          range;
+      }
+
+      loadSalesReport(range);
+    }
+  );
+}
+
 navItems.forEach(btn => {
   btn.addEventListener("click", () => {
     const targetSection =
       btn.dataset.section;
+
+    // Existing navigation code continues here
 
     const currentSection =
       document.querySelector(
@@ -2130,20 +2434,6 @@ closeAddProductModal?.addEventListener("click", () => addProductModal.classList.
 closeEditProductModal?.addEventListener("click", () => {
   editProductModal.classList.remove("show");
 });
-
-notificationFilterBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    notificationFilterBtns.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    currentNotificationFilter = btn.dataset.type;
-    renderNotifications();
-  });
-});
-
-
-
-
 
 closeRestockModal?.addEventListener("click", () => restockModal.classList.remove("show"));
 closeModal?.addEventListener("click", () => orderModal.classList.remove("show"));
@@ -3016,10 +3306,7 @@ async function refreshOwnerOperationalData() {
       loadDashboardSummary()
     ]);
 
-    await Promise.all([
-      loadOwnerNotifications(),
-      loadActivityLogs()
-    ]);
+    await loadActivityLogs();
 
   } catch (error) {
     console.error(
@@ -3100,7 +3387,6 @@ async function initDashboard() {
   loadRestaurantSettings()
 ]);
 
-await loadOwnerNotifications();
 await loadActivityLogs();
 
   } catch (error) {

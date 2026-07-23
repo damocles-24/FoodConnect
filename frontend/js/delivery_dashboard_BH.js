@@ -209,16 +209,26 @@ async function loadDeliveries(showLoading = true) {
 
 function updateSummaryCards() {
   const assignedCount = deliveries.filter(delivery => {
-    return delivery.delivery_status === "assigned";
-  }).length;
+  return [
+    "assigned",
+    "accepted"
+  ].includes(
+    String(
+      delivery.delivery_status || ""
+    ).toLowerCase()
+  );
+}).length;
 
   const ongoingCount = deliveries.filter(delivery => {
-    return [
-      "accepted",
-      "picked_up",
-      "out_for_delivery"
-    ].includes(delivery.delivery_status);
-  }).length;
+  return [
+    "picked_up",
+    "out_for_delivery"
+  ].includes(
+    String(
+      delivery.delivery_status || ""
+    ).toLowerCase()
+  );
+}).length;
 
   const completedCount = deliveries.filter(delivery => {
     return delivery.delivery_status === "completed";
@@ -945,20 +955,24 @@ function renderDeliveryActions(delivery) {
     "deliveryActions"
   );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   const status = String(
     delivery.delivery_status || ""
-  ).toLowerCase();
+  )
+    .toLowerCase()
+    .trim();
 
+  /*
+   * Internal restaurant riders are automatically
+   * accepted when assigned by the cashier.
+   *
+   * Therefore, the rider's first action is
+   * confirming that the order was picked up.
+   */
   const actions = {
-    assigned: {
-      label: "Accept Delivery",
-      nextStatus: "accepted",
-      icon: "fa-check",
-      className: "accept-btn"
-    },
-
     accepted: {
       label: "Confirm Pick Up",
       nextStatus: "picked_up",
@@ -1019,18 +1033,15 @@ function confirmDeliveryStatusUpdate(newStatus) {
   }
 
   const messages = {
-    accepted:
-      "Accept this assigned delivery order?",
+  picked_up:
+    "Confirm that you have picked up the order from the restaurant?",
 
-    picked_up:
-      "Confirm that you have picked up the order from the restaurant?",
+  out_for_delivery:
+    "Confirm that you are now heading to the customer?",
 
-    out_for_delivery:
-      "Confirm that you are now heading to the customer?",
-
-    completed:
-      "Confirm that the order was successfully delivered to the customer?"
-  };
+  completed:
+    "Confirm that the order was successfully delivered to the customer?"
+};
 
   openConfirmModal(
     "Update Delivery Status",
