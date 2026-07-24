@@ -9,7 +9,7 @@
   >
 
   <title>
-    FoodConnect Admin & Delivery Coordinator
+    FoodConnect Admin
   </title>
 
       <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png">
@@ -52,7 +52,7 @@
 
     <p>
       Set up the first FoodConnect platform administrator
-      and Delivery Coordinator account.
+      
     </p>
 
     <form id="adminSetupForm">
@@ -210,7 +210,7 @@
     <h1>FoodConnect</h1>
 
     <p>
-      Admin & Delivery Coordinator Portal
+      FoodConnect Admin Portal
     </p>
 
     <form id="adminLoginForm">
@@ -281,7 +281,7 @@
 
         <div>
           <strong>FoodConnect</strong>
-          <span>Admin & Coordinator</span>
+          <span>Platform Admin</span>
         </div>
       </div>
 
@@ -316,38 +316,6 @@
         >
           <i class="fa-solid fa-building"></i>
           <span>Approved Restaurants</span>
-        </button>
-
-        <button
-          class="nav-item"
-          data-section="deliveryRequestsSection"
-        >
-          <i class="fa-solid fa-bell-concierge"></i>
-          <span>Delivery Requests</span>
-        </button>
-
-        <button
-          class="nav-item"
-          data-section="riderAssignmentSection"
-        >
-          <i class="fa-solid fa-motorcycle"></i>
-          <span>Rider Assignment</span>
-        </button>
-
-        <button
-          class="nav-item"
-          data-section="ridersSection"
-        >
-          <i class="fa-solid fa-users"></i>
-          <span>Third-Party Riders</span>
-        </button>
-
-        <button
-          class="nav-item"
-          data-section="deliveryMonitoringSection"
-        >
-          <i class="fa-solid fa-map-location-dot"></i>
-          <span>Delivery Monitoring</span>
         </button>
 
         <button
@@ -418,9 +386,6 @@
     Platform Administrator
 </span>
 
-<small>
-    Delivery Coordinator
-</small>
           </div>
         </div>
       </header>
@@ -460,28 +425,6 @@
             </div>
           </article>
 
-          <article class="summary-card">
-            <div class="summary-icon blue">
-              <i class="fa-solid fa-truck-fast"></i>
-            </div>
-
-            <div>
-              <span>Active Delivery Requests</span>
-              <strong>0</strong>
-            </div>
-          </article>
-
-          <article class="summary-card">
-            <div class="summary-icon purple">
-              <i class="fa-solid fa-motorcycle"></i>
-            </div>
-
-            <div>
-              <span>Available Third-Party Riders</span>
-              <strong>0</strong>
-            </div>
-          </article>
-
         </div>
 
         <div class="content-card">
@@ -490,8 +433,8 @@
               <h2>Platform overview</h2>
 
               <p>
-                Review restaurant applications and coordinate
-                FoodConnect deliveries from one dashboard.
+                Review restaurant applications, restaurants,
+                users, and platform activities from one dashboard.
               </p>
             </div>
           </div>
@@ -502,8 +445,8 @@
             <h3>Dashboard analytics</h3>
 
             <p>
-              Sales, delivery, restaurant, and rider analytics
-              will appear here as the platform receives data.
+              Restaurant, user, order, and platform analytics
+              will appear here as FoodConnect grows.
             </p>
           </div>
         </div>
@@ -629,70 +572,132 @@
 
       <!-- PLACEHOLDER MODULES -->
 
-      <section
-        id="restaurantsSection"
-        class="dashboard-section"
-      >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-building"></i>
-          <h2>Approved Restaurants</h2>
-          <p>
-            Approved FoodConnect restaurants will be managed here.
-          </p>
-        </div>
-      </section>
+     <section
+  id="restaurantsSection"
+  class="dashboard-section"
+>
+  <div class="content-card">
 
-      <section
-        id="deliveryRequestsSection"
-        class="dashboard-section"
-      >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-bell-concierge"></i>
-          <h2>Delivery Requests</h2>
-          <p>
-            Restaurant requests for FoodConnect riders will appear here.
-          </p>
-        </div>
-      </section>
+    <div class="card-heading applications-heading">
+      <div>
+        <h2>Approved Restaurants</h2>
 
-      <section
-        id="riderAssignmentSection"
-        class="dashboard-section"
-      >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-motorcycle"></i>
-          <h2>Rider Assignment</h2>
-          <p>
-            Assign available third-party riders to restaurant orders.
-          </p>
-        </div>
-      </section>
+        <p>
+          View and manage approved FoodConnect restaurants.
+        </p>
+      </div>
 
-      <section
-        id="ridersSection"
-        class="dashboard-section"
+      <button
+        type="button"
+        id="refreshRestaurantsButton"
+        class="secondary-button"
       >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-users"></i>
-          <h2>Third-Party Riders</h2>
-          <p>
-            Register, approve, activate, and monitor partner riders.
-          </p>
-        </div>
-      </section>
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+    </div>
 
-      <section
-        id="deliveryMonitoringSection"
-        class="dashboard-section"
+    <div class="restaurant-summary-grid">
+
+      <div class="restaurant-summary-card">
+        <span>Total</span>
+        <strong id="totalRestaurantsCount">0</strong>
+      </div>
+
+      <div class="restaurant-summary-card">
+        <span>Open</span>
+        <strong id="openRestaurantsCount">0</strong>
+      </div>
+
+      <div class="restaurant-summary-card">
+        <span>Closed</span>
+        <strong id="closedRestaurantsCount">0</strong>
+      </div>
+
+      <div class="restaurant-summary-card">
+        <span>Unavailable</span>
+        <strong id="unavailableRestaurantsCount">0</strong>
+      </div>
+
+    </div>
+
+    <div class="restaurant-toolbar">
+
+      <input
+        type="search"
+        id="restaurantSearchInput"
+        class="restaurant-search-input"
+        placeholder="Search restaurant or owner..."
+        autocomplete="off"
       >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-map-location-dot"></i>
-          <h2>Delivery Monitoring</h2>
-          <p>
-            Monitor assigned, picked-up, and active deliveries.
-          </p>
-        </div>
-      </section>
+
+      <button
+        type="button"
+        id="searchRestaurantsButton"
+        class="primary-button"
+      >
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Search
+      </button>
+
+      <button
+        type="button"
+        id="clearRestaurantSearchButton"
+        class="secondary-button"
+      >
+        Clear
+      </button>
+
+    </div>
+
+    <p
+      id="restaurantsMessage"
+      class="form-message"
+    ></p>
+
+    <div
+      id="restaurantsLoading"
+      class="table-loading hidden"
+    >
+      Loading restaurants...
+    </div>
+
+    <div
+      id="restaurantsEmpty"
+      class="empty-placeholder hidden"
+    >
+      <i class="fa-solid fa-building-circle-xmark"></i>
+
+      <h3>No restaurants found</h3>
+
+      <p>
+        Approved restaurants will appear here.
+      </p>
+    </div>
+
+    <div
+      id="restaurantsTableWrapper"
+      class="table-wrapper hidden"
+    >
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Restaurant</th>
+            <th>Owner</th>
+            <th>Status</th>
+            <th>Staff</th>
+            <th>Orders</th>
+            <th>Total Sales</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="restaurantsTableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
 
       <section
         id="platformUsersSection"
@@ -702,7 +707,8 @@
           <i class="fa-solid fa-user-shield"></i>
           <h2>Platform Users</h2>
           <p>
-            Manage administrators, owners, customers, and riders.
+            Manage administrators, owners, customers,
+            cashiers, and delivery staff.
           </p>
         </div>
       </section>
@@ -715,7 +721,8 @@
           <i class="fa-solid fa-clock-rotate-left"></i>
           <h2>Activity Logs</h2>
           <p>
-            Platform-level administrative and delivery activities.
+            Platform administrative activities and
+            restaurant management logs.
           </p>
         </div>
       </section>

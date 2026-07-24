@@ -1,0 +1,67 @@
+%%{init: {
+  "flowchart": {
+    "nodeSpacing": 60,
+    "rankSpacing": 80,
+    "curve": "basis"
+  }
+}}%%
+
+flowchart TD
+
+    subgraph UserLayer["Users"]
+        Customer[Customer]
+        Owner[Restaurant Owner]
+        Cashier[Cashier]
+        Rider[Delivery Staff]
+        Admin[System Administrator]
+    end
+
+    subgraph PresentationLayer["Presentation Layer"]
+        CustomerSite[Customer Website]
+        OwnerDashboard[Owner Dashboard]
+        CashierDashboard[Cashier Dashboard]
+        DeliveryDashboard[Delivery Dashboard]
+        AdminDashboard[Admin Dashboard]
+    end
+
+    subgraph ApplicationLayer["Application Layer"]
+        Backend[PHP Backend API]
+    end
+
+    subgraph DataLayer["Data Layer"]
+        Database[(MySQL Database)]
+    end
+
+    subgraph ExternalLayer["External Service"]
+        EmailService[Brevo SMTP]
+    end
+
+    Customer --> CustomerSite
+    Owner --> OwnerDashboard
+    Cashier --> CashierDashboard
+    Rider --> DeliveryDashboard
+    Admin --> AdminDashboard
+
+    CustomerSite --> Backend
+    OwnerDashboard --> Backend
+    CashierDashboard --> Backend
+    DeliveryDashboard --> Backend
+    AdminDashboard --> Backend
+
+    Backend --> Database
+    Backend --> EmailService
+
+    %% ===== USERS =====
+style UserLayer fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#000
+
+%% ===== PRESENTATION =====
+style PresentationLayer fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#000
+
+%% ===== APPLICATION =====
+style ApplicationLayer fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#000
+
+%% ===== DATABASE =====
+style DataLayer fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px,color:#000
+
+%% ===== EXTERNAL =====
+style ExternalLayer fill:#FFFDE7,stroke:#F9A825,stroke-width:2px,color:#000

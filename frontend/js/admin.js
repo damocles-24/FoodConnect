@@ -207,6 +207,77 @@ let currentApplicationStatus =
 let loadedApplications = [];
 
 /* =========================
+   RESTAURANT ELEMENTS
+========================= */
+
+const refreshRestaurantsButton =
+  document.getElementById(
+    "refreshRestaurantsButton"
+  );
+
+const restaurantSearchInput =
+  document.getElementById(
+    "restaurantSearchInput"
+  );
+
+const searchRestaurantsButton =
+  document.getElementById(
+    "searchRestaurantsButton"
+  );
+
+const clearRestaurantSearchButton =
+  document.getElementById(
+    "clearRestaurantSearchButton"
+  );
+
+const restaurantsMessage =
+  document.getElementById(
+    "restaurantsMessage"
+  );
+
+const restaurantsLoading =
+  document.getElementById(
+    "restaurantsLoading"
+  );
+
+const restaurantsEmpty =
+  document.getElementById(
+    "restaurantsEmpty"
+  );
+
+const restaurantsTableWrapper =
+  document.getElementById(
+    "restaurantsTableWrapper"
+  );
+
+const restaurantsTableBody =
+  document.getElementById(
+    "restaurantsTableBody"
+  );
+
+const totalRestaurantsCount =
+  document.getElementById(
+    "totalRestaurantsCount"
+  );
+
+const openRestaurantsCount =
+  document.getElementById(
+    "openRestaurantsCount"
+  );
+
+const closedRestaurantsCount =
+  document.getElementById(
+    "closedRestaurantsCount"
+  );
+
+const unavailableRestaurantsCount =
+  document.getElementById(
+    "unavailableRestaurantsCount"
+  );
+
+let loadedRestaurants = [];
+
+/* =========================
    INITIALIZATION
 ========================= */
 
@@ -312,6 +383,41 @@ function bindEvents() {
     ?.addEventListener(
       "click",
       loadApplications
+    );
+
+      refreshRestaurantsButton
+    ?.addEventListener(
+      "click",
+      loadRestaurants
+    );
+
+  searchRestaurantsButton
+    ?.addEventListener(
+      "click",
+      loadRestaurants
+    );
+
+  clearRestaurantSearchButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (restaurantSearchInput) {
+          restaurantSearchInput.value = "";
+        }
+
+        loadRestaurants();
+      }
+    );
+
+  restaurantSearchInput
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          loadRestaurants();
+        }
+      }
     );
 
   closeApplicationModal
@@ -969,6 +1075,520 @@ function openDashboardSection(navItem) {
     "applicationsSection"
   ) {
     loadApplications();
+  }
+
+    if (
+    sectionId ===
+    "restaurantsSection"
+  ) {
+    loadRestaurants();
+  }
+}
+
+/* =========================
+   RESTAURANTS
+========================= */
+
+async function loadRestaurants() {
+  restaurantsLoading?.classList.remove(
+    "hidden"
+  );
+
+  restaurantsEmpty?.classList.add(
+    "hidden"
+  );
+
+  restaurantsTableWrapper?.classList.add(
+    "hidden"
+  );
+
+  setRestaurantsMessage(
+    "",
+    ""
+  );
+
+  try {
+    const search =
+      restaurantSearchInput?.value
+        ?.trim() || "";
+
+    const params =
+      new URLSearchParams();
+
+    if (search !== "") {
+      params.set(
+        "search",
+        search
+      );
+    }
+
+    const response = await fetch(
+      `${API_BASE}/get_admin_restaurants.php?${params.toString()}`,
+      {
+        credentials: "include",
+
+        headers: {
+          "Accept":
+            "application/json"
+        }
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load restaurants."
+      );
+    }
+
+    loadedRestaurants =
+      Array.isArray(
+        data.restaurants
+      )
+        ? data.restaurants
+        : [];
+
+    updateRestaurantSummary(
+      data.summary || {}
+    );
+
+    renderRestaurants(
+      loadedRestaurants
+    );
+  } catch (error) {
+    console.error(
+      "Load restaurants error:",
+      error
+    );
+
+    restaurantsEmpty?.classList.remove(
+      "hidden"
+    );
+
+    if (restaurantsEmpty) {
+      restaurantsEmpty.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <h3>Unable to load restaurants</h3>
+
+        <p>
+          ${escapeHtml(
+            error.message ||
+            "Please try again."
+          )}
+        </p>
+      `;
+    }
+  } finally {
+    restaurantsLoading?.classList.add(
+      "hidden"
+    );
+  }
+}
+
+function renderRestaurants(
+  restaurants
+) {
+  if (!restaurantsTableBody) {
+    return;
+  }
+
+  restaurantsTableBody.innerHTML = "";
+
+  if (restaurants.length === 0) {
+    restaurantsEmpty?.classList.remove(
+      "hidden"
+    );
+
+    restaurantsTableWrapper?.classList.add(
+      "hidden"
+    );
+
+    return;
+  }
+
+  restaurantsEmpty?.classList.add(
+    "hidden"
+  );
+
+  restaurantsTableWrapper?.classList.remove(
+    "hidden"
+  );
+
+  restaurants.forEach(
+    (restaurant) => {
+      const row =
+        document.createElement("tr");
+
+      const statusClass =
+        getRestaurantStatusClass(
+          restaurant.business_status
+        );
+
+      row.innerHTML = `
+        <td>
+          <strong>
+            ${escapeHtml(
+              restaurant.name
+            )}
+          </strong>
+
+          <small class="table-subtext">
+            ${escapeHtml(
+              restaurant.address ||
+              "No address"
+            )}
+          </small>
+
+          <small class="table-subtext">
+            Delivery fee:
+            ${formatCurrency(
+              restaurant.delivery_fee
+            )}
+          </small>
+        </td>
+
+        <td>
+          <strong>
+            ${escapeHtml(
+              restaurant.owner_name
+            )}
+          </strong>
+
+          <small class="table-subtext">
+            ${escapeHtml(
+              restaurant.owner_email
+            )}
+          </small>
+        </td>
+
+        <td>
+          <span class="status-badge ${statusClass}">
+            ${escapeHtml(
+              restaurant.business_status
+            )}
+          </span>
+
+          <small class="table-subtext">
+            Owner:
+            ${
+              Number(
+                restaurant.owner_status
+              ) === 1
+                ? "Active"
+                : "Inactive"
+            }
+          </small>
+        </td>
+
+        <td>
+          ${Number(
+            restaurant.staff_count || 0
+          )}
+        </td>
+
+        <td>
+          <strong>
+            ${Number(
+              restaurant.total_orders || 0
+            )}
+          </strong>
+
+          <small class="table-subtext">
+            Active:
+            ${Number(
+              restaurant.active_orders || 0
+            )}
+          </small>
+        </td>
+
+        <td>
+          ${formatCurrency(
+            restaurant.total_sales
+          )}
+        </td>
+
+        <td>
+          <select
+            class="restaurant-status-select"
+            data-restaurant-id="${Number(
+              restaurant.restaurant_id
+            )}"
+            data-restaurant-name="${escapeHtml(
+              restaurant.name
+            )}"
+            data-current-status="${escapeHtml(
+              restaurant.business_status
+            )}"
+          >
+            <option
+              value="Open"
+              ${
+                restaurant.business_status ===
+                "Open"
+                  ? "selected"
+                  : ""
+              }
+            >
+              Open
+            </option>
+
+            <option
+              value="Closed"
+              ${
+                restaurant.business_status ===
+                "Closed"
+                  ? "selected"
+                  : ""
+              }
+            >
+              Closed
+            </option>
+
+            <option
+              value="Temporarily Unavailable"
+              ${
+                restaurant.business_status ===
+                "Temporarily Unavailable"
+                  ? "selected"
+                  : ""
+              }
+            >
+              Temporarily Unavailable
+            </option>
+          </select>
+        </td>
+      `;
+
+      restaurantsTableBody.appendChild(
+        row
+      );
+    }
+  );
+
+  bindRestaurantStatusControls();
+}
+
+function bindRestaurantStatusControls() {
+  const statusSelects =
+    restaurantsTableBody
+      ?.querySelectorAll(
+        ".restaurant-status-select"
+      ) || [];
+
+  statusSelects.forEach(
+    (select) => {
+      select.addEventListener(
+        "change",
+        async () => {
+          const restaurantId =
+            Number(
+              select.dataset
+                .restaurantId
+            );
+
+          const restaurantName =
+            select.dataset
+              .restaurantName ||
+            "this restaurant";
+
+          const previousStatus =
+            select.dataset
+              .currentStatus;
+
+          const selectedStatus =
+            select.value;
+
+          const confirmed =
+            window.confirm(
+              `Change ${restaurantName} from ${previousStatus} to ${selectedStatus}?`
+            );
+
+          if (!confirmed) {
+            select.value =
+              previousStatus;
+
+            return;
+          }
+
+          select.disabled = true;
+
+          try {
+            await updateRestaurantStatus(
+              restaurantId,
+              selectedStatus
+            );
+
+            select.dataset.currentStatus =
+              selectedStatus;
+
+            setRestaurantsMessage(
+              `${restaurantName} is now ${selectedStatus}.`,
+              "success"
+            );
+
+            await loadRestaurants();
+          } catch (error) {
+            console.error(
+              "Update restaurant status error:",
+              error
+            );
+
+            select.value =
+              previousStatus;
+
+            setRestaurantsMessage(
+              error.message ||
+              "Unable to update restaurant status.",
+              "error"
+            );
+          } finally {
+            select.disabled = false;
+          }
+        }
+      );
+    }
+  );
+}
+
+async function updateRestaurantStatus(
+  restaurantId,
+  businessStatus
+) {
+  const response = await fetch(
+    `${API_BASE}/update_admin_restaurant_status.php`,
+    {
+      method: "POST",
+
+      credentials: "include",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Accept":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+        restaurant_id:
+          restaurantId,
+
+        business_status:
+          businessStatus
+      })
+    }
+  );
+
+  const data =
+    await readJson(response);
+
+  if (
+    response.status === 401 ||
+    response.status === 403
+  ) {
+    showAdminAccess();
+
+    throw new Error(
+      "Administrator session expired."
+    );
+  }
+
+  if (
+    !response.ok ||
+    !data.success
+  ) {
+    throw new Error(
+      data.message ||
+      "Unable to update restaurant status."
+    );
+  }
+
+  return data;
+}
+
+function updateRestaurantSummary(
+  summary
+) {
+  setText(
+    totalRestaurantsCount,
+    Number(
+      summary.total_restaurants || 0
+    )
+  );
+
+  setText(
+    openRestaurantsCount,
+    Number(
+      summary.open_restaurants || 0
+    )
+  );
+
+  setText(
+    closedRestaurantsCount,
+    Number(
+      summary.closed_restaurants || 0
+    )
+  );
+
+  setText(
+    unavailableRestaurantsCount,
+    Number(
+      summary.temporarily_unavailable || 0
+    )
+  );
+}
+
+function getRestaurantStatusClass(
+  status
+) {
+  switch (status) {
+    case "Open":
+      return "status-approved";
+
+    case "Closed":
+      return "status-rejected";
+
+    case "Temporarily Unavailable":
+      return "status-draft";
+
+    default:
+      return "";
+  }
+}
+
+function setRestaurantsMessage(
+  message,
+  type = ""
+) {
+  if (!restaurantsMessage) {
+    return;
+  }
+
+  restaurantsMessage.textContent =
+    message;
+
+  restaurantsMessage.className =
+    "form-message";
+
+  if (type) {
+    restaurantsMessage.classList.add(
+      type
+    );
   }
 }
 

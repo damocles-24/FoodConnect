@@ -1039,3 +1039,86 @@ button {
     width: 100%;
   }
 }
+
+/* =========================================================
+   BASIC RESTAURANT MANAGEMENT UI
+========================================================= */
+
+.restaurant-summary-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.restaurant-summary-card {
+  padding: 15px;
+  border: 1px solid #d8dde5;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.restaurant-summary-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.restaurant-summary-card strong {
+  font-size: 24px;
+}
+
+.restaurant-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.restaurant-search-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #cfd5df;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.restaurant-status-select {
+  min-width: 170px;
+  padding: 8px;
+  border: 1px solid #cfd5df;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.table-subtext {
+  display: block;
+  margin-top: 4px;
+  color: #667085;
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  .restaurant-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .restaurant-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-toolbar {
+    flex-direction: column;
+  }
+
+  .restaurant-search-input {
+    width: 100%;
+    min-width: 0;
+  }
+}
