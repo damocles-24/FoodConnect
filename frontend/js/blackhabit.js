@@ -2485,6 +2485,29 @@ allSubFilterBtns.forEach(
     }
   });
 
+  function showCartSuccessToast(message) {
+    let toast = document.getElementById("cartSuccessToast");
+
+    if(!toast) {
+      toast = document.createElement("div");
+      toast.id = "cartSuccessToast";
+      toast.className = "cart-toast";
+      document.body.appendChild(toast);
+    }
+
+    toast.innerHTML = `
+    <div class="popup">
+      <div class="popup-check">✓</div>
+      <div class="popup-title">${message}</div>
+    </div>
+    `;
+    toast.classList.add("show");
+
+    setTimeout(() => {      
+      toast.classList.remove("show");
+    }, 2500);
+  }
+
   async function addDatabaseProductToCart({
   productId,
   quantity,
@@ -2586,7 +2609,10 @@ if (!restaurantAcceptingOrders) {
 
     await updateCartBadge();
 
+    showCartSuccessToast("Added to cart successfully.");
+
     return true;
+    
 
   } catch (error) {
     console.error(
