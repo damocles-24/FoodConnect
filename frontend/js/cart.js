@@ -1262,9 +1262,9 @@ async function placeOrder() {
         return;
     }
 
-    if (!/^09\d{9}$/.test(contact)) {
+    if (!/^9\d{9}$/.test(contact)) {
         showCheckoutMessage(
-            "Enter a valid 11-digit Philippine mobile number starting with 09.",
+            "Enter a valid 11-digit Philippine mobile number .",
             "error"
         );
 
@@ -2787,7 +2787,7 @@ ordersContent?.addEventListener(
                 this.value =
                     this.value
                         .replace(/[^0-9]/g, "")
-                        .slice(0, 11);
+                        .slice(0, 10);
             }
         );
 
@@ -2966,6 +2966,16 @@ window.addEventListener(
         }
     }
 );
+
+/*contact number validation */
+
+const phone = document.getElementById("contactNumber");
+
+if(phone) {
+    phone.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "").substring(0, 10);    
+    });
+}
 
 /* Required for inline cart-item controls. */
 

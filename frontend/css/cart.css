@@ -2076,3 +2076,51 @@ img {
         padding: 23px 18px;
     }
 }
+
+.phone-input{
+    display:flex;
+    align-items:center;
+
+    border:1px solid #ddd;
+    border-radius:10px;
+    overflow:hidden;
+
+    background:#fff;
+}
+
+.country-code{
+    padding:14px 15px;
+    border-right:1px solid #ddd;
+
+    font-size:16px;
+    font-weight:600;
+    color:#333;
+}
+
+.phone-input input{
+    flex:1;
+    border:none;
+    outline:none;
+    padding:14px;
+    font-size:16px;
+}
+
+/* +63 Country Code */
+
+.country-code{
+    position:absolute;
+    top:50%;
+    left:23px;
+    transform:translateY(-50%);
+
+    font-size:12px;
+    font-weight:600;
+    color:var(--fc-heading);
+
+    padding-right:10px;
+    border-right:1px solid var(--fc-border);
+}
+
+.input-wrapper input{
+    padding:0 20px 0 80px;
+}
