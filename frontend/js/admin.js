@@ -278,6 +278,89 @@ const unavailableRestaurantsCount =
 let loadedRestaurants = [];
 
 /* =========================
+   PLATFORM USER ELEMENTS
+========================= */
+
+const refreshPlatformUsersButton =
+  document.getElementById(
+    "refreshPlatformUsersButton"
+  );
+
+const platformUserSearchInput =
+  document.getElementById(
+    "platformUserSearchInput"
+  );
+
+const platformUserRoleFilter =
+  document.getElementById(
+    "platformUserRoleFilter"
+  );
+
+const platformUserStatusFilter =
+  document.getElementById(
+    "platformUserStatusFilter"
+  );
+
+const searchPlatformUsersButton =
+  document.getElementById(
+    "searchPlatformUsersButton"
+  );
+
+const clearPlatformUserFiltersButton =
+  document.getElementById(
+    "clearPlatformUserFiltersButton"
+  );
+
+const platformUsersMessage =
+  document.getElementById(
+    "platformUsersMessage"
+  );
+
+const platformUsersLoading =
+  document.getElementById(
+    "platformUsersLoading"
+  );
+
+const platformUsersEmpty =
+  document.getElementById(
+    "platformUsersEmpty"
+  );
+
+const platformUsersTableWrapper =
+  document.getElementById(
+    "platformUsersTableWrapper"
+  );
+
+const platformUsersTableBody =
+  document.getElementById(
+    "platformUsersTableBody"
+  );
+
+const totalPlatformUsersCount =
+  document.getElementById(
+    "totalPlatformUsersCount"
+  );
+
+const activePlatformUsersCount =
+  document.getElementById(
+    "activePlatformUsersCount"
+  );
+
+const inactivePlatformUsersCount =
+  document.getElementById(
+    "inactivePlatformUsersCount"
+  );
+
+const restaurantStaffCount =
+  document.getElementById(
+    "restaurantStaffCount"
+  );
+
+let loadedPlatformUsers = [];
+
+let currentAdminId = 0;
+
+/* =========================
    INITIALIZATION
 ========================= */
 
@@ -417,6 +500,65 @@ function bindEvents() {
           event.preventDefault();
           loadRestaurants();
         }
+      }
+    );
+
+      refreshPlatformUsersButton
+    ?.addEventListener(
+      "click",
+      loadPlatformUsers
+    );
+
+  searchPlatformUsersButton
+    ?.addEventListener(
+      "click",
+      loadPlatformUsers
+    );
+
+  platformUserSearchInput
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+
+          loadPlatformUsers();
+        }
+      }
+    );
+
+  platformUserRoleFilter
+    ?.addEventListener(
+      "change",
+      loadPlatformUsers
+    );
+
+  platformUserStatusFilter
+    ?.addEventListener(
+      "change",
+      loadPlatformUsers
+    );
+
+  clearPlatformUserFiltersButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (platformUserSearchInput) {
+          platformUserSearchInput.value =
+            "";
+        }
+
+        if (platformUserRoleFilter) {
+          platformUserRoleFilter.value =
+            "all";
+        }
+
+        if (platformUserStatusFilter) {
+          platformUserStatusFilter.value =
+            "all";
+        }
+
+        loadPlatformUsers();
       }
     );
 
@@ -1083,6 +1225,13 @@ function openDashboardSection(navItem) {
   ) {
     loadRestaurants();
   }
+
+    if (
+    sectionId ===
+    "platformUsersSection"
+  ) {
+    loadPlatformUsers();
+  }
 }
 
 /* =========================
@@ -1322,55 +1471,111 @@ function renderRestaurants(
           )}
         </td>
 
-        <td>
-          <select
-            class="restaurant-status-select"
-            data-restaurant-id="${Number(
-              restaurant.restaurant_id
-            )}"
-            data-restaurant-name="${escapeHtml(
-              restaurant.name
-            )}"
-            data-current-status="${escapeHtml(
-              restaurant.business_status
-            )}"
-          >
-            <option
-              value="Open"
-              ${
-                restaurant.business_status ===
-                "Open"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Open
-            </option>
+                <td>
+          <div class="restaurant-action-group">
 
-            <option
-              value="Closed"
+            <select
+              class="restaurant-status-select"
+              data-restaurant-id="${Number(
+                restaurant.restaurant_id
+              )}"
+              data-restaurant-name="${escapeHtml(
+                restaurant.name
+              )}"
+              data-current-status="${escapeHtml(
+                restaurant.business_status
+              )}"
               ${
-                restaurant.business_status ===
-                "Closed"
-                  ? "selected"
+                Number(
+                  restaurant.owner_status
+                ) === 0
+                  ? "disabled"
                   : ""
               }
             >
-              Closed
-            </option>
+              <option
+                value="Open"
+                ${
+                  restaurant.business_status ===
+                  "Open"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Open
+              </option>
 
-            <option
-              value="Temporarily Unavailable"
-              ${
-                restaurant.business_status ===
-                "Temporarily Unavailable"
-                  ? "selected"
-                  : ""
-              }
+              <option
+                value="Closed"
+                ${
+                  restaurant.business_status ===
+                  "Closed"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Closed
+              </option>
+
+              <option
+                value="Temporarily Unavailable"
+                ${
+                  restaurant.business_status ===
+                  "Temporarily Unavailable"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Temporarily Unavailable
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="
+                restaurant-access-button
+                ${
+                  Number(
+                    restaurant.owner_status
+                  ) === 1
+                    ? "deactivate"
+                    : "reactivate"
+                }
+              "
+              data-restaurant-id="${Number(
+                restaurant.restaurant_id
+              )}"
+              data-restaurant-name="${escapeHtml(
+                restaurant.name
+              )}"
+              data-owner-status="${Number(
+                restaurant.owner_status || 0
+              )}"
+              data-active-orders="${Number(
+                restaurant.active_orders || 0
+              )}"
             >
-              Temporarily Unavailable
-            </option>
-          </select>
+              <i class="
+                fa-solid
+                ${
+                  Number(
+                    restaurant.owner_status
+                  ) === 1
+                    ? "fa-ban"
+                    : "fa-rotate-left"
+                }
+              "></i>
+
+              ${
+                Number(
+                  restaurant.owner_status
+                ) === 1
+                  ? "Deactivate"
+                  : "Reactivate"
+              }
+            </button>
+
+          </div>
         </td>
       `;
 
@@ -1436,12 +1641,12 @@ function bindRestaurantStatusControls() {
             select.dataset.currentStatus =
               selectedStatus;
 
+            await loadRestaurants();
+
             setRestaurantsMessage(
               `${restaurantName} is now ${selectedStatus}.`,
               "success"
             );
-
-            await loadRestaurants();
           } catch (error) {
             console.error(
               "Update restaurant status error:",
@@ -1458,6 +1663,116 @@ function bindRestaurantStatusControls() {
             );
           } finally {
             select.disabled = false;
+          }
+        }
+      );
+    }
+  );
+
+  const accessButtons =
+    restaurantsTableBody
+      ?.querySelectorAll(
+        ".restaurant-access-button"
+      ) || [];
+
+  accessButtons.forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const restaurantId =
+            Number(
+              button.dataset
+                .restaurantId || 0
+            );
+
+          const restaurantName =
+            button.dataset
+              .restaurantName ||
+            "this restaurant";
+
+          const ownerStatus =
+            Number(
+              button.dataset
+                .ownerStatus || 0
+            );
+
+          const activeOrders =
+            Number(
+              button.dataset
+                .activeOrders || 0
+            );
+
+          const action =
+            ownerStatus === 1
+              ? "deactivate"
+              : "reactivate";
+
+          if (
+            action === "deactivate" &&
+            activeOrders > 0
+          ) {
+            setRestaurantsMessage(
+              `${restaurantName} still has ${activeOrders} active order(s). Complete or cancel them first.`,
+              "error"
+            );
+
+            return;
+          }
+
+          const confirmationMessage =
+            action === "deactivate"
+              ? `Deactivate ${restaurantName} from FoodConnect?\n\nThe restaurant will disappear from the customer website. The Owner, Cashiers, and Delivery Staff will no longer be able to log in. Existing records will be preserved.`
+              : `Reactivate ${restaurantName}?\n\nThe owner account will regain access. Staff accounts will remain inactive until reviewed.`;
+
+          const confirmed =
+            window.confirm(
+              confirmationMessage
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          const originalHtml =
+            button.innerHTML;
+
+          button.disabled = true;
+
+          button.textContent =
+            action === "deactivate"
+              ? "Deactivating..."
+              : "Reactivating...";
+
+          try {
+            const data =
+              await updateRestaurantAccess(
+                restaurantId,
+                action
+              );
+
+            await loadRestaurants();
+
+            setRestaurantsMessage(
+              data.message ||
+              `${restaurantName} was updated successfully.`,
+              "success"
+            );
+          } catch (error) {
+            console.error(
+              "Update restaurant access error:",
+              error
+            );
+
+            setRestaurantsMessage(
+              error.message ||
+              "Unable to update restaurant access.",
+              "error"
+            );
+
+            button.disabled = false;
+            button.innerHTML =
+              originalHtml;
           }
         }
       );
@@ -1515,6 +1830,63 @@ async function updateRestaurantStatus(
     throw new Error(
       data.message ||
       "Unable to update restaurant status."
+    );
+  }
+
+  return data;
+}
+
+async function updateRestaurantAccess(
+  restaurantId,
+  action
+) {
+  const response = await fetch(
+    `${API_BASE}/update_admin_restaurant_access.php`,
+    {
+      method: "POST",
+
+      credentials: "include",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Accept":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+        restaurant_id:
+          restaurantId,
+
+        action:
+          action
+      })
+    }
+  );
+
+  const data =
+    await readJson(response);
+
+  if (
+    response.status === 401 ||
+    response.status === 403
+  ) {
+    showAdminAccess();
+
+    throw new Error(
+      data.message ||
+      "Administrator session expired."
+    );
+  }
+
+  if (
+    !response.ok ||
+    !data.success
+  ) {
+    throw new Error(
+      data.message ||
+      "Unable to update restaurant access."
     );
   }
 
@@ -1587,6 +1959,595 @@ function setRestaurantsMessage(
 
   if (type) {
     restaurantsMessage.classList.add(
+      type
+    );
+  }
+}
+
+/* =========================
+   PLATFORM USERS
+========================= */
+
+async function loadPlatformUsers() {
+  platformUsersLoading?.classList.remove(
+    "hidden"
+  );
+
+  platformUsersEmpty?.classList.add(
+    "hidden"
+  );
+
+  platformUsersTableWrapper
+    ?.classList.add(
+      "hidden"
+    );
+
+  setPlatformUsersMessage(
+    "",
+    ""
+  );
+
+  try {
+    const search =
+      platformUserSearchInput
+        ?.value
+        ?.trim() || "";
+
+    const role =
+      platformUserRoleFilter
+        ?.value || "all";
+
+    const status =
+      platformUserStatusFilter
+        ?.value || "all";
+
+    const params =
+      new URLSearchParams({
+        search,
+        role,
+        status
+      });
+
+    const response = await fetch(
+      `${API_BASE}/get_platform_users.php?${params.toString()}`,
+      {
+        credentials: "include",
+
+        headers: {
+          "Accept":
+            "application/json"
+        }
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load platform users."
+      );
+    }
+
+    loadedPlatformUsers =
+      Array.isArray(
+        data.users
+      )
+        ? data.users
+        : [];
+
+    currentAdminId =
+      Number(
+        data.current_admin_id || 0
+      );
+
+    updatePlatformUserSummary(
+      data.summary || {}
+    );
+
+    renderPlatformUsers(
+      loadedPlatformUsers
+    );
+  } catch (error) {
+    console.error(
+      "Load platform users error:",
+      error
+    );
+
+    platformUsersEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    platformUsersTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (platformUsersEmpty) {
+      platformUsersEmpty.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <h3>
+          Unable to load platform users
+        </h3>
+
+        <p>
+          ${escapeHtml(
+            error.message ||
+            "Please try again."
+          )}
+        </p>
+      `;
+    }
+  } finally {
+    platformUsersLoading
+      ?.classList.add(
+        "hidden"
+      );
+  }
+}
+
+function updatePlatformUserSummary(
+  summary
+) {
+  setText(
+    totalPlatformUsersCount,
+    Number(
+      summary.total_users || 0
+    )
+  );
+
+  setText(
+    activePlatformUsersCount,
+    Number(
+      summary.active_users || 0
+    )
+  );
+
+  setText(
+    inactivePlatformUsersCount,
+    Number(
+      summary.inactive_users || 0
+    )
+  );
+
+  setText(
+    restaurantStaffCount,
+    Number(
+      summary.restaurant_staff || 0
+    )
+  );
+}
+
+function renderPlatformUsers(users) {
+  if (!platformUsersTableBody) {
+    return;
+  }
+
+  platformUsersTableBody.innerHTML =
+    "";
+
+  if (users.length === 0) {
+    platformUsersEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    platformUsersTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    return;
+  }
+
+  platformUsersEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  platformUsersTableWrapper
+    ?.classList.remove(
+      "hidden"
+    );
+
+  users.forEach((user) => {
+    const row =
+      document.createElement("tr");
+
+    const userId =
+      Number(
+        user.user_id || 0
+      );
+
+    const userStatus =
+      Number(
+        user.status || 0
+      );
+
+    const isCurrentAdmin =
+      Boolean(
+        user.is_current_admin
+      ) ||
+      (
+        userId > 0 &&
+        userId === currentAdminId
+      );
+
+    const role =
+      String(
+        user.role || ""
+      ).toLowerCase();
+
+    const roleLabel =
+      getPlatformUserRoleLabel(
+        role
+      );
+
+    const restaurantName =
+      String(
+        user.restaurant_name || ""
+      ).trim();
+
+    const contactNumber =
+      String(
+        user.contact_number || ""
+      ).trim();
+
+    const isVerified =
+      Number(
+        user.is_verified || 0
+      ) === 1;
+
+    const actionMarkup =
+      isCurrentAdmin
+        ? `
+          <span class="current-admin-label">
+            <i class="fa-solid fa-user-shield"></i>
+            Current Admin
+          </span>
+        `
+        : `
+          <button
+            type="button"
+            class="
+              platform-user-action-button
+              ${
+                userStatus === 1
+                  ? "deactivate"
+                  : "activate"
+              }
+            "
+            data-user-id="${userId}"
+            data-user-name="${escapeHtml(
+              user.full_name
+            )}"
+            data-current-status="${userStatus}"
+          >
+            ${
+              userStatus === 1
+                ? "Deactivate"
+                : "Activate"
+            }
+          </button>
+        `;
+
+    row.innerHTML = `
+      <td data-label="Name">
+        <span class="platform-user-name">
+          ${escapeHtml(
+            user.full_name ||
+            "Unnamed User"
+          )}
+        </span>
+
+        ${
+          contactNumber
+            ? `
+              <span class="platform-user-contact">
+                ${escapeHtml(
+                  contactNumber
+                )}
+              </span>
+            `
+            : ""
+        }
+      </td>
+
+      <td data-label="Email">
+        ${escapeHtml(
+          user.email || "—"
+        )}
+      </td>
+
+      <td data-label="Role">
+        <span class="
+          platform-user-role-badge
+          ${escapeHtml(role)}
+        ">
+          ${escapeHtml(
+            roleLabel
+          )}
+        </span>
+      </td>
+
+      <td data-label="Restaurant">
+        ${
+          restaurantName
+            ? escapeHtml(
+                restaurantName
+              )
+            : `
+              <span class="table-secondary">
+                Platform account
+              </span>
+            `
+        }
+      </td>
+
+      <td data-label="Verification">
+        <span class="
+          platform-user-verification-badge
+          ${
+            isVerified
+              ? "verified"
+              : "unverified"
+          }
+        ">
+          <i class="
+            fa-solid
+            ${
+              isVerified
+                ? "fa-circle-check"
+                : "fa-circle-exclamation"
+            }
+          "></i>
+
+          ${
+            isVerified
+              ? "Verified"
+              : "Unverified"
+          }
+        </span>
+      </td>
+
+      <td data-label="Status">
+        <span class="
+          platform-user-account-badge
+          ${
+            userStatus === 1
+              ? "active"
+              : "inactive"
+          }
+        ">
+          ${
+            userStatus === 1
+              ? "Active"
+              : "Inactive"
+          }
+        </span>
+      </td>
+
+      <td data-label="Date Joined">
+        ${escapeHtml(
+          formatDate(
+            user.created_at
+          )
+        )}
+      </td>
+
+      <td data-label="Action">
+        ${actionMarkup}
+      </td>
+    `;
+
+    platformUsersTableBody
+      .appendChild(row);
+  });
+
+  bindPlatformUserActions();
+}
+
+function bindPlatformUserActions() {
+  const actionButtons =
+    platformUsersTableBody
+      ?.querySelectorAll(
+        ".platform-user-action-button"
+      ) || [];
+
+  actionButtons.forEach((button) => {
+    button.addEventListener(
+      "click",
+      async () => {
+        const userId =
+          Number(
+            button.dataset.userId || 0
+          );
+
+        const userName =
+          button.dataset.userName ||
+          "this user";
+
+        const currentStatus =
+          Number(
+            button.dataset
+              .currentStatus || 0
+          );
+
+        const newStatus =
+          currentStatus === 1
+            ? 0
+            : 1;
+
+        const actionWord =
+          newStatus === 1
+            ? "activate"
+            : "deactivate";
+
+        const confirmed =
+          window.confirm(
+            `Are you sure you want to ${actionWord} ${userName}?`
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        const originalText =
+          button.textContent;
+
+        button.disabled = true;
+
+        button.textContent =
+          newStatus === 1
+            ? "Activating..."
+            : "Deactivating...";
+
+        try {
+          const data =
+            await updatePlatformUserStatus(
+              userId,
+              newStatus
+            );
+
+          await loadPlatformUsers();
+
+setPlatformUsersMessage(
+  data.message ||
+  `${userName} was updated successfully.`,
+  "success"
+);
+        } catch (error) {
+          console.error(
+            "Platform user status update error:",
+            error
+          );
+
+          setPlatformUsersMessage(
+            error.message ||
+            "Unable to update the user account.",
+            "error"
+          );
+        } finally {
+          button.disabled = false;
+
+          button.textContent =
+            originalText;
+        }
+      }
+    );
+  });
+}
+
+async function updatePlatformUserStatus(
+  userId,
+  status
+) {
+  const response = await fetch(
+    `${API_BASE}/update_platform_user_status.php`,
+    {
+      method: "POST",
+
+      credentials: "include",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Accept":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+        user_id:
+          userId,
+
+        status
+      })
+    }
+  );
+
+  const data =
+    await readJson(response);
+
+  if (
+    response.status === 401 ||
+    response.status === 403
+  ) {
+    showAdminAccess();
+
+    throw new Error(
+      data.message ||
+      "Administrator session expired."
+    );
+  }
+
+  if (
+    !response.ok ||
+    !data.success
+  ) {
+    throw new Error(
+      data.message ||
+      "Unable to update the user account."
+    );
+  }
+
+  return data;
+}
+
+function getPlatformUserRoleLabel(
+  role
+) {
+  switch (role) {
+    case "admin":
+      return "Administrator";
+
+    case "owner":
+      return "Restaurant Owner";
+
+    case "customer":
+      return "Customer";
+
+    case "cashier":
+      return "Cashier";
+
+    case "delivery_staff":
+      return "Delivery Staff";
+
+    default:
+      return formatStatus(role);
+  }
+}
+
+function setPlatformUsersMessage(
+  message,
+  type = ""
+) {
+  if (!platformUsersMessage) {
+    return;
+  }
+
+  platformUsersMessage.textContent =
+    message;
+
+  platformUsersMessage.className =
+    "platform-users-message";
+
+  if (type) {
+    platformUsersMessage.classList.add(
       type
     );
   }

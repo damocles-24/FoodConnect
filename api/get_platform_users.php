@@ -203,9 +203,7 @@ if (mb_strlen($search) > 100) {
 
 $allowedRoles = [
     "all",
-    "admin",
     "owner",
-    "customer",
     "cashier",
     "delivery_staff"
 ];
@@ -249,7 +247,13 @@ if (
 ========================================================= */
 
 $whereConditions = [
-    "1 = 1"
+    "u.role IN (
+        'owner',
+        'cashier',
+        'delivery_staff'
+    )",
+
+    "u.is_verified = 1"
 ];
 
 $parameterTypes = "";
@@ -539,17 +543,6 @@ $summarySql = "
         COALESCE(
             SUM(
                 CASE
-                    WHEN role = 'admin'
-                    THEN 1
-                    ELSE 0
-                END
-            ),
-            0
-        ) AS administrators,
-
-        COALESCE(
-            SUM(
-                CASE
                     WHEN role = 'owner'
                     THEN 1
                     ELSE 0
@@ -557,17 +550,6 @@ $summarySql = "
             ),
             0
         ) AS owners,
-
-        COALESCE(
-            SUM(
-                CASE
-                    WHEN role = 'customer'
-                    THEN 1
-                    ELSE 0
-                END
-            ),
-            0
-        ) AS customers,
 
         COALESCE(
             SUM(
@@ -584,6 +566,14 @@ $summarySql = "
         ) AS restaurant_staff
 
     FROM tbl_users
+
+    WHERE role IN (
+        'owner',
+        'cashier',
+        'delivery_staff'
+    )
+
+    AND is_verified = 1
 ";
 
 $summaryResult =
@@ -646,29 +636,17 @@ respond_json([
                 ?? 0
             ),
 
-        "administrators" =>
-            (int) (
-                $summaryRow["administrators"]
-                ?? 0
-            ),
-
         "owners" =>
-            (int) (
-                $summaryRow["owners"]
-                ?? 0
-            ),
+    (int) (
+        $summaryRow["owners"]
+        ?? 0
+    ),
 
-        "customers" =>
-            (int) (
-                $summaryRow["customers"]
-                ?? 0
-            ),
-
-        "restaurant_staff" =>
-            (int) (
-                $summaryRow["restaurant_staff"]
-                ?? 0
-            )
+"restaurant_staff" =>
+    (int) (
+        $summaryRow["restaurant_staff"]
+        ?? 0
+    )
     ],
 
     "users" =>

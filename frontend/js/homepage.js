@@ -984,8 +984,9 @@ async function loadPublicRestaurantCard(
 
     const restaurant =
       data.restaurant || {};
-
+    card.hidden = false;
     card.dataset.businessStatus =
+
       String(
         restaurant.business_status ||
         "Closed"
@@ -1017,10 +1018,12 @@ async function loadPublicRestaurantCard(
       error
     );
 
-    card.dataset.businessStatus =
-      "Closed";
+    /*
+     * A restaurant with an inactive owner is administratively
+     * deactivated and must not appear to customers.
+     */
 
-    updateRestaurantCard(card);
+    card.hidden = true;
   }
 }
 

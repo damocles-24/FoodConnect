@@ -25,9 +25,18 @@ if ($restaurant_id <= 0 || $code === "") {
 }
 
 $stmt = $conn->prepare("
-  SELECT staff_access_code
-  FROM tbl_restaurants
-  WHERE restaurant_id = ?
+  SELECT
+    r.staff_access_code,
+    owner.status AS owner_status
+
+  FROM tbl_restaurants AS r
+
+  INNER JOIN tbl_users AS owner
+    ON owner.user_id = r.owner_id
+    AND owner.role = 'owner'
+
+  WHERE r.restaurant_id = ?
+
   LIMIT 1
 ");
 
@@ -49,6 +58,19 @@ if (!$restaurant) {
     "success" => false,
     "message" => "Restaurant not found."
   ], 404);
+}
+
+if (
+  (int) (
+    $restaurant["owner_status"]
+    ?? 0
+  ) !== 1
+) {
+  respond_json([
+    "success" => false,
+    "message" =>
+      "This restaurant has been deactivated from FoodConnect."
+  ], 403);
 }
 
 $storedCode =

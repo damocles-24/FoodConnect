@@ -1428,13 +1428,18 @@ try {
 
     $restaurantLockStmt = $conn->prepare("
     SELECT
-        restaurant_id,
-        delivery_fee,
-        business_status
+        r.restaurant_id,
+        r.delivery_fee,
+        r.business_status,
+        owner.status AS owner_status
 
-    FROM tbl_restaurants
+    FROM tbl_restaurants AS r
 
-    WHERE restaurant_id = ?
+    INNER JOIN tbl_users AS owner
+        ON owner.user_id = r.owner_id
+        AND owner.role = 'owner'
+
+    WHERE r.restaurant_id = ?
 
     LIMIT 1
 
@@ -1473,6 +1478,32 @@ try {
             "The selected restaurant no longer exists."
         );
     }
+
+    if (
+    (int) (
+        $restaurantRow["owner_status"]
+        ?? 0
+    ) !== 1
+) {
+    throw new RuntimeException(
+        "This restaurant has been deactivated from FoodConnect."
+    );
+}
+
+if (
+    strtolower(
+        trim(
+            (string) (
+                $restaurantRow["business_status"]
+                ?? "Closed"
+            )
+        )
+    ) !== "open"
+) {
+    throw new RuntimeException(
+        "This restaurant is not currently accepting orders."
+    );
+}
 
     /* =====================================================
    AUTHORITATIVE ORDER TOTAL

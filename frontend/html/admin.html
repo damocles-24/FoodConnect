@@ -700,18 +700,213 @@
 </section>
 
       <section
-        id="platformUsersSection"
-        class="dashboard-section"
+  id="platformUsersSection"
+  class="dashboard-section"
+>
+  <div class="platform-user-summary-grid">
+
+    <article class="platform-user-summary-card">
+      <div class="platform-user-summary-icon total">
+        <i class="fa-solid fa-users"></i>
+      </div>
+
+      <div>
+        <span>Total Users</span>
+
+        <strong id="totalPlatformUsersCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="platform-user-summary-card">
+      <div class="platform-user-summary-icon active">
+        <i class="fa-solid fa-user-check"></i>
+      </div>
+
+      <div>
+        <span>Active Users</span>
+
+        <strong id="activePlatformUsersCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="platform-user-summary-card">
+      <div class="platform-user-summary-icon inactive">
+        <i class="fa-solid fa-user-slash"></i>
+      </div>
+
+      <div>
+        <span>Inactive Users</span>
+
+        <strong id="inactivePlatformUsersCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="platform-user-summary-card">
+      <div class="platform-user-summary-icon staff">
+        <i class="fa-solid fa-id-badge"></i>
+      </div>
+
+      <div>
+        <span>Restaurant Staff</span>
+
+        <strong id="restaurantStaffCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="content-card">
+
+    <div class="card-heading applications-heading">
+      <div>
+        <h2>Platform Users</h2>
+
+        <p>
+          Manage verified restaurant owners,
+          cashiers, and delivery staff.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="refreshPlatformUsersButton"
+        class="secondary-button"
       >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-user-shield"></i>
-          <h2>Platform Users</h2>
-          <p>
-            Manage administrators, owners, customers,
-            cashiers, and delivery staff.
-          </p>
-        </div>
-      </section>
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+    </div>
+
+    <div class="platform-user-toolbar">
+
+      <div class="platform-user-search-group">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+          type="search"
+          id="platformUserSearchInput"
+          placeholder="Search name, email, contact, or restaurant..."
+          autocomplete="off"
+          maxlength="100"
+        >
+      </div>
+
+      <select
+        id="platformUserRoleFilter"
+        class="platform-user-filter"
+        aria-label="Filter platform users by role"
+      >
+        <option value="all">
+          All Roles
+        </option>
+
+        <option value="owner">
+          Restaurant Owner
+        </option>
+
+        <option value="cashier">
+          Cashier
+        </option>
+
+        <option value="delivery_staff">
+          Delivery Staff
+        </option>
+      </select>
+
+      <select
+        id="platformUserStatusFilter"
+        class="platform-user-filter"
+        aria-label="Filter platform users by status"
+      >
+        <option value="all">
+          All Statuses
+        </option>
+
+        <option value="active">
+          Active
+        </option>
+
+        <option value="inactive">
+          Inactive
+        </option>
+      </select>
+
+      <button
+        type="button"
+        id="searchPlatformUsersButton"
+        class="primary-button platform-user-search-button"
+      >
+        Search
+      </button>
+
+      <button
+        type="button"
+        id="clearPlatformUserFiltersButton"
+        class="secondary-button"
+      >
+        Clear
+      </button>
+
+    </div>
+
+    <p
+      id="platformUsersMessage"
+      class="platform-users-message"
+    ></p>
+
+    <div
+      id="platformUsersLoading"
+      class="table-loading"
+    >
+      Loading platform users...
+    </div>
+
+    <div
+      id="platformUsersEmpty"
+      class="empty-placeholder hidden"
+    >
+      <i class="fa-solid fa-users-slash"></i>
+
+      <h3>No platform users found</h3>
+
+      <p>
+        Users matching the selected filters will
+        appear here.
+      </p>
+    </div>
+
+    <div
+      id="platformUsersTableWrapper"
+      class="table-wrapper hidden"
+    >
+      <table class="admin-table platform-users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Restaurant</th>
+            <th>Verification</th>
+            <th>Status</th>
+            <th>Date Joined</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="platformUsersTableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
 
       <section
         id="activityLogsSection"

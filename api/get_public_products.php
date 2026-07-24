@@ -73,11 +73,20 @@ if (
 
 $restaurantStmt = $conn->prepare("
     SELECT
-        restaurant_id,
-        name,
-        business_status
-    FROM tbl_restaurants
-    WHERE restaurant_id = ?
+        r.restaurant_id,
+        r.name,
+        r.business_status
+
+    FROM tbl_restaurants AS r
+
+    INNER JOIN tbl_users AS owner
+        ON owner.user_id = r.owner_id
+        AND owner.role = 'owner'
+        AND owner.status = 1
+        AND owner.is_verified = 1
+
+    WHERE r.restaurant_id = ?
+
     LIMIT 1
 ");
 
@@ -109,7 +118,9 @@ $restaurantStmt->close();
 if (!$restaurant) {
     respond_json([
         "success" => false,
-        "message" => "Restaurant not found."
+        "message" =>
+            "This restaurant is currently unavailable on FoodConnect.",
+        "products" => []
     ], 404);
 }
 

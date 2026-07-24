@@ -1122,3 +1122,409 @@ button {
     min-width: 0;
   }
 }
+
+/* =========================================================
+   PLATFORM USERS
+========================================================= */
+
+.platform-user-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+.platform-user-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+
+  padding: 19px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  background: var(--surface);
+
+  box-shadow: var(--shadow);
+}
+
+.platform-user-summary-icon {
+  flex: 0 0 auto;
+
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 14px;
+
+  color: #ffffff;
+
+  font-size: 18px;
+}
+
+.platform-user-summary-icon.total {
+  background: var(--blue);
+}
+
+.platform-user-summary-icon.active {
+  background: var(--green);
+}
+
+.platform-user-summary-icon.inactive {
+  background: var(--red);
+}
+
+.platform-user-summary-icon.staff {
+  background: var(--purple);
+}
+
+.platform-user-summary-card span,
+.platform-user-summary-card strong {
+  display: block;
+}
+
+.platform-user-summary-card span {
+  color: var(--muted);
+
+  font-size: 12px;
+}
+
+.platform-user-summary-card strong {
+  margin-top: 6px;
+
+  font-size: 25px;
+}
+
+.platform-user-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-bottom: 16px;
+}
+
+.platform-user-search-group {
+  position: relative;
+
+  flex: 1 1 320px;
+
+  min-width: 230px;
+}
+
+.platform-user-search-group i {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+
+  color: var(--muted);
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+.platform-user-search-group input {
+  width: 100%;
+  min-height: 43px;
+
+  padding: 0 13px 0 39px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  color: var(--text);
+  background: #ffffff;
+
+  outline: none;
+}
+
+.platform-user-search-group input:focus {
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(245, 130, 32, 0.12);
+}
+
+.platform-user-filter {
+  min-height: 43px;
+
+  padding: 0 35px 0 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  color: var(--text);
+  background: #ffffff;
+
+  outline: none;
+}
+
+.platform-user-filter:focus {
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(245, 130, 32, 0.12);
+}
+
+.platform-user-search-button {
+  width: auto;
+}
+
+.platform-users-message {
+  min-height: 20px;
+
+  margin: 0 0 12px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.platform-users-message.success {
+  color: var(--green);
+}
+
+.platform-users-message.error {
+  color: var(--red);
+}
+
+.platform-users-table {
+  min-width: 1050px;
+}
+
+.platform-user-name {
+  display: block;
+
+  font-weight: 750;
+}
+
+.platform-user-contact {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+}
+
+.platform-user-role-badge,
+.platform-user-verification-badge,
+.platform-user-account-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  padding: 6px 9px;
+
+  border-radius: 999px;
+
+  white-space: nowrap;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.platform-user-role-badge {
+  color: #344054;
+  background: #f2f4f7;
+}
+
+.platform-user-role-badge.admin {
+  color: #6941c6;
+  background: #f4ebff;
+}
+
+.platform-user-role-badge.owner {
+  color: #9a5700;
+  background: #fff1d5;
+}
+
+.platform-user-role-badge.customer {
+  color: #175cd3;
+  background: #eaf2ff;
+}
+
+.platform-user-role-badge.cashier {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.platform-user-role-badge.delivery_staff {
+  color: #c4320a;
+  background: #fff4ed;
+}
+
+.platform-user-verification-badge.verified {
+  color: #176b35;
+  background: #dcf7e7;
+}
+
+.platform-user-verification-badge.unverified {
+  color: #9a5700;
+  background: #fff1d5;
+}
+
+.platform-user-account-badge.active {
+  color: #176b35;
+  background: #dcf7e7;
+}
+
+.platform-user-account-badge.inactive {
+  color: #a61b2b;
+  background: #ffe1e5;
+}
+
+.platform-user-action-button {
+  min-width: 94px;
+
+  padding: 8px 11px;
+
+  border: none;
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.platform-user-action-button.activate {
+  background: var(--green);
+}
+
+.platform-user-action-button.activate:hover {
+  background: #1d873d;
+}
+
+.platform-user-action-button.deactivate {
+  background: var(--red);
+}
+
+.platform-user-action-button.deactivate:hover {
+  background: #b82836;
+}
+
+.platform-user-action-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+.current-admin-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 6px 9px;
+
+  border-radius: 999px;
+
+  color: #6941c6;
+  background: #f4ebff;
+
+  white-space: nowrap;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .platform-user-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .platform-user-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .platform-user-search-group,
+  .platform-user-filter,
+  .platform-user-search-button,
+  #clearPlatformUserFiltersButton {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .platform-user-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   RESTAURANT ACCESS ACTIONS
+========================================================= */
+
+.restaurant-action-group {
+  min-width: 175px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.restaurant-action-group
+.restaurant-status-select {
+  width: 100%;
+}
+
+.restaurant-access-button {
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 12px;
+
+  border: none;
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  cursor: pointer;
+}
+
+.restaurant-access-button.deactivate {
+  background: var(--red);
+}
+
+.restaurant-access-button.deactivate:hover {
+  background: #b82836;
+}
+
+.restaurant-access-button.reactivate {
+  background: var(--green);
+}
+
+.restaurant-access-button.reactivate:hover {
+  background: #1d873d;
+}
+
+.restaurant-access-button:disabled,
+.restaurant-status-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
