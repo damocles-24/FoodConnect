@@ -30,74 +30,225 @@ const restaurantForm =
 const statusBanner =
     document.getElementById("statusBanner");
 
+const wizardStatus =
+    document.getElementById("wizardStatus");
+
+const wizardStepLabel =
+    document.getElementById("wizardStepLabel");
+
+const wizardStepTitle =
+    document.getElementById("wizardStepTitle");
+
+const wizardProgressBar =
+    document.getElementById("wizardProgressBar");
+
 const businessHoursContainer =
-    document.getElementById("businessHoursContainer");
+    document.getElementById(
+        "businessHoursContainer"
+    );
+
+const businessHoursError =
+    document.getElementById(
+        "businessHoursError"
+    );
 
 const restaurantNameInput =
-    document.getElementById("restaurantName");
+    document.getElementById(
+        "restaurantName"
+    );
 
 const cuisineInput =
-    document.getElementById("cuisine");
+    document.getElementById(
+        "cuisine"
+    );
 
 const restaurantContactInput =
-    document.getElementById("restaurantContact");
+    document.getElementById(
+        "restaurantContact"
+    );
 
 const businessEmailInput =
-    document.getElementById("businessEmail");
+    document.getElementById(
+        "businessEmail"
+    );
 
 const restaurantDescriptionInput =
-    document.getElementById("restaurantDescription");
+    document.getElementById(
+        "restaurantDescription"
+    );
 
 const restaurantAddressInput =
-    document.getElementById("restaurantAddress");
+    document.getElementById(
+        "restaurantAddress"
+    );
 
 const provinceInput =
-    document.getElementById("province");
+    document.getElementById(
+        "province"
+    );
 
 const cityMunicipalityInput =
-    document.getElementById("cityMunicipality");
+    document.getElementById(
+        "cityMunicipality"
+    );
 
 const barangayInput =
-    document.getElementById("barangay");
+    document.getElementById(
+        "barangay"
+    );
 
 const postalCodeInput =
-    document.getElementById("postalCode");
+    document.getElementById(
+        "postalCode"
+    );
 
 const minimumOrderInput =
-    document.getElementById("minimumOrder");
+    document.getElementById(
+        "minimumOrder"
+    );
 
 const deliveryFeeInput =
-    document.getElementById("deliveryFee");
+    document.getElementById(
+        "deliveryFee"
+    );
 
 const descriptionCounter =
-    document.getElementById("descriptionCounter");
+    document.getElementById(
+        "descriptionCounter"
+    );
 
 const deliveryOptionsError =
-    document.getElementById("deliveryOptionsError");
+    document.getElementById(
+        "deliveryOptionsError"
+    );
 
 const confirmationCheckbox =
-    document.getElementById("confirmationCheckbox");
+    document.getElementById(
+        "confirmationCheckbox"
+    );
+
+const confirmationError =
+    document.getElementById(
+        "confirmationError"
+    );
 
 const saveDraftButton =
-    document.getElementById("saveDraftButton");
+    document.getElementById(
+        "saveDraftButton"
+    );
+
+const nextButton =
+    document.getElementById(
+        "nextButton"
+    );
+
+const backButton =
+    document.getElementById(
+        "backButton"
+    );
 
 const submitButton =
-    document.getElementById("submitButton");
+    document.getElementById(
+        "submitButton"
+    );
 
 const logoutButton =
-    document.getElementById("logoutButton");
+    document.getElementById(
+        "logoutButton"
+    );
 
 const applyMondayButton =
-    document.getElementById("applyMondayButton");
+    document.getElementById(
+        "applyMondayButton"
+    );
 
 const toastContainer =
-    document.getElementById("toastContainer");
+    document.getElementById(
+        "toastContainer"
+    );
 
 const submissionModal =
-    document.getElementById("submissionModal");
+    document.getElementById(
+        "submissionModal"
+    );
 
 const modalContinueButton =
-    document.getElementById("modalContinueButton");
+    document.getElementById(
+        "modalContinueButton"
+    );
+
+const submittedState =
+    document.getElementById(
+        "submittedState"
+    );
+
+const applicationReview =
+    document.getElementById(
+        "applicationReview"
+    );
+
+const reviewRestaurantName =
+    document.getElementById(
+        "reviewRestaurantName"
+    );
+
+const reviewCuisine =
+    document.getElementById(
+        "reviewCuisine"
+    );
+
+const reviewRestaurantContact =
+    document.getElementById(
+        "reviewRestaurantContact"
+    );
+
+const reviewBusinessEmail =
+    document.getElementById(
+        "reviewBusinessEmail"
+    );
+
+const reviewAddress =
+    document.getElementById(
+        "reviewAddress"
+    );
+
+const reviewBusinessHours =
+    document.getElementById(
+        "reviewBusinessHours"
+    );
+
+const reviewDeliveryOptions =
+    document.getElementById(
+        "reviewDeliveryOptions"
+    );
+
+const wizardSteps =
+    Array.from(
+        document.querySelectorAll(
+            ".wizard-step"
+        )
+    );
+
+const progressItems =
+    Array.from(
+        document.querySelectorAll(
+            "[data-progress-step]"
+        )
+    );
+
+const reviewEditButtons =
+    Array.from(
+        document.querySelectorAll(
+            "[data-edit-step]"
+        )
+    );
+
+const deliveryOptionInputs =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="delivery_options"]'
+        )
+    );
 
 /* =========================================================
    PAGE STATE
@@ -113,8 +264,35 @@ const DAYS = [
     "Sunday"
 ];
 
-let currentApplicationStatus = "draft";
-let isSubmitting = false;
+const TOTAL_STEPS = 5;
+
+const STEP_TITLES = {
+    1: "Restaurant details",
+    2: "Business location",
+    3: "Business hours",
+    4: "Order services",
+    5: "Review application"
+};
+
+const DELIVERY_OPTION_LABELS = {
+    pickup:
+        "Customer pickup",
+
+    restaurant_delivery:
+        "Restaurant delivery",
+
+    foodconnect_delivery:
+        "FoodConnect delivery"
+};
+
+let currentApplicationStatus =
+    "draft";
+
+let currentStep =
+    1;
+
+let isSubmitting =
+    false;
 
 /* =========================================================
    INITIALIZATION
@@ -129,6 +307,7 @@ async function initializePage() {
     renderBusinessHours();
     bindEvents();
     updateDescriptionCounter();
+    updateWizardButtons();
 
     await loadApplication();
 }
@@ -146,6 +325,16 @@ function bindEvents() {
     saveDraftButton.addEventListener(
         "click",
         handleSaveDraft
+    );
+
+    nextButton.addEventListener(
+        "click",
+        handleNextStep
+    );
+
+    backButton.addEventListener(
+        "click",
+        handlePreviousStep
     );
 
     logoutButton.addEventListener(
@@ -171,27 +360,85 @@ function bindEvents() {
                     /[^0-9]/g,
                     ""
                 );
+
+            clearFieldError(
+                postalCodeInput
+            );
+
+            updateWizardButtons();
         }
     );
 
-    document
-        .querySelectorAll(
-            'input[name="delivery_options"]'
-        )
-        .forEach((checkbox) => {
+    [
+        restaurantNameInput,
+        cuisineInput,
+        restaurantContactInput,
+        businessEmailInput,
+        restaurantDescriptionInput,
+        restaurantAddressInput,
+        provinceInput,
+        cityMunicipalityInput,
+        barangayInput,
+        minimumOrderInput,
+        deliveryFeeInput
+    ].forEach((field) => {
+        field.addEventListener(
+            "input",
+            () => {
+                clearFieldError(field);
+                updateWizardButtons();
+            }
+        );
+
+        field.addEventListener(
+            "change",
+            () => {
+                clearFieldError(field);
+                updateWizardButtons();
+            }
+        );
+    });
+
+    deliveryOptionInputs.forEach(
+        (checkbox) => {
             checkbox.addEventListener(
                 "change",
                 () => {
-                    deliveryOptionsError.textContent = "";
+                    clearDeliveryOptionsError();
+                    updateWizardButtons();
                 }
             );
-        });
+        }
+    );
+
+    confirmationCheckbox.addEventListener(
+        "change",
+        () => {
+            clearConfirmationError();
+            updateWizardButtons();
+        }
+    );
+
+    reviewEditButtons.forEach(
+        (button) => {
+            button.addEventListener(
+                "click",
+                handleReviewEdit
+            );
+        }
+    );
 
     modalContinueButton.addEventListener(
         "click",
         () => {
-            submissionModal.classList.add("hidden");
-            window.location.reload();
+            submissionModal.classList.add(
+                "hidden"
+            );
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
         }
     );
 }
@@ -252,10 +499,33 @@ function renderBusinessHours() {
                 handleClosedDayChange
             );
         });
+
+    document
+        .querySelectorAll(
+            ".hours-open, .hours-close"
+        )
+        .forEach((input) => {
+            input.addEventListener(
+                "input",
+                () => {
+                    clearBusinessHoursError();
+                    updateWizardButtons();
+                }
+            );
+
+            input.addEventListener(
+                "change",
+                () => {
+                    clearBusinessHoursError();
+                    updateWizardButtons();
+                }
+            );
+        });
 }
 
 function handleClosedDayChange(event) {
-    const checkbox = event.currentTarget;
+    const checkbox =
+        event.currentTarget;
 
     const row =
         checkbox.closest(".hours-row");
@@ -275,6 +545,21 @@ function handleClosedDayChange(event) {
 
     closeInput.disabled =
         checkbox.checked;
+
+    row.classList.remove(
+        "invalid-row"
+    );
+
+    openInput.classList.remove(
+        "invalid"
+    );
+
+    closeInput.classList.remove(
+        "invalid"
+    );
+
+    clearBusinessHoursError();
+    updateWizardButtons();
 }
 
 function applyMondayScheduleToAll() {
@@ -306,13 +591,19 @@ function applyMondayScheduleToAll() {
         .querySelectorAll(".hours-row")
         .forEach((row) => {
             const openInput =
-                row.querySelector(".hours-open");
+                row.querySelector(
+                    ".hours-open"
+                );
 
             const closeInput =
-                row.querySelector(".hours-close");
+                row.querySelector(
+                    ".hours-close"
+                );
 
             const closedInput =
-                row.querySelector(".hours-closed");
+                row.querySelector(
+                    ".hours-closed"
+                );
 
             openInput.value =
                 mondayOpen;
@@ -328,7 +619,22 @@ function applyMondayScheduleToAll() {
 
             closeInput.disabled =
                 mondayClosed;
+
+            row.classList.remove(
+                "invalid-row"
+            );
+
+            openInput.classList.remove(
+                "invalid"
+            );
+
+            closeInput.classList.remove(
+                "invalid"
+            );
         });
+
+    clearBusinessHoursError();
+    updateWizardButtons();
 
     showToast(
         "Schedule copied",
@@ -343,19 +649,23 @@ function applyMondayScheduleToAll() {
 
 async function loadApplication() {
     try {
-        const response = await fetch(
-            API.getApplication,
-            {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Accept": "application/json"
+        const response =
+            await fetch(
+                API.getApplication,
+                {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
                 }
-            }
-        );
+            );
 
         const result =
-            await parseJsonResponse(response);
+            await parseJsonResponse(
+                response
+            );
 
         if (response.status === 401) {
             window.location.href =
@@ -371,7 +681,10 @@ async function loadApplication() {
             );
         }
 
-        if (!response.ok || !result.success) {
+        if (
+            !response.ok ||
+            !result.success
+        ) {
             throw new Error(
                 result.message ||
                 "Unable to load the restaurant application."
@@ -387,7 +700,7 @@ async function loadApplication() {
         }
 
         populateApplication(
-            result.application
+            result.application || {}
         );
 
         showForm();
@@ -399,8 +712,12 @@ async function loadApplication() {
 
         loadingState.innerHTML = `
             <div class="status-banner status-rejected">
-                <strong>Unable to load restaurant setup.</strong>
+                <strong>
+                    Unable to load restaurant setup.
+                </strong>
+
                 <br>
+
                 ${escapeHtml(error.message)}
             </div>
         `;
@@ -492,42 +809,50 @@ function populateBusinessHours(hours) {
             return;
         }
 
-        const daySchedule =
+        const schedule =
             hours[day];
 
-        if (!daySchedule) {
+        if (!schedule) {
             return;
         }
 
         const openInput =
-            row.querySelector(".hours-open");
+            row.querySelector(
+                ".hours-open"
+            );
 
         const closeInput =
-            row.querySelector(".hours-close");
+            row.querySelector(
+                ".hours-close"
+            );
 
         const closedInput =
-            row.querySelector(".hours-closed");
+            row.querySelector(
+                ".hours-closed"
+            );
 
         const isClosed =
-            Boolean(daySchedule.closed);
+            Boolean(schedule.closed);
 
         closedInput.checked =
             isClosed;
 
         if (
-            typeof daySchedule.open === "string" &&
-            daySchedule.open !== ""
+            typeof schedule.open ===
+                "string" &&
+            schedule.open !== ""
         ) {
             openInput.value =
-                daySchedule.open;
+                schedule.open;
         }
 
         if (
-            typeof daySchedule.close === "string" &&
-            daySchedule.close !== ""
+            typeof schedule.close ===
+                "string" &&
+            schedule.close !== ""
         ) {
             closeInput.value =
-                daySchedule.close;
+                schedule.close;
         }
 
         openInput.disabled =
@@ -544,25 +869,25 @@ function populateDeliveryOptions(options) {
             ? options
             : [];
 
-    document
-        .querySelectorAll(
-            'input[name="delivery_options"]'
-        )
-        .forEach((checkbox) => {
+    deliveryOptionInputs.forEach(
+        (checkbox) => {
             checkbox.checked =
                 selectedOptions.includes(
                     checkbox.value
                 );
-        });
+        }
+    );
 
     if (selectedOptions.length === 0) {
         const pickupCheckbox =
-            document.querySelector(
-                'input[name="delivery_options"][value="pickup"]'
+            deliveryOptionInputs.find(
+                (checkbox) =>
+                    checkbox.value === "pickup"
             );
 
         if (pickupCheckbox) {
-            pickupCheckbox.checked = true;
+            pickupCheckbox.checked =
+                true;
         }
     }
 }
@@ -580,13 +905,20 @@ function renderApplicationStatus(
         );
 
         statusBanner.innerHTML = `
-            <strong>Application under review</strong>
+            <strong>
+                Application under review
+            </strong>
+
             <br>
+
             Your restaurant application has already been submitted.
             You cannot edit it until an administrator reviews it.
         `;
 
-        statusBanner.classList.remove("hidden");
+        statusBanner.classList.remove(
+            "hidden"
+        );
+
         return;
     }
 
@@ -596,15 +928,22 @@ function renderApplicationStatus(
         );
 
         statusBanner.innerHTML = `
-            <strong>Changes are required</strong>
+            <strong>
+                Changes are required
+            </strong>
+
             <br>
+
             ${escapeHtml(
                 rejectionReason ||
                 "The administrator returned your application for changes."
             )}
         `;
 
-        statusBanner.classList.remove("hidden");
+        statusBanner.classList.remove(
+            "hidden"
+        );
+
         return;
     }
 
@@ -613,13 +952,19 @@ function renderApplicationStatus(
     );
 
     statusBanner.innerHTML = `
-        <strong>Draft application</strong>
+        <strong>
+            Draft application
+        </strong>
+
         <br>
+
         Your restaurant is not yet visible to customers.
         Complete the setup and submit it for review.
     `;
 
-    statusBanner.classList.remove("hidden");
+    statusBanner.classList.remove(
+        "hidden"
+    );
 }
 
 function applyStatusRestrictions(status) {
@@ -627,32 +972,657 @@ function applyStatusRestrictions(status) {
         status === "submitted" ||
         status === "approved";
 
-    const formControls =
-        restaurantForm.querySelectorAll(
-            "input, textarea, button"
-        );
+    restaurantForm
+        .querySelectorAll(
+            "input, textarea"
+        )
+        .forEach((control) => {
+            control.disabled =
+                isReadOnly;
+        });
 
-    formControls.forEach((control) => {
-        if (
-            control === logoutButton ||
-            control === modalContinueButton
-        ) {
-            return;
+    applyMondayButton.disabled =
+        isReadOnly;
+
+    reviewEditButtons.forEach(
+        (button) => {
+            button.disabled =
+                isReadOnly;
         }
-
-        control.disabled =
-            isReadOnly;
-    });
+    );
 
     if (isReadOnly) {
-        saveDraftButton.classList.add("hidden");
-        submitButton.classList.add("hidden");
+        confirmationCheckbox
+            .closest(".confirmation-check")
+            ?.classList.add("hidden");
+
+        document
+            .querySelector(".review-notice")
+            ?.classList.add("hidden");
+
+        confirmationError.classList.add(
+            "hidden"
+        );
+
+        submittedState.classList.remove(
+            "hidden"
+        );
+
+        restaurantForm
+            .querySelector(".form-actions")
+            ?.classList.add("hidden");
+
+        return;
     }
+
+    confirmationCheckbox
+        .closest(".confirmation-check")
+        ?.classList.remove("hidden");
+
+    document
+        .querySelector(".review-notice")
+        ?.classList.remove("hidden");
+
+    confirmationError.classList.remove(
+        "hidden"
+    );
+
+    submittedState.classList.add(
+        "hidden"
+    );
+
+    restaurantForm
+        .querySelector(".form-actions")
+        ?.classList.remove("hidden");
 }
 
 function showForm() {
-    loadingState.classList.add("hidden");
-    restaurantForm.classList.remove("hidden");
+    loadingState.classList.add(
+        "hidden"
+    );
+
+    restaurantForm.classList.remove(
+        "hidden"
+    );
+
+    wizardStatus.classList.remove(
+        "hidden"
+    );
+
+    if (
+        currentApplicationStatus ===
+            "submitted" ||
+        currentApplicationStatus ===
+            "approved"
+    ) {
+        currentStep = 5;
+    }
+
+    showWizardStep(
+        currentStep,
+        false
+    );
+}
+
+/* =========================================================
+   WIZARD NAVIGATION
+   ========================================================= */
+
+function showWizardStep(
+    step,
+    shouldScroll = true
+) {
+    currentStep =
+        Math.min(
+            TOTAL_STEPS,
+            Math.max(1, step)
+        );
+
+    wizardSteps.forEach((section) => {
+        const sectionStep =
+            Number(
+                section.dataset.step
+            );
+
+        section.classList.toggle(
+            "active",
+            sectionStep === currentStep
+        );
+    });
+
+    progressItems.forEach((item) => {
+        const itemStep =
+            Number(
+                item.dataset.progressStep
+            );
+
+        item.classList.toggle(
+            "active",
+            itemStep === currentStep
+        );
+
+        item.classList.toggle(
+            "completed",
+            itemStep < currentStep
+        );
+    });
+
+    wizardStepLabel.textContent =
+        `Step ${currentStep} of ${TOTAL_STEPS}`;
+
+    wizardStepTitle.textContent =
+        STEP_TITLES[currentStep] ||
+        "Restaurant setup";
+
+    wizardProgressBar.style.width =
+        `${(
+            currentStep /
+            TOTAL_STEPS
+        ) * 100}%`;
+
+    if (currentStep === 5) {
+        renderReviewSummary();
+    }
+
+    updateWizardButtons();
+
+    if (shouldScroll) {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+}
+
+function handleNextStep() {
+    if (
+        isSubmitting ||
+        nextButton.disabled
+    ) {
+        return;
+    }
+
+    clearValidationErrors();
+
+    if (
+        !validateCurrentStep(
+            true
+        )
+    ) {
+        updateWizardButtons();
+        focusFirstInvalidField();
+
+        showToast(
+            "Check this step",
+            "Complete all required information before continuing.",
+            "error"
+        );
+
+        return;
+    }
+
+    showWizardStep(
+        currentStep + 1
+    );
+}
+
+function handlePreviousStep() {
+    if (
+        isSubmitting ||
+        currentStep <= 1
+    ) {
+        return;
+    }
+
+    clearValidationErrors();
+
+    showWizardStep(
+        currentStep - 1
+    );
+}
+
+function handleReviewEdit(event) {
+    const button =
+        event.currentTarget;
+
+    const step =
+        Number(
+            button.dataset.editStep
+        );
+
+    if (
+        !Number.isInteger(step) ||
+        step < 1 ||
+        step >= TOTAL_STEPS
+    ) {
+        return;
+    }
+
+    showWizardStep(step);
+}
+
+function updateWizardButtons() {
+    const isReadOnly =
+        currentApplicationStatus ===
+            "submitted" ||
+        currentApplicationStatus ===
+            "approved";
+
+    backButton.classList.toggle(
+        "hidden",
+        currentStep === 1 ||
+        isReadOnly
+    );
+
+    nextButton.classList.toggle(
+        "hidden",
+        currentStep === TOTAL_STEPS ||
+        isReadOnly
+    );
+
+    submitButton.classList.toggle(
+        "hidden",
+        currentStep !== TOTAL_STEPS ||
+        isReadOnly
+    );
+
+    saveDraftButton.classList.toggle(
+        "hidden",
+        isReadOnly
+    );
+
+    if (!isReadOnly) {
+        nextButton.disabled =
+            currentStep < TOTAL_STEPS
+                ? !validateCurrentStep(false)
+                : true;
+
+        submitButton.disabled =
+            currentStep === TOTAL_STEPS
+                ? !validateFormForSubmission(
+                    false
+                )
+                : true;
+    }
+}
+
+/* =========================================================
+   STEP VALIDATION
+   ========================================================= */
+
+function validateCurrentStep(
+    showErrors = true
+) {
+    switch (currentStep) {
+        case 1:
+            return validateRestaurantDetailsStep(
+                showErrors
+            );
+
+        case 2:
+            return validateLocationStep(
+                showErrors
+            );
+
+        case 3:
+            return validateBusinessHours(
+                showErrors
+            );
+
+        case 4:
+            return validateOrderServicesStep(
+                showErrors
+            );
+
+        case 5:
+            return validateConfirmationStep(
+                showErrors
+            );
+
+        default:
+            return false;
+    }
+}
+
+function validateRestaurantDetailsStep(
+    showErrors = true
+) {
+    let valid = true;
+
+    valid =
+        validateRequiredField(
+            restaurantNameInput,
+            "Restaurant name is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            cuisineInput,
+            "Restaurant type or cuisine is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            restaurantContactInput,
+            "Business contact number is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            businessEmailInput,
+            "Business email is required.",
+            showErrors
+        ) && valid;
+
+    if (
+        businessEmailInput.value.trim() !== "" &&
+        !businessEmailInput.validity.valid
+    ) {
+        if (showErrors) {
+            setFieldError(
+                businessEmailInput,
+                "Enter a valid email address."
+            );
+        }
+
+        valid = false;
+    }
+
+    return valid;
+}
+
+function validateLocationStep(
+    showErrors = true
+) {
+    let valid = true;
+
+    valid =
+        validateRequiredField(
+            restaurantAddressInput,
+            "Street address is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            provinceInput,
+            "Province is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            cityMunicipalityInput,
+            "City or municipality is required.",
+            showErrors
+        ) && valid;
+
+    valid =
+        validateRequiredField(
+            barangayInput,
+            "Barangay is required.",
+            showErrors
+        ) && valid;
+
+    if (
+        postalCodeInput.value.trim() !== "" &&
+        !/^[0-9]{4,10}$/.test(
+            postalCodeInput.value.trim()
+        )
+    ) {
+        if (showErrors) {
+            setFieldError(
+                postalCodeInput,
+                "Postal code must contain 4 to 10 digits."
+            );
+        }
+
+        valid = false;
+    }
+
+    return valid;
+}
+
+function validateBusinessHours(
+    showErrors = true
+) {
+    let valid = true;
+    let firstErrorMessage = "";
+
+    if (showErrors) {
+        clearBusinessHoursError();
+    }
+
+    document
+        .querySelectorAll(".hours-row")
+        .forEach((row) => {
+            const day =
+                row.dataset.day || "";
+
+            const closedInput =
+                row.querySelector(
+                    ".hours-closed"
+                );
+
+            const openInput =
+                row.querySelector(
+                    ".hours-open"
+                );
+
+            const closeInput =
+                row.querySelector(
+                    ".hours-close"
+                );
+
+            const isClosed =
+                closedInput.checked;
+
+            if (showErrors) {
+                row.classList.remove(
+                    "invalid-row"
+                );
+
+                openInput.classList.remove(
+                    "invalid"
+                );
+
+                closeInput.classList.remove(
+                    "invalid"
+                );
+            }
+
+            if (isClosed) {
+                return;
+            }
+
+            if (
+                openInput.value === "" ||
+                closeInput.value === ""
+            ) {
+                valid = false;
+
+                if (
+                    firstErrorMessage === ""
+                ) {
+                    firstErrorMessage =
+                        `Enter opening and closing times for ${day}.`;
+                }
+
+                if (showErrors) {
+                    row.classList.add(
+                        "invalid-row"
+                    );
+
+                    if (
+                        openInput.value === ""
+                    ) {
+                        openInput.classList.add(
+                            "invalid"
+                        );
+                    }
+
+                    if (
+                        closeInput.value === ""
+                    ) {
+                        closeInput.classList.add(
+                            "invalid"
+                        );
+                    }
+                }
+
+                return;
+            }
+
+            if (
+                openInput.value ===
+                closeInput.value
+            ) {
+                valid = false;
+
+                if (
+                    firstErrorMessage === ""
+                ) {
+                    firstErrorMessage =
+                        `${day}'s opening and closing times cannot be the same.`;
+                }
+
+                if (showErrors) {
+                    row.classList.add(
+                        "invalid-row"
+                    );
+
+                    openInput.classList.add(
+                        "invalid"
+                    );
+
+                    closeInput.classList.add(
+                        "invalid"
+                    );
+                }
+            }
+        });
+
+    if (
+        !valid &&
+        showErrors
+    ) {
+        businessHoursContainer.classList.add(
+            "invalid-section"
+        );
+
+        businessHoursError.textContent =
+            firstErrorMessage ||
+            "Enter valid business hours.";
+    }
+
+    return valid;
+}
+
+function validateOrderServicesStep(
+    showErrors = true
+) {
+    const selectedOptions =
+        deliveryOptionInputs.filter(
+            (checkbox) =>
+                checkbox.checked
+        );
+
+    const valid =
+        selectedOptions.length > 0;
+
+    if (showErrors) {
+        if (valid) {
+            clearDeliveryOptionsError();
+        } else {
+            deliveryOptionsError.textContent =
+                "Select at least one order service.";
+
+            document
+                .querySelector(
+                    ".service-options"
+                )
+                ?.classList.add(
+                    "invalid-section"
+                );
+        }
+    }
+
+    return valid;
+}
+
+function validateConfirmationStep(
+    showErrors = true
+) {
+    const valid =
+        confirmationCheckbox.checked;
+
+    if (showErrors) {
+        if (valid) {
+            clearConfirmationError();
+        } else {
+            confirmationError.textContent =
+                "You must confirm that the information is complete and accurate.";
+
+            confirmationCheckbox
+                .closest(
+                    ".confirmation-check"
+                )
+                ?.classList.add(
+                    "invalid-confirmation"
+                );
+        }
+    }
+
+    return valid;
+}
+
+function validateRequiredInformation(
+    showErrors = true
+) {
+    let valid = true;
+
+    valid =
+        validateRestaurantDetailsStep(
+            showErrors
+        ) && valid;
+
+    valid =
+        validateLocationStep(
+            showErrors
+        ) && valid;
+
+    return valid;
+}
+
+function validateFormForSubmission(
+    showErrors = true
+) {
+    let valid = true;
+
+    valid =
+        validateRequiredInformation(
+            showErrors
+        ) && valid;
+
+    valid =
+        validateBusinessHours(
+            showErrors
+        ) && valid;
+
+    valid =
+        validateOrderServicesStep(
+            showErrors
+        ) && valid;
+
+    valid =
+        validateConfirmationStep(
+            showErrors
+        ) && valid;
+
+    return valid;
 }
 
 /* =========================================================
@@ -666,22 +1636,26 @@ async function handleSaveDraft() {
 
     clearValidationErrors();
 
-    const payload =
-        collectFormData("save");
+    const valid =
+        validateRequiredInformation(
+            true
+        );
 
-    const basicValidation =
-        validateRequiredInformation();
+    if (!valid) {
+        openFirstInvalidStep();
 
-    if (!basicValidation) {
         showToast(
             "Missing information",
-            "Complete the required restaurant fields before saving.",
+            "Complete all required restaurant and location fields before saving.",
             "error"
         );
 
         focusFirstInvalidField();
         return;
     }
+
+    const payload =
+        collectFormData("save");
 
     await saveApplication(
         payload,
@@ -689,26 +1663,40 @@ async function handleSaveDraft() {
     );
 }
 
-async function handleSubmitApplication(event) {
+async function handleSubmitApplication(
+    event
+) {
     event.preventDefault();
 
-    if (isSubmitting) {
+    if (
+        isSubmitting ||
+        currentApplicationStatus ===
+            "submitted" ||
+        currentApplicationStatus ===
+            "approved"
+    ) {
         return;
     }
 
     clearValidationErrors();
 
-    const isValid =
-        validateFormForSubmission();
+    const valid =
+        validateFormForSubmission(
+            true
+        );
 
-    if (!isValid) {
+    if (!valid) {
+        openFirstInvalidStep();
+
         showToast(
             "Check your application",
-            "Some required information is missing or invalid.",
+            "Complete every required field before submitting.",
             "error"
         );
 
         focusFirstInvalidField();
+        updateWizardButtons();
+
         return;
     }
 
@@ -731,32 +1719,51 @@ async function saveApplication(
     );
 
     try {
-        const response = await fetch(
-            API.saveApplication,
-            {
-                method: "POST",
-                credentials: "include",
+        const response =
+            await fetch(
+                API.saveApplication,
+                {
+                    method: "POST",
+                    credentials: "include",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json",
 
-                body: JSON.stringify(payload)
-            }
-        );
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(payload)
+                }
+            );
 
         const result =
-            await parseJsonResponse(response);
+            await parseJsonResponse(
+                response
+            );
 
         if (response.status === 401) {
             window.location.href =
-                "FoodConnect/frontend/html/login.html";
+                "/FoodConnect/frontend/html/login.html";
 
             return;
         }
 
-        if (!response.ok || !result.success) {
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+            if (
+                response.status === 422 &&
+                result.errors
+            ) {
+                applyServerValidationErrors(
+                    result.errors
+                );
+            }
+
             throw new Error(
                 result.message ||
                 "Unable to save the restaurant application."
@@ -764,11 +1771,24 @@ async function saveApplication(
         }
 
         currentApplicationStatus =
-            result.status || action;
+            result.status ||
+            (
+                action === "submit"
+                    ? "submitted"
+                    : "draft"
+            );
 
         if (action === "submit") {
+            currentApplicationStatus =
+                "submitted";
+
             renderApplicationStatus(
                 "submitted"
+            );
+
+            showWizardStep(
+                5,
+                false
             );
 
             applyStatusRestrictions(
@@ -811,13 +1831,129 @@ async function saveApplication(
     }
 }
 
+/* =========================================================
+   REVIEW SUMMARY
+   ========================================================= */
+
+function renderReviewSummary() {
+    reviewRestaurantName.textContent =
+        valueOrDash(
+            restaurantNameInput.value
+        );
+
+    reviewCuisine.textContent =
+        valueOrDash(
+            cuisineInput.value
+        );
+
+    reviewRestaurantContact.textContent =
+        valueOrDash(
+            restaurantContactInput.value
+        );
+
+    reviewBusinessEmail.textContent =
+        valueOrDash(
+            businessEmailInput.value
+        );
+
+    const addressParts = [
+        restaurantAddressInput.value,
+        barangayInput.value,
+        cityMunicipalityInput.value,
+        provinceInput.value,
+        postalCodeInput.value
+    ]
+        .map((value) =>
+            String(value).trim()
+        )
+        .filter((value) =>
+            value !== ""
+        );
+
+    reviewAddress.textContent =
+        addressParts.length > 0
+            ? addressParts.join(", ")
+            : "—";
+
+    const hours =
+        collectBusinessHours();
+
+    reviewBusinessHours.innerHTML =
+        DAYS.map((day) => {
+            const schedule =
+                hours[day];
+
+            const scheduleText =
+                schedule.closed
+                    ? "Closed"
+                    : `${formatTimeDisplay(
+                        schedule.open
+                    )} – ${formatTimeDisplay(
+                        schedule.close
+                    )}`;
+
+            return `
+                <div class="review-hour-item">
+                    <strong>
+                        ${escapeHtml(day)}
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(scheduleText)}
+                    </span>
+                </div>
+            `;
+        }).join("");
+
+    const selectedOptions =
+        deliveryOptionInputs
+            .filter(
+                (checkbox) =>
+                    checkbox.checked
+            )
+            .map(
+                (checkbox) =>
+                    checkbox.value
+            );
+
+    reviewDeliveryOptions.innerHTML =
+        selectedOptions.length > 0
+            ? selectedOptions
+                .map((option) => {
+                    const label =
+                        DELIVERY_OPTION_LABELS[
+                            option
+                        ] || option;
+
+                    return `
+                        <span class="review-service-tag">
+                            ${escapeHtml(label)}
+                        </span>
+                    `;
+                })
+                .join("")
+            : `
+                <span class="review-service-tag">
+                    No service selected
+                </span>
+            `;
+}
+
+/* =========================================================
+   COLLECT FORM DATA
+   ========================================================= */
+
 function collectFormData(action) {
     const selectedDeliveryOptions =
-        Array.from(
-            document.querySelectorAll(
-                'input[name="delivery_options"]:checked'
+        deliveryOptionInputs
+            .filter(
+                (checkbox) =>
+                    checkbox.checked
             )
-        ).map((checkbox) => checkbox.value);
+            .map(
+                (checkbox) =>
+                    checkbox.value
+            );
 
     return {
         action,
@@ -896,6 +2032,7 @@ function collectBusinessHours() {
 
             hours[day] = {
                 closed,
+
                 open:
                     closed
                         ? null
@@ -912,192 +2049,51 @@ function collectBusinessHours() {
 }
 
 /* =========================================================
-   VALIDATION
+   VALIDATION ERROR HELPERS
    ========================================================= */
-
-function validateRequiredInformation() {
-    let valid = true;
-
-    valid =
-        validateRequiredField(
-            restaurantNameInput,
-            "Restaurant name is required."
-        ) && valid;
-
-    valid =
-        validateRequiredField(
-            cuisineInput,
-            "Restaurant type or cuisine is required."
-        ) && valid;
-
-    valid =
-        validateRequiredField(
-            restaurantContactInput,
-            "Business contact number is required."
-        ) && valid;
-
-    valid =
-        validateRequiredField(
-            restaurantAddressInput,
-            "Restaurant address is required."
-        ) && valid;
-
-    if (
-        businessEmailInput.value.trim() !== "" &&
-        !businessEmailInput.validity.valid
-    ) {
-        setFieldError(
-            businessEmailInput,
-            "Enter a valid email address."
-        );
-
-        valid = false;
-    }
-
-    if (
-        postalCodeInput.value.trim() !== "" &&
-        !/^[0-9]{4,10}$/.test(
-            postalCodeInput.value.trim()
-        )
-    ) {
-        setFieldError(
-            postalCodeInput,
-            "Postal code must contain 4 to 10 digits."
-        );
-
-        valid = false;
-    }
-
-    return valid;
-}
-
-function validateFormForSubmission() {
-    let valid =
-        validateRequiredInformation();
-
-    const deliveryOptions =
-        document.querySelectorAll(
-            'input[name="delivery_options"]:checked'
-        );
-
-    if (deliveryOptions.length === 0) {
-        deliveryOptionsError.textContent =
-            "Select at least one order or delivery service.";
-
-        valid = false;
-    }
-
-    const hoursAreValid =
-        validateBusinessHours();
-
-    valid =
-        hoursAreValid && valid;
-
-    if (!confirmationCheckbox.checked) {
-        confirmationCheckbox.focus();
-
-        showToast(
-            "Confirmation required",
-            "Confirm that the restaurant information is accurate.",
-            "error"
-        );
-
-        valid = false;
-    }
-
-    return valid;
-}
-
-function validateBusinessHours() {
-    let valid = true;
-
-    document
-        .querySelectorAll(".hours-row")
-        .forEach((row) => {
-            const day =
-                row.dataset.day;
-
-            const closed =
-                row.querySelector(
-                    ".hours-closed"
-                ).checked;
-
-            if (closed) {
-                return;
-            }
-
-            const openInput =
-                row.querySelector(
-                    ".hours-open"
-                );
-
-            const closeInput =
-                row.querySelector(
-                    ".hours-close"
-                );
-
-            if (
-                openInput.value === "" ||
-                closeInput.value === ""
-            ) {
-                showToast(
-                    "Incomplete business hours",
-                    `Enter the opening and closing time for ${day}.`,
-                    "error"
-                );
-
-                valid = false;
-                return;
-            }
-
-            if (
-                openInput.value ===
-                closeInput.value
-            ) {
-                showToast(
-                    "Invalid business hours",
-                    `${day}'s opening and closing time cannot be the same.`,
-                    "error"
-                );
-
-                valid = false;
-            }
-        });
-
-    return valid;
-}
 
 function validateRequiredField(
     field,
-    message
+    message,
+    showErrors = true
 ) {
-    if (field.value.trim() !== "") {
-        return true;
+    const valid =
+        field.value.trim() !== "";
+
+    if (
+        !valid &&
+        showErrors
+    ) {
+        setFieldError(
+            field,
+            message
+        );
     }
 
-    setFieldError(
-        field,
-        message
-    );
-
-    return false;
+    return valid;
 }
 
 function setFieldError(
     field,
     message
 ) {
-    field.classList.add("invalid");
+    field.classList.add(
+        "invalid"
+    );
 
     const group =
-        field.closest(".form-group");
+        field.closest(
+            ".form-group"
+        );
 
     if (!group) {
         return;
     }
 
     const errorElement =
-        group.querySelector(".field-error");
+        group.querySelector(
+            ".field-error"
+        );
 
     if (errorElement) {
         errorElement.textContent =
@@ -1105,116 +2101,351 @@ function setFieldError(
     }
 }
 
-function clearValidationErrors() {
+function clearFieldError(field) {
+    field.classList.remove(
+        "invalid"
+    );
+
+    const group =
+        field.closest(
+            ".form-group"
+        );
+
+    const errorElement =
+        group?.querySelector(
+            ".field-error"
+        );
+
+    if (errorElement) {
+        errorElement.textContent = "";
+    }
+}
+
+function clearBusinessHoursError() {
+    businessHoursError.textContent = "";
+
+    businessHoursContainer.classList.remove(
+        "invalid-section"
+    );
+
     document
-        .querySelectorAll(".invalid")
-        .forEach((field) => {
-            field.classList.remove("invalid");
+        .querySelectorAll(".hours-row")
+        .forEach((row) => {
+            row.classList.remove(
+                "invalid-row"
+            );
         });
 
     document
-        .querySelectorAll(".field-error")
+        .querySelectorAll(
+            ".hours-open, .hours-close"
+        )
+        .forEach((input) => {
+            input.classList.remove(
+                "invalid"
+            );
+        });
+}
+
+function clearDeliveryOptionsError() {
+    deliveryOptionsError.textContent = "";
+
+    document
+        .querySelector(
+            ".service-options"
+        )
+        ?.classList.remove(
+            "invalid-section"
+        );
+}
+
+function clearConfirmationError() {
+    confirmationError.textContent = "";
+
+    confirmationCheckbox
+        .closest(
+            ".confirmation-check"
+        )
+        ?.classList.remove(
+            "invalid-confirmation"
+        );
+}
+
+function clearValidationErrors() {
+    document
+        .querySelectorAll(
+            ".invalid"
+        )
+        .forEach((field) => {
+            field.classList.remove(
+                "invalid"
+            );
+        });
+
+    document
+        .querySelectorAll(
+            ".field-error"
+        )
         .forEach((errorElement) => {
             errorElement.textContent = "";
         });
 
-    deliveryOptionsError.textContent = "";
+    clearBusinessHoursError();
+    clearDeliveryOptionsError();
+    clearConfirmationError();
+}
+
+function openFirstInvalidStep() {
+    const invalidField =
+        document.querySelector(
+            ".form-group .invalid"
+        );
+
+    if (invalidField) {
+        const section =
+            invalidField.closest(
+                ".wizard-step"
+            );
+
+        const step =
+            Number(
+                section?.dataset.step
+            );
+
+        if (
+            Number.isInteger(step)
+        ) {
+            showWizardStep(
+                step,
+                false
+            );
+
+            return;
+        }
+    }
+
+    if (
+        businessHoursContainer.classList.contains(
+            "invalid-section"
+        )
+    ) {
+        showWizardStep(
+            3,
+            false
+        );
+
+        return;
+    }
+
+    if (
+        document
+            .querySelector(
+                ".service-options"
+            )
+            ?.classList.contains(
+                "invalid-section"
+            )
+    ) {
+        showWizardStep(
+            4,
+            false
+        );
+
+        return;
+    }
+
+    if (
+        confirmationCheckbox
+            .closest(
+                ".confirmation-check"
+            )
+            ?.classList.contains(
+                "invalid-confirmation"
+            )
+    ) {
+        showWizardStep(
+            5,
+            false
+        );
+    }
 }
 
 function focusFirstInvalidField() {
     const invalidField =
-        document.querySelector(".invalid");
+        document.querySelector(
+            ".form-group .invalid"
+        );
 
-    if (!invalidField) {
+    if (invalidField) {
+        invalidField.focus();
+
+        invalidField.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
         return;
     }
 
-    invalidField.focus();
-
-    invalidField.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-}
-
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-
-async function handleLogout() {
-    logoutButton.disabled = true;
-
-    try {
-        await fetch(
-            API.logout,
-            {
-                method: "POST",
-                credentials: "include",
-
-                headers: {
-                    "Accept": "application/json"
-                }
-            }
+    const invalidHoursInput =
+        document.querySelector(
+            ".hours-input.invalid"
         );
-    } catch (error) {
-        console.error(
-            "Logout error:",
-            error
-        );
-    } finally {
-        window.location.href =
-            "/FoodConnect/frontend/html/login.html";
+
+    if (invalidHoursInput) {
+        invalidHoursInput.focus();
+
+        invalidHoursInput.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        return;
     }
-}
-
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
-function redirectApprovedOwner(restaurant) {
-    const businessStatus =
-        String(
-            restaurant?.business_status ||
-            ""
-        ).toLowerCase();
 
     if (
-        businessStatus === "approved" ||
-        businessStatus === "active"
+        document
+            .querySelector(
+                ".service-options"
+            )
+            ?.classList.contains(
+                "invalid-section"
+            )
     ) {
-        window.location.href =
-            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
+        deliveryOptionInputs[0]?.focus();
+
+        document
+            .querySelector(
+                ".service-options"
+            )
+            ?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
 
         return;
     }
 
-    showToast(
-        "Restaurant record found",
-        "Your restaurant already exists and is awaiting activation.",
-        "success"
+    if (
+        confirmationCheckbox
+            .closest(
+                ".confirmation-check"
+            )
+            ?.classList.contains(
+                "invalid-confirmation"
+            )
+    ) {
+        confirmationCheckbox.focus();
+    }
+}
+
+function applyServerValidationErrors(
+    errors
+) {
+    if (
+        !errors ||
+        typeof errors !== "object"
+    ) {
+        return;
+    }
+
+    const fieldMap = {
+        restaurant_name:
+            restaurantNameInput,
+
+        cuisine:
+            cuisineInput,
+
+        restaurant_contact:
+            restaurantContactInput,
+
+        business_email:
+            businessEmailInput,
+
+        restaurant_address:
+            restaurantAddressInput,
+
+        province:
+            provinceInput,
+
+        city_municipality:
+            cityMunicipalityInput,
+
+        barangay:
+            barangayInput,
+
+        postal_code:
+            postalCodeInput
+    };
+
+    Object.entries(errors).forEach(
+        ([fieldName, message]) => {
+            if (
+                fieldName ===
+                "business_hours"
+            ) {
+                businessHoursError.textContent =
+                    String(message);
+
+                businessHoursContainer.classList.add(
+                    "invalid-section"
+                );
+
+                return;
+            }
+
+            if (
+                fieldName ===
+                "delivery_options"
+            ) {
+                deliveryOptionsError.textContent =
+                    String(message);
+
+                document
+                    .querySelector(
+                        ".service-options"
+                    )
+                    ?.classList.add(
+                        "invalid-section"
+                    );
+
+                return;
+            }
+
+            const field =
+                fieldMap[fieldName];
+
+            if (field) {
+                setFieldError(
+                    field,
+                    String(message)
+                );
+            }
+        }
     );
 
-    setTimeout(() => {
-        window.location.href =
-            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
-    }, 1200);
+    openFirstInvalidStep();
+    focusFirstInvalidField();
 }
 
-function updateDescriptionCounter() {
-    const length =
-        restaurantDescriptionInput.value.length;
-
-    descriptionCounter.textContent =
-        `${length} / 1000`;
-}
+/* =========================================================
+   SUBMITTING STATE
+   ========================================================= */
 
 function setSubmittingState(
     submitting,
     action
 ) {
-    isSubmitting = submitting;
+    isSubmitting =
+        submitting;
 
     saveDraftButton.disabled =
+        submitting;
+
+    nextButton.disabled =
+        submitting;
+
+    backButton.disabled =
         submitting;
 
     submitButton.disabled =
@@ -1242,12 +2473,94 @@ function setSubmittingState(
         "Submit for review";
 
     if (
-        currentApplicationStatus === "submitted"
+        currentApplicationStatus ===
+        "submitted"
     ) {
         applyStatusRestrictions(
             "submitted"
         );
+
+        return;
     }
+
+    updateWizardButtons();
+}
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+async function handleLogout() {
+    logoutButton.disabled =
+        true;
+
+    try {
+        await fetch(
+            API.logout,
+            {
+                method: "POST",
+                credentials: "include",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+    } catch (error) {
+        console.error(
+            "Logout error:",
+            error
+        );
+    } finally {
+        window.location.href =
+            "/FoodConnect/frontend/html/login.html";
+    }
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function redirectApprovedOwner(
+    restaurant
+) {
+    const businessStatus =
+        String(
+            restaurant?.business_status ||
+            ""
+        ).toLowerCase();
+
+    if (
+        businessStatus === "approved" ||
+        businessStatus === "active"
+    ) {
+        window.location.href =
+            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
+
+        return;
+    }
+
+    showToast(
+        "Restaurant record found",
+        "Your restaurant already exists and is awaiting activation.",
+        "success"
+    );
+
+    window.setTimeout(() => {
+        window.location.href =
+            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
+    }, 1200);
+}
+
+function updateDescriptionCounter() {
+    const length =
+        restaurantDescriptionInput
+            .value
+            .length;
+
+    descriptionCounter.textContent =
+        `${length} / 1000`;
 }
 
 function showToast(
@@ -1256,33 +2569,48 @@ function showToast(
     type = "success"
 ) {
     const toast =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     toast.className =
         `toast ${type}`;
 
     toast.innerHTML = `
-        <strong>${escapeHtml(title)}</strong>
-        <p>${escapeHtml(message)}</p>
+        <strong>
+            ${escapeHtml(title)}
+        </strong>
+
+        <p>
+            ${escapeHtml(message)}
+        </p>
     `;
 
-    toastContainer.appendChild(toast);
+    toastContainer.appendChild(
+        toast
+    );
 
     window.setTimeout(() => {
         toast.remove();
     }, 4500);
 }
 
-async function parseJsonResponse(response) {
+async function parseJsonResponse(
+    response
+) {
     const responseText =
         await response.text();
 
-    if (responseText.trim() === "") {
+    if (
+        responseText.trim() === ""
+    ) {
         return {};
     }
 
     try {
-        return JSON.parse(responseText);
+        return JSON.parse(
+            responseText
+        );
     } catch (error) {
         console.error(
             "Invalid JSON response:",
@@ -1295,7 +2623,9 @@ async function parseJsonResponse(response) {
     }
 }
 
-function normalizeMoneyValue(value) {
+function normalizeMoneyValue(
+    value
+) {
     const number =
         Number.parseFloat(value);
 
@@ -1311,11 +2641,15 @@ function normalizeMoneyValue(value) {
     );
 }
 
-function formatMoneyInput(value) {
+function formatMoneyInput(
+    value
+) {
     const number =
         Number.parseFloat(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+        !Number.isFinite(number)
+    ) {
         return "0.00";
     }
 
@@ -1325,11 +2659,72 @@ function formatMoneyInput(value) {
     ).toFixed(2);
 }
 
-function escapeHtml(value) {
+function formatTimeDisplay(
+    time
+) {
+    if (
+        typeof time !== "string" ||
+        !/^[0-2][0-9]:[0-5][0-9]$/.test(
+            time
+        )
+    ) {
+        return time || "—";
+    }
+
+    const [
+        hoursText,
+        minutes
+    ] = time.split(":");
+
+    const hours =
+        Number(hoursText);
+
+    const period =
+        hours >= 12
+            ? "PM"
+            : "AM";
+
+    const displayHours =
+        hours % 12 === 0
+            ? 12
+            : hours % 12;
+
+    return `${displayHours}:${minutes} ${period}`;
+}
+
+function valueOrDash(
+    value
+) {
+    const cleaned =
+        String(value).trim();
+
+    return cleaned !== ""
+        ? cleaned
+        : "—";
+}
+
+function escapeHtml(
+    value
+) {
     return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }

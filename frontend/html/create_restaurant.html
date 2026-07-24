@@ -31,48 +31,88 @@
             </div>
 
             <div class="setup-progress">
-                <div class="progress-item active">
-                    <span class="progress-number">1</span>
+                <div
+                    class="progress-item active"
+                    data-progress-step="1"
+                >
+                    <span class="progress-number">
+                        1
+                    </span>
 
                     <div>
                         <strong>Restaurant details</strong>
-                        <small>Basic business information</small>
+
+                        <small>
+                            Basic business information
+                        </small>
                     </div>
                 </div>
 
-                <div class="progress-item">
-                    <span class="progress-number">2</span>
+                <div
+                    class="progress-item"
+                    data-progress-step="2"
+                >
+                    <span class="progress-number">
+                        2
+                    </span>
 
                     <div>
                         <strong>Business location</strong>
-                        <small>Restaurant address</small>
+
+                        <small>
+                            Complete restaurant address
+                        </small>
                     </div>
                 </div>
 
-                <div class="progress-item">
-                    <span class="progress-number">3</span>
+                <div
+                    class="progress-item"
+                    data-progress-step="3"
+                >
+                    <span class="progress-number">
+                        3
+                    </span>
 
                     <div>
                         <strong>Business hours</strong>
-                        <small>Weekly operating schedule</small>
+
+                        <small>
+                            Weekly operating schedule
+                        </small>
                     </div>
                 </div>
 
-                <div class="progress-item">
-                    <span class="progress-number">4</span>
+                <div
+                    class="progress-item"
+                    data-progress-step="4"
+                >
+                    <span class="progress-number">
+                        4
+                    </span>
 
                     <div>
                         <strong>Order services</strong>
-                        <small>Pickup and delivery options</small>
+
+                        <small>
+                            Pickup and delivery options
+                        </small>
                     </div>
                 </div>
 
-                <div class="progress-item">
-                    <span class="progress-number">5</span>
+                <div
+                    class="progress-item"
+                    data-progress-step="5"
+                >
+                    <span class="progress-number">
+                        5
+                    </span>
 
                     <div>
-                        <strong>Submit application</strong>
-                        <small>Administrator review</small>
+                        <strong>Review application</strong>
+
+                        <small>
+                            Administrator review
+                        </small>
                     </div>
                 </div>
             </div>
@@ -116,12 +156,36 @@
             ></div>
 
             <div
+                class="wizard-status hidden"
+                id="wizardStatus"
+            >
+                <div class="wizard-status-text">
+                    <strong id="wizardStepLabel">
+                        Step 1 of 5
+                    </strong>
+
+                    <span id="wizardStepTitle">
+                        Restaurant details
+                    </span>
+                </div>
+
+                <div class="wizard-progress-track">
+                    <div
+                        class="wizard-progress-bar"
+                        id="wizardProgressBar"
+                    ></div>
+                </div>
+            </div>
+
+            <div
                 class="loading-state"
                 id="loadingState"
             >
                 <div class="loading-spinner"></div>
 
-                <p>Loading your restaurant application...</p>
+                <p>
+                    Loading your restaurant application...
+                </p>
             </div>
 
             <form
@@ -130,21 +194,32 @@
                 novalidate
             >
                 <!-- =========================================
-                     RESTAURANT INFORMATION
+                     STEP 1: RESTAURANT DETAILS
                      ========================================= -->
 
-                <section class="form-section">
+                <section
+                    class="form-section wizard-step"
+                    data-step="1"
+                >
                     <div class="section-heading">
-                        <span class="section-number">1</span>
+                        <span class="section-number">
+                            1
+                        </span>
 
                         <div>
-                            <h3>Restaurant information</h3>
+                            <h3>Restaurant details</h3>
 
                             <p>
                                 Tell customers and FoodConnect about your
                                 restaurant.
                             </p>
                         </div>
+                    </div>
+
+                    <div class="required-note">
+                        Fields marked with
+                        <span class="required">*</span>
+                        are required.
                     </div>
 
                     <div class="form-grid">
@@ -207,6 +282,7 @@
                         <div class="form-group form-group-full">
                             <label for="businessEmail">
                                 Business email
+                                <span class="required">*</span>
                             </label>
 
                             <input
@@ -216,6 +292,7 @@
                                 maxlength="150"
                                 autocomplete="email"
                                 placeholder="restaurant@example.com"
+                                required
                             >
 
                             <small class="field-error"></small>
@@ -224,6 +301,10 @@
                         <div class="form-group form-group-full">
                             <label for="restaurantDescription">
                                 Restaurant description
+
+                                <span class="optional-label">
+                                    (Optional)
+                                </span>
                             </label>
 
                             <textarea
@@ -249,12 +330,17 @@
                 </section>
 
                 <!-- =========================================
-                     LOCATION
+                     STEP 2: BUSINESS LOCATION
                      ========================================= -->
 
-                <section class="form-section">
+                <section
+                    class="form-section wizard-step"
+                    data-step="2"
+                >
                     <div class="section-heading">
-                        <span class="section-number">2</span>
+                        <span class="section-number">
+                            2
+                        </span>
 
                         <div>
                             <h3>Business location</h3>
@@ -264,6 +350,11 @@
                                 restaurant.
                             </p>
                         </div>
+                    </div>
+
+                    <div class="required-note">
+                        Street address, province, city or municipality,
+                        and barangay are required.
                     </div>
 
                     <div class="form-grid">
@@ -289,6 +380,7 @@
                         <div class="form-group">
                             <label for="province">
                                 Province
+                                <span class="required">*</span>
                             </label>
 
                             <input
@@ -298,12 +390,16 @@
                                 maxlength="100"
                                 autocomplete="address-level1"
                                 placeholder="Example: Pangasinan"
+                                required
                             >
+
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group">
                             <label for="cityMunicipality">
                                 City or municipality
+                                <span class="required">*</span>
                             </label>
 
                             <input
@@ -313,12 +409,16 @@
                                 maxlength="100"
                                 autocomplete="address-level2"
                                 placeholder="Example: Alaminos City"
+                                required
                             >
+
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group">
                             <label for="barangay">
                                 Barangay
+                                <span class="required">*</span>
                             </label>
 
                             <input
@@ -328,12 +428,19 @@
                                 maxlength="100"
                                 autocomplete="address-level3"
                                 placeholder="Example: Poblacion"
+                                required
                             >
+
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group">
                             <label for="postalCode">
                                 Postal code
+
+                                <span class="optional-label">
+                                    (Optional)
+                                </span>
                             </label>
 
                             <input
@@ -352,12 +459,17 @@
                 </section>
 
                 <!-- =========================================
-                     BUSINESS HOURS
+                     STEP 3: BUSINESS HOURS
                      ========================================= -->
 
-                <section class="form-section">
+                <section
+                    class="form-section wizard-step"
+                    data-step="3"
+                >
                     <div class="section-heading">
-                        <span class="section-number">3</span>
+                        <span class="section-number">
+                            3
+                        </span>
 
                         <div>
                             <h3>Business hours</h3>
@@ -367,6 +479,11 @@
                                 orders.
                             </p>
                         </div>
+                    </div>
+
+                    <div class="required-note">
+                        Opening and closing times are required for every
+                        day that is not marked closed.
                     </div>
 
                     <div class="hours-toolbar">
@@ -385,24 +502,38 @@
                     >
                         <!-- Generated by JavaScript -->
                     </div>
+
+                    <small
+                        class="section-error"
+                        id="businessHoursError"
+                    ></small>
                 </section>
 
                 <!-- =========================================
-                     ORDER AND DELIVERY OPTIONS
+                     STEP 4: ORDER SERVICES
                      ========================================= -->
 
-                <section class="form-section">
+                <section
+                    class="form-section wizard-step"
+                    data-step="4"
+                >
                     <div class="section-heading">
-                        <span class="section-number">4</span>
+                        <span class="section-number">
+                            4
+                        </span>
 
                         <div>
-                            <h3>Order and delivery services</h3>
+                            <h3>Order services</h3>
 
                             <p>
                                 Select how customers can receive their
                                 orders.
                             </p>
                         </div>
+                    </div>
+
+                    <div class="required-note">
+                        Select at least one order service.
                     </div>
 
                     <div class="service-options">
@@ -417,7 +548,9 @@
                             <span class="service-check"></span>
 
                             <span class="service-content">
-                                <strong>Customer pickup</strong>
+                                <strong>
+                                    Customer pickup
+                                </strong>
 
                                 <small>
                                     Customers collect orders directly from
@@ -436,7 +569,9 @@
                             <span class="service-check"></span>
 
                             <span class="service-content">
-                                <strong>Restaurant delivery</strong>
+                                <strong>
+                                    Restaurant delivery
+                                </strong>
 
                                 <small>
                                     Use delivery staff employed by your
@@ -455,7 +590,9 @@
                             <span class="service-check"></span>
 
                             <span class="service-content">
-                                <strong>FoodConnect delivery</strong>
+                                <strong>
+                                    FoodConnect delivery
+                                </strong>
 
                                 <small>
                                     Request third-party riders through the
@@ -474,6 +611,10 @@
                         <div class="form-group">
                             <label for="minimumOrder">
                                 Minimum order
+
+                                <span class="optional-label">
+                                    (Optional)
+                                </span>
                             </label>
 
                             <div class="money-input">
@@ -490,13 +631,17 @@
                             </div>
 
                             <small>
-                                Set to ₱0 if no minimum order is required.
+                                Keep ₱0.00 if no minimum order is required.
                             </small>
                         </div>
 
                         <div class="form-group">
                             <label for="deliveryFee">
                                 Fixed restaurant delivery fee
+
+                                <span class="optional-label">
+                                    (Optional)
+                                </span>
                             </label>
 
                             <div class="money-input">
@@ -513,29 +658,133 @@
                             </div>
 
                             <small>
-                                This currently applies to restaurant-owned
-                                delivery.
+                                This applies to restaurant-owned delivery.
+                                Keep ₱0.00 if delivery is free.
                             </small>
                         </div>
                     </div>
                 </section>
 
                 <!-- =========================================
-                     REVIEW AND SUBMISSION
+                     STEP 5: REVIEW AND SUBMISSION
                      ========================================= -->
 
-                <section class="form-section submit-section">
+                <section
+                    class="form-section submit-section wizard-step"
+                    data-step="5"
+                >
                     <div class="section-heading">
-                        <span class="section-number">5</span>
+                        <span class="section-number">
+                            5
+                        </span>
 
                         <div>
-                            <h3>Submit for review</h3>
+                            <h3>Review application</h3>
 
                             <p>
-                                FoodConnect administrators will review your
-                                application before the restaurant becomes
-                                active.
+                                Review your restaurant information before
+                                submitting it to the FoodConnect administrator.
                             </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="application-review"
+                        id="applicationReview"
+                    >
+                        <div class="review-group">
+                            <div class="review-group-header">
+                                <h4>Restaurant details</h4>
+
+                                <button
+                                    type="button"
+                                    class="review-edit-button"
+                                    data-edit-step="1"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+
+                            <dl class="review-list">
+                                <div>
+                                    <dt>Restaurant name</dt>
+                                    <dd id="reviewRestaurantName">—</dd>
+                                </div>
+
+                                <div>
+                                    <dt>Cuisine</dt>
+                                    <dd id="reviewCuisine">—</dd>
+                                </div>
+
+                                <div>
+                                    <dt>Contact number</dt>
+                                    <dd id="reviewRestaurantContact">—</dd>
+                                </div>
+
+                                <div>
+                                    <dt>Business email</dt>
+                                    <dd id="reviewBusinessEmail">—</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <div class="review-group">
+                            <div class="review-group-header">
+                                <h4>Business location</h4>
+
+                                <button
+                                    type="button"
+                                    class="review-edit-button"
+                                    data-edit-step="2"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+
+                            <dl class="review-list">
+                                <div class="review-list-full">
+                                    <dt>Complete address</dt>
+                                    <dd id="reviewAddress">—</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <div class="review-group">
+                            <div class="review-group-header">
+                                <h4>Business hours</h4>
+
+                                <button
+                                    type="button"
+                                    class="review-edit-button"
+                                    data-edit-step="3"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+
+                            <div
+                                class="review-hours"
+                                id="reviewBusinessHours"
+                            ></div>
+                        </div>
+
+                        <div class="review-group">
+                            <div class="review-group-header">
+                                <h4>Order services</h4>
+
+                                <button
+                                    type="button"
+                                    class="review-edit-button"
+                                    data-edit-step="4"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+
+                            <div
+                                class="review-services"
+                                id="reviewDeliveryOptions"
+                            ></div>
                         </div>
                     </div>
 
@@ -543,10 +792,9 @@
                         <strong>Before submitting</strong>
 
                         <p>
-                            Check that your restaurant name, address,
-                            contact number, hours, and service options are
-                            correct. Submitted applications cannot be
-                            edited until an administrator reviews them.
+                            Submitted applications cannot be edited while
+                            waiting for administrator review. Make sure all
+                            information above is correct.
                         </p>
                     </div>
 
@@ -558,27 +806,87 @@
 
                         <span>
                             I confirm that the restaurant information
-                            provided is accurate.
+                            provided is complete and accurate.
                         </span>
                     </label>
+
+                    <small
+                        class="section-error"
+                        id="confirmationError"
+                    ></small>
+
+                    <div
+                        class="submitted-state hidden"
+                        id="submittedState"
+                    >
+                        <div class="submitted-state-icon">
+                            ✓
+                        </div>
+
+                        <div class="submitted-state-content">
+                            <h4>
+                                Application submitted successfully
+                            </h4>
+
+                            <p>
+                                Your restaurant application is waiting for
+                                FoodConnect administrator review.
+                            </p>
+
+                            <div class="submitted-status-row">
+                                <span>Current status</span>
+
+                                <strong>Under review</strong>
+                            </div>
+
+                            <p class="submitted-state-note">
+                                You cannot edit the application while it is
+                                being reviewed. You will receive an email when
+                                the administrator approves it or returns it
+                                for changes.
+                            </p>
+                        </div>
+                    </div>
                 </section>
 
                 <div class="form-actions">
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="saveDraftButton"
-                    >
-                        Save as draft
-                    </button>
+                    <div class="form-actions-left">
+                        <button
+                            type="button"
+                            class="secondary-button hidden"
+                            id="backButton"
+                        >
+                            ← Back
+                        </button>
+                    </div>
 
-                    <button
-                        type="submit"
-                        class="primary-button"
-                        id="submitButton"
-                    >
-                        Submit for review
-                    </button>
+                    <div class="form-actions-right">
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            id="saveDraftButton"
+                        >
+                            Save as draft
+                        </button>
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            id="nextButton"
+                            disabled
+                        >
+                            Next →
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="primary-button hidden"
+                            id="submitButton"
+                            disabled
+                        >
+                            Submit for review
+                        </button>
+                    </div>
                 </div>
             </form>
         </main>
@@ -593,13 +901,18 @@
     <div
         class="modal-overlay hidden"
         id="submissionModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="submissionModalTitle"
     >
         <div class="modal-card">
             <div class="modal-icon">
                 ✓
             </div>
 
-            <h3>Application submitted</h3>
+            <h3 id="submissionModalTitle">
+                Application submitted
+            </h3>
 
             <p>
                 Your restaurant application has been sent to the

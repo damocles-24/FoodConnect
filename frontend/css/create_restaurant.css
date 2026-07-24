@@ -79,6 +79,7 @@ button {
 
     display: flex;
     flex-direction: column;
+
     min-height: 100vh;
     height: 100vh;
 
@@ -125,8 +126,10 @@ button {
 
 .sidebar-brand p {
     margin: 4px 0 0;
-    font-size: 0.84rem;
+
     color: #aeb7c6;
+
+    font-size: 0.84rem;
 }
 
 .setup-progress {
@@ -149,6 +152,10 @@ button {
     border-radius: 14px;
 
     color: #9ca3af;
+
+    transition:
+        color 0.18s ease,
+        background 0.18s ease;
 }
 
 .progress-item.active {
@@ -177,6 +184,33 @@ button {
     background: var(--primary);
 }
 
+.progress-item.completed {
+    color: #d1fae5;
+}
+
+.progress-item.completed .progress-number {
+    position: relative;
+
+    color: transparent;
+    border-color: var(--success);
+    background: var(--success);
+}
+
+.progress-item.completed .progress-number::after {
+    content: "✓";
+
+    position: absolute;
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffffff;
+
+    font-size: 0.83rem;
+    font-weight: 900;
+}
+
 .progress-item strong,
 .progress-item small {
     display: block;
@@ -188,9 +222,11 @@ button {
 }
 
 .progress-item small {
+    color: inherit;
+
     font-size: 0.76rem;
     line-height: 1.4;
-    color: inherit;
+
     opacity: 0.78;
 }
 
@@ -210,9 +246,11 @@ button {
 
 .sidebar-note p {
     margin: 8px 0 0;
+
+    color: #c4cad4;
+
     font-size: 0.8rem;
     line-height: 1.55;
-    color: #c4cad4;
 }
 
 .setup-main {
@@ -258,6 +296,7 @@ button {
     margin: 12px 0 0;
 
     color: var(--muted);
+
     line-height: 1.65;
 }
 
@@ -273,7 +312,7 @@ button {
     background: var(--surface);
 }
 
-.logout-button:hover {
+.logout-button:hover:not(:disabled) {
     border-color: #cbd0d8;
     background: #f9fafb;
 }
@@ -338,6 +377,60 @@ button {
 }
 
 /* =========================================================
+   WIZARD STATUS
+   ========================================================= */
+
+.wizard-status {
+    margin-bottom: 24px;
+    padding: 16px 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: var(--surface);
+}
+
+.wizard-status-text {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 11px;
+}
+
+.wizard-status-text strong {
+    color: var(--primary);
+    font-size: 0.85rem;
+}
+
+.wizard-status-text span {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.wizard-progress-track {
+    width: 100%;
+    height: 7px;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+    background: #e9ebef;
+}
+
+.wizard-progress-bar {
+    width: 20%;
+    height: 100%;
+
+    border-radius: inherit;
+    background: var(--primary);
+
+    transition:
+        width 0.25s ease;
+}
+
+/* =========================================================
    FORM
    ========================================================= */
 
@@ -345,6 +438,28 @@ button {
     display: flex;
     flex-direction: column;
     gap: 24px;
+}
+
+.wizard-step {
+    display: none;
+}
+
+.wizard-step.active {
+    display: block;
+
+    animation: wizard-step-in 0.22s ease;
+}
+
+@keyframes wizard-step-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .form-section {
@@ -362,7 +477,7 @@ button {
     align-items: flex-start;
     gap: 14px;
 
-    margin-bottom: 26px;
+    margin-bottom: 24px;
 }
 
 .section-number {
@@ -384,12 +499,29 @@ button {
 
 .section-heading h3 {
     margin: 1px 0 7px;
+
     font-size: 1.18rem;
 }
 
 .section-heading p {
     margin: 0;
+
     color: var(--muted);
+
+    line-height: 1.5;
+}
+
+.required-note {
+    margin-bottom: 22px;
+    padding: 11px 13px;
+
+    border: 1px solid #f3d7ca;
+    border-radius: 10px;
+
+    color: #8b4a30;
+    background: #fff8f4;
+
+    font-size: 0.81rem;
     line-height: 1.5;
 }
 
@@ -409,6 +541,7 @@ button {
 
 .form-group label {
     display: block;
+
     margin-bottom: 8px;
 
     font-size: 0.88rem;
@@ -417,6 +550,15 @@ button {
 
 .required {
     color: var(--danger);
+}
+
+.optional-label {
+    margin-left: 4px;
+
+    color: var(--muted);
+
+    font-size: 0.76rem;
+    font-weight: 500;
 }
 
 .form-group input,
@@ -433,7 +575,8 @@ button {
 
     transition:
         border-color 0.18s ease,
-        box-shadow 0.18s ease;
+        box-shadow 0.18s ease,
+        background 0.18s ease;
 }
 
 .form-group input {
@@ -444,7 +587,9 @@ button {
 .form-group textarea {
     min-height: 100px;
     padding: 13px;
+
     resize: vertical;
+
     line-height: 1.5;
 }
 
@@ -466,20 +611,35 @@ button {
         rgba(220, 53, 69, 0.08);
 }
 
+.form-group input:disabled,
+.form-group textarea:disabled {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
 .form-group > small,
 .textarea-meta {
     display: block;
+
     margin-top: 7px;
 
     color: var(--muted);
+
     font-size: 0.77rem;
     line-height: 1.45;
 }
 
 .field-error,
 .section-error {
+    display: block;
+
     min-height: 18px;
+    margin-top: 7px;
+
     color: var(--danger) !important;
+
+    font-size: 0.78rem;
+    line-height: 1.4;
 }
 
 .textarea-meta {
@@ -495,6 +655,7 @@ button {
 .hours-toolbar {
     display: flex;
     justify-content: flex-end;
+
     margin: -4px 0 14px;
 }
 
@@ -503,6 +664,14 @@ button {
 
     border: 1px solid var(--border);
     border-radius: 14px;
+}
+
+.business-hours.invalid-section {
+    border-color: var(--danger);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(220, 53, 69, 0.08);
 }
 
 .hours-row {
@@ -525,6 +694,10 @@ button {
     border-bottom: none;
 }
 
+.hours-row.invalid-row {
+    background: var(--danger-soft);
+}
+
 .hours-day {
     font-weight: 750;
 }
@@ -537,11 +710,20 @@ button {
     border-radius: 9px;
 
     outline: none;
+
     background: #ffffff;
 }
 
 .hours-input:focus {
     border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255, 107, 53, 0.1);
+}
+
+.hours-input.invalid {
+    border-color: var(--danger);
 }
 
 .hours-input:disabled {
@@ -555,6 +737,7 @@ button {
     gap: 8px;
 
     color: var(--muted);
+
     font-size: 0.84rem;
     font-weight: 600;
 }
@@ -562,6 +745,7 @@ button {
 .closed-label input {
     width: 17px;
     height: 17px;
+
     accent-color: var(--primary);
 }
 
@@ -573,6 +757,10 @@ button {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
+}
+
+.service-options.invalid-section .service-card {
+    border-color: #ef9aa3;
 }
 
 .service-card {
@@ -608,6 +796,7 @@ button {
 
 .service-card input {
     position: absolute;
+
     opacity: 0;
     pointer-events: none;
 }
@@ -636,8 +825,14 @@ button {
     content: "✓";
 
     color: #ffffff;
+
     font-size: 0.78rem;
     font-weight: 900;
+}
+
+.service-card input:disabled ~ .service-content,
+.service-card input:disabled + .service-check {
+    opacity: 0.7;
 }
 
 .service-content strong,
@@ -647,11 +842,13 @@ button {
 
 .service-content strong {
     margin-bottom: 8px;
+
     font-size: 0.92rem;
 }
 
 .service-content small {
     color: var(--muted);
+
     line-height: 1.55;
 }
 
@@ -679,7 +876,9 @@ button {
 
 .money-input span {
     padding-left: 13px;
+
     color: var(--muted);
+
     font-weight: 700;
 }
 
@@ -689,10 +888,157 @@ button {
 }
 
 /* =========================================================
+   REVIEW APPLICATION
+   ========================================================= */
+
+.application-review {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-group {
+    padding: 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: #fbfcfd;
+}
+
+.review-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 14px;
+}
+
+.review-group-header h4 {
+    margin: 0;
+
+    font-size: 1rem;
+}
+
+.review-edit-button {
+    min-height: 34px;
+    padding: 0 12px;
+
+    border: 1px solid #d7dbe1;
+    border-radius: 8px;
+
+    color: var(--text);
+    background: #ffffff;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.review-edit-button:hover:not(:disabled) {
+    border-color: var(--primary);
+
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+}
+
+.review-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+
+    margin: 0;
+}
+
+.review-list > div {
+    padding: 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: #ffffff;
+}
+
+.review-list-full {
+    grid-column: 1 / -1;
+}
+
+.review-list dt {
+    margin-bottom: 5px;
+
+    color: var(--muted);
+
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.review-list dd {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 0.88rem;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+}
+
+.review-hours {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.review-hour-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+
+    padding: 11px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    font-size: 0.82rem;
+}
+
+.review-hour-item strong {
+    font-weight: 700;
+}
+
+.review-hour-item span {
+    color: var(--muted);
+    text-align: right;
+}
+
+.review-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.review-service-tag {
+    padding: 8px 11px;
+
+    border: 1px solid #f5b397;
+    border-radius: 999px;
+
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+/* =========================================================
    SUBMISSION
    ========================================================= */
 
 .review-notice {
+    margin-top: 20px;
     padding: 18px;
 
     border: 1px solid #f2db9c;
@@ -704,11 +1050,13 @@ button {
 
 .review-notice strong {
     display: block;
+
     margin-bottom: 7px;
 }
 
 .review-notice p {
     margin: 0;
+
     line-height: 1.6;
 }
 
@@ -720,8 +1068,18 @@ button {
     margin-top: 20px;
 
     color: var(--text);
+
     font-size: 0.9rem;
     line-height: 1.55;
+}
+
+.confirmation-check.invalid-confirmation {
+    padding: 12px;
+
+    border: 1px solid #ef9aa3;
+    border-radius: 10px;
+
+    background: var(--danger-soft);
 }
 
 .confirmation-check input {
@@ -734,13 +1092,107 @@ button {
     accent-color: var(--primary);
 }
 
+/* =========================================================
+   SUBMITTED APPLICATION STATE
+   ========================================================= */
+
+.submitted-state {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+
+    margin-top: 22px;
+    padding: 22px;
+
+    border: 1px solid #b7e5c9;
+    border-radius: 15px;
+
+    background: var(--success-soft);
+}
+
+.submitted-state-icon {
+    flex: 0 0 auto;
+
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    border-radius: 50%;
+
+    color: #ffffff;
+    background: var(--success);
+
+    font-size: 1.25rem;
+    font-weight: 900;
+}
+
+.submitted-state-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.submitted-state-content h4 {
+    margin: 0 0 8px;
+
+    color: #166534;
+
+    font-size: 1.08rem;
+}
+
+.submitted-state-content > p {
+    margin: 0;
+
+    color: #38634b;
+
+    line-height: 1.6;
+}
+
+.submitted-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    margin-top: 18px;
+    padding: 13px 15px;
+
+    border: 1px solid #b7e5c9;
+    border-radius: 11px;
+
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.submitted-status-row span {
+    color: var(--muted);
+
+    font-size: 0.85rem;
+}
+
+.submitted-status-row strong {
+    color: var(--success);
+
+    font-size: 0.88rem;
+}
+
+.submitted-state-note {
+    margin-top: 15px !important;
+
+    font-size: 0.84rem;
+}
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
 .form-actions {
     position: sticky;
     bottom: 16px;
     z-index: 5;
 
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 12px;
 
     padding: 16px;
@@ -757,6 +1209,21 @@ button {
     backdrop-filter: blur(10px);
 }
 
+.form-actions-left,
+.form-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-actions-left {
+    margin-right: auto;
+}
+
+.form-actions-right {
+    justify-content: flex-end;
+}
+
 .primary-button,
 .secondary-button {
     min-height: 44px;
@@ -769,22 +1236,26 @@ button {
     transition:
         transform 0.16s ease,
         opacity 0.16s ease,
-        background 0.16s ease;
+        background 0.16s ease,
+        border-color 0.16s ease;
 }
 
 .primary-button {
     border: 1px solid var(--primary);
+
     color: #ffffff;
     background: var(--primary);
 }
 
 .primary-button:hover:not(:disabled) {
     transform: translateY(-1px);
+
     background: var(--primary-dark);
 }
 
 .secondary-button {
     border: 1px solid #d7dbe1;
+
     color: var(--text);
     background: #ffffff;
 }
@@ -796,14 +1267,23 @@ button {
 .small-button {
     min-height: 38px;
     padding: 0 14px;
+
     font-size: 0.8rem;
 }
 
 .primary-button:disabled,
 .secondary-button:disabled,
-.logout-button:disabled {
+.logout-button:disabled,
+.review-edit-button:disabled {
     cursor: not-allowed;
-    opacity: 0.58;
+
+    opacity: 0.55;
+}
+
+.primary-button:disabled {
+    border-color: #f4b49d;
+
+    background: #f4b49d;
 }
 
 /* =========================================================
@@ -848,12 +1328,15 @@ button {
 
 .toast strong {
     display: block;
+
     margin-bottom: 4px;
 }
 
 .toast p {
     margin: 0;
+
     color: var(--muted);
+
     line-height: 1.45;
 }
 
@@ -884,6 +1367,7 @@ button {
     padding: 20px;
 
     background: rgba(17, 24, 39, 0.58);
+
     backdrop-filter: blur(5px);
 }
 
@@ -895,6 +1379,7 @@ button {
     border-radius: 20px;
 
     text-align: center;
+
     background: #ffffff;
 
     box-shadow:
@@ -921,6 +1406,7 @@ button {
 
 .modal-card h3 {
     margin: 0;
+
     font-size: 1.35rem;
 }
 
@@ -928,6 +1414,7 @@ button {
     margin: 12px 0 24px;
 
     color: var(--muted);
+
     line-height: 1.6;
 }
 
@@ -942,8 +1429,10 @@ button {
 
     .setup-sidebar {
         position: static;
+
         min-height: auto;
         height: auto;
+
         padding: 22px;
     }
 
@@ -967,8 +1456,14 @@ button {
     }
 
     .form-grid,
-    .service-options {
+    .service-options,
+    .review-list,
+    .review-hours {
         grid-template-columns: 1fr;
+    }
+
+    .review-list-full {
+        grid-column: auto;
     }
 
     .hours-row {
@@ -994,13 +1489,29 @@ button {
         font-size: 1.75rem;
     }
 
+    .wizard-status-text {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
     .form-section {
         padding: 19px 16px;
+
         border-radius: 15px;
     }
 
     .section-heading {
         gap: 10px;
+    }
+
+    .required-note {
+        font-size: 0.78rem;
+    }
+
+    .textarea-meta {
+        flex-direction: column;
+        gap: 5px;
     }
 
     .hours-row {
@@ -1016,9 +1527,49 @@ button {
         justify-self: start;
     }
 
+    .review-group-header {
+        align-items: flex-start;
+    }
+
+    .review-hour-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .review-hour-item span {
+        text-align: left;
+    }
+
+    .submitted-state {
+        flex-direction: column;
+    }
+
+    .submitted-status-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
     .form-actions {
         bottom: 8px;
-        flex-direction: column-reverse;
+
+        flex-direction: column;
+    }
+
+    .form-actions-left,
+    .form-actions-right {
+        width: 100%;
+
+        flex-direction: column;
+    }
+
+    .form-actions-left {
+        order: 2;
+    }
+
+    .form-actions-right {
+        order: 1;
     }
 
     .primary-button,

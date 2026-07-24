@@ -31,6 +31,7 @@ session_set_cookie_params(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/mailer.php";
 
 function respond_json(
     array $data,
@@ -44,6 +45,16 @@ function respond_json(
     );
 
     exit;
+}
+
+function escape_html(
+    string $value
+): string {
+    return htmlspecialchars(
+        $value,
+        ENT_QUOTES,
+        "UTF-8"
+    );
 }
 
 function generate_staff_access_code(): string
@@ -339,18 +350,24 @@ try {
     ===================================================== */
 
     $ownerStmt =
-        $conn->prepare("
-            SELECT
-                user_id,
-                restaurant_id,
-                role,
-                status,
-                is_verified
-            FROM tbl_users
-            WHERE user_id = ?
-            LIMIT 1
-            FOR UPDATE
-        ");
+    $conn->prepare("
+        SELECT
+            user_id,
+            restaurant_id,
+            full_name,
+            email,
+            role,
+            status,
+            is_verified
+
+        FROM tbl_users
+
+        WHERE user_id = ?
+
+        LIMIT 1
+
+        FOR UPDATE
+    ");
 
     if (!$ownerStmt) {
         throw new RuntimeException(
@@ -396,6 +413,38 @@ try {
             "The owner account must be active and verified."
         );
     }
+
+    $ownerName =
+    trim(
+        (string) (
+            $owner["full_name"]
+            ?? ""
+        )
+    );
+
+$ownerEmail =
+    trim(
+        (string) (
+            $owner["email"]
+            ?? ""
+        )
+    );
+
+if ($ownerName === "") {
+    $ownerName =
+        "Restaurant Owner";
+}
+
+if (
+    !filter_var(
+        $ownerEmail,
+        FILTER_VALIDATE_EMAIL
+    )
+) {
+    throw new DomainException(
+        "The restaurant owner does not have a valid email address."
+    );
+}
 
     /* =====================================================
        REJECT APPLICATION
@@ -444,14 +493,112 @@ try {
 
         $rejectStmt->close();
 
-        $conn->commit();
+/*
+|--------------------------------------------------------------------------
+| Commit rejection before sending email
+|--------------------------------------------------------------------------
+*/
 
-        respond_json([
-            "success" => true,
-            "decision" => "rejected",
-            "message" =>
-                "Restaurant application rejected successfully."
-        ]);
+$conn->commit();
+
+$safeOwnerName =
+    escape_html(
+        $ownerName
+    );
+
+$safeRestaurantName =
+    escape_html(
+        (string) $application[
+            "restaurant_name"
+        ]
+    );
+
+$safeRejectionReason =
+    nl2br(
+        escape_html(
+            $rejectionReason
+        )
+    );
+
+$rejectionSubject =
+    "Update on Your FoodConnect Restaurant Application";
+
+$rejectionBody = "
+    <div style=\"
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 28px;
+        font-family: Arial, sans-serif;
+        color: #1f2937;
+        line-height: 1.6;
+    \">
+        <h2 style=\"
+            margin: 0 0 18px;
+            color: #c62828;
+        \">
+            Restaurant Application Update
+        </h2>
+
+        <p>
+            Hello {$safeOwnerName},
+        </p>
+
+        <p>
+            Your FoodConnect application for
+            <strong>{$safeRestaurantName}</strong>
+            requires changes before it can be approved.
+        </p>
+
+        <div style=\"
+            margin: 20px 0;
+            padding: 16px;
+            border-left: 4px solid #c62828;
+            background: #fff5f5;
+        \">
+            <strong>Administrator's reason:</strong>
+
+            <div style=\"margin-top: 8px;\">
+                {$safeRejectionReason}
+            </div>
+        </div>
+
+        <p>
+            Please log in through the FoodConnect Partner Portal,
+            review your application, make the required corrections,
+            and submit it again.
+        </p>
+
+        <p>
+            Your owner account remains active and verified.
+        </p>
+
+        <p style=\"margin-top: 28px;\">
+            Thank you,<br>
+            <strong>FoodConnect Support</strong>
+        </p>
+    </div>
+";
+
+$emailSent = sendBrevoSMTP(
+    $ownerEmail,
+    $rejectionSubject,
+    $rejectionBody
+);
+
+respond_json([
+    "success" => true,
+
+    "decision" =>
+        "rejected",
+
+    "email_sent" =>
+        $emailSent,
+
+    "message" =>
+        $emailSent
+            ? "Restaurant application rejected successfully. The owner was notified by email."
+            : "Restaurant application rejected successfully, but the notification email could not be sent."
+]);
     }
 
     /* =====================================================
@@ -688,17 +835,117 @@ try {
 
     $approveStmt->close();
 
-    $conn->commit();
+/*
+|--------------------------------------------------------------------------
+| Commit approval before sending email
+|--------------------------------------------------------------------------
+*/
 
-    respond_json([
-        "success" => true,
-        "decision" => "approved",
-        "restaurant_id" =>
-            $restaurantId,
+$conn->commit();
 
-        "message" =>
-            "Restaurant application approved successfully."
-    ]);
+$safeOwnerName =
+    escape_html(
+        $ownerName
+    );
+
+$safeRestaurantName =
+    escape_html(
+        $restaurantName
+    );
+
+$approvalSubject =
+    "Your FoodConnect Restaurant Application Has Been Approved";
+
+$approvalBody = "
+    <div style=\"
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 28px;
+        font-family: Arial, sans-serif;
+        color: #1f2937;
+        line-height: 1.6;
+    \">
+        <h2 style=\"
+            margin: 0 0 18px;
+            color: #238636;
+        \">
+            Restaurant Application Approved
+        </h2>
+
+        <p>
+            Hello {$safeOwnerName},
+        </p>
+
+        <p>
+            Great news! Your FoodConnect application for
+            <strong>{$safeRestaurantName}</strong>
+            has been approved by the FoodConnect administrator.
+        </p>
+
+        <div style=\"
+            margin: 20px 0;
+            padding: 16px;
+            border-left: 4px solid #238636;
+            background: #f0fff4;
+        \">
+            Your restaurant account has been created and linked
+            to your Owner account.
+        </div>
+
+        <p>
+            You may now log in through the FoodConnect Partner Portal
+            and access your Owner Dashboard.
+        </p>
+
+        <p>
+            Before accepting customer orders, please:
+        </p>
+
+        <ul>
+            <li>Review your restaurant information</li>
+            <li>Add or review your products</li>
+            <li>Create and review staff accounts</li>
+            <li>Confirm your delivery settings</li>
+            <li>Open the restaurant when everything is ready</li>
+        </ul>
+
+        <p>
+            For safety, your restaurant is initially set to
+            <strong>Closed</strong>. It will not accept new orders
+            until you manually open it from the Owner Dashboard.
+        </p>
+
+        <p style=\"margin-top: 28px;\">
+            Welcome to FoodConnect,<br>
+            <strong>FoodConnect Support</strong>
+        </p>
+    </div>
+";
+
+$emailSent = sendBrevoSMTP(
+    $ownerEmail,
+    $approvalSubject,
+    $approvalBody
+);
+
+respond_json([
+    "success" => true,
+
+    "decision" =>
+        "approved",
+
+    "restaurant_id" =>
+        $restaurantId,
+
+    "email_sent" =>
+        $emailSent,
+
+    "message" =>
+        $emailSent
+            ? "Restaurant application approved successfully. The owner was notified by email."
+            : "Restaurant application approved successfully, but the notification email could not be sent."
+]);
+
 } catch (DomainException $error) {
     $conn->rollback();
 

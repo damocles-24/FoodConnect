@@ -401,39 +401,7 @@ if ($action === "deactivate") {
     }
 }
 
-/* =========================================================
-   NO-CHANGE CHECK
-========================================================= */
 
-if (
-    $action === "deactivate" &&
-    $ownerStatus === 0
-) {
-    respond_json([
-        "success" => true,
-        "message" =>
-            "The restaurant is already deactivated.",
-        "restaurant_id" =>
-            $restaurantId,
-        "access_status" =>
-            "inactive"
-    ]);
-}
-
-if (
-    $action === "reactivate" &&
-    $ownerStatus === 1
-) {
-    respond_json([
-        "success" => true,
-        "message" =>
-            "The restaurant is already active.",
-        "restaurant_id" =>
-            $restaurantId,
-        "access_status" =>
-            "active"
-    ]);
-}
 
 /* =========================================================
    UPDATE RESTAURANT ACCESS
