@@ -278,6 +278,7 @@ try {
                 restaurant_contact,
                 cuisine,
                 restaurant_description,
+                logo_path,
                 business_email,
                 province,
                 city_municipality,
@@ -672,6 +673,13 @@ respond_json([
             $application["restaurant_contact"]
         );
 
+$logoPath =
+    trim(
+        (string) (
+            $application["logo_path"] ?? ""
+        )
+    );
+
     $deliveryFee =
         max(
             0,
@@ -689,28 +697,36 @@ respond_json([
         generate_staff_access_code();
 
     $createRestaurantStmt =
-        $conn->prepare("
-            INSERT INTO tbl_restaurants (
-                name,
-                address,
-                contact_number,
-                opening_hours,
-                delivery_fee,
-                business_status,
-                owner_id,
-                staff_access_code
-            )
-            VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )
-        ");
+    $conn->prepare("
+        INSERT INTO tbl_restaurants (
+            name,
+            description,
+            logo_path,
+            address,
+            contact_number,
+            opening_hours,
+            delivery_fee,
+            business_status,
+            owner_id,
+            staff_access_code,
+            setup_completed,
+            customer_visibility
+        )
+        VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            1,
+            'Visible'
+        )
+    ");
 
     if (!$createRestaurantStmt) {
         throw new RuntimeException(
@@ -718,17 +734,19 @@ respond_json([
         );
     }
 
-        $createRestaurantStmt->bind_param(
-        "ssssdsis",
-        $restaurantName,
-        $restaurantAddress,
-        $restaurantContact,
-        $openingHours,
-        $deliveryFee,
-        $businessStatus,
-        $ownerId,
-        $staffAccessCode
-    );
+$createRestaurantStmt->bind_param(
+    "ssssssdsis",
+    $restaurantName,
+    $restaurantDescription,
+    $logoPath,
+    $restaurantAddress,
+    $restaurantContact,
+    $openingHours,
+    $deliveryFee,
+    $businessStatus,
+    $ownerId,
+    $staffAccessCode
+);
 
         if (
         !$createRestaurantStmt->execute()

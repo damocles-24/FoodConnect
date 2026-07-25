@@ -21,7 +21,11 @@
         <aside class="setup-sidebar">
             <div class="sidebar-brand">
                 <div class="brand-logo">
-                    FC
+                    <img
+                        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+                        alt="FoodConnect Logo"
+                        class="brand-logo-image"
+                    >
                 </div>
 
                 <div>
@@ -223,6 +227,76 @@
                     </div>
 
                     <div class="form-grid">
+
+                      <div class="form-group form-group-full">
+    <label for="restaurantLogo">
+        Restaurant logo
+
+        <span class="optional-label">
+            (Optional)
+        </span>
+    </label>
+
+    <div class="logo-upload-field">
+        <div
+            class="logo-preview"
+            id="logoPreview"
+        >
+            <span
+                class="logo-preview-placeholder"
+                id="logoPreviewPlaceholder"
+            >
+                FC
+            </span>
+
+            <img
+                src=""
+                alt="Restaurant logo preview"
+                id="logoPreviewImage"
+                class="hidden"
+            >
+        </div>
+
+        <div class="logo-upload-controls">
+            <input
+                type="file"
+                id="restaurantLogo"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+
+            <input
+                type="hidden"
+                id="restaurantLogoPath"
+                name="logo_path"
+            >
+
+            <label
+                for="restaurantLogo"
+                class="logo-select-button"
+            >
+                Choose logo
+            </label>
+
+            <button
+                type="button"
+                class="logo-remove-button hidden"
+                id="removeLogoButton"
+            >
+                Remove logo
+            </button>
+
+            <small>
+                JPG, PNG, or WEBP. Maximum file size: 2 MB.
+            </small>
+
+            <small
+                class="field-error"
+                id="restaurantLogoError"
+            ></small>
+        </div>
+    </div>
+</div>  
+
                         <div class="form-group form-group-full">
                             <label for="restaurantName">
                                 Restaurant name
@@ -669,24 +743,52 @@
                      STEP 5: REVIEW AND SUBMISSION
                      ========================================= -->
 
-                <section
-                    class="form-section submit-section wizard-step"
-                    data-step="5"
-                >
-                    <div class="section-heading">
-                        <span class="section-number">
-                            5
-                        </span>
+              <section
+    class="form-section submit-section wizard-step"
+    data-step="5"
+>
+    <div class="section-heading">
+        <span class="section-number">
+            5
+        </span>
 
-                        <div>
-                            <h3>Review application</h3>
+        <div>
+            <h3>
+                Review application
+            </h3>
 
-                            <p>
-                                Review your restaurant information before
-                                submitting it to the FoodConnect administrator.
-                            </p>
-                        </div>
-                    </div>
+            <p>
+                Review your restaurant information before
+                submitting it to the FoodConnect administrator.
+            </p>
+        </div>
+    </div>
+
+    <div class="real-customer-preview-action">
+        <div>
+            <strong>
+                Preview the actual customer page
+            </strong>
+
+            <p>
+                Open the same restaurant page customers will use
+                after your restaurant is approved.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="primary-button"
+            id="openCustomerPagePreview"
+        >
+            Preview customer page
+        </button>
+    </div>
+
+    <div
+        class="application-review"
+        id="applicationReview"
+    >
 
                     <div
                         class="application-review"
@@ -704,6 +806,24 @@
                                     Edit
                                 </button>
                             </div>
+
+                            <div class="review-logo-container">
+    <div
+        class="review-logo"
+        id="reviewLogo"
+    >
+        <span id="reviewLogoPlaceholder">
+            FC
+        </span>
+
+        <img
+            src=""
+            alt="Restaurant logo"
+            id="reviewLogoImage"
+            class="hidden"
+        >
+    </div>
+</div>
 
                             <dl class="review-list">
                                 <div>

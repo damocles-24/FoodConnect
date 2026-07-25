@@ -34,6 +34,222 @@ body{
   color: var(--text);
 }
 
+/* =========================================
+   RESTAURANT PREVIEW MODE
+========================================= */
+
+.restaurant-preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  min-height: 62px;
+  padding: 11px 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  color: #111;
+  background: #fff4e8;
+  border-bottom: 1px solid #ffb785;
+}
+
+.restaurant-preview-banner[hidden] {
+  display: none;
+}
+
+.restaurant-preview-banner div {
+  min-width: 0;
+}
+
+.restaurant-preview-banner strong,
+.restaurant-preview-banner span {
+  display: block;
+}
+
+.restaurant-preview-banner strong {
+  font-size: 14px;
+}
+
+.restaurant-preview-banner span {
+  margin-top: 3px;
+
+  color: #6b4b38;
+
+  font-size: 12px;
+}
+
+.restaurant-preview-banner button {
+  flex: 0 0 auto;
+
+  min-height: 38px;
+  padding: 8px 14px;
+
+  border: none;
+  border-radius: 9px;
+
+  color: #ffffff;
+  background: var(--accent);
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.restaurant-preview-mode header {
+  top: 62px;
+}
+
+body.restaurant-preview-mode .cart-link,
+body.restaurant-preview-mode .account-wrapper {
+  display: none;
+}
+
+body.restaurant-preview-mode .header-icons {
+  display: none;
+}
+
+body.restaurant-preview-mode .search-bar {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+body.restaurant-preview-mode .add-to-cart,
+body.restaurant-preview-mode #confirmProductAddToCart {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+body.restaurant-preview-mode .orders-bubble,
+body.restaurant-preview-mode .orders-panel,
+body.restaurant-preview-mode .customer-order-cancellation-notice {
+  display: none !important;
+}
+
+/* =========================================
+   RESTAURANT INFORMATION
+========================================= */
+
+.restaurant-information-section {
+  padding: 10px 20px 48px;
+
+  background: var(--bg);
+}
+
+.restaurant-information-section[hidden] {
+  display: none;
+}
+
+.restaurant-information-grid {
+  width: min(
+    var(--container),
+    100%
+  );
+
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(280px, 0.65fr);
+
+  gap: 22px;
+}
+
+.restaurant-about-card,
+.restaurant-services-card {
+  padding: 24px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--card) 0%,
+      var(--card2) 100%
+    );
+
+  box-shadow: var(--shadow2);
+}
+
+.restaurant-information-label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--accent2);
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.restaurant-about-card h2 {
+  margin-bottom: 12px;
+
+  color: var(--text);
+
+  font-size: 1.45rem;
+}
+
+.restaurant-about-card p {
+  color: var(--muted);
+
+  line-height: 1.7;
+}
+
+.restaurant-service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.restaurant-service-tag {
+  padding: 8px 11px;
+
+  border: 1px solid rgba(255, 102, 51, 0.35);
+  border-radius: 999px;
+
+  color: var(--text);
+  background: rgba(255, 102, 51, 0.12);
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.restaurant-preview-fees {
+  margin-top: 20px;
+
+  display: grid;
+  gap: 10px;
+}
+
+.restaurant-preview-fees > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding-top: 11px;
+
+  border-top: 1px solid var(--border);
+}
+
+.restaurant-preview-fees span {
+  color: var(--muted);
+
+  font-size: 13px;
+}
+
+.restaurant-preview-fees strong {
+  color: var(--text);
+
+  font-size: 13px;
+}
+
 img{ max-width:100%; display:block; }
 a{ color: inherit; text-decoration: none; }
 
@@ -493,6 +709,51 @@ header{
   background: #cc9900;
 }
 
+@media (max-width: 760px) {
+  .restaurant-preview-banner {
+    position: relative;
+
+    align-items: stretch;
+    flex-direction: column;
+
+    padding: 13px 15px;
+  }
+
+  .restaurant-preview-banner button {
+    width: 100%;
+  }
+
+  body.restaurant-preview-mode header {
+    top: 0;
+  }
+
+  .restaurant-information-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .restaurant-information-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-preview-banner {
+    position: relative;
+    align-items: stretch;
+    flex-direction: column;
+
+    padding: 12px 15px;
+  }
+
+  .restaurant-preview-banner button {
+    width: 100%;
+  }
+
+  body.restaurant-preview-mode header {
+    top: 0;
+  }
+}
 
 @media (hover:hover){
   .filter-btn:hover{ background:#2b2b2b; transform: translateY(-1px); }
@@ -2620,4 +2881,11 @@ transform:scale(1);
 opacity:1;
 }
 
+}
+
+.restaurant-preview-banner-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
 }

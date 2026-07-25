@@ -13,6 +13,9 @@ const API = {
     saveApplication:
         `${API_BASE}/save_restaurant_application.php`,
 
+    uploadRestaurantLogo:
+        `${API_BASE}/upload_restaurant_logo.php`,
+
     logout:
         `${API_BASE}/logout.php`
 };
@@ -50,6 +53,41 @@ const businessHoursContainer =
 const businessHoursError =
     document.getElementById(
         "businessHoursError"
+    );
+
+    const restaurantLogoInput =
+    document.getElementById(
+        "restaurantLogo"
+    );
+
+const restaurantLogoPathInput =
+    document.getElementById(
+        "restaurantLogoPath"
+    );
+
+const logoPreview =
+    document.getElementById(
+        "logoPreview"
+    );
+
+const logoPreviewImage =
+    document.getElementById(
+        "logoPreviewImage"
+    );
+
+const logoPreviewPlaceholder =
+    document.getElementById(
+        "logoPreviewPlaceholder"
+    );
+
+const restaurantLogoError =
+    document.getElementById(
+        "restaurantLogoError"
+    );
+
+const removeLogoButton =
+    document.getElementById(
+        "removeLogoButton"
     );
 
 const restaurantNameInput =
@@ -182,9 +220,79 @@ const submittedState =
         "submittedState"
     );
 
+    const customerPreviewLogoImage =
+    document.getElementById(
+        "customerPreviewLogoImage"
+    );
+
+const customerPreviewLogoPlaceholder =
+    document.getElementById(
+        "customerPreviewLogoPlaceholder"
+    );
+
+const customerPreviewName =
+    document.getElementById(
+        "customerPreviewName"
+    );
+
+const customerPreviewCuisine =
+    document.getElementById(
+        "customerPreviewCuisine"
+    );
+
+const customerPreviewStatus =
+    document.getElementById(
+        "customerPreviewStatus"
+    );
+
+const customerPreviewTodayHours =
+    document.getElementById(
+        "customerPreviewTodayHours"
+    );
+
+const customerPreviewDescription =
+    document.getElementById(
+        "customerPreviewDescription"
+    );
+
+const customerPreviewAddress =
+    document.getElementById(
+        "customerPreviewAddress"
+    );
+
+const customerPreviewServices =
+    document.getElementById(
+        "customerPreviewServices"
+    );
+
+const customerPreviewMinimumOrder =
+    document.getElementById(
+        "customerPreviewMinimumOrder"
+    );
+
+const customerPreviewDeliveryFee =
+    document.getElementById(
+        "customerPreviewDeliveryFee"
+    );
+
 const applicationReview =
     document.getElementById(
         "applicationReview"
+    );
+
+    const reviewLogo =
+    document.getElementById(
+        "reviewLogo"
+    );
+
+const reviewLogoImage =
+    document.getElementById(
+        "reviewLogoImage"
+    );
+
+const reviewLogoPlaceholder =
+    document.getElementById(
+        "reviewLogoPlaceholder"
     );
 
 const reviewRestaurantName =
@@ -302,7 +410,10 @@ document.addEventListener(
     "DOMContentLoaded",
     initializePage
 );
-
+const openCustomerPagePreview =
+    document.getElementById(
+        "openCustomerPagePreview"
+    );
 async function initializePage() {
     renderBusinessHours();
     bindEvents();
@@ -317,6 +428,12 @@ async function initializePage() {
    ========================================================= */
 
 function bindEvents() {
+
+    openCustomerPagePreview?.addEventListener(
+    "click",
+    openRealCustomerPreview
+);
+
     restaurantForm.addEventListener(
         "submit",
         handleSubmitApplication
@@ -346,6 +463,16 @@ function bindEvents() {
         "click",
         applyMondayScheduleToAll
     );
+
+    restaurantLogoInput.addEventListener(
+    "change",
+    handleRestaurantLogoChange
+);
+
+removeLogoButton.addEventListener(
+    "click",
+    removeRestaurantLogo
+);
 
     restaurantDescriptionInput.addEventListener(
         "input",
@@ -441,6 +568,85 @@ function bindEvents() {
             });
         }
     );
+}
+
+async function openRealCustomerPreview() {
+    if (isSubmitting) {
+        return;
+    }
+
+    clearValidationErrors();
+
+    const valid =
+        validateRequiredInformation(
+            true
+        );
+
+    if (!valid) {
+        openFirstInvalidStep();
+
+        showToast(
+            "Complete required information",
+            "Save the required restaurant and location details before opening the customer preview.",
+            "error"
+        );
+
+        focusFirstInvalidField();
+
+        return;
+    }
+
+    const previewWindow =
+        window.open(
+            "",
+            "_blank"
+        );
+
+    if (!previewWindow) {
+        showToast(
+            "Preview blocked",
+            "Allow pop-ups for localhost, then try opening the preview again.",
+            "error"
+        );
+
+        return;
+    }
+
+    previewWindow.document.title =
+        "Loading Restaurant Preview";
+
+    previewWindow.document.body.innerHTML = `
+        <div
+            style="
+                min-height: 100vh;
+                display: grid;
+                place-items: center;
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: #111111;
+                color: #ffffff;
+            "
+        >
+            Loading customer preview...
+        </div>
+    `;
+
+    const saved =
+        await saveApplication(
+            collectFormData(
+                "save"
+            ),
+            "save"
+        );
+
+    if (saved !== true) {
+        previewWindow.close();
+
+        return;
+    }
+
+    previewWindow.location.href =
+        "/FoodConnect/frontend/html/restaurant.html?preview=owner";
 }
 
 /* =========================================================
@@ -731,6 +937,13 @@ function populateApplication(application) {
             "draft"
         ).toLowerCase();
 
+    restaurantLogoPathInput.value =
+    application.logo_path || "";
+
+renderRestaurantLogo(
+    application.logo_path || ""
+);
+
     restaurantNameInput.value =
         application.restaurant_name || "";
 
@@ -980,6 +1193,18 @@ function applyStatusRestrictions(status) {
             control.disabled =
                 isReadOnly;
         });
+
+        removeLogoButton.disabled =
+    isReadOnly;
+
+document
+    .querySelector(
+        ".logo-select-button"
+    )
+    ?.classList.toggle(
+        "disabled",
+        isReadOnly
+    );
 
     applyMondayButton.disabled =
         isReadOnly;
@@ -1735,7 +1960,9 @@ async function saveApplication(
                     },
 
                     body:
-                        JSON.stringify(payload)
+                        JSON.stringify(
+                            payload
+                        )
                 }
             );
 
@@ -1748,7 +1975,7 @@ async function saveApplication(
             window.location.href =
                 "/FoodConnect/frontend/html/login.html";
 
-            return;
+            return false;
         }
 
         if (
@@ -1799,7 +2026,7 @@ async function saveApplication(
                 "hidden"
             );
 
-            return;
+            return true;
         }
 
         renderApplicationStatus(
@@ -1812,6 +2039,8 @@ async function saveApplication(
             "Restaurant setup draft saved successfully.",
             "success"
         );
+
+        return true;
     } catch (error) {
         console.error(
             "Restaurant application save error:",
@@ -1823,6 +2052,8 @@ async function saveApplication(
             error.message,
             "error"
         );
+
+        return false;
     } finally {
         setSubmittingState(
             false,
@@ -1835,7 +2066,327 @@ async function saveApplication(
    REVIEW SUMMARY
    ========================================================= */
 
+   async function handleRestaurantLogoChange(
+    event
+) {
+    const file =
+        event.target.files[0];
+
+    restaurantLogoError.textContent =
+        "";
+
+    if (!file) {
+        return;
+    }
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    const maximumFileSize =
+        2 * 1024 * 1024;
+
+    if (
+        !allowedTypes.includes(
+            file.type
+        )
+    ) {
+        restaurantLogoInput.value =
+            "";
+
+        restaurantLogoError.textContent =
+            "Only JPG, PNG, and WEBP files are allowed.";
+
+        return;
+    }
+
+    if (
+        file.size >
+        maximumFileSize
+    ) {
+        restaurantLogoInput.value =
+            "";
+
+        restaurantLogoError.textContent =
+            "The restaurant logo must not exceed 2 MB.";
+
+        return;
+    }
+
+    const temporaryPreviewUrl =
+        URL.createObjectURL(
+            file
+        );
+
+    renderRestaurantLogoUrl(
+        temporaryPreviewUrl
+    );
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "restaurant_logo",
+        file
+    );
+
+    restaurantLogoInput.disabled =
+        true;
+
+    try {
+        const response =
+            await fetch(
+                API.uploadRestaurantLogo,
+                {
+                    method: "POST",
+                    credentials:
+                        "same-origin",
+                    body:
+                        formData
+                }
+            );
+
+        const result =
+            await parseJsonResponse(
+                response
+            );
+
+        if (
+            !response.ok ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result.message ||
+                "Unable to upload the restaurant logo."
+            );
+        }
+
+        restaurantLogoPathInput.value =
+            result.logo_path || "";
+
+        renderRestaurantLogo(
+            result.logo_path || ""
+        );
+
+        showToast(
+            "Logo uploaded",
+            result.message ||
+            "Restaurant logo uploaded successfully.",
+            "success"
+        );
+    } catch (error) {
+        restaurantLogoPathInput.value =
+            "";
+
+        renderRestaurantLogo(
+            ""
+        );
+
+        restaurantLogoError.textContent =
+            error.message;
+
+        showToast(
+            "Upload failed",
+            error.message,
+            "error"
+        );
+    } finally {
+        restaurantLogoInput.disabled =
+            false;
+
+        restaurantLogoInput.value =
+            "";
+
+        URL.revokeObjectURL(
+            temporaryPreviewUrl
+        );
+    }
+}
+
+function removeRestaurantLogo() {
+    restaurantLogoPathInput.value =
+        "";
+
+    restaurantLogoInput.value =
+        "";
+
+    restaurantLogoError.textContent =
+        "";
+
+    renderRestaurantLogo(
+        ""
+    );
+}
+
+function renderRestaurantLogo(
+    logoPath
+) {
+    const cleanedPath =
+        String(
+            logoPath || ""
+        ).trim();
+
+    if (cleanedPath === "") {
+        renderRestaurantLogoUrl(
+            ""
+        );
+
+        return;
+    }
+
+    const logoUrl =
+        cleanedPath.startsWith(
+            "http://"
+        ) ||
+        cleanedPath.startsWith(
+            "https://"
+        ) ||
+        cleanedPath.startsWith(
+            "/"
+        )
+            ? cleanedPath
+            : `/FoodConnect/${cleanedPath}`;
+
+    renderRestaurantLogoUrl(
+        logoUrl
+    );
+}
+
+function renderRestaurantLogoUrl(
+    logoUrl
+) {
+    const hasLogo =
+        String(
+            logoUrl || ""
+        ).trim() !== "";
+
+    logoPreviewImage.src =
+        hasLogo
+            ? logoUrl
+            : "";
+
+    logoPreviewImage.classList.toggle(
+        "hidden",
+        !hasLogo
+    );
+
+    logoPreviewPlaceholder.classList.toggle(
+        "hidden",
+        hasLogo
+    );
+
+    removeLogoButton.classList.toggle(
+        "hidden",
+        !hasLogo
+    );
+}
+
+function renderReviewLogo(
+    logoPath
+) {
+    const cleanedPath =
+        String(
+            logoPath || ""
+        ).trim();
+
+    const hasLogo =
+        cleanedPath !== "";
+
+    const logoUrl =
+        hasLogo
+            ? (
+                cleanedPath.startsWith(
+                    "http://"
+                ) ||
+                cleanedPath.startsWith(
+                    "https://"
+                ) ||
+                cleanedPath.startsWith(
+                    "/"
+                )
+                    ? cleanedPath
+                    : `/FoodConnect/${cleanedPath}`
+            )
+            : "";
+
+    reviewLogoImage.src =
+        logoUrl;
+
+    reviewLogoImage.classList.toggle(
+        "hidden",
+        !hasLogo
+    );
+
+    reviewLogoPlaceholder.classList.toggle(
+        "hidden",
+        hasLogo
+    );
+}
+
+function resolveRestaurantLogoUrl(
+    logoPath
+) {
+    const cleanedPath =
+        String(
+            logoPath || ""
+        ).trim();
+
+    if (cleanedPath === "") {
+        return "";
+    }
+
+    if (
+        cleanedPath.startsWith(
+            "http://"
+        ) ||
+        cleanedPath.startsWith(
+            "https://"
+        ) ||
+        cleanedPath.startsWith(
+            "/"
+        )
+    ) {
+        return cleanedPath;
+    }
+
+    return `/FoodConnect/${cleanedPath}`;
+}
+
+function formatPeso(
+    value
+) {
+    const amount =
+        normalizeMoneyValue(
+            value
+        );
+
+    return `₱${amount.toFixed(2)}`;
+}
+
+function valueOrFallback(
+    value,
+    fallback
+) {
+    const cleanedValue =
+        String(
+            value || ""
+        ).trim();
+
+    return cleanedValue !== ""
+        ? cleanedValue
+        : fallback;
+}
+
 function renderReviewSummary() {
+    const logoPath =
+        restaurantLogoPathInput.value.trim();
+
+    renderReviewLogo(
+        logoPath
+    );
+
     reviewRestaurantName.textContent =
         valueOrDash(
             restaurantNameInput.value
@@ -1957,6 +2508,9 @@ function collectFormData(action) {
 
     return {
         action,
+
+        logo_path:
+    restaurantLogoPathInput.value.trim(),
 
         restaurant_name:
             restaurantNameInput.value.trim(),
@@ -2453,6 +3007,11 @@ function setSubmittingState(
 
     logoutButton.disabled =
         submitting;
+
+        if (openCustomerPagePreview) {
+    openCustomerPagePreview.disabled =
+        submitting;
+}
 
     if (submitting) {
         if (action === "submit") {

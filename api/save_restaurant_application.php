@@ -175,6 +175,12 @@ $action =
    CLEAN FORM VALUES
    ========================================================= */
 
+$logoPath =
+    clean_text(
+        $data,
+        "logo_path"
+    );
+
 $restaurantName =
     clean_text(
         $data,
@@ -312,6 +318,32 @@ $deliveryOptions =
             )
         )
     );
+
+    /* =========================================================
+   LOGO PATH VALIDATION
+   ========================================================= */
+
+if (
+    $logoPath !== "" &&
+    !preg_match(
+        "#^uploads/restaurant_logos/owner_" .
+        preg_quote(
+            (string) $ownerId,
+            "#"
+        ) .
+        "/restaurant_logo_[A-Za-z0-9_\\-]+\\.(jpg|png|webp)$#i",
+        $logoPath
+    )
+) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "The restaurant logo path is invalid."
+        ],
+        422
+    );
+}
 
 /* =========================================================
    REQUIRED FIELD VALIDATION
@@ -734,12 +766,13 @@ $submittedAt =
 $stmt =
     $conn->prepare("
         UPDATE tbl_partner_applications
-        SET
+                SET
             restaurant_name = ?,
             restaurant_address = ?,
             restaurant_contact = ?,
             cuisine = ?,
             restaurant_description = ?,
+            logo_path = ?,
             business_email = ?,
             province = ?,
             city_municipality = ?,
@@ -752,9 +785,9 @@ $stmt =
             application_status = ?,
             rejection_reason = NULL,
             submitted_at = ?
-        WHERE application_id = ?
-          AND owner_id = ?
-        LIMIT 1
+            WHERE application_id = ?
+            AND owner_id = ?
+            LIMIT 1
     ");
 
 if (!$stmt) {
@@ -774,12 +807,13 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "ssssssssssssddssii",
+    "sssssssssssssddssii",
     $restaurantName,
     $restaurantAddress,
     $restaurantContact,
     $cuisine,
     $restaurantDescription,
+    $logoPath,
     $businessEmail,
     $province,
     $cityMunicipality,

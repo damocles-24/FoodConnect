@@ -1,7 +1,20 @@
 
 function goToCart() {
-  localStorage.setItem("lastPage", window.location.href);
-  window.location.href = "cart.html";
+  if (
+    typeof IS_PREVIEW_MODE !==
+      "undefined" &&
+    IS_PREVIEW_MODE
+  ) {
+    return;
+  }
+
+  localStorage.setItem(
+    "lastPage",
+    window.location.href
+  );
+
+  window.location.href =
+    "cart.html";
 }
 
 
@@ -16,6 +29,33 @@ const pageParameters =
   new URLSearchParams(
     window.location.search
   );
+
+const previewParameter =
+  String(
+    pageParameters.get(
+      "preview"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();
+
+const previewApplicationId =
+  Number.parseInt(
+    pageParameters.get(
+      "application_id"
+    ) || "",
+    10
+  );
+
+const IS_OWNER_PREVIEW =
+  previewParameter === "owner";
+
+const IS_ADMIN_PREVIEW =
+  previewParameter === "admin";
+
+const IS_PREVIEW_MODE =
+  IS_OWNER_PREVIEW ||
+  IS_ADMIN_PREVIEW;
 
 const restaurantIdParameter =
   pageParameters.get(
@@ -66,6 +106,61 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* =========================
      RESTAURANT IDENTITY
   ========================= */
+
+  const restaurantPreviewBanner =
+  document.getElementById(
+    "restaurantPreviewBanner"
+  );
+
+const restaurantPreviewTitle =
+  document.getElementById(
+    "restaurantPreviewTitle"
+  );
+
+const closeRestaurantPreview =
+  document.getElementById(
+    "closeRestaurantPreview"
+  );
+
+const headerRestaurantLogo =
+  document.getElementById(
+    "headerRestaurantLogo"
+  );
+
+const footerRestaurantLogo =
+  document.getElementById(
+    "footerRestaurantLogo"
+  );
+
+const restaurantInformationSection =
+  document.getElementById(
+    "restaurantInformationSection"
+  );
+
+const restaurantAboutName =
+  document.getElementById(
+    "restaurantAboutName"
+  );
+
+const restaurantDescription =
+  document.getElementById(
+    "restaurantDescription"
+  );
+
+const restaurantServiceTags =
+  document.getElementById(
+    "restaurantServiceTags"
+  );
+
+const restaurantMinimumOrder =
+  document.getElementById(
+    "restaurantMinimumOrder"
+  );
+
+const restaurantPreviewDeliveryFee =
+  document.getElementById(
+    "restaurantPreviewDeliveryFee"
+  );
 
   const restaurantName =
     document.getElementById(
@@ -129,6 +224,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `Delivery fee: ₱${amount.toFixed(2)}`;
   }
 
+  closeRestaurantPreview?.addEventListener(
+  "click",
+  () => {
+    if (IS_ADMIN_PREVIEW) {
+      window.history.back();
+      return;
+    }
+
+    window.location.href =
+      "/FoodConnect/frontend/html/create_restaurant.html";
+  }
+);
+
   function showRestaurantPageError(
     message
   ) {
@@ -164,242 +272,503 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function loadRestaurantIdentity() {
-    if (CURRENT_RESTAURANT_ID <= 0) {
-      showRestaurantPageError(
-        "No valid restaurant was selected."
-      );
+  function resolveRestaurantImageUrl(
+  imagePath
+) {
+  const cleanedPath =
+    String(
+      imagePath || ""
+    ).trim();
 
-      return false;
-    }
+  if (cleanedPath === "") {
+    return "";
+  }
 
-    try {
-      const response = await fetch(
+  if (
+    cleanedPath.startsWith(
+      "http://"
+    ) ||
+    cleanedPath.startsWith(
+      "https://"
+    ) ||
+    cleanedPath.startsWith(
+      "/"
+    )
+  ) {
+    return cleanedPath;
+  }
+
+  return `/FoodConnect/${cleanedPath}`;
+}
+
+function formatPesoAmount(
+  value,
+  zeroLabel = "Free"
+) {
+  const amount =
+    Number(value || 0);
+
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+    return zeroLabel;
+  }
+
+  return `₱${amount.toFixed(2)}`;
+}
+
+function formatTimeForDisplay(
+  value
+) {
+  const time =
+    String(
+      value || ""
+    ).trim();
+
+  if (
+    !/^[0-2][0-9]:[0-5][0-9]$/.test(
+      time
+    )
+  ) {
+    return time;
+  }
+
+  const [
+    hourText,
+    minutes
+  ] = time.split(":");
+
+  const hour =
+    Number(hourText);
+
+  const period =
+    hour >= 12
+      ? "PM"
+      : "AM";
+
+  const displayHour =
+    hour % 12 === 0
+      ? 12
+      : hour % 12;
+
+  return `${displayHour}:${minutes} ${period}`;
+}
+
+function getTodayPreviewSchedule(
+  businessHours
+) {
+  if (
+    !businessHours ||
+    typeof businessHours !==
+      "object"
+  ) {
+    return null;
+  }
+
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ];
+
+  const today =
+    dayNames[
+      new Date().getDay()
+    ];
+
+  return {
+    day:
+      today,
+
+    schedule:
+      businessHours[today] || null
+  };
+}
+
+function renderRestaurantServices(
+  deliveryOptions
+) {
+  if (!restaurantServiceTags) {
+    return;
+  }
+
+  const labels = {
+    pickup:
+      "Customer pickup",
+
+    restaurant_delivery:
+      "Restaurant delivery",
+
+    foodconnect_delivery:
+      "FoodConnect delivery"
+  };
+
+  const options =
+    Array.isArray(
+      deliveryOptions
+    )
+      ? deliveryOptions
+      : [];
+
+  restaurantServiceTags.innerHTML =
+    options.length > 0
+      ? options
+          .map((option) => {
+            const label =
+              labels[option] ||
+              option;
+
+            return `
+              <span class="restaurant-service-tag">
+                ${escapeMenuText(label)}
+              </span>
+            `;
+          })
+          .join("")
+      : `
+          <span class="restaurant-service-tag">
+            No service selected
+          </span>
+        `;
+}
+async function loadRestaurantIdentity() {
+  if (
+    !IS_PREVIEW_MODE &&
+    CURRENT_RESTAURANT_ID <= 0
+  ) {
+    showRestaurantPageError(
+      "No valid restaurant was selected."
+    );
+
+    return false;
+  }
+
+  try {
+    let requestUrl;
+
+    if (IS_OWNER_PREVIEW) {
+      requestUrl =
+        `${API}/get_restaurant_preview.php` +
+        `?mode=owner`;
+    } else if (IS_ADMIN_PREVIEW) {
+      if (
+        !Number.isInteger(
+          previewApplicationId
+        ) ||
+        previewApplicationId <= 0
+      ) {
+        throw new Error(
+          "No valid restaurant application was selected."
+        );
+      }
+
+      requestUrl =
+        `${API}/get_restaurant_preview.php` +
+        `?mode=admin` +
+        `&application_id=${encodeURIComponent(
+          previewApplicationId
+        )}`;
+    } else {
+      requestUrl =
         `${API}/get_public_restaurant.php` +
         `?restaurant_id=${encodeURIComponent(
           CURRENT_RESTAURANT_ID
-        )}`,
+        )}`;
+    }
+
+    const response =
+      await fetch(
+        requestUrl,
         {
           credentials: "include",
           cache: "no-store"
         }
       );
 
-      const rawText =
-        await response.text();
+    const rawText =
+      await response.text();
 
-      let data;
+    let data;
 
-      try {
-        data = JSON.parse(rawText);
-      } catch (parseError) {
-        throw new Error(
-          "The restaurant API returned invalid JSON."
+    try {
+      data =
+        JSON.parse(
+          rawText
         );
-      }
+    } catch (parseError) {
+      throw new Error(
+        "The restaurant API returned invalid JSON."
+      );
+    }
+
+    if (
+      !response.ok ||
+      !data.success ||
+      !data.restaurant
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load this restaurant."
+      );
+    }
+
+    const restaurant =
+      data.restaurant;
+
+    const name =
+      String(
+        restaurant.name ||
+        "Restaurant"
+      ).trim();
+
+    const address =
+      String(
+        restaurant.address ||
+        "Address unavailable"
+      ).trim();
+
+    const contactNumber =
+      String(
+        restaurant.contact_number ||
+        "Contact number unavailable"
+      ).trim();
+
+    const description =
+      String(
+        restaurant.description ||
+        ""
+      ).trim();
+
+    const businessStatus =
+      String(
+        restaurant.business_status ||
+        (
+          IS_PREVIEW_MODE
+            ? "Preview"
+            : "Closed"
+        )
+      ).trim();
+
+    currentRestaurantStatus =
+      businessStatus;
+
+    restaurantAcceptingOrders =
+      IS_PREVIEW_MODE
+        ? false
+        : (
+            restaurant
+              .is_accepting_orders ===
+            true
+          );
+
+    document.title =
+      IS_PREVIEW_MODE
+        ? `${name} Preview | FoodConnect`
+        : `${name} | FoodConnect`;
+
+    if (restaurantName) {
+      restaurantName.textContent =
+        name;
+    }
+
+    if (heroRestaurantName) {
+      heroRestaurantName.textContent =
+        name;
+    }
+
+    if (footerRestaurantName) {
+      footerRestaurantName.textContent =
+        name;
+    }
+
+    if (restaurantAboutName) {
+      restaurantAboutName.textContent =
+        `About ${name}`;
+    }
+
+    if (restaurantDescription) {
+      restaurantDescription.textContent =
+        description !== ""
+          ? description
+          : "No restaurant description provided.";
+    }
+
+    const logoUrl =
+      resolveRestaurantImageUrl(
+        restaurant.logo_path
+      );
+
+    if (
+      logoUrl !== "" &&
+      headerRestaurantLogo
+    ) {
+      headerRestaurantLogo.src =
+        logoUrl;
+    }
+
+    if (
+      logoUrl !== "" &&
+      footerRestaurantLogo
+    ) {
+      footerRestaurantLogo.src =
+        logoUrl;
+    }
+
+    let openingHoursText =
+      String(
+        restaurant.opening_hours ||
+        ""
+      ).trim();
+
+    if (
+      restaurant.business_hours &&
+      typeof restaurant.business_hours ===
+        "object"
+    ) {
+      const today =
+        getTodayPreviewSchedule(
+          restaurant.business_hours
+        );
 
       if (
-        !response.ok ||
-        !data.success ||
-        !data.restaurant
+        today &&
+        today.schedule
       ) {
-        throw new Error(
-          data.message ||
-          "Unable to load this restaurant."
+        if (
+          today.schedule.closed ===
+          true
+        ) {
+          openingHoursText =
+            `${today.day}: Closed`;
+        } else {
+          openingHoursText =
+            `${today.day}: ` +
+            `${formatTimeForDisplay(
+              today.schedule.open
+            )} – ` +
+            `${formatTimeForDisplay(
+              today.schedule.close
+            )}`;
+        }
+      }
+    }
+
+    if (openingHoursText === "") {
+      openingHoursText =
+        "Operating hours unavailable";
+    }
+
+    if (heroRestaurantDetails) {
+      heroRestaurantDetails.textContent =
+        IS_PREVIEW_MODE
+          ? `${address} • Customer page preview`
+          : (
+              restaurantAcceptingOrders
+                ? `${address} • Currently accepting orders`
+                : `${address} • Currently closed`
+            );
+    }
+
+    if (restaurantOpeningHours) {
+      restaurantOpeningHours.textContent =
+        openingHoursText;
+    }
+
+    if (restaurantBusinessStatus) {
+      restaurantBusinessStatus.textContent =
+        IS_PREVIEW_MODE
+          ? "Preview only"
+          : businessStatus;
+    }
+
+    if (restaurantAddress) {
+      restaurantAddress.textContent =
+        address;
+    }
+
+    if (restaurantContactNumber) {
+      restaurantContactNumber.textContent =
+        contactNumber;
+    }
+
+    if (restaurantDeliveryFee) {
+      restaurantDeliveryFee.textContent =
+        formatRestaurantDeliveryFee(
+          restaurant.delivery_fee
         );
-      }
+    }
 
-      const restaurant =
-        data.restaurant;
+    if (
+      restaurantPreviewDeliveryFee
+    ) {
+      restaurantPreviewDeliveryFee.textContent =
+        formatPesoAmount(
+          restaurant.delivery_fee,
+          "Free"
+        );
+    }
 
-      const name =
-        String(
-          restaurant.name ||
-          "Restaurant"
-        ).trim();
+    if (restaurantMinimumOrder) {
+      restaurantMinimumOrder.textContent =
+        formatPesoAmount(
+          restaurant.minimum_order,
+          "None"
+        );
+    }
 
-      const address =
-        String(
-          restaurant.address ||
-          "Address unavailable"
-        ).trim();
+    renderRestaurantServices(
+      restaurant.delivery_options
+    );
 
-      const contactNumber =
-        String(
-          restaurant.contact_number ||
-          "Contact number unavailable"
-        ).trim();
+    if (restaurantInformationSection) {
+      restaurantInformationSection.hidden =
+        false;
+    }
 
-      const openingHours =
-        String(
-          restaurant.opening_hours ||
-          "Operating hours unavailable"
-        ).trim();
+    if (restaurantCopyright) {
+      restaurantCopyright.textContent =
+        `© 2026 ${name}. All rights reserved. | Powered by FoodConnect`;
+    }
 
-      const businessStatus =
-        String(
-          restaurant.business_status ||
-          "Closed"
-        ).trim();
-
-      currentRestaurantStatus =
-        businessStatus;
-
-      restaurantAcceptingOrders =
-        restaurant.is_accepting_orders ===
-        true;
-
-      document.title =
-        `${name} | FoodConnect`;
-
-      if (restaurantName) {
-        restaurantName.textContent =
-          name;
-      }
-
-      if (heroRestaurantName) {
-        heroRestaurantName.textContent =
-          name;
-      }
-
-      if (heroRestaurantDetails) {
-        heroRestaurantDetails.textContent =
-          restaurantAcceptingOrders
-            ? `${address} • Currently accepting orders`
-            : `${address} • Currently closed`;
-      }
-
-      if (footerRestaurantName) {
-        footerRestaurantName.textContent =
-          name;
-      }
-
-      if (restaurantOpeningHours) {
-        restaurantOpeningHours.textContent =
-          openingHours;
-      }
-
-      if (restaurantBusinessStatus) {
-        restaurantBusinessStatus.textContent =
-          businessStatus;
-      }
-
-      if (restaurantAddress) {
-        restaurantAddress.textContent =
-          address;
-      }
-
-      if (restaurantContactNumber) {
-        restaurantContactNumber.textContent =
-          contactNumber;
-      }
-
-      if (restaurantDeliveryFee) {
-        restaurantDeliveryFee.textContent =
-          formatRestaurantDeliveryFee(
-            restaurant.delivery_fee
-          );
-      }
-
-      if (restaurantCopyright) {
-        restaurantCopyright.textContent =
-          `© 2026 ${name}. All rights reserved. | Powered by FoodConnect`;
-      }
-
-      return true;
-    } catch (error) {
-      console.error(
-        "Load restaurant identity error:",
-        error
+    if (IS_PREVIEW_MODE) {
+      document.body.classList.add(
+        "restaurant-preview-mode"
       );
 
-      showRestaurantPageError(
-        error.message ||
-        "This restaurant is currently unavailable."
-      );
-
-      return false;
-    }
-  }
-
-
-  try {
-    const res = await fetch(`${API}/me.php`, { credentials: "include" });
-    const d = await res.json();
-
-  loggedIn = Boolean(d.logged_in);
-
-if (nameEl) {
-  nameEl.textContent =
-    loggedIn
-      ? (
-          d.user?.full_name ||
-          d.user?.fullname ||
-          d.user?.name ||
-          "User"
-        )
-      : "Guest";
-}
-
-    if (logoutBtn) {
-      logoutBtn.style.display = loggedIn ? "block" : "none";
-    }
-} catch (error) {
-  console.error(
-    "Authentication check failed:",
-    error
-  );
-
-  loggedIn = false;
-
-  if (nameEl) {
-    nameEl.textContent = "Guest";
-  }
-
-  if (logoutBtn) {
-    logoutBtn.style.display = "none";
-  }
-}
-
-  if (wrapper && btn && drop) {
-    btn.style.cursor = "pointer";
-
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      wrapper.classList.toggle("open");
-    });
-
-    drop.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-
-    document.addEventListener("click", () => {
-      wrapper.classList.remove("open");
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        wrapper.classList.remove("open");
+      if (restaurantPreviewBanner) {
+        restaurantPreviewBanner.hidden =
+          false;
       }
-    });
-  }
 
-  if (goProfileBtn) {
-    goProfileBtn.addEventListener("click", () => {
-      window.location.href = loggedIn ? "profile.html" : "login.html";
-    });
-  }
-
- if (logoutBtn) {
-  logoutBtn.addEventListener(
-    "click",
-    () => {
-      window.location.href =
-        `${API}/logout.php`;
+      if (restaurantPreviewTitle) {
+        restaurantPreviewTitle.textContent =
+          IS_ADMIN_PREVIEW
+            ? "Administrator customer preview"
+            : "Owner customer preview";
+      }
     }
-  );
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Load restaurant identity error:",
+      error
+    );
+
+    showRestaurantPageError(
+      error.message ||
+      "This restaurant is currently unavailable."
+    );
+
+    return false;
+  }
 }
+  
   async function updateCartBadge() {
     const cartLink = document.querySelector(".cart-link");
     if (!cartLink) return;
@@ -3207,7 +3576,40 @@ const restaurantLoaded =
   await loadRestaurantIdentity();
 
 if (!restaurantLoaded) {
-  await updateCartBadge();
+  if (!IS_PREVIEW_MODE) {
+    await updateCartBadge();
+  }
+
+  return;
+}
+
+if (IS_PREVIEW_MODE) {
+  if (popularSection) {
+    popularSection.hidden =
+      true;
+  }
+
+  if (menuFilters) {
+    menuFilters.innerHTML = `
+      <button
+        type="button"
+        class="filter-btn main-filter-btn active"
+        disabled
+      >
+        All
+      </button>
+    `;
+  }
+
+  if (menuGrid) {
+    menuGrid.innerHTML = `
+      <div class="orders-empty">
+        Products will appear here after the restaurant
+        is approved and menu items are added.
+      </div>
+    `;
+  }
+
   return;
 }
 

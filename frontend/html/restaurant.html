@@ -5,8 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
 <title>Restaurant | FoodConnect</title>
-<link rel="stylesheet" href="../css/restaurant.css"></head>
+<link
+  rel="stylesheet"
+  href="../css/restaurant.css?v=20260725-1"
+>
+</head>
 <body>
+
+<div
+  class="restaurant-preview-banner"
+  id="restaurantPreviewBanner"
+  hidden
+>
+  <div class="restaurant-preview-banner-content">
+    <strong id="restaurantPreviewTitle">
+      Customer page preview
+    </strong>
+
+    <span id="restaurantPreviewMessage">
+      Ordering and customer actions are disabled in preview mode.
+    </span>
+  </div>
+
+  <button
+    type="button"
+    id="closeRestaurantPreview"
+  >
+    Return to setup
+  </button>
+</div>
 
 <header>
   <div class="logo-section">
@@ -79,6 +106,57 @@
   <p id="heroRestaurantDetails">
     Loading restaurant information...
   </p>
+</section>
+
+<section
+  class="restaurant-information-section"
+  id="restaurantInformationSection"
+  hidden
+>
+  <div class="restaurant-information-grid">
+    <div class="restaurant-about-card">
+      <span class="restaurant-information-label">
+        About
+      </span>
+
+      <h2 id="restaurantAboutName">
+        About this restaurant
+      </h2>
+
+      <p id="restaurantDescription">
+        Restaurant description unavailable.
+      </p>
+    </div>
+
+    <div class="restaurant-services-card">
+      <span class="restaurant-information-label">
+        Available services
+      </span>
+
+      <div
+        class="restaurant-service-tags"
+        id="restaurantServiceTags"
+      ></div>
+
+      <div class="restaurant-preview-fees">
+        <div>
+          <span>Minimum order</span>
+
+          <strong id="restaurantMinimumOrder">
+            None
+          </strong>
+        </div>
+
+        <div>
+          <span>Delivery fee</span>
+
+          <strong id="restaurantPreviewDeliveryFee">
+            Free
+          </strong>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section
@@ -243,5 +321,6 @@
   </div>
 </footer>
 
-<script src="../js/restaurant.js"></script></body>
+<script src="../js/restaurant.js?v=20260725-1"></script>
+</body>
 </html>
