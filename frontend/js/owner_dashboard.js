@@ -45,6 +45,25 @@ const sidebar = document.getElementById("sidebar");
 const menuToggle = document.getElementById("menuToggle");
 const closeSidebar = document.getElementById("closeSidebar");
 const logoutBtn = document.getElementById("logoutBtn");
+const sidebarRestaurantName =
+  document.getElementById(
+    "sidebarRestaurantName"
+  );
+
+const ownerWelcomeMessage =
+  document.getElementById(
+    "ownerWelcomeMessage"
+  );
+
+const ownerProfileName =
+  document.getElementById(
+    "ownerProfileName"
+  );
+
+const profileRestaurantName =
+  document.getElementById(
+    "profileRestaurantName"
+  );
 
 const addProductModal = document.getElementById("addProductModal");
 const editProductModal = document.getElementById("editProductModal");
@@ -377,6 +396,150 @@ async function saveActivityLog(type, title, description) {
 
 const OWNER_API_BASE = "/FoodConnect/api";
 
+/* =========================
+   OWNER AND RESTAURANT IDENTITY
+========================= */
+
+function showOwnerIdentityError(
+  message
+) {
+  document.title =
+    "Owner Dashboard | FoodConnect";
+
+  if (sidebarRestaurantName) {
+    sidebarRestaurantName.textContent =
+      "Restaurant";
+  }
+
+  if (profileRestaurantName) {
+    profileRestaurantName.textContent =
+      "Restaurant unavailable";
+  }
+
+  if (ownerProfileName) {
+    ownerProfileName.textContent =
+      "Owner";
+  }
+
+  if (ownerWelcomeMessage) {
+    ownerWelcomeMessage.textContent =
+      message ||
+      "Unable to load account information.";
+  }
+}
+
+async function loadOwnerIdentity() {
+  try {
+    const response = await fetch(
+      `${OWNER_API_BASE}/me.php`,
+      {
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    const rawText =
+      await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      throw new Error(
+        "The account API returned invalid JSON."
+      );
+    }
+
+    if (
+      !response.ok ||
+      !data.logged_in
+    ) {
+      window.location.href =
+        "/FoodConnect/frontend/html/index.html";
+
+      return false;
+    }
+
+    const user =
+      data.user || {};
+
+    const restaurant =
+      data.restaurant || {};
+
+    const role =
+      String(
+        user.role || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (role !== "owner") {
+      throw new Error(
+        "This account is not authorized to access the Owner Dashboard."
+      );
+    }
+
+    if (
+      data.onboarding_required ||
+      !restaurant.restaurant_id
+    ) {
+      window.location.href =
+        data.owner_redirect_url ||
+        "/FoodConnect/frontend/html/create_restaurant.html";
+
+      return false;
+    }
+
+    const ownerName =
+      String(
+        user.full_name ||
+        "Restaurant Owner"
+      ).trim();
+
+    const restaurantName =
+      String(
+        restaurant.name ||
+        "Restaurant"
+      ).trim();
+
+    document.title =
+      `${restaurantName} | Owner Dashboard`;
+
+    if (sidebarRestaurantName) {
+      sidebarRestaurantName.textContent =
+        restaurantName;
+    }
+
+    if (profileRestaurantName) {
+      profileRestaurantName.textContent =
+        restaurantName;
+    }
+
+    if (ownerProfileName) {
+      ownerProfileName.textContent =
+        ownerName;
+    }
+
+    if (ownerWelcomeMessage) {
+      ownerWelcomeMessage.textContent =
+        `Welcome back, ${ownerName}`;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Load owner identity failed:",
+      error
+    );
+
+    showOwnerIdentityError(
+      error.message
+    );
+
+    return false;
+  }
+}
 function normalizeOwnerApiUrl(url) {
   const value = String(url || "").trim();
 
@@ -3217,20 +3380,33 @@ async function saveRestaurantSettings() {
       );
     }
 
-    savedRestaurantSettings = {
-      ...payload
-    };
+   savedRestaurantSettings = {
+  ...payload
+};
 
-    setSelectedBusinessStatus(
-      payload.business_status
-    );
+setSelectedBusinessStatus(
+  payload.business_status
+);
 
-    updateSettingsPreview();
+updateSettingsPreview();
 
-    setSettingsSaveState(
-      "saved",
-      "Settings saved successfully"
-    );
+if (sidebarRestaurantName) {
+  sidebarRestaurantName.textContent =
+    payload.name;
+}
+
+if (profileRestaurantName) {
+  profileRestaurantName.textContent =
+    payload.name;
+}
+
+document.title =
+  `${payload.name} | Owner Dashboard`;
+
+setSettingsSaveState(
+  "saved",
+  "Settings saved successfully"
+);
 
     await addActivityLog(
       "system",
@@ -3377,23 +3553,40 @@ window.addEventListener(
 
 async function initDashboard() {
   try {
-  await Promise.all([
-  loadDashboardSummary(),
-  loadRecentOrders(),
-  loadProducts(),
-  loadUsers(),
-  loadSalesChart("weekly"),
-  loadSalesReport(),
-  loadRestaurantSettings()
-]);
+    const identityLoaded =
+      await loadOwnerIdentity();
 
-await loadActivityLogs();
+    if (!identityLoaded) {
+      return false;
+    }
 
+    await Promise.all([
+      loadDashboardSummary(),
+      loadRecentOrders(),
+      loadProducts(),
+      loadUsers(),
+      loadSalesChart("weekly"),
+      loadSalesReport(),
+      loadRestaurantSettings()
+    ]);
+
+    await loadActivityLogs();
+
+    return true;
   } catch (error) {
-    console.error("Dashboard load failed:", error);
+    console.error(
+      "Dashboard load failed:",
+      error
+    );
+
+    return false;
   }
 }
 
-initDashboard().then(() => {
-  startOwnerDashboardRefresh();
-});
+initDashboard().then(
+  (dashboardLoaded) => {
+    if (dashboardLoaded) {
+      startOwnerDashboardRefresh();
+    }
+  }
+);

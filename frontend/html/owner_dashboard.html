@@ -4,24 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
-  <title>BlackHabit Dashboard</title>
+  <title>Owner Dashboard | FoodConnect</title>
 <link rel="stylesheet" href="../css/owner_dashboard.css" /></head>
 <body>
   <div class="dashboard">
 
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
-        <div class="brand">
-          <img
-            src="https://github.com/damocles-24/IMAGES/blob/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png?raw=true"
-            alt="FoodConnect Logo"
-            class="brand-logo"
-          />
-          <div class="brand-text">
-            <h2><span class="food-text">Black</span><span class="connect-text">Habit</span></h2>
-            <p>Owner Panel</p>
-          </div>
-        </div>
+       <div class="brand">
+  <img
+    id="sidebarRestaurantLogo"
+    src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+    alt="Restaurant logo"
+    class="brand-logo"
+  />
+
+  <div class="brand-text">
+    <h2 id="sidebarRestaurantName">
+      Loading...
+    </h2>
+
+    <p>Owner Panel</p>
+  </div>
+</div> 
 
         <button class="close-sidebar" id="closeSidebar">✕</button>
       </div>
@@ -45,25 +50,35 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="menu-toggle" id="menuToggle">☰</button>
-          <div>
-            <h1>Owner Dashboard</h1>
-            <p>Welcome back, Restaurant Owner</p>
-          </div>
+                <div>
+          <h1>Owner Dashboard</h1>
+
+          <p id="ownerWelcomeMessage">
+            Loading account...
+          </p>
+</div>
         </div>
 
        <div class="topbar-right">
-    <div class="owner-profile">
-            <div class="owner-avatar">
+   <div class="owner-profile">
+  <div class="owner-avatar">
     <img
-        src="https://github.com/damocles-24/IMAGES/blob/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png?raw=true"
-        alt="BlackHabit Logo"
+      id="profileRestaurantLogo"
+      src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+      alt="Restaurant logo"
     >
+  </div>
+
+  <div>
+    <h4 id="ownerProfileName">
+      Owner
+    </h4>
+
+    <p id="profileRestaurantName">
+      Loading restaurant...
+    </p>
+  </div>
 </div>
-            <div>
-              <h4>Owner</h4>
-              <p>BlackHabit</p>
-            </div>
-          </div>
         </div>
       </header>
 
