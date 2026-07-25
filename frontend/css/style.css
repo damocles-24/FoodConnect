@@ -2890,26 +2890,66 @@ body {
 }
 
 .preview-chart {
+    position: relative;
     height: 130px;
     margin-top: 25px;
     padding: 16px;
-
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 9px;
-
     background: #fafbfb;
     border: 1px solid #edf0f1;
     border-radius: 13px;
 }
 
-.preview-chart span {
-    width: 100%;
+.preview-chart .chart-grid {
+    position: absolute;
+    inset: 16px 16px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
 
-    background: #f58220;
-    border-radius: 5px 5px 2px 2px;
-    opacity: 0.8;
+.preview-chart .chart-grid::before,
+.preview-chart .chart-grid::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: rgba(0,0,0,0.06);
+}
+
+.preview-chart .chart-grid::before {
+    height: 2px;
+    background: rgba(0,0,0,0.1);
+}
+
+.preview-chart .chart-bars {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.preview-chart .chart-bars > div {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.preview-chart .chart-bars > div > div {
+    width: 100%;
+    max-width: 28px;
+    min-height: 4px;
+    border-radius: 3px 3px 2px 2px;
+    background: linear-gradient(180deg, #f58220 0%, #d96a14 100%);
+}
+
+.preview-chart .chart-bars > div:nth-child(4) > div,
+.preview-chart .chart-bars > div:nth-child(6) > div {
+    background: linear-gradient(180deg, #43b047 0%, #2f8e33 100%);
 }
 
 /* Floating cards */
