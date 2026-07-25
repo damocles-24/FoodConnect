@@ -4,21 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
-  <title>BlackHabit - Premium Comfort Food</title>
+<title>Restaurant | FoodConnect</title>
 <link rel="stylesheet" href="../css/restaurant.css"></head>
 <body>
 
 <header>
   <div class="logo-section">
-    <img
-      src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png"
-      alt="BlackHabit Logo"
-      class="logo-img"
-    >
-    <div class="brand-info">                                                                                                                        
-      <h1>BlackHabit</h1>
-    </div>
+  <img
+    id="headerRestaurantLogo"
+    src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+    alt="Restaurant logo"
+    class="logo-img"
+  >
+
+  <div class="brand-info">
+    <h1 id="restaurantName">
+      Loading restaurant...
+    </h1>
   </div>
+</div>
 
   <div class="search-bar">
     <svg class="search-icon" id="searchBtn" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -60,8 +64,21 @@
 </header>
 
 <section class="hero">
-  <h2>Delicious Comfort Foods,<br><span class="highlight">Delivered Fast</span></h2>
-  <p>Your favorite comfort foods, made fresh and delivered to your door</p>
+  <h2>
+    Order from
+    <br>
+
+    <span
+      class="highlight"
+      id="heroRestaurantName"
+    >
+      your selected restaurant
+    </span>
+  </h2>
+
+  <p id="heroRestaurantDetails">
+    Loading restaurant information...
+  </p>
 </section>
 
 <section
@@ -99,44 +116,18 @@
 <section class="menu-section">
   <h2>Our Menu</h2>
 
-  <div class="menu-filters">
-    <button class="filter-btn main-filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn main-filter-btn" data-filter="shawarma">Shawarma</button>
-    <button class="filter-btn main-filter-btn" data-filter="frappe">Frappe</button>
-    <button class="filter-btn main-filter-btn" data-filter="non-coffee">Non-Coffee</button>
-    <button class="filter-btn main-filter-btn" data-filter="coffee">Coffee</button>
-    <button class="filter-btn main-filter-btn" data-filter="milktea">Milktea</button>
-    <button class="filter-btn main-filter-btn" data-filter="fruit-tea">Fruit Tea</button>
-    <button class="filter-btn main-filter-btn" data-filter="milktea-creamcheese">Milktea Creamcheese</button>
-    <button class="filter-btn main-filter-btn" data-filter="shawarma-burger">Shawarma Burger</button>
-    <button class="filter-btn main-filter-btn" data-filter="fries">Fries</button>
-  </div>
-
-  <div class="menu-subfilters" id="shawarma-subfilters">
-    <button class="filter-btn sub-filter-btn active" data-subfilter="all">All</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="solo">Solo</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="b1t1">Buy 1 Take 1</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="combo">Combo</button>
-  </div>
-
-  <div class="menu-subfilters" id="coffee-subfilters">
-    <button class="filter-btn sub-filter-btn active" data-subfilter="all">All</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="hot-coffee">Hot Coffee</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="iced-coffee">Iced Coffee</button>
-  </div>
-
-  <div class="menu-subfilters" id="shawarma-burger-subfilters">
-    <button class="filter-btn sub-filter-btn active" data-subfilter="all">All</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="b1t1">Buy 1 Take 1</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="combo">Combo</button>
-  </div>
-
-  <div class="menu-subfilters" id="fries-subfilters">
-    <button class="filter-btn sub-filter-btn active" data-subfilter="all">All</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="solo">Solo</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="with-shawarma">With Shawarma</button>
-    <button class="filter-btn sub-filter-btn" data-subfilter="combo">Combo</button>
-  </div>
+  <div
+  class="menu-filters"
+  id="menuFilters"
+>
+  <button
+    type="button"
+    class="filter-btn main-filter-btn active"
+    data-filter="all"
+  >
+    All
+  </button>
+</div>
 
   <div class="menu-grid" id="menuGrid">
 
@@ -149,16 +140,31 @@
 
 <footer>
   <div class="footer-content">
+
     <div class="footer-brand">
       <div class="footer-brand-info">
-        <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png" 
-             alt="BlackHabit Logo" class="logo-img">
-        <h3>BlackHabit</h3>
-        <p>Premium comfort food delivered to your door. Quality meals made with love for students and young professionals.</p>
+
+        <img
+          id="footerRestaurantLogo"
+          src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+          alt="Restaurant logo"
+          class="logo-img"
+        >
+
+        <h3 id="footerRestaurantName">
+          Loading restaurant...
+        </h3>
+
+        <p>
+          Order your favourite meals through
+          FoodConnect.
+        </p>
+
       </div>
     </div>
 
-       <div class="footer-section operating-hours">
+    <div class="footer-section operating-hours">
+
       <h3>
         <span
           style="margin-bottom: 20px;"
@@ -166,31 +172,73 @@
         >
           🕐
         </span>
+
         Operating Hours
       </h3>
 
       <div class="hours-row">
-        <span>Mon - Sun</span>
-        <span>9:00 AM - 8:00 PM</span>
+        <span>Store Hours</span>
+
+        <span id="restaurantOpeningHours">
+          Loading...
+        </span>
       </div>
+
+      <div class="hours-row">
+        <span>Status</span>
+
+        <span id="restaurantBusinessStatus">
+          Checking...
+        </span>
+      </div>
+
     </div>
 
     <div class="footer-section contact-section">
-      <h3>Location</h3>
+
+      <h3>
+        Restaurant Information
+      </h3>
 
       <div class="contact-item">
-        <span class="icon-location">📍</span>
+        <span class="icon-location">
+          📍
+        </span>
 
-        <span>
-          Cp Garcia Street, Alaminos City along
-          municipal hall near tennis court.
+        <span id="restaurantAddress">
+          Loading address...
         </span>
       </div>
+
+      <div class="contact-item">
+        <span>
+          📞
+        </span>
+
+        <span id="restaurantContactNumber">
+          Contact number unavailable
+        </span>
+      </div>
+
+      <div class="contact-item">
+        <span>
+          🛵
+        </span>
+
+        <span id="restaurantDeliveryFee">
+          Loading delivery fee...
+        </span>
+      </div>
+
     </div>
+
   </div>
 
-  <div class="footer-bottom">
-    © 2026 BlackHabit. All rights reserved.
+  <div
+    class="footer-bottom"
+    id="restaurantCopyright"
+  >
+    © 2026 Restaurant. All rights reserved.
     | Powered by FoodConnect
   </div>
 </footer>

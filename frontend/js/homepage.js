@@ -216,16 +216,12 @@ const backToOwnerLoginBtn =
         "restaurantSearch"
       );
 
-    const restaurantCards = [
-      ...document.querySelectorAll(
-        ".restaurant-slide"
-      )
-    ];
+    let restaurantCards = [];
 
-    const restaurantLinks =
-      document.querySelectorAll(
-        ".restaurant-link"
-      );
+const restaurantTrack =
+  document.getElementById(
+    "restaurantTrack"
+  );
 
     const restaurantResultCount =
       document.getElementById(
@@ -700,6 +696,388 @@ const backToOwnerLoginBtn =
     }
 
     /* =========================
+   SAFE HTML OUTPUT
+========================= */
+
+function escapeHtml(
+  value = ""
+) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+/* =========================
+   RESTAURANT CARDS
+========================= */
+
+function createRestaurantCard(
+  restaurant
+) {
+  const restaurantId =
+    Number(
+      restaurant.restaurant_id || 0
+    );
+
+  const restaurantName =
+    String(
+      restaurant.name ||
+      "Unnamed Restaurant"
+    ).trim();
+
+  const restaurantAddress =
+    String(
+      restaurant.address ||
+      "Address not available"
+    ).trim();
+
+  const openingHours =
+    String(
+      restaurant.opening_hours ||
+      "Hours not available"
+    ).trim();
+
+  const businessStatus =
+    String(
+      restaurant.business_status ||
+      "Closed"
+    ).trim();
+
+  const deliveryFee =
+    Number(
+      restaurant.delivery_fee || 0
+    );
+
+  const article =
+    document.createElement("article");
+
+  article.className =
+    "restaurant-card restaurant-slide";
+
+  article.dataset.restaurantId =
+    String(restaurantId);
+
+  article.dataset.name =
+    restaurantName;
+
+  article.dataset.description = [
+    restaurantName,
+    restaurantAddress
+  ].join(" ");
+
+  article.dataset.deliveryFee =
+    String(deliveryFee);
+
+  article.dataset.businessStatus =
+    businessStatus;
+
+    article.dataset.openingHours =
+  openingHours;
+
+  article.dataset.restaurantStatus =
+    "active";
+
+  article.dataset.operatingDays =
+    "0,1,2,3,4,5,6";
+
+  /*
+   * Your current database stores operating hours as
+   * one text value instead of separate opening and
+   * closing time columns.
+   *
+   * The business status remains the primary indicator
+   * until the schedule structure is expanded later.
+   */
+  article.dataset.openingTime = "";
+  article.dataset.closingTime = "";
+
+  article.innerHTML = `
+    <div class="restaurant-card-image">
+
+      <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+        alt="${escapeHtml(restaurantName)}"
+      >
+
+      <span class="status-badge">
+        Checking...
+      </span>
+
+    </div>
+
+    <div class="restaurant-card-body">
+
+      <div class="restaurant-title-row">
+
+        <div>
+
+          <h3>
+            ${escapeHtml(restaurantName)}
+          </h3>
+
+          <p>
+            ${escapeHtml(restaurantAddress)}
+          </p>
+
+        </div>
+
+        <span class="rating">
+
+          <i class="fa-solid fa-store"></i>
+
+          Restaurant
+
+        </span>
+
+      </div>
+
+      <div class="restaurant-meta">
+
+        <span class="restaurant-meta-item">
+
+          <i class="fa-solid fa-motorcycle"></i>
+
+          <span class="restaurant-meta-copy">
+
+            <strong>
+              Delivery
+            </strong>
+
+            <small class="delivery-fee">
+              ${escapeHtml(
+                formatDeliveryFee(
+                  deliveryFee
+                )
+              )}
+            </small>
+
+          </span>
+
+        </span>
+
+        <span class="restaurant-meta-item">
+
+          <i class="fa-solid fa-clock"></i>
+
+          <span class="restaurant-meta-copy">
+
+            <strong>
+              Store Hours
+            </strong>
+
+            <small class="restaurant-hours">
+              ${escapeHtml(openingHours)}
+            </small>
+
+          </span>
+
+        </span>
+
+      </div>
+
+      <a
+        class="card-action restaurant-link"
+        href="restaurant.html?restaurant_id=${restaurantId}"
+      >
+
+        View Restaurant
+
+        <i class="fa-solid fa-arrow-right"></i>
+
+      </a>
+
+    </div>
+  `;
+
+  return article;
+}
+
+function updateStaffRestaurantOptions(
+  restaurants
+) {
+  if (!staffRestaurantId) {
+    return;
+  }
+
+  staffRestaurantId.innerHTML = "";
+
+  const defaultOption =
+    document.createElement("option");
+
+  defaultOption.value = "";
+  defaultOption.textContent =
+    "Select a restaurant";
+
+  staffRestaurantId.appendChild(
+    defaultOption
+  );
+
+  restaurants.forEach(
+    (restaurant) => {
+      const restaurantId =
+        Number(
+          restaurant.restaurant_id || 0
+        );
+
+      if (restaurantId <= 0) {
+        return;
+      }
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        String(restaurantId);
+
+      option.textContent =
+        String(
+          restaurant.name ||
+          `Restaurant ${restaurantId}`
+        );
+
+      staffRestaurantId.appendChild(
+        option
+      );
+    }
+  );
+}
+
+function bindRestaurantLinks() {
+  const restaurantLinks =
+    document.querySelectorAll(
+      ".restaurant-link"
+    );
+
+  restaurantLinks.forEach(
+    (link) => {
+      link.addEventListener(
+        "click",
+        async (event) => {
+          event.preventDefault();
+
+          const restaurantUrl =
+            link.getAttribute("href");
+
+          if (!restaurantUrl) {
+            return;
+          }
+
+          const login =
+            await checkLogin();
+
+          if (!login.logged_in) {
+            openLoginModal();
+
+            return;
+          }
+
+          window.location.href =
+            restaurantUrl;
+        }
+      );
+    }
+  );
+}
+
+async function loadPublicRestaurants() {
+  if (!restaurantTrack) {
+    return;
+  }
+
+  restaurantTrack.innerHTML = "";
+
+  if (restaurantResultCount) {
+    restaurantResultCount.textContent =
+      "Loading restaurants...";
+  }
+
+  try {
+    const response = await fetch(
+      `${window.API}/get_public_restaurants.php`,
+      {
+        cache: "no-store"
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load restaurants."
+      );
+    }
+
+    const restaurants =
+      Array.isArray(data.restaurants)
+        ? data.restaurants
+        : [];
+
+    restaurants.forEach(
+      (restaurant) => {
+        const card =
+          createRestaurantCard(
+            restaurant
+          );
+
+        restaurantTrack.appendChild(
+          card
+        );
+      }
+    );
+
+    restaurantCards = [
+      ...restaurantTrack.querySelectorAll(
+        ".restaurant-slide"
+      )
+    ];
+
+    updateStaffRestaurantOptions(
+      restaurants
+    );
+
+    bindRestaurantLinks();
+
+    updateAllRestaurantCards();
+
+    filterRestaurants(
+      restaurantSearch?.value || ""
+    );
+  } catch (error) {
+    console.error(
+      "Load public restaurants failed:",
+      error
+    );
+
+    restaurantCards = [];
+
+    restaurantTrack.innerHTML = "";
+
+    if (restaurantResultCount) {
+      restaurantResultCount.textContent =
+        "0 restaurants";
+    }
+
+    if (restaurantEmptyState) {
+      restaurantEmptyState.textContent =
+        "Restaurants could not be loaded.";
+
+      restaurantEmptyState.style.display =
+        "block";
+    }
+
+    updateStaffRestaurantOptions([]);
+  }
+}
+
+    /* =========================
        RESTAURANT SEARCH
     ========================= */
 
@@ -1083,13 +1461,19 @@ function updateRestaurantCard(
   }
 
   if (restaurantHours) {
+  const storedHours =
+    String(
+      card.dataset.openingHours || ""
+    ).trim();
+
+  if (storedHours) {
     restaurantHours.textContent =
-      `${formatTime(
-        card.dataset.openingTime
-      )} – ${formatTime(
-        card.dataset.closingTime
-      )}`;
+      storedHours;
+  } else {
+    restaurantHours.textContent =
+      "Hours not available";
   }
+}
 }
 
 function updateAllRestaurantCards() {
@@ -1293,39 +1677,7 @@ function updateAllRestaurantCards() {
       }
     );
 
-    /* =========================
-       OPEN RESTAURANT DIRECTLY
-    ========================= */
-
-    restaurantLinks.forEach(
-      (link) => {
-        link.addEventListener(
-          "click",
-          async (event) => {
-            event.preventDefault();
-
-            const restaurantUrl =
-              link.getAttribute("href");
-
-            if (!restaurantUrl) {
-              return;
-            }
-
-            const login =
-              await checkLogin();
-
-            if (!login.logged_in) {
-              openLoginModal();
-
-              return;
-            }
-
-            window.location.href =
-              restaurantUrl;
-          }
-        );
-      }
-    );
+    bindRestaurantLinks();
 
     /* =========================
        RESTAURANT SEARCH FORM
@@ -2163,13 +2515,7 @@ ownerVerificationCode?.addEventListener(
 
 setupAccountUI();
 
-filterRestaurants();
-
-updateAllRestaurantCards();
-
-restaurantCards.forEach(card => {
-  loadPublicRestaurantCard(card);
-});
+loadPublicRestaurants();
 
 window.setInterval(
   updateAllRestaurantCards,

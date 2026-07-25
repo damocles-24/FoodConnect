@@ -29,22 +29,19 @@ const requestedRestaurantId =
   );
 
 /*
- * Temporary fallback for the BlackHabit restaurant.
+ * Every public restaurant page must receive a valid
+ * restaurant_id through the URL.
  *
- * Change 1 when BlackHabit has a different restaurant_id.
- * After owner-created restaurant pages are implemented,
- * every page should supply its own restaurant_id.
+ * Example:
+ * restaurant.html?restaurant_id=2
  */
-const DEFAULT_RESTAURANT_ID = 1;
-
 const CURRENT_RESTAURANT_ID =
   Number.isInteger(
     requestedRestaurantId
   ) &&
   requestedRestaurantId > 0
     ? requestedRestaurantId
-    : DEFAULT_RESTAURANT_ID;
-
+    : 0;
 
 
 let databaseProductGroups = [];
@@ -65,6 +62,265 @@ document.addEventListener("DOMContentLoaded", async () => {
   const goProfileBtn = document.getElementById("goProfile");
 
   let loggedIn = false;
+
+    /* =========================
+     RESTAURANT IDENTITY
+  ========================= */
+
+  const restaurantName =
+    document.getElementById(
+      "restaurantName"
+    );
+
+  const heroRestaurantName =
+    document.getElementById(
+      "heroRestaurantName"
+    );
+
+  const heroRestaurantDetails =
+    document.getElementById(
+      "heroRestaurantDetails"
+    );
+
+  const footerRestaurantName =
+    document.getElementById(
+      "footerRestaurantName"
+    );
+
+  const restaurantOpeningHours =
+    document.getElementById(
+      "restaurantOpeningHours"
+    );
+
+  const restaurantBusinessStatus =
+    document.getElementById(
+      "restaurantBusinessStatus"
+    );
+
+  const restaurantAddress =
+    document.getElementById(
+      "restaurantAddress"
+    );
+
+  const restaurantContactNumber =
+    document.getElementById(
+      "restaurantContactNumber"
+    );
+
+  const restaurantDeliveryFee =
+    document.getElementById(
+      "restaurantDeliveryFee"
+    );
+
+  const restaurantCopyright =
+    document.getElementById(
+      "restaurantCopyright"
+    );
+
+  function formatRestaurantDeliveryFee(
+    value
+  ) {
+    const amount = Number(value || 0);
+
+    if (amount <= 0) {
+      return "Free delivery";
+    }
+
+    return `Delivery fee: ₱${amount.toFixed(2)}`;
+  }
+
+  function showRestaurantPageError(
+    message
+  ) {
+    document.title =
+      "Restaurant Unavailable | FoodConnect";
+
+    if (restaurantName) {
+      restaurantName.textContent =
+        "Restaurant unavailable";
+    }
+
+    if (heroRestaurantName) {
+      heroRestaurantName.textContent =
+        "Restaurant unavailable";
+    }
+
+    if (heroRestaurantDetails) {
+      heroRestaurantDetails.textContent =
+        message;
+    }
+
+    const menuGrid =
+      document.getElementById(
+        "menuGrid"
+      );
+
+    if (menuGrid) {
+      menuGrid.innerHTML = `
+        <div class="orders-empty">
+          ${escapeMenuText(message)}
+        </div>
+      `;
+    }
+  }
+
+  async function loadRestaurantIdentity() {
+    if (CURRENT_RESTAURANT_ID <= 0) {
+      showRestaurantPageError(
+        "No valid restaurant was selected."
+      );
+
+      return false;
+    }
+
+    try {
+      const response = await fetch(
+        `${API}/get_public_restaurant.php` +
+        `?restaurant_id=${encodeURIComponent(
+          CURRENT_RESTAURANT_ID
+        )}`,
+        {
+          credentials: "include",
+          cache: "no-store"
+        }
+      );
+
+      const rawText =
+        await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(rawText);
+      } catch (parseError) {
+        throw new Error(
+          "The restaurant API returned invalid JSON."
+        );
+      }
+
+      if (
+        !response.ok ||
+        !data.success ||
+        !data.restaurant
+      ) {
+        throw new Error(
+          data.message ||
+          "Unable to load this restaurant."
+        );
+      }
+
+      const restaurant =
+        data.restaurant;
+
+      const name =
+        String(
+          restaurant.name ||
+          "Restaurant"
+        ).trim();
+
+      const address =
+        String(
+          restaurant.address ||
+          "Address unavailable"
+        ).trim();
+
+      const contactNumber =
+        String(
+          restaurant.contact_number ||
+          "Contact number unavailable"
+        ).trim();
+
+      const openingHours =
+        String(
+          restaurant.opening_hours ||
+          "Operating hours unavailable"
+        ).trim();
+
+      const businessStatus =
+        String(
+          restaurant.business_status ||
+          "Closed"
+        ).trim();
+
+      currentRestaurantStatus =
+        businessStatus;
+
+      restaurantAcceptingOrders =
+        restaurant.is_accepting_orders ===
+        true;
+
+      document.title =
+        `${name} | FoodConnect`;
+
+      if (restaurantName) {
+        restaurantName.textContent =
+          name;
+      }
+
+      if (heroRestaurantName) {
+        heroRestaurantName.textContent =
+          name;
+      }
+
+      if (heroRestaurantDetails) {
+        heroRestaurantDetails.textContent =
+          restaurantAcceptingOrders
+            ? `${address} • Currently accepting orders`
+            : `${address} • Currently closed`;
+      }
+
+      if (footerRestaurantName) {
+        footerRestaurantName.textContent =
+          name;
+      }
+
+      if (restaurantOpeningHours) {
+        restaurantOpeningHours.textContent =
+          openingHours;
+      }
+
+      if (restaurantBusinessStatus) {
+        restaurantBusinessStatus.textContent =
+          businessStatus;
+      }
+
+      if (restaurantAddress) {
+        restaurantAddress.textContent =
+          address;
+      }
+
+      if (restaurantContactNumber) {
+        restaurantContactNumber.textContent =
+          contactNumber;
+      }
+
+      if (restaurantDeliveryFee) {
+        restaurantDeliveryFee.textContent =
+          formatRestaurantDeliveryFee(
+            restaurant.delivery_fee
+          );
+      }
+
+      if (restaurantCopyright) {
+        restaurantCopyright.textContent =
+          `© 2026 ${name}. All rights reserved. | Powered by FoodConnect`;
+      }
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Load restaurant identity error:",
+        error
+      );
+
+      showRestaurantPageError(
+        error.message ||
+        "This restaurant is currently unavailable."
+      );
+
+      return false;
+    }
+  }
 
 
   try {
@@ -174,20 +430,10 @@ if (nameEl) {
     }
   }
 
-  const mainFilterBtns = document.querySelectorAll(".main-filter-btn");
-  const allSubFilterBtns = document.querySelectorAll(".sub-filter-btn");
-
-  const shawarmaSubfilters = document.getElementById("shawarma-subfilters");
-  const coffeeSubfilters = document.getElementById("coffee-subfilters");
-  const shawarmaBurgerSubfilters = document.getElementById("shawarma-burger-subfilters");
-  const friesSubfilters = document.getElementById("fries-subfilters");
-
-  const subfilterGroups = [
-    shawarmaSubfilters,
-    coffeeSubfilters,
-    shawarmaBurgerSubfilters,
-    friesSubfilters
-  ].filter(Boolean);
+  const menuFilters =
+  document.getElementById(
+    "menuFilters"
+  );
 
   let items = [];
   const searchInput = document.querySelector(".search-bar input");
@@ -626,6 +872,122 @@ function mapDatabaseCategory(rawCategory) {
     sub: "",
     isAddonCategory: false
   };
+}
+
+function formatCategoryLabel(
+  categorySlug,
+  rawCategory
+) {
+  const knownLabels = {
+    shawarma: "Shawarma",
+    frappe: "Frappe",
+    "non-coffee": "Non-Coffee",
+    coffee: "Coffee",
+    milktea: "Milktea",
+    "fruit-tea": "Fruit Tea",
+    "milktea-creamcheese":
+      "Milktea Creamcheese",
+    "shawarma-burger":
+      "Shawarma Burger",
+    fries: "Fries"
+  };
+
+  if (knownLabels[categorySlug]) {
+    return knownLabels[categorySlug];
+  }
+
+  const fallbackLabel =
+    String(rawCategory || "")
+      .trim();
+
+  return fallbackLabel ||
+    "Uncategorized";
+}
+
+function renderDynamicMenuFilters(
+  productGroups
+) {
+  if (!menuFilters) {
+    return;
+  }
+
+  const categories =
+    new Map();
+
+  productGroups.forEach(
+    (group) => {
+      const categorySlug =
+        String(
+          group.categorySlug || ""
+        ).trim();
+
+      if (!categorySlug) {
+        return;
+      }
+
+      if (
+        !categories.has(
+          categorySlug
+        )
+      ) {
+        categories.set(
+          categorySlug,
+          formatCategoryLabel(
+            categorySlug,
+            group.rawCategory
+          )
+        );
+      }
+    }
+  );
+
+  menuFilters.innerHTML = "";
+
+  const allButton =
+    document.createElement(
+      "button"
+    );
+
+  allButton.type = "button";
+  allButton.className =
+    "filter-btn main-filter-btn active";
+
+  allButton.dataset.filter =
+    "all";
+
+  allButton.textContent =
+    "All";
+
+  menuFilters.appendChild(
+    allButton
+  );
+
+  categories.forEach(
+    (
+      categoryLabel,
+      categorySlug
+    ) => {
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.type = "button";
+
+      button.className =
+        "filter-btn main-filter-btn";
+
+      button.dataset.filter =
+        categorySlug;
+
+      button.textContent =
+        categoryLabel;
+
+      menuFilters.appendChild(
+        button
+      );
+    }
+  );
 }
 
 function groupProducts(products) {
@@ -1917,14 +2279,20 @@ databaseAddons = Array.from(
   addonMap.values()
 );
 
-    databaseProductGroups =
+    
+databaseProductGroups =
   groupProducts(products);
+
+renderDynamicMenuFilters(
+  databaseProductGroups
+);
 
 renderDatabaseProducts(
   databaseProductGroups
 );
 
 return databaseProductGroups;
+
 
   } catch (error) {
     console.error("Load products error:", error);
@@ -2150,50 +2518,28 @@ async function loadPopularProducts() {
   }
 }
 
-  function getActiveMainFilter() {
-    const activeMainBtn = document.querySelector(".main-filter-btn.active");
-    return activeMainBtn ? activeMainBtn.dataset.filter : "all";
-  }
+ function getActiveMainFilter() {
+  const activeMainButton =
+    document.querySelector(
+      ".main-filter-btn.active"
+    );
 
-  function getSubfilterGroupByMainFilter(mainFilter) {
-    if (mainFilter === "shawarma") return shawarmaSubfilters;
-    if (mainFilter === "coffee") return coffeeSubfilters;
-    if (mainFilter === "shawarma-burger") return shawarmaBurgerSubfilters;
-    if (mainFilter === "fries") return friesSubfilters;
-    return null;
-  }
+  return activeMainButton
+    ? activeMainButton.dataset
+        .filter || "all"
+    : "all";
+}
 
-  function getActiveSubFilter() {
-    const activeMain = getActiveMainFilter();
-    const activeGroup = getSubfilterGroupByMainFilter(activeMain);
-
-    if (!activeGroup) return "all";
-
-    const activeBtn = activeGroup.querySelector(".sub-filter-btn.active");
-    return activeBtn ? activeBtn.dataset.subfilter : "all";
-  }
-
-  function resetSubfilters(group) {
-    if (!group) return;
-
-    group.querySelectorAll(".sub-filter-btn").forEach((btn) => {
-      btn.classList.remove("active");
-    });
-
-    const allBtn = group.querySelector('[data-subfilter="all"]');
-    if (allBtn) allBtn.classList.add("active");
-  }
-
-  function showCorrectSubfilters() {
-    subfilterGroups.forEach((group) => group.classList.remove("show"));
-
-    const activeMain = getActiveMainFilter();
-    const activeGroup = getSubfilterGroupByMainFilter(activeMain);
-
-    if (activeGroup) {
-      activeGroup.classList.add("show");
-    }
-  }
+function showCorrectSubfilters() {
+  /*
+   * Subfilters were previously tied to
+   * BlackHabit-specific categories.
+   *
+   * Public restaurant filtering now
+   * uses each restaurant's own dynamic
+   * categories.
+   */
+}
 
  function getItemPriceText(item) {
   const priceElement =
@@ -2204,39 +2550,66 @@ async function loadPopularProducts() {
   ).toLowerCase();
 }
 
-  function matchesCurrentFilters(item) {
-    const activeMain = getActiveMainFilter();
-    const activeSub = getActiveSubFilter();
-    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+function matchesCurrentFilters(
+  item
+) {
+  const activeMain =
+    getActiveMainFilter();
 
-    const itemCategory = (item.dataset.category || "").toLowerCase();
-    const itemSub = (item.dataset.subcategory || "").toLowerCase();
-    const itemName = item.querySelector("h3")?.textContent.toLowerCase() || "";
-    const itemPriceText = getItemPriceText(item);
+  const searchTerm =
+    searchInput
+      ? searchInput.value
+          .toLowerCase()
+          .trim()
+      : "";
 
-    let matchesMain = activeMain === "all" ? true : itemCategory === activeMain;
-    let matchesSub = true;
-    let matchesSearch = true;
+  const itemCategory =
+    String(
+      item.dataset.category || ""
+    ).toLowerCase();
 
-    if (
-      activeMain === "shawarma" ||
-      activeMain === "coffee" ||
-      activeMain === "shawarma-burger" ||
-      activeMain === "fries"
-    ) {
-      matchesSub = activeSub === "all" ? true : itemSub.includes(activeSub);
-    }
+  const itemSubcategory =
+    String(
+      item.dataset.subcategory ||
+      ""
+    ).toLowerCase();
 
-    if (searchTerm !== "") {
-      matchesSearch =
-        itemName.includes(searchTerm) ||
-        itemPriceText.includes(searchTerm) ||
-        itemCategory.includes(searchTerm) ||
-        itemSub.includes(searchTerm);
-    }
+  const itemName =
+    String(
+      item.querySelector("h3")
+        ?.textContent || ""
+    ).toLowerCase();
 
-    return matchesMain && matchesSub && matchesSearch;
+  const itemPriceText =
+    getItemPriceText(item);
+
+  const matchesMain =
+    activeMain === "all" ||
+    itemCategory === activeMain;
+
+  let matchesSearch = true;
+
+  if (searchTerm !== "") {
+    matchesSearch =
+      itemName.includes(
+        searchTerm
+      ) ||
+      itemPriceText.includes(
+        searchTerm
+      ) ||
+      itemCategory.includes(
+        searchTerm
+      ) ||
+      itemSubcategory.includes(
+        searchTerm
+      );
   }
+
+  return (
+    matchesMain &&
+    matchesSearch
+  );
+}  
 
   function applyFilters() {
     items.forEach((item) => {
@@ -2334,114 +2707,45 @@ async function loadPopularProducts() {
     }
   }
 
-  mainFilterBtns.forEach(
-  (button) => {
-    button.addEventListener(
-      "click",
-      () => {
-        mainFilterBtns.forEach(
+  if (menuFilters) {
+  menuFilters.addEventListener(
+    "click",
+    (event) => {
+      const selectedButton =
+        event.target.closest(
+          ".main-filter-btn"
+        );
+
+      if (
+        !selectedButton ||
+        !menuFilters.contains(
+          selectedButton
+        )
+      ) {
+        return;
+      }
+
+      menuFilters
+        .querySelectorAll(
+          ".main-filter-btn"
+        )
+        .forEach(
           (filterButton) => {
-            filterButton.classList.remove(
-              "active"
-            );
+            filterButton.classList
+              .remove("active");
           }
         );
 
-        button.classList.add(
-          "active"
-        );
+      selectedButton.classList.add(
+        "active"
+      );
 
-        const selectedFilter =
-          button.dataset.filter || "all";
+      applyFilters();
+      renderSearchSuggestions();
+    }
+  );
+}
 
-        subfilterGroups.forEach(
-          (group) => {
-            let groupMainFilter = "";
-
-            if (
-              group ===
-              shawarmaSubfilters
-            ) {
-              groupMainFilter =
-                "shawarma";
-            } else if (
-              group ===
-              coffeeSubfilters
-            ) {
-              groupMainFilter =
-                "coffee";
-            } else if (
-              group ===
-              shawarmaBurgerSubfilters
-            ) {
-              groupMainFilter =
-                "shawarma-burger";
-            } else if (
-              group ===
-              friesSubfilters
-            ) {
-              groupMainFilter =
-                "fries";
-            }
-
-            if (
-              selectedFilter !==
-              groupMainFilter
-            ) {
-              resetSubfilters(
-                group
-              );
-            }
-          }
-        );
-
-        showCorrectSubfilters();
-        applyFilters();
-        renderSearchSuggestions();
-      }
-    );
-  }
-);
-
-allSubFilterBtns.forEach(
-  (button) => {
-    button.addEventListener(
-      "click",
-      () => {
-        const parentGroup =
-          button.closest(
-            ".menu-subfilters"
-          );
-
-        if (
-          !parentGroup ||
-          !parentGroup.classList
-            .contains("show")
-        ) {
-          return;
-        }
-
-        parentGroup
-          .querySelectorAll(
-            ".sub-filter-btn"
-          )
-          .forEach(
-            (filterButton) => {
-              filterButton.classList
-                .remove("active");
-            }
-          );
-
-        button.classList.add(
-          "active"
-        );
-
-        applyFilters();
-        renderSearchSuggestions();
-      }
-    );
-  }
-);
 
   if (searchInput) {
     searchInput.addEventListener("input", () => {
@@ -2575,17 +2879,6 @@ if (!restaurantAcceptingOrders) {
 })
       }
     );
-
-    if (!restaurantAcceptingOrders) {
-  alert(
-    currentRestaurantStatus ===
-      "Temporarily Unavailable"
-      ? "This restaurant is temporarily unavailable and is not accepting orders."
-      : "This restaurant is currently closed and is not accepting orders."
-  );
-
-  return;
-}
 
     const rawText =
       await response.text();
@@ -2909,6 +3202,14 @@ confirmProductAddToCart?.addEventListener(
 
 
 
+
+const restaurantLoaded =
+  await loadRestaurantIdentity();
+
+if (!restaurantLoaded) {
+  await updateCartBadge();
+  return;
+}
 
 await loadDatabaseProducts();
 
