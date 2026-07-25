@@ -124,11 +124,9 @@ a {
 
 .foodconnect-logo {
     display: block;
-
     width: 245px;
     max-width: 100%;
     height: auto;
-
     object-fit: contain;
 }
 
@@ -1115,3 +1113,4 @@ a {
     color: #f58220;
     text-decoration: underline;
 }
+
