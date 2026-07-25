@@ -628,7 +628,7 @@ const backToOwnerLoginBtn =
                 data.user
                   ?.restaurant_id || 0
               ) > 0
-                ? "owner_dashboard_BH.html"
+                ? "owner_dashboard.html"
                 : "create_restaurant.html"
             );
 
@@ -1266,19 +1266,19 @@ function updateAllRestaurantCards() {
                   data.user
                     ?.restaurant_id || 0
                 ) > 0
-                  ? "owner_dashboard_BH.html"
+                  ? "owner_dashboard.html"
                   : "create_restaurant.html"
               );
             break;
 
           case "cashier":
             window.location.href =
-              "cashier_dashboard_BH.html";
+              "cashier_dashboard.html";
             break;
 
           case "delivery_staff":
             window.location.href =
-              "delivery_dashboard_BH.html";
+              "delivery_dashboard.html";
             break;
 
           case "admin":
@@ -2049,12 +2049,12 @@ ownerVerificationCode?.addEventListener(
 
             case "cashier":
               window.location.href =
-                "cashier_dashboard_BH.html";
+                "cashier_dashboard.html";
               break;
 
             case "delivery_staff":
               window.location.href =
-                "delivery_dashboard_BH.html";
+                "delivery_dashboard.html";
               break;
 
             default:

@@ -2536,8 +2536,7 @@ function redirectApprovedOwner(
         businessStatus === "active"
     ) {
         window.location.href =
-            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
-
+"/FoodConnect/frontend/html/owner_dashboard.html"
         return;
     }
 
@@ -2549,8 +2548,7 @@ function redirectApprovedOwner(
 
     window.setTimeout(() => {
         window.location.href =
-            "/FoodConnect/frontend/html/owner_dashboard_BH.html";
-    }, 1200);
+"/FoodConnect/frontend/html/owner_dashboard.html"    }, 1200);
 }
 
 function updateDescriptionCounter() {

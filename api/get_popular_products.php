@@ -89,7 +89,7 @@ $conn->set_charset("utf8mb4");
 /*
  * Current temporary BlackHabit page:
  *
- * blackhabit.html?restaurant_id=1
+ * restaurant.html?restaurant_id=1
  *
  * When the dynamic restaurant storefront is implemented,
  * this same endpoint will continue working because every

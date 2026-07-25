@@ -618,7 +618,7 @@ if (
     $restaurantId > 0
 ) {
     $redirectUrl =
-        "/FoodConnect/frontend/html/owner_dashboard_BH.html";
+        "/FoodConnect/frontend/html/owner_dashboard.html";
 
     $onboardingRequired =
         false;
