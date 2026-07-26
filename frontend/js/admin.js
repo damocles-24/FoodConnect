@@ -358,6 +358,82 @@ const restaurantStaffCount =
 
 let loadedPlatformUsers = [];
 
+/* =========================
+   ACTIVITY LOG ELEMENTS
+========================= */
+
+const refreshActivityLogsButton =
+  document.getElementById(
+    "refreshActivityLogsButton"
+  );
+
+const activityLogSearchInput =
+  document.getElementById(
+    "activityLogSearchInput"
+  );
+
+const activityLogTypeFilter =
+  document.getElementById(
+    "activityLogTypeFilter"
+  );
+
+const searchActivityLogsButton =
+  document.getElementById(
+    "searchActivityLogsButton"
+  );
+
+const clearActivityLogFiltersButton =
+  document.getElementById(
+    "clearActivityLogFiltersButton"
+  );
+
+const activityLogsMessage =
+  document.getElementById(
+    "activityLogsMessage"
+  );
+
+const activityLogsLoading =
+  document.getElementById(
+    "activityLogsLoading"
+  );
+
+const activityLogsEmpty =
+  document.getElementById(
+    "activityLogsEmpty"
+  );
+
+const activityLogsTableWrapper =
+  document.getElementById(
+    "activityLogsTableWrapper"
+  );
+
+const activityLogsTableBody =
+  document.getElementById(
+    "activityLogsTableBody"
+  );
+
+const totalActivityLogsCount =
+  document.getElementById(
+    "totalActivityLogsCount"
+  );
+
+const todayActivityLogsCount =
+  document.getElementById(
+    "todayActivityLogsCount"
+  );
+
+const restaurantActivityLogsCount =
+  document.getElementById(
+    "restaurantActivityLogsCount"
+  );
+
+const userActivityLogsCount =
+  document.getElementById(
+    "userActivityLogsCount"
+  );
+
+let loadedActivityLogs = [];
+
 let currentAdminId = 0;
 
 /* =========================
@@ -524,6 +600,54 @@ function bindEvents() {
 
           loadPlatformUsers();
         }
+      }
+    );
+
+      refreshActivityLogsButton
+    ?.addEventListener(
+      "click",
+      loadActivityLogs
+    );
+
+  searchActivityLogsButton
+    ?.addEventListener(
+      "click",
+      loadActivityLogs
+    );
+
+  activityLogSearchInput
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+
+          loadActivityLogs();
+        }
+      }
+    );
+
+  activityLogTypeFilter
+    ?.addEventListener(
+      "change",
+      loadActivityLogs
+    );
+
+  clearActivityLogFiltersButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (activityLogSearchInput) {
+          activityLogSearchInput.value =
+            "";
+        }
+
+        if (activityLogTypeFilter) {
+          activityLogTypeFilter.value =
+            "";
+        }
+
+        loadActivityLogs();
       }
     );
 
@@ -1231,6 +1355,13 @@ function openDashboardSection(navItem) {
     "platformUsersSection"
   ) {
     loadPlatformUsers();
+  }
+
+  if (
+    sectionId ===
+    "activityLogsSection"
+  ) {
+    loadActivityLogs();
   }
 }
 
@@ -2551,6 +2682,567 @@ function setPlatformUsersMessage(
       type
     );
   }
+}
+
+/* =========================
+   ACTIVITY LOGS
+========================= */
+
+async function loadActivityLogs() {
+  activityLogsLoading
+    ?.classList.remove(
+      "hidden"
+    );
+
+  activityLogsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  activityLogsTableWrapper
+    ?.classList.add(
+      "hidden"
+    );
+
+  setActivityLogsMessage(
+    "",
+    ""
+  );
+
+  try {
+    const search =
+      activityLogSearchInput
+        ?.value
+        ?.trim() || "";
+
+    const actionType =
+      activityLogTypeFilter
+        ?.value
+        ?.trim() || "";
+
+    const params =
+      new URLSearchParams();
+
+    if (search !== "") {
+      params.set(
+        "search",
+        search
+      );
+    }
+
+    if (actionType !== "") {
+      params.set(
+        "action_type",
+        actionType
+      );
+    }
+
+    params.set(
+      "limit",
+      "500"
+    );
+
+    const queryString =
+      params.toString();
+
+    const requestUrl =
+      queryString !== ""
+        ? `${API_BASE}/get_admin_activity_logs.php?${queryString}`
+        : `${API_BASE}/get_admin_activity_logs.php`;
+
+    const response =
+      await fetch(
+        requestUrl,
+        {
+          credentials: "include",
+
+          headers: {
+            "Accept":
+              "application/json"
+          }
+        }
+      );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load platform activity logs."
+      );
+    }
+
+    loadedActivityLogs =
+      Array.isArray(
+        data.logs
+      )
+        ? data.logs
+        : [];
+
+    updateActivityLogSummary(
+      loadedActivityLogs
+    );
+
+    renderActivityLogs(
+      loadedActivityLogs
+    );
+  } catch (error) {
+    console.error(
+      "Load activity logs error:",
+      error
+    );
+
+    loadedActivityLogs = [];
+
+    updateActivityLogSummary([]);
+
+    activityLogsEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    activityLogsTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (activityLogsEmpty) {
+      activityLogsEmpty.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <h3>
+          Unable to load activity logs
+        </h3>
+
+        <p>
+          ${escapeHtml(
+            error.message ||
+            "Please try again."
+          )}
+        </p>
+      `;
+    }
+
+    setActivityLogsMessage(
+      error.message ||
+      "Unable to load activity logs.",
+      "error"
+    );
+  } finally {
+    activityLogsLoading
+      ?.classList.add(
+        "hidden"
+      );
+  }
+}
+
+function updateActivityLogSummary(
+  logs
+) {
+  const safeLogs =
+    Array.isArray(logs)
+      ? logs
+      : [];
+
+  const todayKey =
+    getLocalDateKey(
+      new Date()
+    );
+
+  let todayCount = 0;
+  let restaurantCount = 0;
+  let userCount = 0;
+
+  safeLogs.forEach((log) => {
+    const actionType =
+      String(
+        log.action_type || ""
+      ).toLowerCase();
+
+    const createdAt =
+      parseDatabaseDate(
+        log.created_at
+      );
+
+    if (
+      createdAt &&
+      getLocalDateKey(createdAt) ===
+        todayKey
+    ) {
+      todayCount += 1;
+    }
+
+    if (
+      actionType.startsWith(
+        "restaurant"
+      )
+    ) {
+      restaurantCount += 1;
+    }
+
+    if (
+      actionType ===
+      "account_status" ||
+      actionType ===
+      "user_status" ||
+      actionType ===
+      "owner_verification"
+    ) {
+      userCount += 1;
+    }
+  });
+
+  setText(
+    totalActivityLogsCount,
+    safeLogs.length
+  );
+
+  setText(
+    todayActivityLogsCount,
+    todayCount
+  );
+
+  setText(
+    restaurantActivityLogsCount,
+    restaurantCount
+  );
+
+  setText(
+    userActivityLogsCount,
+    userCount
+  );
+}
+
+function renderActivityLogs(logs) {
+  if (!activityLogsTableBody) {
+    return;
+  }
+
+  activityLogsTableBody.innerHTML =
+    "";
+
+  if (
+    !Array.isArray(logs) ||
+    logs.length === 0
+  ) {
+    activityLogsEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    activityLogsTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (activityLogsEmpty) {
+      activityLogsEmpty.innerHTML = `
+        <i class="fa-solid fa-clock-rotate-left"></i>
+
+        <h3>
+          No activity logs found
+        </h3>
+
+        <p>
+          Platform actions matching the selected
+          filters will appear here.
+        </p>
+      `;
+    }
+
+    return;
+  }
+
+  activityLogsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  activityLogsTableWrapper
+    ?.classList.remove(
+      "hidden"
+    );
+
+  logs.forEach((log) => {
+    const row =
+      document.createElement(
+        "tr"
+      );
+
+    const administratorName =
+      String(
+        log.administrator_name ||
+        "System Administrator"
+      ).trim();
+
+    const administratorEmail =
+      String(
+        log.administrator_email ||
+        ""
+      ).trim();
+
+    const actionTitle =
+      String(
+        log.action_title ||
+        formatStatus(
+          log.action_type
+        ) ||
+        "Platform Action"
+      ).trim();
+
+    const actionType =
+      String(
+        log.action_type || "system"
+      ).toLowerCase();
+
+    const targetName =
+      String(
+        log.target_name ||
+        log.restaurant_name ||
+        "Platform"
+      ).trim();
+
+    const description =
+      String(
+        log.action_description ||
+        "No description was provided."
+      ).trim();
+
+    const badgeClass =
+      getActivityLogBadgeClass(
+        actionType,
+        actionTitle
+      );
+
+    row.innerHTML = `
+      <td data-label="Date & Time">
+        <span class="activity-log-date">
+          ${escapeHtml(
+            formatDate(
+              log.created_at
+            )
+          )}
+        </span>
+      </td>
+
+      <td data-label="Administrator">
+        <div class="activity-log-administrator">
+          <strong>
+            ${escapeHtml(
+              administratorName
+            )}
+          </strong>
+
+          ${
+            administratorEmail !== ""
+              ? `
+                <span>
+                  ${escapeHtml(
+                    administratorEmail
+                  )}
+                </span>
+              `
+              : ""
+          }
+        </div>
+      </td>
+
+      <td data-label="Action">
+        <span class="
+          activity-log-action-badge
+          ${escapeHtml(badgeClass)}
+        ">
+          ${escapeHtml(
+            actionTitle
+          )}
+        </span>
+      </td>
+
+      <td data-label="Target User / Restaurant">
+        <strong class="activity-log-target">
+          ${escapeHtml(
+            targetName
+          )}
+        </strong>
+      </td>
+
+      <td data-label="Description">
+        <p class="activity-log-description">
+          ${escapeHtml(
+            description
+          )}
+        </p>
+      </td>
+    `;
+
+    activityLogsTableBody.appendChild(
+      row
+    );
+  });
+}
+
+function getActivityLogBadgeClass(
+  actionType,
+  actionTitle
+) {
+  const normalizedType =
+    String(
+      actionType || ""
+    ).toLowerCase();
+
+  const normalizedTitle =
+    String(
+      actionTitle || ""
+    ).toLowerCase();
+
+  if (
+    normalizedTitle.includes(
+      "rejected"
+    ) ||
+    normalizedTitle.includes(
+      "deactivated"
+    )
+  ) {
+    return "danger";
+  }
+
+  if (
+    normalizedTitle.includes(
+      "changes requested"
+    ) ||
+    normalizedTitle.includes(
+      "closed"
+    )
+  ) {
+    return "warning";
+  }
+
+  if (
+    normalizedTitle.includes(
+      "approved"
+    ) ||
+    normalizedTitle.includes(
+      "activated"
+    ) ||
+    normalizedTitle.includes(
+      "verified"
+    )
+  ) {
+    return "success";
+  }
+
+  if (
+    normalizedType ===
+      "restaurant_application" ||
+    normalizedType ===
+      "restaurant_status" ||
+    normalizedType ===
+      "restaurant_access"
+  ) {
+    return "restaurant";
+  }
+
+  if (
+    normalizedType ===
+      "account_status" ||
+    normalizedType ===
+      "user_status" ||
+    normalizedType ===
+      "owner_verification"
+  ) {
+    return "user";
+  }
+
+  return "system";
+}
+
+function setActivityLogsMessage(
+  message,
+  type = ""
+) {
+  if (!activityLogsMessage) {
+    return;
+  }
+
+  activityLogsMessage.textContent =
+    message;
+
+  activityLogsMessage.className =
+    "activity-logs-message";
+
+  if (type) {
+    activityLogsMessage.classList.add(
+      type
+    );
+  }
+}
+
+function parseDatabaseDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate =
+    new Date(
+      String(value).replace(
+        " ",
+        "T"
+      )
+    );
+
+  if (
+    Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
+function getLocalDateKey(date) {
+  if (
+    !(date instanceof Date) ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "";
+  }
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return `${year}-${month}-${day}`;
 }
 
 /* =========================

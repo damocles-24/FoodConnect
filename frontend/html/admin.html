@@ -779,8 +779,7 @@
         <h2>Platform Users</h2>
 
         <p>
-          Manage verified restaurant owners,
-          cashiers, and delivery staff.
+          Manage verified restaurant owners
         </p>
       </div>
 
@@ -917,19 +916,211 @@
   </div>
 </section>
 
-      <section
-        id="activityLogsSection"
-        class="dashboard-section"
+     <section
+  id="activityLogsSection"
+  class="dashboard-section"
+>
+  <div class="activity-log-summary-grid">
+
+    <article class="activity-log-summary-card">
+      <div class="activity-log-summary-icon total">
+        <i class="fa-solid fa-list"></i>
+      </div>
+
+      <div>
+        <span>Total Logs</span>
+
+        <strong id="totalActivityLogsCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="activity-log-summary-card">
+      <div class="activity-log-summary-icon today">
+        <i class="fa-solid fa-calendar-day"></i>
+      </div>
+
+      <div>
+        <span>Today</span>
+
+        <strong id="todayActivityLogsCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="activity-log-summary-card">
+      <div class="activity-log-summary-icon restaurant">
+        <i class="fa-solid fa-store"></i>
+      </div>
+
+      <div>
+        <span>Restaurant Actions</span>
+
+        <strong id="restaurantActivityLogsCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+    <article class="activity-log-summary-card">
+      <div class="activity-log-summary-icon user">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+
+      <div>
+        <span>User Actions</span>
+
+        <strong id="userActivityLogsCount">
+          0
+        </strong>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="content-card">
+
+    <div class="section-heading-row">
+      <div>
+        <span class="section-eyebrow">
+          Platform Administration
+        </span>
+
+        <h2>
+          Platform Activity Logs
+        </h2>
+
+        <p>
+          Review important administrator actions,
+          restaurant changes and platform-user
+          account updates.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="refreshActivityLogsButton"
+        class="secondary-button"
       >
-        <div class="content-card module-placeholder">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-          <h2>Activity Logs</h2>
-          <p>
-            Platform administrative activities and
-            restaurant management logs.
-          </p>
-        </div>
-      </section>
+        <i class="fa-solid fa-rotate"></i>
+
+        Refresh
+      </button>
+    </div>
+
+    <div class="activity-log-toolbar">
+
+      <div class="activity-log-search-group">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+          type="search"
+          id="activityLogSearchInput"
+          placeholder="Search administrator, action, restaurant or description..."
+          autocomplete="off"
+          maxlength="100"
+        >
+      </div>
+
+      <select
+        id="activityLogTypeFilter"
+        class="activity-log-filter"
+        aria-label="Filter activity logs by action type"
+      >
+        <option value="">
+          All Action Types
+        </option>
+
+        <option value="restaurant_application">
+          Restaurant Applications
+        </option>
+
+        <option value="restaurant_status">
+          Restaurant Status
+        </option>
+
+        <option value="restaurant_access">
+          Restaurant Access
+        </option>
+
+        <option value="account_status">
+          User Accounts
+        </option>
+
+        <option value="system">
+          System Actions
+        </option>
+      </select>
+
+      <button
+        type="button"
+        id="searchActivityLogsButton"
+        class="primary-button activity-log-search-button"
+      >
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        Search
+      </button>
+
+      <button
+        type="button"
+        id="clearActivityLogFiltersButton"
+        class="secondary-button"
+      >
+        Clear
+      </button>
+
+    </div>
+
+    <p
+      id="activityLogsMessage"
+      class="activity-logs-message"
+    ></p>
+
+    <div
+      id="activityLogsLoading"
+      class="table-loading"
+    >
+      Loading platform activity logs...
+    </div>
+
+    <div
+      id="activityLogsEmpty"
+      class="empty-placeholder hidden"
+    >
+      <i class="fa-solid fa-clock-rotate-left"></i>
+
+      <h3>No activity logs found</h3>
+
+      <p>
+        Platform actions matching the selected
+        filters will appear here.
+      </p>
+    </div>
+
+    <div
+      id="activityLogsTableWrapper"
+      class="table-wrapper hidden"
+    >
+      <table class="admin-table activity-logs-table">
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Administrator</th>
+            <th>Action</th>
+            <th>Target User / Restaurant</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+
+        <tbody id="activityLogsTableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
 
     </main>
   </div>
@@ -954,6 +1145,6 @@
 
     </div>
   </div>
-<script src="../js/admin.js?v=20260726-3"></script>
+<script src="../js/admin.js?v=20260726-4"></script>
 </body>
 </html>

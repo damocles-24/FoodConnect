@@ -248,6 +248,9 @@ $updateStmt->close();
    ACTIVITY LOG
 ========================================================= */
 
+$actionTitle =
+    "Restaurant Status Updated";
+
 $description =
     $admin["full_name"] .
     " changed " .
@@ -261,33 +264,144 @@ $description =
 $logStmt = $conn->prepare("
     INSERT INTO tbl_activity_logs (
         restaurant_id,
-        created_by,
-        actor_role,
+        user_id,
+        user_role,
         action_type,
         action_title,
         action_description
     )
-    VALUES (?, ?, 'admin', 'system', ?, ?)
+    VALUES (
+        ?,
+        ?,
+        'admin',
+        'restaurant_status',
+        ?,
+        ?
+    )
 ");
 
-if ($logStmt) {
-    $actionTitle =
-        "Restaurant Status Updated";
-
-    $logStmt->bind_param(
-        "iiss",
-        $restaurantId,
-        $adminId,
-        $actionTitle,
-        $description
+if (!$logStmt) {
+    error_log(
+        "update_admin_restaurant_status activity log prepare error: " .
+        $conn->error
     );
 
-    $logStmt->execute();
-    $logStmt->close();
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The restaurant status was updated, but the activity log could not be saved."
+    ], 500);
 }
+
+$logStmt->bind_param(
+    "iiss",
+    $restaurantId,
+    $adminId,
+    $actionTitle,
+    $description
+);
+
+if (!$logStmt->execute()) {
+    error_log(
+        "update_admin_restaurant_status activity log execute error: " .
+        $logStmt->error
+    );
+
+    $logStmt->close();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The restaurant status was updated, but the activity log could not be saved."
+    ], 500);
+}
+
+$logStmt->close();
 
 respond_json([
     "success" => true,
-    "message" => "Restaurant status updated successfully.",
-    "business_status" => $businessStatus
+    "message" =>
+        "Restaurant status updated successfully.",
+    "business_status" =>
+        $businessStatus
+]);/* =========================================================
+   ACTIVITY LOG
+========================================================= */
+
+$actionTitle =
+    "Restaurant Status Updated";
+
+$description =
+    $admin["full_name"] .
+    " changed " .
+    $restaurant["name"] .
+    " from " .
+    $oldStatus .
+    " to " .
+    $businessStatus .
+    ".";
+
+$logStmt = $conn->prepare("
+    INSERT INTO tbl_activity_logs (
+        restaurant_id,
+        user_id,
+        user_role,
+        action_type,
+        action_title,
+        action_description
+    )
+    VALUES (
+        ?,
+        ?,
+        'admin',
+        'restaurant_status',
+        ?,
+        ?
+    )
+");
+
+if (!$logStmt) {
+    error_log(
+        "update_admin_restaurant_status activity log prepare error: " .
+        $conn->error
+    );
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The restaurant status was updated, but the activity log could not be saved."
+    ], 500);
+}
+
+$logStmt->bind_param(
+    "iiss",
+    $restaurantId,
+    $adminId,
+    $actionTitle,
+    $description
+);
+
+if (!$logStmt->execute()) {
+    error_log(
+        "update_admin_restaurant_status activity log execute error: " .
+        $logStmt->error
+    );
+
+    $logStmt->close();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The restaurant status was updated, but the activity log could not be saved."
+    ], 500);
+}
+
+$logStmt->close();
+
+respond_json([
+    "success" => true,
+    "message" =>
+        "Restaurant status updated successfully.",
+    "business_status" =>
+        $businessStatus
 ]);

@@ -660,6 +660,8 @@ if ($decision === "reject") {
 
     $rejectStmt->close();
 
+    
+
     /*
     |--------------------------------------------------------------------------
     | Commit before sending notification email
@@ -770,10 +772,6 @@ if ($decision === "reject") {
     ]);
 }
 
-/* =====================================================
-   CHECK EXISTING RESTAURANT
-===================================================== */
-    
     /* =====================================================
        CHECK EXISTING RESTAURANT
     ===================================================== */
@@ -844,6 +842,14 @@ if ($decision === "reject") {
             (string)
             $application["restaurant_contact"]
         );
+
+        $restaurantDescription =
+    trim(
+        (string) (
+            $application["restaurant_description"]
+            ?? ""
+        )
+    );
 
 $logoPath =
     trim(
@@ -1024,6 +1030,66 @@ $createRestaurantStmt->bind_param(
     }
 
     $approveStmt->close();
+
+    /* =====================================================
+   LOG APPLICATION APPROVAL
+===================================================== */
+
+$approveActionTitle =
+    "Restaurant Approved";
+
+$approveDescription =
+    "The restaurant application \"" .
+    $restaurantName .
+    "\" owned by " .
+    $ownerName .
+    " was approved and restaurant ID " .
+    $restaurantId .
+    " was created.";
+
+$approveLogStmt =
+    $conn->prepare("
+        INSERT INTO tbl_activity_logs (
+            restaurant_id,
+            user_id,
+            user_role,
+            action_type,
+            action_title,
+            action_description
+        )
+        VALUES (
+            ?,
+            ?,
+            'admin',
+            'restaurant_application',
+            ?,
+            ?
+        )
+    ");
+
+if (!$approveLogStmt) {
+    throw new RuntimeException(
+        "Unable to create the application approval log."
+    );
+}
+
+$approveLogStmt->bind_param(
+    "iiss",
+    $restaurantId,
+    $adminId,
+    $approveActionTitle,
+    $approveDescription
+);
+
+if (!$approveLogStmt->execute()) {
+    $approveLogStmt->close();
+
+    throw new RuntimeException(
+        "Unable to save the application approval log."
+    );
+}
+
+$approveLogStmt->close();
 
 /*
 |--------------------------------------------------------------------------
