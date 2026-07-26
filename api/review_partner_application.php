@@ -169,6 +169,7 @@ if ($applicationId <= 0) {
 
 $allowedDecisions = [
     "approve",
+    "request_changes",
     "reject"
 ];
 
@@ -187,13 +188,20 @@ if (
 }
 
 if (
-    $decision === "reject" &&
+    in_array(
+        $decision,
+        [
+            "request_changes",
+            "reject"
+        ],
+        true
+    ) &&
     strlen($rejectionReason) < 10
 ) {
     respond_json([
         "success" => false,
         "message" =>
-            "Enter a clear rejection reason with at least 10 characters."
+            "Enter a clear review reason with at least 10 characters."
     ], 422);
 }
 
@@ -201,7 +209,7 @@ if (strlen($rejectionReason) > 1000) {
     respond_json([
         "success" => false,
         "message" =>
-            "The rejection reason is too long."
+            "The review reason is too long."
     ], 422);
 }
 
@@ -446,162 +454,326 @@ if (
         "The restaurant owner does not have a valid email address."
     );
 }
+/* =====================================================
+   REQUEST APPLICATION CHANGES
+===================================================== */
 
-    /* =====================================================
-       REJECT APPLICATION
-    ===================================================== */
+if ($decision === "request_changes") {
+    $changesStmt =
+        $conn->prepare("
+            UPDATE tbl_partner_applications
+            SET
+                application_status = 'needs_changes',
+                rejection_reason = ?,
+                reviewed_at = NOW(),
+                reviewed_by = ?
+            WHERE application_id = ?
+              AND application_status = 'submitted'
+            LIMIT 1
+        ");
 
-    if ($decision === "reject") {
-        $rejectStmt =
-            $conn->prepare("
-                UPDATE tbl_partner_applications
-                SET
-                    application_status = 'rejected',
-                    rejection_reason = ?,
-                    reviewed_at = NOW(),
-                    reviewed_by = ?
-                WHERE application_id = ?
-                  AND application_status = 'submitted'
-                LIMIT 1
-            ");
-
-        if (!$rejectStmt) {
-            throw new RuntimeException(
-                "Unable to reject the application."
-            );
-        }
-
-        $rejectStmt->bind_param(
-            "sii",
-            $rejectionReason,
-            $adminId,
-            $applicationId
+    if (!$changesStmt) {
+        throw new RuntimeException(
+            "Unable to request application changes."
         );
-
-        if (!$rejectStmt->execute()) {
-            throw new RuntimeException(
-                "Unable to reject the application."
-            );
-        }
-
-        if ($rejectStmt->affected_rows !== 1) {
-            $rejectStmt->close();
-
-            throw new RuntimeException(
-                "The application status changed before the review was completed."
-            );
-        }
-
-        $rejectStmt->close();
-
-/*
-|--------------------------------------------------------------------------
-| Commit rejection before sending email
-|--------------------------------------------------------------------------
-*/
-
-$conn->commit();
-
-$safeOwnerName =
-    escape_html(
-        $ownerName
-    );
-
-$safeRestaurantName =
-    escape_html(
-        (string) $application[
-            "restaurant_name"
-        ]
-    );
-
-$safeRejectionReason =
-    nl2br(
-        escape_html(
-            $rejectionReason
-        )
-    );
-
-$rejectionSubject =
-    "Update on Your FoodConnect Restaurant Application";
-
-$rejectionBody = "
-    <div style=\"
-        max-width: 620px;
-        margin: 0 auto;
-        padding: 28px;
-        font-family: Arial, sans-serif;
-        color: #1f2937;
-        line-height: 1.6;
-    \">
-        <h2 style=\"
-            margin: 0 0 18px;
-            color: #c62828;
-        \">
-            Restaurant Application Update
-        </h2>
-
-        <p>
-            Hello {$safeOwnerName},
-        </p>
-
-        <p>
-            Your FoodConnect application for
-            <strong>{$safeRestaurantName}</strong>
-            requires changes before it can be approved.
-        </p>
-
-        <div style=\"
-            margin: 20px 0;
-            padding: 16px;
-            border-left: 4px solid #c62828;
-            background: #fff5f5;
-        \">
-            <strong>Administrator's reason:</strong>
-
-            <div style=\"margin-top: 8px;\">
-                {$safeRejectionReason}
-            </div>
-        </div>
-
-        <p>
-            Please log in through the FoodConnect Partner Portal,
-            review your application, make the required corrections,
-            and submit it again.
-        </p>
-
-        <p>
-            Your owner account remains active and verified.
-        </p>
-
-        <p style=\"margin-top: 28px;\">
-            Thank you,<br>
-            <strong>FoodConnect Support</strong>
-        </p>
-    </div>
-";
-
-$emailSent = sendBrevoSMTP(
-    $ownerEmail,
-    $rejectionSubject,
-    $rejectionBody
-);
-
-respond_json([
-    "success" => true,
-
-    "decision" =>
-        "rejected",
-
-    "email_sent" =>
-        $emailSent,
-
-    "message" =>
-        $emailSent
-            ? "Restaurant application rejected successfully. The owner was notified by email."
-            : "Restaurant application rejected successfully, but the notification email could not be sent."
-]);
     }
 
+    $changesStmt->bind_param(
+        "sii",
+        $rejectionReason,
+        $adminId,
+        $applicationId
+    );
+
+    if (!$changesStmt->execute()) {
+        throw new RuntimeException(
+            "Unable to request application changes."
+        );
+    }
+
+    if (
+        $changesStmt->affected_rows !== 1
+    ) {
+        $changesStmt->close();
+
+        throw new RuntimeException(
+            "The application status changed before the review was completed."
+        );
+    }
+
+    $changesStmt->close();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commit before sending notification email
+    |--------------------------------------------------------------------------
+    */
+
+    $conn->commit();
+
+    $safeOwnerName =
+        escape_html(
+            $ownerName
+        );
+
+    $safeRestaurantName =
+        escape_html(
+            (string) $application[
+                "restaurant_name"
+            ]
+        );
+
+    $safeReviewReason =
+        nl2br(
+            escape_html(
+                $rejectionReason
+            )
+        );
+
+    $changesSubject =
+        "Changes Requested for Your FoodConnect Restaurant Application";
+
+    $changesBody = "
+        <div style=\"
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 28px;
+            font-family: Arial, sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+        \">
+            <h2 style=\"
+                margin: 0 0 18px;
+                color: #d97706;
+            \">
+                Application Changes Requested
+            </h2>
+
+            <p>
+                Hello {$safeOwnerName},
+            </p>
+
+            <p>
+                Your FoodConnect application for
+                <strong>{$safeRestaurantName}</strong>
+                requires some changes before it can be approved.
+            </p>
+
+            <div style=\"
+                margin: 20px 0;
+                padding: 16px;
+                border-left: 4px solid #d97706;
+                background: #fffbeb;
+            \">
+                <strong>Administrator's feedback:</strong>
+
+                <div style=\"margin-top: 8px;\">
+                    {$safeReviewReason}
+                </div>
+            </div>
+
+            <p>
+                Please log in through the FoodConnect Partner Portal,
+                update the required information and submit the
+                application again for review.
+            </p>
+
+            <p>
+                Your owner account and saved application remain active.
+            </p>
+
+            <p style=\"margin-top: 28px;\">
+                Thank you,<br>
+                <strong>FoodConnect Support</strong>
+            </p>
+        </div>
+    ";
+
+    $emailSent = sendBrevoSMTP(
+        $ownerEmail,
+        $changesSubject,
+        $changesBody
+    );
+
+    respond_json([
+        "success" => true,
+
+        "decision" =>
+            "needs_changes",
+
+        "email_sent" =>
+            $emailSent,
+
+        "message" =>
+            $emailSent
+                ? "Application changes requested successfully. The owner was notified by email."
+                : "Application changes requested successfully, but the notification email could not be sent."
+    ]);
+}
+
+/* =====================================================
+   PERMANENTLY REJECT APPLICATION
+===================================================== */
+
+if ($decision === "reject") {
+    $rejectStmt =
+        $conn->prepare("
+            UPDATE tbl_partner_applications
+            SET
+                application_status = 'rejected',
+                rejection_reason = ?,
+                reviewed_at = NOW(),
+                reviewed_by = ?
+            WHERE application_id = ?
+              AND application_status = 'submitted'
+            LIMIT 1
+        ");
+
+    if (!$rejectStmt) {
+        throw new RuntimeException(
+            "Unable to reject the application."
+        );
+    }
+
+    $rejectStmt->bind_param(
+        "sii",
+        $rejectionReason,
+        $adminId,
+        $applicationId
+    );
+
+    if (!$rejectStmt->execute()) {
+        throw new RuntimeException(
+            "Unable to reject the application."
+        );
+    }
+
+    if (
+        $rejectStmt->affected_rows !== 1
+    ) {
+        $rejectStmt->close();
+
+        throw new RuntimeException(
+            "The application status changed before the review was completed."
+        );
+    }
+
+    $rejectStmt->close();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commit before sending notification email
+    |--------------------------------------------------------------------------
+    */
+
+    $conn->commit();
+
+    $safeOwnerName =
+        escape_html(
+            $ownerName
+        );
+
+    $safeRestaurantName =
+        escape_html(
+            (string) $application[
+                "restaurant_name"
+            ]
+        );
+
+    $safeRejectionReason =
+        nl2br(
+            escape_html(
+                $rejectionReason
+            )
+        );
+
+    $rejectionSubject =
+        "Your FoodConnect Restaurant Application Was Rejected";
+
+    $rejectionBody = "
+        <div style=\"
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 28px;
+            font-family: Arial, sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+        \">
+            <h2 style=\"
+                margin: 0 0 18px;
+                color: #c62828;
+            \">
+                Restaurant Application Rejected
+            </h2>
+
+            <p>
+                Hello {$safeOwnerName},
+            </p>
+
+            <p>
+                Your FoodConnect application for
+                <strong>{$safeRestaurantName}</strong>
+                has been rejected.
+            </p>
+
+            <div style=\"
+                margin: 20px 0;
+                padding: 16px;
+                border-left: 4px solid #c62828;
+                background: #fff5f5;
+            \">
+                <strong>Administrator's reason:</strong>
+
+                <div style=\"margin-top: 8px;\">
+                    {$safeRejectionReason}
+                </div>
+            </div>
+
+            <p>
+                This decision closes the current restaurant
+                application. It can no longer be edited or
+                resubmitted through the Partner Portal.
+            </p>
+
+            <p>
+                Your FoodConnect user account remains available,
+                but this restaurant application will remain
+                permanently read-only.
+            </p>
+
+            <p style=\"margin-top: 28px;\">
+                Thank you,<br>
+                <strong>FoodConnect Support</strong>
+            </p>
+        </div>
+    ";
+
+    $emailSent = sendBrevoSMTP(
+        $ownerEmail,
+        $rejectionSubject,
+        $rejectionBody
+    );
+
+    respond_json([
+        "success" => true,
+
+        "decision" =>
+            "rejected",
+
+        "email_sent" =>
+            $emailSent,
+
+        "message" =>
+            $emailSent
+                ? "Restaurant application rejected permanently. The owner was notified by email."
+                : "Restaurant application rejected permanently, but the notification email could not be sent."
+    ]);
+}
+
+/* =====================================================
+   CHECK EXISTING RESTAURANT
+===================================================== */
+    
     /* =====================================================
        CHECK EXISTING RESTAURANT
     ===================================================== */

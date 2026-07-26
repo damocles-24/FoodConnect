@@ -15,10 +15,10 @@
       <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png">
 
 
-  <link
-    rel="stylesheet"
-    href="../css/admin.css"
-  >
+<link
+  rel="stylesheet"
+  href="../css/admin.css?v=20260726-2"
+>
 
   <link
     rel="stylesheet"
@@ -499,6 +499,15 @@
             </button>
 
             <button
+            type="button"
+            class="status-filter"
+            data-status="needs_changes"
+          >
+            Needs Changes
+            <span id="needsChangesApplicationsCount">0</span>
+          </button>
+
+            <button
               type="button"
               class="status-filter"
               data-status="draft"
@@ -945,7 +954,6 @@
 
     </div>
   </div>
-
-  <script src="../js/admin.js"></script>
+<script src="../js/admin.js?v=20260726-3"></script>
 </body>
 </html>

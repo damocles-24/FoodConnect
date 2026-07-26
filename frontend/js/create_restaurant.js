@@ -1106,84 +1106,143 @@ function populateDeliveryOptions(options) {
 }
 
 function renderApplicationStatus(
-    status,
-    rejectionReason = ""
+  status,
+  rejectionReason = ""
 ) {
-    statusBanner.className =
-        "status-banner";
+  statusBanner.className =
+    "status-banner";
 
-    if (status === "submitted") {
-        statusBanner.classList.add(
-            "status-submitted"
-        );
-
-        statusBanner.innerHTML = `
-            <strong>
-                Application under review
-            </strong>
-
-            <br>
-
-            Your restaurant application has already been submitted.
-            You cannot edit it until an administrator reviews it.
-        `;
-
-        statusBanner.classList.remove(
-            "hidden"
-        );
-
-        return;
-    }
-
-    if (status === "rejected") {
-        statusBanner.classList.add(
-            "status-rejected"
-        );
-
-        statusBanner.innerHTML = `
-            <strong>
-                Changes are required
-            </strong>
-
-            <br>
-
-            ${escapeHtml(
-                rejectionReason ||
-                "The administrator returned your application for changes."
-            )}
-        `;
-
-        statusBanner.classList.remove(
-            "hidden"
-        );
-
-        return;
-    }
-
+  if (status === "submitted") {
     statusBanner.classList.add(
-        "status-draft"
+      "status-submitted"
     );
 
     statusBanner.innerHTML = `
-        <strong>
-            Draft application
-        </strong>
+      <strong>
+        Application under review
+      </strong>
 
-        <br>
+      <br>
 
-        Your restaurant is not yet visible to customers.
-        Complete the setup and submit it for review.
+      Your restaurant application has been submitted.
+      You cannot edit it while an administrator
+      is reviewing it.
     `;
 
     statusBanner.classList.remove(
-        "hidden"
+      "hidden"
     );
+
+    return;
+  }
+
+  if (status === "needs_changes") {
+    statusBanner.classList.add(
+      "status-rejected"
+    );
+
+    statusBanner.innerHTML = `
+      <strong>
+        Changes requested
+      </strong>
+
+      <br>
+
+      ${escapeHtml(
+        rejectionReason ||
+        "The administrator requested changes before your application can be approved."
+      )}
+
+      <br><br>
+
+      Update the required information and submit
+      your application again for review.
+    `;
+
+    statusBanner.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
+  if (status === "rejected") {
+    statusBanner.classList.add(
+      "status-rejected"
+    );
+
+    statusBanner.innerHTML = `
+      <strong>
+        Application rejected
+      </strong>
+
+      <br>
+
+      ${escapeHtml(
+        rejectionReason ||
+        "This restaurant application was permanently rejected."
+      )}
+
+      <br><br>
+
+      This application can no longer be edited
+      or resubmitted.
+    `;
+
+    statusBanner.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
+  if (status === "approved") {
+    statusBanner.classList.add(
+      "status-submitted"
+    );
+
+    statusBanner.innerHTML = `
+      <strong>
+        Application approved
+      </strong>
+
+      <br>
+
+      Your restaurant application has been approved.
+    `;
+
+    statusBanner.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
+  statusBanner.classList.add(
+    "status-draft"
+  );
+
+  statusBanner.innerHTML = `
+    <strong>
+      Draft application
+    </strong>
+
+    <br>
+
+    Your restaurant is not yet visible to customers.
+    Complete the setup and submit it for review.
+  `;
+
+  statusBanner.classList.remove(
+    "hidden"
+  );
 }
 
 function applyStatusRestrictions(status) {
-    const isReadOnly =
-        status === "submitted" ||
-        status === "approved";
+  const isReadOnly =
+    status === "submitted" ||
+    status === "approved" ||
+    status === "rejected";
 
     restaurantForm
         .querySelectorAll(
@@ -1274,14 +1333,16 @@ function showForm() {
         "hidden"
     );
 
-    if (
-        currentApplicationStatus ===
-            "submitted" ||
-        currentApplicationStatus ===
-            "approved"
-    ) {
-        currentStep = 5;
-    }
+if (
+  currentApplicationStatus ===
+    "submitted" ||
+  currentApplicationStatus ===
+    "approved" ||
+  currentApplicationStatus ===
+    "rejected"
+) {
+  currentStep = 5;
+}
 
     showWizardStep(
         currentStep,
@@ -1427,11 +1488,13 @@ function handleReviewEdit(event) {
 }
 
 function updateWizardButtons() {
-    const isReadOnly =
-        currentApplicationStatus ===
-            "submitted" ||
-        currentApplicationStatus ===
-            "approved";
+  const isReadOnly =
+    currentApplicationStatus ===
+      "submitted" ||
+    currentApplicationStatus ===
+      "approved" ||
+    currentApplicationStatus ===
+      "rejected";
 
     backButton.classList.toggle(
         "hidden",
@@ -1893,15 +1956,17 @@ async function handleSubmitApplication(
 ) {
     event.preventDefault();
 
-    if (
-        isSubmitting ||
-        currentApplicationStatus ===
-            "submitted" ||
-        currentApplicationStatus ===
-            "approved"
-    ) {
-        return;
-    }
+   if (
+  isSubmitting ||
+  currentApplicationStatus ===
+    "submitted" ||
+  currentApplicationStatus ===
+    "approved" ||
+  currentApplicationStatus ===
+    "rejected"
+) {
+  return;
+}
 
     clearValidationErrors();
 

@@ -224,11 +224,32 @@ const restaurantPreviewDeliveryFee =
     return `Delivery fee: ₱${amount.toFixed(2)}`;
   }
 
-  closeRestaurantPreview?.addEventListener(
+closeRestaurantPreview?.addEventListener(
   "click",
   () => {
     if (IS_ADMIN_PREVIEW) {
-      window.history.back();
+      /*
+       * The Admin preview was opened through
+       * window.open(), so closing this tab returns
+       * the administrator to the still-open review modal.
+       */
+      window.close();
+
+      /*
+       * Fallback for cases where the preview URL
+       * was opened manually and the browser refuses
+       * to close the tab.
+       */
+      window.setTimeout(
+        () => {
+          if (!window.closed) {
+            window.location.href =
+              "/FoodConnect/frontend/html/admin.html";
+          }
+        },
+        150
+      );
+
       return;
     }
 
@@ -745,12 +766,12 @@ async function loadRestaurantIdentity() {
           false;
       }
 
-      if (restaurantPreviewTitle) {
-        restaurantPreviewTitle.textContent =
-          IS_ADMIN_PREVIEW
-            ? "Administrator customer preview"
-            : "Owner customer preview";
-      }
+      if (closeRestaurantPreview) {
+  closeRestaurantPreview.textContent =
+    IS_ADMIN_PREVIEW
+      ? "Return to Admin Review"
+      : "Return to Setup";
+}
     }
 
     return true;

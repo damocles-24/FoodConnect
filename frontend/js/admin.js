@@ -2792,7 +2792,6 @@ function renderApplications(
       "hidden"
     );
 }
-
 function openApplicationDetails(
   applicationId
 ) {
@@ -2811,6 +2810,10 @@ function openApplicationDetails(
   ) {
     return;
   }
+
+  const isSubmitted =
+    application.application_status ===
+    "submitted";
 
   applicationModalContent.innerHTML = `
     <h2>
@@ -2896,89 +2899,131 @@ function openApplicationDetails(
       }
     </div>
 
-        ${
-      application.application_status ===
-      "submitted"
+    ${
+      isSubmitted
         ? `
-          <div class="application-review-panel">
-            <h3>
-              Review application
-            </h3>
+          <div class="application-preview-card">
+            <div class="application-preview-card-copy">
+              <span class="application-preview-label">
+                Customer storefront preview
+              </span>
 
-            <p>
-              Approving this application will create
-              the restaurant account and connect it
-              to the owner.
-            </p>
+              <h3>
+                Review the customer-facing page
+              </h3>
 
-            <div
-              id="rejectionReasonGroup"
-              class="rejection-reason-group hidden"
+              <p>
+                Open the same shared restaurant page customers
+                will see after approval. Ordering and customer
+                actions remain disabled while previewing.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="openAdminCustomerPreviewButton"
+              class="application-preview-button"
             >
-              <label for="applicationRejectionReason">
-                Rejection reason
-              </label>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
 
-              <textarea
-                id="applicationRejectionReason"
-                rows="4"
-                maxlength="1000"
-                placeholder="Explain what the owner must correct before resubmitting."
-              ></textarea>
-
-              <small>
-                Use at least 10 characters.
-              </small>
-            </div>
-
-            <p
-              id="applicationReviewMessage"
-              class="application-review-message"
-            ></p>
-
-            <div class="application-review-actions">
-              <button
-                type="button"
-                id="approveApplicationButton"
-                class="approve-button"
-              >
-                <i class="fa-solid fa-check"></i>
-                Approve Application
-              </button>
-
-              <button
-                type="button"
-                id="showRejectApplicationButton"
-                class="reject-button"
-              >
-                <i class="fa-solid fa-xmark"></i>
-                Reject Application
-              </button>
-
-              <button
-                type="button"
-                id="confirmRejectApplicationButton"
-                class="reject-button hidden"
-              >
-                Confirm Rejection
-              </button>
-
-              <button
-                type="button"
-                id="cancelRejectApplicationButton"
-                class="secondary-button hidden"
-              >
-                Cancel
-              </button>
-            </div>
+              Open Customer Preview
+            </button>
           </div>
+
+          <div class="application-review-panel">
+  <h3>
+    Review application
+  </h3>
+
+  <p>
+    Choose the correct decision after reviewing
+    the application details and customer storefront.
+  </p>
+
+  <div
+    id="applicationReviewReasonGroup"
+    class="rejection-reason-group hidden"
+  >
+    <label
+      id="applicationReviewReasonLabel"
+      for="applicationReviewReason"
+    >
+      Review reason
+    </label>
+
+    <textarea
+      id="applicationReviewReason"
+      rows="4"
+      maxlength="1000"
+      placeholder="Explain the reason clearly."
+    ></textarea>
+
+    <small
+      id="applicationReviewReasonHint"
+    >
+      Use at least 10 characters.
+    </small>
+  </div>
+
+  <p
+    id="applicationReviewMessage"
+    class="application-review-message"
+  ></p>
+
+  <div class="application-review-actions">
+    <button
+      type="button"
+      id="approveApplicationButton"
+      class="approve-button"
+    >
+      <i class="fa-solid fa-check"></i>
+
+      Approve Application
+    </button>
+
+   <button
+  type="button"
+  id="requestChangesApplicationButton"
+  class="request-changes-button"
+>
+      <i class="fa-solid fa-pen-to-square"></i>
+
+      Request Changes
+    </button>
+
+    <button
+      type="button"
+      id="rejectApplicationButton"
+      class="reject-button"
+    >
+      <i class="fa-solid fa-ban"></i>
+
+      Reject Application
+    </button>
+
+    <button
+      type="button"
+      id="confirmApplicationReviewButton"
+      class="reject-button hidden"
+    >
+      Confirm Decision
+    </button>
+
+    <button
+      type="button"
+      id="cancelApplicationReviewButton"
+      class="secondary-button hidden"
+    >
+      Cancel
+    </button>
+  </div>
+</div>
         `
         : ""
     }
-      
   `;
 
-    applicationModal?.classList.remove(
+  applicationModal?.classList.remove(
     "hidden"
   );
 
@@ -3000,35 +3045,100 @@ function bindApplicationReviewControls(
     return;
   }
 
-  const approveButton =
+  const previewButton =
+    document.getElementById(
+      "openAdminCustomerPreviewButton"
+    );
+
+    const approveButton =
     document.getElementById(
       "approveApplicationButton"
     );
 
-  const showRejectButton =
+  const requestChangesButton =
     document.getElementById(
-      "showRejectApplicationButton"
+      "requestChangesApplicationButton"
     );
 
-  const confirmRejectButton =
+  const rejectButton =
     document.getElementById(
-      "confirmRejectApplicationButton"
+      "rejectApplicationButton"
     );
 
-  const cancelRejectButton =
+  const confirmReviewButton =
     document.getElementById(
-      "cancelRejectApplicationButton"
+      "confirmApplicationReviewButton"
     );
 
-  const rejectionReasonGroup =
+  const cancelReviewButton =
     document.getElementById(
-      "rejectionReasonGroup"
+      "cancelApplicationReviewButton"
     );
 
-  const rejectionReasonInput =
+  const reviewReasonGroup =
     document.getElementById(
-      "applicationRejectionReason"
+      "applicationReviewReasonGroup"
     );
+
+  const reviewReasonLabel =
+    document.getElementById(
+      "applicationReviewReasonLabel"
+    );
+
+  const reviewReasonInput =
+    document.getElementById(
+      "applicationReviewReason"
+    );
+
+  const reviewReasonHint =
+    document.getElementById(
+      "applicationReviewReasonHint"
+    );
+
+  let pendingDecision = "";
+
+  previewButton?.addEventListener(
+    "click",
+    () => {
+      const applicationId =
+        Number(
+          application.application_id ||
+          0
+        );
+
+      if (applicationId <= 0) {
+        setApplicationReviewMessage(
+          "Invalid restaurant application."
+        );
+
+        return;
+      }
+
+      const previewUrl =
+        "/FoodConnect/frontend/html/restaurant.html" +
+        `?preview=admin&application_id=${encodeURIComponent(
+          applicationId
+        )}`;
+
+      const previewWindow =
+  window.open(
+    previewUrl,
+    "_blank"
+  );
+
+if (!previewWindow) {
+  setApplicationReviewMessage(
+    "The preview window was blocked. Allow pop-ups for FoodConnect and try again."
+  );
+
+  return;
+}
+
+previewWindow.opener = null;
+
+setApplicationReviewMessage("");
+    }
+  );
 
   approveButton?.addEventListener(
     "click",
@@ -3052,102 +3162,218 @@ function bindApplicationReviewControls(
     }
   );
 
-  showRejectButton?.addEventListener(
+  requestChangesButton
+    ?.addEventListener(
+      "click",
+      () => {
+        pendingDecision =
+          "request_changes";
+
+        showReviewReasonForm({
+          title:
+            "Requested changes",
+
+          placeholder:
+            "Explain what the owner must update before resubmitting.",
+
+          confirmText:
+            "Confirm Request Changes",
+          confirmClass:
+          "request-changes-button"
+        });
+      }
+    );
+
+  rejectButton?.addEventListener(
     "click",
     () => {
-      rejectionReasonGroup
-        ?.classList.remove(
-          "hidden"
-        );
+      pendingDecision =
+        "reject";
 
-      showRejectButton.classList.add(
-        "hidden"
-      );
+      showReviewReasonForm({
+        title:
+          "Permanent rejection reason",
 
-      confirmRejectButton
-        ?.classList.remove(
-          "hidden"
-        );
+        placeholder:
+          "Explain why this application is being permanently rejected.",
 
-      cancelRejectButton
-        ?.classList.remove(
-          "hidden"
-        );
+        confirmText:
+          "Confirm Permanent Rejection",
 
-      rejectionReasonInput?.focus();
-    }
-  );
-
-  cancelRejectButton?.addEventListener(
-    "click",
-    () => {
-      rejectionReasonGroup
-        ?.classList.add(
-          "hidden"
-        );
-
-      showRejectButton
-        ?.classList.remove(
-          "hidden"
-        );
-
-      confirmRejectButton
-        ?.classList.add(
-          "hidden"
-        );
-
-      cancelRejectButton.classList.add(
-        "hidden"
-      );
-
-      if (rejectionReasonInput) {
-        rejectionReasonInput.value = "";
-      }
-
-      setApplicationReviewMessage("");
-    }
-  );
-
-  confirmRejectButton?.addEventListener(
-    "click",
-    async () => {
-      const reason =
-        rejectionReasonInput
-          ?.value
-          .trim() || "";
-
-      if (reason.length < 10) {
-        setApplicationReviewMessage(
-          "Enter a clear rejection reason with at least 10 characters."
-        );
-
-        rejectionReasonInput?.focus();
-        return;
-      }
-
-      const confirmed =
-        window.confirm(
-          `Reject ${application.restaurant_name}'s application?`
-        );
-
-      if (!confirmed) {
-        return;
-      }
-
-      await reviewPartnerApplication({
-        applicationId:
-          application.application_id,
-
-        decision:
-          "reject",
-
-        rejectionReason:
-          reason
+        confirmClass:
+          "reject-button"
       });
     }
   );
-}
 
+  cancelReviewButton
+    ?.addEventListener(
+      "click",
+      resetReviewDecision
+    );
+
+  confirmReviewButton
+    ?.addEventListener(
+      "click",
+      async () => {
+        const reason =
+          reviewReasonInput
+            ?.value
+            .trim() || "";
+
+        if (
+          ![
+            "request_changes",
+            "reject"
+          ].includes(
+            pendingDecision
+          )
+        ) {
+          setApplicationReviewMessage(
+            "Select a review decision first."
+          );
+
+          return;
+        }
+
+        if (reason.length < 10) {
+          setApplicationReviewMessage(
+            "Enter a clear review reason with at least 10 characters."
+          );
+
+          reviewReasonInput?.focus();
+          return;
+        }
+
+        const confirmationMessage =
+          pendingDecision ===
+          "request_changes"
+            ? `Request changes from ${application.restaurant_name}?`
+            : `Permanently reject ${application.restaurant_name}'s application? The owner will no longer be able to edit or resubmit it.`;
+
+        const confirmed =
+          window.confirm(
+            confirmationMessage
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        await reviewPartnerApplication({
+          applicationId:
+            application.application_id,
+
+          decision:
+            pendingDecision,
+
+          rejectionReason:
+            reason
+        });
+      }
+    );
+
+  function showReviewReasonForm({
+    title,
+    placeholder,
+    confirmText,
+    confirmClass
+  }) {
+    reviewReasonGroup
+      ?.classList.remove(
+        "hidden"
+      );
+
+    approveButton?.classList.add(
+      "hidden"
+    );
+
+    requestChangesButton
+      ?.classList.add(
+        "hidden"
+      );
+
+    rejectButton?.classList.add(
+      "hidden"
+    );
+
+    confirmReviewButton
+      ?.classList.remove(
+        "hidden"
+      );
+
+    cancelReviewButton
+      ?.classList.remove(
+        "hidden"
+      );
+
+    if (reviewReasonLabel) {
+      reviewReasonLabel.textContent =
+        title;
+    }
+
+    if (reviewReasonInput) {
+      reviewReasonInput.value = "";
+
+      reviewReasonInput.placeholder =
+        placeholder;
+    }
+
+    if (reviewReasonHint) {
+      reviewReasonHint.textContent =
+        "Use at least 10 characters.";
+    }
+
+    if (confirmReviewButton) {
+      confirmReviewButton.textContent =
+        confirmText;
+
+      confirmReviewButton.className =
+        `${confirmClass}`;
+    }
+
+    setApplicationReviewMessage("");
+
+    reviewReasonInput?.focus();
+  }
+
+  function resetReviewDecision() {
+    pendingDecision = "";
+
+    reviewReasonGroup?.classList.add(
+      "hidden"
+    );
+
+    approveButton?.classList.remove(
+      "hidden"
+    );
+
+    requestChangesButton
+      ?.classList.remove(
+        "hidden"
+      );
+
+    rejectButton?.classList.remove(
+      "hidden"
+    );
+
+    confirmReviewButton
+      ?.classList.add(
+        "hidden"
+      );
+
+    cancelReviewButton
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (reviewReasonInput) {
+      reviewReasonInput.value = "";
+    }
+
+    setApplicationReviewMessage("");
+  }
+}
 async function reviewPartnerApplication({
   applicationId,
   decision,
@@ -3173,11 +3399,12 @@ async function reviewPartnerApplication({
       "cancelRejectApplicationButton"
     );
 
-  const reviewButtons = [
+    const reviewButtons = [
     approveButton,
-    showRejectButton,
-    confirmRejectButton,
-    cancelRejectButton
+    requestChangesButton,
+    rejectButton,
+    confirmReviewButton,
+    cancelReviewButton
   ];
 
   reviewButtons.forEach(
@@ -3188,10 +3415,27 @@ async function reviewPartnerApplication({
     }
   );
 
+   let loadingMessage =
+    "Reviewing restaurant application...";
+
+  if (decision === "approve") {
+    loadingMessage =
+      "Approving restaurant application...";
+  } else if (
+    decision ===
+    "request_changes"
+  ) {
+    loadingMessage =
+      "Sending requested changes...";
+  } else if (
+    decision === "reject"
+  ) {
+    loadingMessage =
+      "Permanently rejecting restaurant application...";
+  }
+
   setApplicationReviewMessage(
-    decision === "approve"
-      ? "Approving restaurant application..."
-      : "Rejecting restaurant application...",
+    loadingMessage,
     "loading"
   );
 
@@ -3364,8 +3608,18 @@ function updateApplicationCounts(
   );
 
   setText(
+  "needsChangesApplicationsCount",
+  counts.needs_changes || 0
+);
+
+  setText(
     "draftApplicationsCount",
     counts.draft || 0
+  );
+
+    setText(
+    "needsChangesApplicationsCount",
+    counts.needs_changes || 0
   );
 
   setText(
@@ -3469,20 +3723,22 @@ function setAdminLoginMessage(
 ========================= */
 
 function setText(
-  elementId,
+  elementOrId,
   value
 ) {
   const element =
-    document.getElementById(
-      elementId
-    );
+    typeof elementOrId ===
+    "string"
+      ? document.getElementById(
+          elementOrId
+        )
+      : elementOrId;
 
   if (element) {
     element.textContent =
       String(value);
   }
 }
-
 function createDetail(
   label,
   value,
@@ -3529,10 +3785,8 @@ async function readJson(
 function formatStatus(status) {
   return String(status || "")
     .replaceAll("_", " ")
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase()
+    .replace(/\b\w/g, (character) =>
+      character.toUpperCase()
     );
 }
 

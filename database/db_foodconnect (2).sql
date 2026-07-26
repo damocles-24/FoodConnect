@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 25, 2026 at 03:00 PM
+-- Generation Time: Jul 26, 2026 at 05:37 AM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -80,16 +80,23 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (6, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-24 12:11:09'),
 (8, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-24 16:01:16'),
 (10, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-24 16:47:55'),
+(17, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-25 13:46:32'),
+(19, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-25 14:45:49'),
+(22, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-26 02:59:02'),
 (11, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:13:52'),
 (12, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:01'),
 (13, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:02'),
 (14, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:27'),
 (15, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:30'),
+(20, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-26 02:58:45'),
 (1, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-23 07:15:44'),
 (3, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 01:45:26'),
 (5, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 12:10:55'),
 (7, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 16:01:05'),
-(9, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 16:47:40');
+(9, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 16:47:40'),
+(16, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-25 13:46:18'),
+(18, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-25 14:45:34'),
+(21, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-26 02:58:54');
 
 -- --------------------------------------------------------
 
@@ -493,7 +500,7 @@ CREATE TABLE `tbl_owner_trusted_devices` (
 --
 
 INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selector`, `token_hash`, `expires_at`, `created_at`, `last_used_at`) VALUES
-(4, 18, '27eda3e59c636dcfc26dffcc165c5d7b', '2d37821b30e3eb2bf6ddcfb7576f81d4bb13cd1c9b084fafeee6a4c533a81ff2', '2026-08-24 11:54:45', '2026-07-25 17:54:45', NULL);
+(5, 19, '65778f3c9ccb58b8420414f048190e1b', '7f7c210a8d9f103fa60e9cc267e0b4b4c222641191d104f88da7cd6b7ddec484', '2026-08-24 15:49:51', '2026-07-25 21:49:51', '2026-07-25 22:50:01');
 
 -- --------------------------------------------------------
 
@@ -509,6 +516,7 @@ CREATE TABLE `tbl_partner_applications` (
   `restaurant_contact` varchar(50) NOT NULL,
   `cuisine` varchar(100) NOT NULL,
   `restaurant_description` text,
+  `logo_path` varchar(255) DEFAULT NULL,
   `business_email` varchar(150) DEFAULT NULL,
   `province` varchar(100) DEFAULT NULL,
   `city_municipality` varchar(100) DEFAULT NULL,
@@ -518,7 +526,7 @@ CREATE TABLE `tbl_partner_applications` (
   `delivery_options_json` longtext,
   `minimum_order` decimal(10,2) NOT NULL DEFAULT '0.00',
   `delivery_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `application_status` enum('email_pending','draft','submitted','approved','rejected') NOT NULL DEFAULT 'email_pending',
+  `application_status` enum('email_pending','draft','submitted','needs_changes','approved','rejected') NOT NULL DEFAULT 'email_pending',
   `rejection_reason` text,
   `submitted_at` datetime DEFAULT NULL,
   `reviewed_at` datetime DEFAULT NULL,
@@ -531,8 +539,9 @@ CREATE TABLE `tbl_partner_applications` (
 -- Dumping data for table `tbl_partner_applications`
 --
 
-INSERT INTO `tbl_partner_applications` (`application_id`, `owner_id`, `restaurant_name`, `restaurant_address`, `restaurant_contact`, `cuisine`, `restaurant_description`, `business_email`, `province`, `city_municipality`, `barangay`, `postal_code`, `business_hours_json`, `delivery_options_json`, `minimum_order`, `delivery_fee`, `application_status`, `rejection_reason`, `submitted_at`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
-(2, 18, 'Ayaw ko na Restaurant', 'Poblacion', '09457309228', 'Cafe', '', 'jameslee050505051@gmail.com', 'Pangasinan', 'Alaminos City', 'Poblacion', '2402', '{\"Monday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Tuesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Wednesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Thursday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Friday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Saturday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Sunday\":{\"closed\":true,\"open\":null,\"close\":null}}', '[\"pickup\",\"restaurant_delivery\"]', '0.00', '0.00', 'approved', NULL, '2026-07-24 18:47:03', '2026-07-25 00:48:06', 17, '2026-07-24 14:29:16', '2026-07-24 16:48:06');
+INSERT INTO `tbl_partner_applications` (`application_id`, `owner_id`, `restaurant_name`, `restaurant_address`, `restaurant_contact`, `cuisine`, `restaurant_description`, `logo_path`, `business_email`, `province`, `city_municipality`, `barangay`, `postal_code`, `business_hours_json`, `delivery_options_json`, `minimum_order`, `delivery_fee`, `application_status`, `rejection_reason`, `submitted_at`, `reviewed_at`, `reviewed_by`, `created_at`, `updated_at`) VALUES
+(2, 18, 'Ayaw ko na Restaurant', 'Poblacion', '09457309228', 'Cafe', '', NULL, 'jameslee050505051@gmail.com', 'Pangasinan', 'Alaminos City', 'Poblacion', '2402', '{\"Monday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Tuesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Wednesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Thursday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Friday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Saturday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Sunday\":{\"closed\":true,\"open\":null,\"close\":null}}', '[\"pickup\",\"restaurant_delivery\"]', '0.00', '0.00', 'approved', NULL, '2026-07-24 18:47:03', '2026-07-25 00:48:06', 17, '2026-07-24 14:29:16', '2026-07-24 16:48:06'),
+(3, 19, 'Hotdog cafe', 'Poblacion', '09457309228', 'Cafe', '', 'uploads/restaurant_logos/owner_19/restaurant_logo_20260725_154052_5fbe4653f64f8827.jpg', 'eeegggihtloh@gmail.com', 'Pangasinan', 'Alaminos City', 'Tanaytay', '2402', '{\"Monday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Tuesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Wednesday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Thursday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Friday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"20:00\"},\"Saturday\":{\"closed\":false,\"open\":\"08:00\",\"close\":\"17:00\"},\"Sunday\":{\"closed\":true,\"open\":null,\"close\":null}}', '[\"pickup\",\"restaurant_delivery\"]', '0.00', '1000.00', 'draft', NULL, NULL, '2026-07-25 22:46:03', 17, '2026-07-25 13:37:21', '2026-07-25 15:16:51');
 
 -- --------------------------------------------------------
 
@@ -798,7 +807,8 @@ INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `full_name`, `email
 (14, 1, 'delivery_staff', 'deliver', 'jameslee11@gmail.com', '09985556307', 'Poblacion', '$2y$10$uxz.ZCQIgQa3tGGbbB.wneU8PGsVuN4hFXn2M9y1vk/wATLk8fNdC', 1, '2026-07-10 03:57:46', NULL, NULL, NULL, NULL, 0, NULL, NULL),
 (15, 1, 'cashier', 'cashier', 'itlog@gmail.com', '12345543312', 'Poblacion', '$2y$10$kPTsRHBtNGbR.2SPRneUD.w49mJZC7f0//JkC7U1oRU7/sJRg2chW', 1, '2026-07-10 04:12:54', NULL, NULL, NULL, NULL, 0, NULL, NULL),
 (17, NULL, 'admin', 'Carlos Jay Miguel T. Porto', 'foodconnectv1@gmail.com', '09457309228', NULL, '$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq', 1, '2026-07-16 06:02:12', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(18, 2, 'owner', 'Ian delacruz', 'jameslee050505051@gmail.com', '09457309228', NULL, '$2y$10$8Jy1FyOevG9VGm75bCknQ.x0EnTrO4DtXcbt2a9pq94F7nNdqLYGq', 1, '2026-07-24 14:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL);
+(18, 2, 'owner', 'Ian delacruz', 'jameslee050505051@gmail.com', '09457309228', NULL, '$2y$10$8Jy1FyOevG9VGm75bCknQ.x0EnTrO4DtXcbt2a9pq94F7nNdqLYGq', 1, '2026-07-24 14:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(19, NULL, 'owner', 'Angel Recepcion', 'eeegggihtloh@gmail.com', '09457309228', NULL, '$2y$10$Go4eCJ0zKM7OFhP1vvsM3uk9P/RmNgguLZEJHj1s/k91UX1AazDuK', 1, '2026-07-25 13:37:21', NULL, NULL, NULL, NULL, 1, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -988,7 +998,7 @@ ALTER TABLE `tbl_activity_logs`
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
@@ -1072,13 +1082,13 @@ ALTER TABLE `tbl_order_items`
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
 --
 ALTER TABLE `tbl_owner_trusted_devices`
-  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `tbl_partner_applications`
 --
 ALTER TABLE `tbl_partner_applications`
-  MODIFY `application_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `application_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tbl_products`
@@ -1108,7 +1118,7 @@ ALTER TABLE `tbl_stock_logs`
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Constraints for dumped tables

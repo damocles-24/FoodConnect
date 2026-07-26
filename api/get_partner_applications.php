@@ -55,6 +55,7 @@ $allowedStatuses = [
     "email_pending",
     "draft",
     "submitted",
+    "needs_changes",
     "approved",
     "rejected"
 ];
@@ -114,11 +115,12 @@ $sql .= "
     ORDER BY
         CASE pa.application_status
             WHEN 'submitted' THEN 1
-            WHEN 'draft' THEN 2
-            WHEN 'rejected' THEN 3
-            WHEN 'email_pending' THEN 4
-            WHEN 'approved' THEN 5
-            ELSE 6
+            WHEN 'needs_changes' THEN 2
+            WHEN 'draft' THEN 3
+            WHEN 'rejected' THEN 4
+            WHEN 'email_pending' THEN 5
+            WHEN 'approved' THEN 6
+            ELSE 7
         END,
         pa.updated_at DESC,
         pa.application_id DESC
@@ -242,6 +244,7 @@ $counts = [
     "email_pending" => 0,
     "draft" => 0,
     "submitted" => 0,
+    "needs_changes" => 0,
     "approved" => 0,
     "rejected" => 0
 ];

@@ -620,6 +620,11 @@ button {
   background: #fff1d5;
 }
 
+.status-needs_changes {
+  color: #8a4b08;
+  background: #ffedd5;
+}
+
 .status-approved {
   color: #176b35;
   background: #dcf7e7;
@@ -875,6 +880,91 @@ button {
    APPLICATION REVIEW
 ========================= */
 
+.application-preview-card {
+  margin-top: 22px;
+  padding: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 24px
+    rgba(17, 24, 39, 0.06);
+}
+
+.application-preview-card-copy {
+  min-width: 0;
+}
+
+.application-preview-label {
+  display: inline-block;
+
+  margin-bottom: 7px;
+
+  color: var(--primary);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.application-preview-card h3 {
+  margin: 0 0 7px;
+}
+
+.application-preview-card p {
+  max-width: 520px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.application-preview-button {
+  min-height: 43px;
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 0 17px;
+
+  border: none;
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: var(--primary);
+
+  font: inherit;
+  font-weight: 750;
+
+  cursor: pointer;
+}
+
+.application-preview-button:hover {
+  filter: brightness(0.94);
+}
+
+.application-preview-button:focus-visible {
+  outline: 3px solid
+    rgba(245, 130, 32, 0.2);
+
+  outline-offset: 3px;
+}
+
 .application-review-panel {
   margin-top: 22px;
   padding: 20px;
@@ -929,6 +1019,34 @@ button {
   background: #1d873d;
 }
 
+.request-changes-button {
+  min-height: 43px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 0 17px;
+
+  border: none;
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: #d97706;
+
+  font-weight: 750;
+}
+
+.request-changes-button:hover {
+  background: #b86105;
+}
+
+.request-changes-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .reject-button {
   border: none;
 
@@ -941,6 +1059,7 @@ button {
 }
 
 .approve-button:disabled,
+.request-changes-button:disabled,
 .reject-button:disabled,
 .application-review-actions
 .secondary-button:disabled {
@@ -1028,16 +1147,26 @@ button {
 }
 
 @media (max-width: 560px) {
+  .application-preview-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .application-preview-button {
+    width: 100%;
+  }
+
   .application-review-actions {
     flex-direction: column;
   }
 
-  .approve-button,
-  .reject-button,
-  .application-review-actions
-  .secondary-button {
-    width: 100%;
-  }
+ .approve-button,
+.request-changes-button,
+.reject-button,
+.application-review-actions
+.secondary-button {
+  width: 100%;
+}
 }
 
 /* =========================================================

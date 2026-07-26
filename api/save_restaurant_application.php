@@ -722,7 +722,7 @@ $currentStatus =
 
 $editableStatuses = [
     "draft",
-    "rejected"
+    "needs_changes"
 ];
 
 if (
@@ -732,11 +732,29 @@ if (
         true
     )
 ) {
+    $statusMessage =
+        "This restaurant application can no longer be edited.";
+
+    if ($currentStatus === "submitted") {
+        $statusMessage =
+            "Your restaurant application is currently under administrator review.";
+    } elseif (
+        $currentStatus === "approved"
+    ) {
+        $statusMessage =
+            "Your restaurant application has already been approved.";
+    } elseif (
+        $currentStatus === "rejected"
+    ) {
+        $statusMessage =
+            "This restaurant application was permanently rejected and can no longer be edited or resubmitted.";
+    }
+
     respond_json(
         [
             "success" => false,
             "message" =>
-                "This restaurant application can no longer be edited."
+                $statusMessage
         ],
         409
     );
