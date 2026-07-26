@@ -3379,24 +3379,29 @@ async function reviewPartnerApplication({
   decision,
   rejectionReason = ""
 }) {
-  const approveButton =
+ const approveButton =
     document.getElementById(
       "approveApplicationButton"
     );
 
-  const showRejectButton =
+const requestChangesButton =
     document.getElementById(
-      "showRejectApplicationButton"
+      "requestChangesApplicationButton"
     );
 
-  const confirmRejectButton =
+const rejectButton =
     document.getElementById(
-      "confirmRejectApplicationButton"
+      "rejectApplicationButton"
     );
 
-  const cancelRejectButton =
+const confirmReviewButton =
     document.getElementById(
-      "cancelRejectApplicationButton"
+      "confirmApplicationReviewButton"
+    );
+
+const cancelReviewButton =
+    document.getElementById(
+      "cancelApplicationReviewButton"
     );
 
     const reviewButtons = [
@@ -3615,11 +3620,6 @@ function updateApplicationCounts(
   setText(
     "draftApplicationsCount",
     counts.draft || 0
-  );
-
-    setText(
-    "needsChangesApplicationsCount",
-    counts.needs_changes || 0
   );
 
   setText(
