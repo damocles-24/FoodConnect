@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 27, 2026 at 01:42 PM
+-- Generation Time: Jul 27, 2026 at 04:30 PM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -59,7 +59,16 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (13, 2, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Ayaw ko na Restaurant from Closed to Open.', '2026-07-26 12:04:27'),
 (14, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #2 / Queue #1.', '2026-07-27 04:20:06'),
 (15, 1, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #3 / Queue #2.', '2026-07-27 05:10:39'),
-(16, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #2 from pending to preparing.', '2026-07-27 05:12:22');
+(16, 1, 15, 'cashier', 'order', 'Order Status Updated', 'Cashier changed Order #2 from pending to preparing.', '2026-07-27 05:12:22'),
+(17, 1, 12, 'customer', 'order', 'New Customer Order', 'Heheheh placed Order #4 / Queue #3.', '2026-07-27 12:53:18'),
+(18, 1, 12, 'customer', 'order', 'New Customer Order', 'huhuhahah placed Order #5 / Queue #4.', '2026-07-27 13:13:53'),
+(19, 1, 15, 'cashier', 'order', 'Order Cancelled', 'Cashier cancelled Queue #4 • Order #5 for Customer. Reason: Item is unavailable. Stock was restored.', '2026-07-27 13:14:52'),
+(20, 1, 12, 'customer', 'order', 'New Customer Order', 'huhuhaha placed Order #6 / Queue #5.', '2026-07-27 13:36:30'),
+(21, 1, 15, 'cashier', 'order', 'Order Cancelled', 'Cashier cancelled Queue #5 • Order #6 for Customer. Reason: Item is unavailable. Stock was restored.', '2026-07-27 13:37:18'),
+(22, 1, 12, 'customer', 'order', 'New Customer Order', 'hsjwbwkwklwkw82828 placed Order #7 / Queue #6.', '2026-07-27 13:47:19'),
+(23, 1, 15, 'cashier', 'order', 'Order Cancelled', 'Cashier cancelled Queue #6 • Order #7 for Customer. Reason: Item is unavailable. Stock was restored.', '2026-07-27 13:47:56'),
+(24, 1, 12, 'customer', 'order', 'New Customer Order', 'Hatod placed Order #8 / Queue #7.', '2026-07-27 14:18:42'),
+(25, 1, 15, 'cashier', 'order', 'Order Cancelled', 'Cashier cancelled Queue #7 • Order #8 for Customer. Reason: Unable to prepare the order. Stock was restored.', '2026-07-27 14:19:06');
 
 -- --------------------------------------------------------
 
@@ -462,7 +471,12 @@ CREATE TABLE `tbl_orders` (
 INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
 (1, 'b4be7dfddc3c3c10b9e8384dca674753c136b6aca1d4a457ff36267b0ab0b01e', 1, 1, 15, 12, 'ihiieee', '09239989127', 'delivery', 'completed', NULL, NULL, NULL, '89.00', '39.00', '50.00', 'Cash on Delivery', 'Poblacion', 'novo', '', '', '', '2026-07-23 04:57:55'),
 (2, '2864b775131e4abf5b0060842e4127c00a9366342214598855eeb1786b9ba02a', 1, 1, 15, 12, 'Cj Tamayo Porto', '9321783218', 'dine-in', 'preparing', NULL, NULL, NULL, '39.00', '39.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 04:20:06'),
-(3, 'b40b1bfe77c5d32ccb460e5e8c9b69d33af6a9198ef76104638e9ba5791b37dd', 2, 1, NULL, 12, 'Cj Tamayo Porto', '9766868667', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '39.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 05:10:39');
+(3, 'b40b1bfe77c5d32ccb460e5e8c9b69d33af6a9198ef76104638e9ba5791b37dd', 2, 1, NULL, 12, 'Cj Tamayo Porto', '9766868667', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '39.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 05:10:39'),
+(4, '796c9788dbba767838b17e0054131511935097feec5c96f50b452e4b860951e1', 3, 1, NULL, 12, 'Heheheh', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '39.00', '39.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 12:53:18'),
+(5, 'c018cf90a9ab803f26d849cd97de2da90078d6d234497791739654b0fbab5b89', 4, 1, 15, 12, 'huhuhahah', '9457309228', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-27 21:14:52', '49.00', '49.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 13:13:53'),
+(6, '58e86d67198e95681ce95f300687a571dac8efa16c6e1dde2deb663413cb7e63', 5, 1, 15, 12, 'huhuhaha', '9457309228', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-27 21:37:18', '49.00', '49.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 13:36:29'),
+(7, 'bcf9841f806926cfd9403f53a01e763f30899a58ba2066aa202371fec42479c6', 6, 1, 15, 12, 'hsjwbwkwklwkw82828', '9457386494', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-07-27 21:47:56', '49.00', '49.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 13:47:19'),
+(8, '553d453e07ea691a480e45edfa05a6f6109e9b253228303284ea30df3a97cd1e', 7, 1, 15, 12, 'Hatod', '9546464646', 'dine-in', 'cancelled', 'Unable to prepare the order', 'cashier', '2026-07-27 22:19:06', '79.00', '79.00', '0.00', 'Cash', '', '', '', '', '', '2026-07-27 14:18:42');
 
 -- --------------------------------------------------------
 
@@ -492,7 +506,12 @@ CREATE TABLE `tbl_order_items` (
 INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo_id`, `quantity`, `price`, `product_name`, `base_text`, `combo_choice_text`, `combo_choice_ids_json`, `addon_text`, `addon_ids_json`) VALUES
 (1, 1, 62, NULL, 1, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]'),
 (2, 2, 62, NULL, 1, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]'),
-(3, 3, 62, NULL, 1, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]');
+(3, 3, 62, NULL, 1, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]'),
+(4, 4, 62, NULL, 1, '39.00', 'Wintermelon', 'Regular', '', '[]', 'No Add-on', '[]'),
+(5, 5, 122, NULL, 1, '49.00', 'Wintermelon', 'Large', '', '[]', 'No Add-on', '[]'),
+(6, 6, 122, NULL, 1, '49.00', 'Wintermelon', 'Large', '', '[]', 'No Add-on', '[]'),
+(7, 7, 62, NULL, 1, '49.00', 'Wintermelon', 'Regular', '', '[]', 'Nata', '[146]'),
+(8, 8, 122, NULL, 1, '79.00', 'Wintermelon', 'Large', '', '[]', 'Black Pearl, Nata, Fruit Jelly', '[145,146,147]');
 
 -- --------------------------------------------------------
 
@@ -644,7 +663,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (59, 1, 'Brown Sugar Coffee', 'Coffee - Iced Coffee', NULL, '109.00', 0, 'Unavailable'),
 (60, 1, 'Coffee Jelly', 'Coffee - Iced Coffee', NULL, '109.00', 0, 'Unavailable'),
 (61, 1, 'Dark Chocolate', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
-(62, 1, 'Wintermelon', 'Milktea Classic', 'Regular', '39.00', 4, 'Available'),
+(62, 1, 'Wintermelon', 'Milktea Classic', 'Regular', '39.00', 3, 'Available'),
 (63, 1, 'Okinawa', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
 (64, 1, 'Cheesecake', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
 (65, 1, 'Matcha', 'Milktea Classic', 'Regular', '39.00', 0, 'Unavailable'),
@@ -821,7 +840,7 @@ CREATE TABLE `tbl_users` (
 
 INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `full_name`, `email`, `contact_number`, `address`, `password_hash`, `status`, `created_at`, `remember_token_hash`, `remember_token_expires`, `reset_token_hash`, `reset_token_expires`, `is_verified`, `verification_token`, `verification_expires_at`) VALUES
 (11, 1, 'owner', 'Carlos Jay Miguel T. Porto', 'cjmt42@gmail.com', '09457309228', 'Poblacion', '$2y$10$9YgBtorlcNFrrshiQxwiGeZgR8yetIiJaB221XD24rNrwKA3YU9uW', 1, '2026-02-27 13:28:55', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(12, NULL, 'customer', 'helloworldcoding', 'carlosjaymiguel67@gmail.com', NULL, NULL, '$2y$10$mzxnPqxSSWSrVJngcTIuWuSbYzHER6nmwOJTryRdc9IcsOz3fif0i', 1, '2026-03-01 14:15:54', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(12, NULL, 'customer', 'helloworldcoding', 'carlosjaymiguel67@gmail.com', NULL, NULL, '$2y$10$mzxnPqxSSWSrVJngcTIuWuSbYzHER6nmwOJTryRdc9IcsOz3fif0i', 1, '2026-03-01 14:15:54', '$2y$10$uFTHlKG5fZ5JnCloLk4dYu.B9si1HuvyqneJqYn6.gd98RTtUC6pa', '2026-08-26 16:18:14', NULL, NULL, 1, NULL, NULL),
 (13, 1, 'cashier', 'hehe', 'carlosjaymiguelporto67@gmail.com', '09456661234', 'manila city', '$2y$10$oHS20kygAup0e758IDIJqe75MhkuBlGFMqYw87Lum11UZRvOOKdgO', 1, '2026-07-05 06:56:22', NULL, NULL, NULL, NULL, 0, NULL, NULL),
 (14, 1, 'delivery_staff', 'deliver', 'jameslee11@gmail.com', '09985556307', 'Poblacion', '$2y$10$uxz.ZCQIgQa3tGGbbB.wneU8PGsVuN4hFXn2M9y1vk/wATLk8fNdC', 1, '2026-07-10 03:57:46', NULL, NULL, NULL, NULL, 0, NULL, NULL),
 (15, 1, 'cashier', 'cashier', 'itlog@gmail.com', '12345543312', 'Poblacion', '$2y$10$kPTsRHBtNGbR.2SPRneUD.w49mJZC7f0//JkC7U1oRU7/sJRg2chW', 1, '2026-07-10 04:12:54', NULL, NULL, NULL, NULL, 0, NULL, NULL),
@@ -1014,7 +1033,7 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
@@ -1026,7 +1045,7 @@ ALTER TABLE `tbl_admin_login_attempts`
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tbl_categories`
@@ -1092,13 +1111,13 @@ ALTER TABLE `tbl_notification_reads`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`

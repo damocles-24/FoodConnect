@@ -590,19 +590,19 @@ if (
       );
     }
 
-    setQrScannerMessage(
+ setQrScannerMessage(
   `Order #${orderId} verified successfully.`,
   "success"
 );
 
 /*
- * Keep the success state visible long
- * enough for the cashier to notice it.
+ * Play confirmation sound only after
+ * the order QR has been fully verified.
  */
+playNotificationSound();
+
 await new Promise(resolve => {
-  requestAnimationFrame(() => {
-    setTimeout(resolve, 1500);
-  });
+  setTimeout(resolve, 1500);
 });
 
     /*
