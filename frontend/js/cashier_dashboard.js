@@ -1113,10 +1113,14 @@ async function loadOrders() {
       `;
     }
 
-    const response = await fetch(`${API_BASE}/get_cashier_orders.php`, {
-      method: "GET",
-      credentials: "include"
-    });
+    const response = await fetch(
+  `${API_BASE}/get_cashier_orders.php`,
+  {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  }
+);
 
     const data = await response.json();
 

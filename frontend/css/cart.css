@@ -1460,6 +1460,11 @@ img {
     border: 1px solid var(--fc-info-border);
 }
 
+.customer-order-status.waiting_for_qr {
+    background: #fef3c7;
+    color: #b45309;
+}
+
 .customer-order-status.preparing {
     color: #b45309;
     background: #fffbeb;
@@ -2125,6 +2130,75 @@ img {
     padding:0 20px 0 80px;
 }
 
+/* =========================================================
+   SHOW QR ACTION
+========================================================= */
+
+.customer-order-qr-action {
+    margin-top: 18px;
+    padding: 16px;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff8f1,
+            #fffdfb
+        );
+
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 14px;
+}
+
+.customer-order-show-qr-button {
+    width: 100%;
+    min-height: 46px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 11px 18px;
+
+    color: #ffffff;
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--fc-orange),
+            var(--fc-orange-dark)
+        );
+
+    border-radius: 12px;
+    box-shadow: var(--shadow-orange);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.customer-order-show-qr-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 16px 32px
+        rgba(247, 128, 33, 0.28);
+}
+
+.customer-order-show-qr-button:active {
+    transform: scale(0.98);
+}
+
+/* =========================================================
+   ORDER QR MODAL
+========================================================= */
+
 body.order-qr-modal-open {
     overflow: hidden;
 }
@@ -2149,169 +2223,703 @@ body.order-qr-modal-open {
     position: absolute;
     inset: 0;
 
-    background: rgba(15, 23, 42, 0.72);
-    backdrop-filter: blur(4px);
+    background:
+        rgba(15, 23, 42, 0.78);
+
+    backdrop-filter: blur(6px);
 }
 
 .order-qr-modal-dialog {
     position: relative;
     z-index: 1;
 
-    width: min(100%, 480px);
+    width: min(100%, 560px);
     max-height: calc(100vh - 48px);
+    overflow-x: hidden;
     overflow-y: auto;
 
-    padding: 32px;
-
-    border-radius: 24px;
-    background: #ffffff;
+    padding: 36px 34px 30px;
 
     text-align: center;
 
+    background: #ffffff;
+    border-radius: 26px;
+
     box-shadow:
-        0 24px 70px
-        rgba(15, 23, 42, 0.3);
+        0 30px 90px
+        rgba(15, 23, 42, 0.34);
+}
+
+.order-qr-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 7px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--fc-orange),
+            #ff9f43,
+            var(--fc-green)
+        );
 }
 
 .order-qr-modal-close {
     position: absolute;
     top: 18px;
     right: 18px;
+    z-index: 2;
+
+    width: 40px;
+    height: 40px;
 
     display: grid;
     place-items: center;
 
-    width: 38px;
-    height: 38px;
-
-    border: 0;
-    border-radius: 50%;
+    color: #475569;
+    font-size: 16px;
 
     background: #f1f5f9;
-    color: #334155;
+    border-radius: 50%;
 
     cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.order-qr-modal-close:hover {
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    transform: rotate(5deg);
+}
+
+/* HEADER */
+
+.order-qr-header {
+    padding: 6px 34px 0;
 }
 
 .order-qr-success-icon {
-    margin-bottom: 14px;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 15px;
 
-    font-size: 48px;
+    display: grid;
+    place-items: center;
+
     color: #16a34a;
+    font-size: 33px;
+
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 22px;
 }
 
 .order-qr-label {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
 
     margin-bottom: 8px;
+    padding: 6px 10px;
 
-    font-size: 13px;
-    font-weight: 700;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
 
-    color: #16a34a;
+    background: #f0fdf4;
+    border-radius: 999px;
 }
 
 .order-qr-modal-dialog h2 {
     margin: 0;
 
-    color: #0f172a;
+    color: var(--fc-heading);
+    font-size: clamp(1.55rem, 4vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
 }
 
 .order-qr-description {
-    margin: 10px 0 20px;
+    max-width: 430px;
+    margin: 10px auto 22px;
 
-    color: #64748b;
+    color: var(--fc-muted);
+    font-size: 13px;
+    line-height: 1.65;
 }
+
+/* RESTAURANT */
+
+.order-qr-restaurant {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+    padding: 13px 15px;
+
+    text-align: left;
+
+    background: #fff9f3;
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 14px;
+}
+
+.order-qr-restaurant-icon {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+
+    color: #ffffff;
+
+    background: var(--fc-orange);
+    border-radius: 12px;
+}
+
+.order-qr-restaurant div {
+    min-width: 0;
+}
+
+.order-qr-restaurant small {
+    display: block;
+
+    color: var(--fc-muted);
+    font-size: 10px;
+}
+
+.order-qr-restaurant strong {
+    display: block;
+    overflow: hidden;
+
+    color: var(--fc-heading);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ORDER AND QUEUE CARDS */
 
 .order-qr-information {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 12px;
 
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
-.order-qr-information div {
-    padding: 12px;
+.order-qr-information-card {
+    display: flex;
+    align-items: center;
 
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    gap: 11px;
+
+    padding: 14px;
+
+    text-align: left;
 
     background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
 }
 
-.order-qr-information span {
+.order-qr-information-card.featured {
+    background: var(--fc-orange-soft);
+    border-color: var(--fc-orange-border);
+}
+
+.order-qr-information-icon {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+
+    color: var(--fc-orange-dark);
+
+    background: #ffffff;
+    border-radius: 11px;
+}
+
+.order-qr-information-card small {
     display: block;
 
-    margin-bottom: 4px;
-
-    font-size: 12px;
-    color: #64748b;
+    color: var(--fc-muted);
+    font-size: 10px;
 }
 
-.order-qr-information strong {
-    color: #0f172a;
+.order-qr-information-card strong {
+    display: block;
+    margin-top: 2px;
+
+    color: var(--fc-heading);
+    font-size: 16px;
+}
+
+/* RECEIPT */
+
+.order-qr-receipt {
+    margin-bottom: 17px;
+    padding: 17px;
+
+    text-align: left;
+
+    background: #ffffff;
+    border: 1px solid var(--fc-border);
+    border-radius: 16px;
+}
+
+.order-qr-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+.order-qr-section-heading > div {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.order-qr-section-icon {
+    width: 34px;
+    height: 34px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--fc-orange-dark);
+
+    background: var(--fc-orange-soft);
+    border-radius: 10px;
+}
+
+.order-qr-section-heading h3 {
+    color: var(--fc-heading);
+    font-size: 14px;
+}
+
+.order-qr-type-badge {
+    padding: 5px 9px;
+
+    color: var(--fc-orange-dark);
+    font-size: 10px;
+    font-weight: 800;
+
+    background: var(--fc-orange-soft);
+    border-radius: 999px;
+}
+
+.order-qr-items {
+    display: grid;
+    gap: 10px;
+}
+
+.order-qr-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 13px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px dashed
+        var(--fc-border);
+}
+
+.order-qr-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.order-qr-item-main {
+    min-width: 0;
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 9px;
+}
+
+.order-qr-item-quantity {
+    min-width: 30px;
+
+    color: var(--fc-orange-dark);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.order-qr-item-main strong {
+    display: block;
+
+    color: var(--fc-heading);
+    font-size: 12px;
+}
+
+.order-qr-item-main small {
+    display: block;
+    margin-top: 3px;
+
+    color: var(--fc-muted);
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.order-qr-item-price {
+    flex: 0 0 auto;
+
+    color: var(--fc-heading);
+    font-size: 12px;
+}
+
+.order-qr-empty-items {
+    padding: 12px;
+
+    color: var(--fc-muted);
+    font-size: 11px;
+    text-align: center;
+
+    background: var(--fc-background);
+    border-radius: 10px;
+}
+
+.order-qr-totals {
+    display: grid;
+    gap: 8px;
+
+    margin-top: 14px;
+    padding-top: 13px;
+
+    border-top: 1px solid
+        var(--fc-border);
+}
+
+.order-qr-totals > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    color: var(--fc-muted);
+    font-size: 11px;
+}
+
+.order-qr-totals strong {
+    color: var(--fc-heading);
+}
+
+.order-qr-total-row {
+    margin-top: 2px;
+    padding-top: 10px;
+
+    color: var(--fc-heading) !important;
+    font-size: 13px !important;
+    font-weight: 800;
+
+    border-top: 1px dashed
+        var(--fc-border);
+}
+
+.order-qr-total-row strong {
+    color: var(--fc-orange-dark);
+    font-size: 17px;
+}
+
+/* QR CODE */
+
+.order-qr-code-section {
+    margin-bottom: 17px;
+    padding: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fffaf5,
+            #ffffff
+        );
+
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 18px;
+}
+
+.order-qr-code-section[hidden] {
+    display: none;
+}
+
+.order-qr-code-heading {
+    margin-bottom: 13px;
+}
+
+.order-qr-code-heading span {
+    display: block;
+
+    color: var(--fc-heading);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.order-qr-code-heading small {
+    display: block;
+    margin-top: 3px;
+
+    color: var(--fc-muted);
+    font-size: 10px;
 }
 
 .customer-order-qr-code {
-    display: flex;
-    justify-content: center;
-
     width: fit-content;
+    max-width: 100%;
 
-    margin: 0 auto 18px;
-    padding: 14px;
-
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    margin: 0 auto;
+    padding: 18px;
 
     background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+
+    box-shadow:
+        0 12px 32px
+        rgba(15, 23, 42, 0.10);
 }
 
 .customer-order-qr-code img,
 .customer-order-qr-code canvas {
     display: block;
+
     max-width: 100%;
-    height: auto;
+    height: auto !important;
+}
+
+/* VERIFICATION */
+
+.order-qr-verification-status {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+    padding: 14px 16px;
+
+    text-align: left;
+
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 14px;
+}
+
+.order-qr-status-icon {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+
+    color: #d97706;
+    font-size: 17px;
+
+    background: #fef3c7;
+    border-radius: 50%;
+}
+
+.order-qr-verification-status
+> span:last-child {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.order-qr-verification-status strong {
+    color: #92400e;
+    font-size: 13px;
+}
+
+.order-qr-verification-status small {
+    color: #a16207;
+    font-size: 10px;
+    line-height: 1.5;
 }
 
 .order-qr-reminder {
-    margin: 0 0 20px;
+    margin: 0;
 
-    font-size: 13px;
-    color: #64748b;
+    color: var(--fc-muted);
+    font-size: 10px;
+    line-height: 1.6;
 }
 
-.order-qr-view-orders-button {
-    width: 100%;
+.order-qr-reminder[hidden] {
+    display: none;
+}
 
-    padding: 13px 18px;
+/* VERIFIED STATE */
 
-    border: 0;
-    border-radius: 12px;
+.order-qr-modal.verified
+.order-qr-accent {
+    background:
+        linear-gradient(
+            90deg,
+            #16a34a,
+            #4ade80
+        );
+}
 
-    background: #f97316;
+.order-qr-modal.verified
+.order-qr-success-icon {
     color: #ffffff;
+    background: #16a34a;
+    border-color: #16a34a;
+}
 
-    font-weight: 700;
+.order-qr-modal.verified
+.order-qr-verification-status {
+    background: var(--fc-success-soft);
+    border-color:
+        var(--fc-success-border);
+}
+
+.order-qr-modal.verified
+.order-qr-status-icon {
+    color: #ffffff;
+    background: var(--fc-success);
+}
+
+.order-qr-modal.verified
+.order-qr-verification-status strong {
+    color: var(--fc-success);
+}
+
+.order-qr-modal.verified
+.order-qr-verification-status small {
+    color: #166534;
+}
+
+.order-qr-go-orders-button {
+    width: 100%;
+    min-height: 48px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 4px;
+    padding: 11px 18px;
+
+    color: #ffffff;
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--fc-orange),
+            var(--fc-orange-dark)
+        );
+
+    border-radius: 12px;
+    box-shadow: var(--shadow-orange);
+
     cursor: pointer;
 }
 
-@media (max-width: 520px) {
+.order-qr-go-orders-button[hidden] {
+    display: none;
+}
+
+/* RESPONSIVE QR MODAL */
+
+@media (max-width: 600px) {
     .order-qr-modal {
-        padding: 14px;
+        align-items: flex-end;
+
+        padding: 0;
     }
 
     .order-qr-modal-dialog {
+        width: 100%;
+        max-height: 94vh;
+
         padding:
-            28px
-            20px
-            22px;
+            33px
+            18px
+            24px;
+
+        border-radius:
+            24px
+            24px
+            0
+            0;
     }
 
+    .order-qr-modal-close {
+        top: 15px;
+        right: 15px;
+    }
+
+    .order-qr-header {
+        padding-inline: 30px;
+    }
+
+    .order-qr-description {
+        font-size: 11px;
+    }
+
+    .customer-order-qr-code {
+        padding: 12px;
+    }
+
+    .customer-order-qr-code img,
+    .customer-order-qr-code canvas {
+        width: min(
+            240px,
+            calc(100vw - 88px)
+        ) !important;
+
+        height: auto !important;
+    }
+}
+
+@media (max-width: 390px) {
     .order-qr-information {
         grid-template-columns: 1fr;
+    }
+
+    .order-qr-section-heading {
+        align-items: flex-start;
+    }
+
+    .order-qr-restaurant strong {
+        font-size: 12px;
+    }
+
+    .customer-order-qr-code img,
+    .customer-order-qr-code canvas {
+        width: min(
+            215px,
+            calc(100vw - 76px)
+        ) !important;
     }
 }

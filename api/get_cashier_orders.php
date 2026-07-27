@@ -1,7 +1,15 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
 
+header(
+    "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
+);
+
+header("Pragma: no-cache");
+header("Expires: 0");
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", "0");
 
@@ -183,6 +191,7 @@ $sql = "
         o.contact_number,
         o.order_type,
         o.order_status,
+        o.qr_verified_at,
         o.cancellation_reason,
         o.cancelled_by,
         o.cancelled_at,
@@ -217,6 +226,20 @@ LEFT JOIN tbl_order_items AS oi
     ON oi.order_id = o.order_id
 
     WHERE o.restaurant_id = ?
+  AND (
+        LOWER(TRIM(o.order_type)) = 'delivery'
+
+        OR (
+            LOWER(TRIM(o.order_type)) IN (
+                'dine-in',
+                'dinein',
+                'takeout',
+                'take-out'
+            )
+
+            AND o.qr_verified_at IS NOT NULL
+        )
+      )
 
     ORDER BY
         o.created_at ASC,
@@ -317,7 +340,14 @@ while ($row = $result->fetch_assoc()) {
                     )
                 ),
 
+            "qr_verified_at" =>
+                $row["qr_verified_at"] ?? null,
+
+            "qr_verified" =>
+                !empty($row["qr_verified_at"]),
+
             "cancellation_reason" =>
+
                 trim(
                     (string)(
                         $row["cancellation_reason"] ?? ""

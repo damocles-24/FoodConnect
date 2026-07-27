@@ -172,12 +172,14 @@ if (
 
 $stmt = $conn->prepare("
     SELECT
-        order_id,
-        queue_number,
-        restaurant_id,
-        order_type,
-        order_status
-    FROM tbl_orders
+    order_id,
+    queue_number,
+    restaurant_id,
+    order_type,
+    order_status,
+    qr_verified_at,
+    qr_expires_at
+FROM tbl_orders
     WHERE order_qr_token = ?
     LIMIT 1
 ");
@@ -289,6 +291,153 @@ if (
 }
 
 /* =========================================================
+   ORDER STATUS VALIDATION
+========================================================= */
+
+$orderStatus = strtolower(
+    trim(
+        (string)(
+            $order["order_status"] ?? ""
+        )
+    )
+);
+
+if ($orderStatus === "completed") {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "This order has already been completed."
+    ], 409);
+}
+
+if ($orderStatus === "cancelled") {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "This order has been cancelled and can no longer be processed."
+    ], 409);
+}
+
+/* =========================================================
+   QR EXPIRATION VALIDATION
+========================================================= */
+
+$alreadyVerified =
+    !empty($order["qr_verified_at"]);
+
+$qrExpiresAt = trim(
+    (string)(
+        $order["qr_expires_at"] ?? ""
+    )
+);
+
+/*
+ * An already verified QR remains recognized as verified.
+ * Expiration only blocks a QR that has not yet been scanned.
+ */
+if (
+    !$alreadyVerified &&
+    $qrExpiresAt !== ""
+) {
+    $qrExpirationTimestamp =
+        strtotime($qrExpiresAt);
+
+    if (
+        $qrExpirationTimestamp !== false &&
+        $qrExpirationTimestamp <= time()
+    ) {
+        respond_json([
+            "success" => false,
+
+            "message" =>
+                "This order QR has expired. The customer must place a new order.",
+
+            "error_code" =>
+                "QR_EXPIRED",
+
+            "qr_expired" =>
+                true,
+
+            "expired_at" =>
+                $qrExpiresAt
+        ], 410);
+    }
+}
+
+/* =========================================================
+   SAVE QR VERIFICATION
+========================================================= */
+
+if (!$alreadyVerified) {
+    $verifyStmt = $conn->prepare("
+        UPDATE tbl_orders
+
+SET qr_verified_at = NOW()
+
+WHERE order_id = ?
+  AND restaurant_id = ?
+  AND qr_verified_at IS NULL
+  AND (
+        qr_expires_at IS NULL
+        OR qr_expires_at > NOW()
+  )
+    ");
+
+    if (!$verifyStmt) {
+        error_log(
+            "FoodConnect QR verification update prepare error: " .
+            $conn->error
+        );
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to save the QR verification."
+        ], 500);
+    }
+
+    $orderId =
+        (int)$order["order_id"];
+
+    $verifyStmt->bind_param(
+        "ii",
+        $orderId,
+        $restaurantId
+    );
+
+    if (!$verifyStmt->execute()) {
+        error_log(
+            "FoodConnect QR verification update execute error: " .
+            $verifyStmt->error
+        );
+
+        $verifyStmt->close();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to save the QR verification."
+        ], 500);
+    }
+
+    if ($verifyStmt->affected_rows !== 1) {
+    $verifyStmt->close();
+
+    respond_json([
+        "success" => false,
+
+        "message" =>
+            "This order QR has expired or was already processed.",
+
+        "error_code" =>
+            "QR_NOT_VERIFIABLE"
+    ], 409);
+}
+
+    $verifyStmt->close();
+}
+
+/* =========================================================
    SUCCESS
 ========================================================= */
 
@@ -296,7 +445,12 @@ respond_json([
     "success" => true,
 
     "message" =>
-        "Order QR verified successfully.",
+        $alreadyVerified
+            ? "This order QR was already verified."
+            : "Order QR verified successfully.",
+
+    "already_verified" =>
+        $alreadyVerified,
 
     "order" => [
         "order_id" =>
@@ -311,10 +465,12 @@ respond_json([
             $orderType,
 
         "order_status" =>
-            trim(
-                (string)(
-                    $order["order_status"] ?? ""
-                )
-            )
+            $orderStatus,
+
+            "qr_expires_at" =>
+    $order["qr_expires_at"] ?? null,
+
+        "qr_verified" =>
+            true
     ]
 ]);

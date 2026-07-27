@@ -1,5 +1,9 @@
 <?php
 
+date_default_timezone_set(
+    "Asia/Manila"
+);
+
 header("Content-Type: application/json; charset=utf-8");
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -1598,10 +1602,46 @@ $total = round(
     random_bytes(32)
 );
 
+/*
+ * Dine-in and Takeout QR codes expire
+ * exactly 20 minutes after checkout.
+ *
+ * Delivery orders do not use cashier QR
+ * verification, so their expiration stays NULL.
+ */
+$order_qr_expires_at = null;
+
+$normalizedQrOrderType = strtolower(
+    trim($order_type)
+);
+
+if ($normalizedQrOrderType === "take-out") {
+    $normalizedQrOrderType = "takeout";
+}
+
+if (
+    in_array(
+        $normalizedQrOrderType,
+        [
+            "dine-in",
+            "dinein",
+            "takeout"
+        ],
+        true
+    )
+) {
+    $order_qr_expires_at =
+        date(
+            "Y-m-d H:i:s",
+            time() + (20 * 60)
+        );
+}
+
    $insertOrderStmt = $conn->prepare("
-    INSERT INTO tbl_orders (
+        INSERT INTO tbl_orders (
         queue_number,
         order_qr_token,
+        qr_expires_at,
         restaurant_id,
         user_id,
         customer_name,
@@ -1632,6 +1672,7 @@ $total = round(
         ?,
         ?,
         ?,
+        ?,
         'pending',
         ?,
         ?,
@@ -1646,9 +1687,10 @@ if (!$insertOrderStmt) {
 }
 
 $insertOrderStmt->bind_param(
-    "isiisssssssssddd",
+    "issiisssssssssddd",
     $queue_number,
     $order_qr_token,
+    $order_qr_expires_at,
     $restaurant_id,
     $user_id,
     $customer_name,
@@ -2173,7 +2215,10 @@ $insertOrderStmt->bind_param(
     "FOODCONNECT_ORDER:" .
     $order_qr_token,
 
-    "subtotal" =>
+"qr_expires_at" =>
+    $order_qr_expires_at,
+
+"subtotal" =>
         round($subtotal, 2),
 
     "delivery_fee" =>

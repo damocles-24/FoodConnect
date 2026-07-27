@@ -1197,8 +1197,301 @@ paymentMethod.value = "";
    ========================================================= */
 
 let isPlacingOrder = false;
+let activeQrModalOrderId = 0;
+let orderQrCountdownInterval = null;
+let activeQrExpirationTime = null;
+
+function stopOrderQrCountdown() {
+    if (orderQrCountdownInterval) {
+        clearInterval(
+            orderQrCountdownInterval
+        );
+
+        orderQrCountdownInterval = null;
+    }
+
+    activeQrExpirationTime = null;
+}
+
+function parseOrderQrExpiration(
+    expirationValue
+) {
+    const value =
+        String(
+            expirationValue || ""
+        ).trim();
+
+    if (!value) {
+        return null;
+    }
+
+    /*
+     * MySQL returns:
+     * YYYY-MM-DD HH:MM:SS
+     *
+     * FoodConnect currently runs in Philippine time.
+     */
+    const mysqlDatePattern =
+        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+    const normalizedValue =
+        mysqlDatePattern.test(value)
+            ? (
+                value.replace(
+                    " ",
+                    "T"
+                ) +
+                "+08:00"
+            )
+            : value;
+
+    const timestamp =
+        new Date(
+            normalizedValue
+        ).getTime();
+
+    return Number.isFinite(timestamp)
+        ? timestamp
+        : null;
+}
+
+function formatOrderQrCountdown(
+    milliseconds
+) {
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.ceil(
+                milliseconds / 1000
+            )
+        );
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+    const seconds =
+        totalSeconds % 60;
+
+    return (
+        String(minutes).padStart(
+            2,
+            "0"
+        ) +
+        ":" +
+        String(seconds).padStart(
+            2,
+            "0"
+        )
+    );
+}
+
+function renderOrderQrExpiredState() {
+    stopOrderQrCountdown();
+
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    const qrContainer =
+        document.getElementById(
+            "customerOrderQrCode"
+        );
+
+    const headerIcon =
+        document.getElementById(
+            "orderQrHeaderIcon"
+        );
+
+    const label =
+        document.getElementById(
+            "orderQrLabel"
+        );
+
+    const title =
+        document.getElementById(
+            "orderQrTitle"
+        );
+
+    const description =
+        document.getElementById(
+            "orderQrDescription"
+        );
+
+    const statusIcon =
+        document.getElementById(
+            "orderQrStatusIcon"
+        );
+
+    const statusTitle =
+        document.getElementById(
+            "orderQrStatusTitle"
+        );
+
+    const statusDescription =
+        document.getElementById(
+            "orderQrStatusDescription"
+        );
+
+    const qrCodeSection =
+        document.getElementById(
+            "orderQrCodeSection"
+        );
+
+    const reminder =
+        document.getElementById(
+            "orderQrReminder"
+        );
+
+    const goToOrdersButton =
+        document.getElementById(
+            "orderQrGoToOrders"
+        );
+
+    modal?.classList.remove(
+        "verified"
+    );
+
+    if (headerIcon) {
+        headerIcon.className =
+            "fa-solid fa-clock-rotate-left";
+    }
+
+    if (label) {
+        label.textContent =
+            "QR code expired";
+    }
+
+    if (title) {
+        title.textContent =
+            "QR Code Expired";
+    }
+
+    if (description) {
+        description.textContent =
+            "This order QR can no longer be scanned by the cashier.";
+    }
+
+    if (statusIcon) {
+        statusIcon.className =
+            "fa-solid fa-circle-xmark";
+    }
+
+    if (statusTitle) {
+        statusTitle.textContent =
+            "QR Expired";
+    }
+
+    if (statusDescription) {
+        statusDescription.textContent =
+            "The 20-minute verification period has ended.";
+    }
+
+    if (qrContainer) {
+        qrContainer.innerHTML = "";
+    }
+
+    if (qrCodeSection) {
+        qrCodeSection.hidden = true;
+    }
+
+    if (reminder) {
+        reminder.hidden = true;
+    }
+
+    if (goToOrdersButton) {
+        goToOrdersButton.hidden = false;
+    }
+}
+
+function updateOrderQrCountdown() {
+    if (!activeQrExpirationTime) {
+        return;
+    }
+
+    const remainingMilliseconds =
+        activeQrExpirationTime -
+        Date.now();
+
+    if (
+        remainingMilliseconds <= 0
+    ) {
+        renderOrderQrExpiredState();
+        return;
+    }
+
+    const statusTitle =
+        document.getElementById(
+            "orderQrStatusTitle"
+        );
+
+    const statusDescription =
+        document.getElementById(
+            "orderQrStatusDescription"
+        );
+
+    if (statusTitle) {
+        statusTitle.textContent =
+            "Waiting for QR Verification";
+    }
+
+    if (statusDescription) {
+        statusDescription.textContent =
+            "Expires in " +
+            formatOrderQrCountdown(
+                remainingMilliseconds
+            );
+    }
+}
+
+function startOrderQrCountdown(
+    expirationValue
+) {
+    stopOrderQrCountdown();
+
+    const expirationTimestamp =
+        parseOrderQrExpiration(
+            expirationValue
+        );
+
+    if (!expirationTimestamp) {
+        const statusDescription =
+            document.getElementById(
+                "orderQrStatusDescription"
+            );
+
+        if (statusDescription) {
+            statusDescription.textContent =
+                "The cashier must scan this QR before preparing your order.";
+        }
+
+        return;
+    }
+
+    activeQrExpirationTime =
+        expirationTimestamp;
+
+    updateOrderQrCountdown();
+
+    if (
+        activeQrExpirationTime &&
+        activeQrExpirationTime >
+            Date.now()
+    ) {
+        orderQrCountdownInterval =
+            window.setInterval(
+                updateOrderQrCountdown,
+                1000
+            );
+    }
+}
+
 
 function closeOrderQrModal() {
+    stopOrderQrCountdown();
+    
     const modal =
         document.getElementById(
             "orderQrModal"
@@ -1208,7 +1501,10 @@ function closeOrderQrModal() {
         return;
     }
 
-    modal.classList.remove("show");
+    modal.classList.remove(
+        "show",
+        "verified"
+    );
 
     modal.setAttribute(
         "aria-hidden",
@@ -1217,6 +1513,554 @@ function closeOrderQrModal() {
 
     document.body.classList.remove(
         "order-qr-modal-open"
+    );
+
+    activeQrModalOrderId = 0;
+}
+
+function formatOrderNumber(value) {
+    const orderId =
+        Number(value || 0);
+
+    if (
+        !Number.isInteger(orderId) ||
+        orderId <= 0
+    ) {
+        return "#000000";
+    }
+
+    return (
+        "#" +
+        String(orderId).padStart(
+            6,
+            "0"
+        )
+    );
+}
+
+function buildOrderQrReceiptItems(
+    orderData
+) {
+    const items =
+        Array.isArray(orderData?.items)
+            ? orderData.items
+            : [];
+
+    if (items.length === 0) {
+        return `
+            <p class="order-qr-empty-items">
+                Order details are available in My Orders.
+            </p>
+        `;
+    }
+
+    return items
+        .map((item) => {
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        item.quantity || 1
+                    )
+                );
+
+            const itemSubtotal =
+                Number(
+                    item.subtotal ??
+                    (
+                        Number(
+                            item.price || 0
+                        ) *
+                        quantity
+                    )
+                );
+
+            const details = [];
+
+            const baseText =
+                String(
+                    item.base_text || ""
+                ).trim();
+
+            const comboText =
+                String(
+                    item.combo_choice_text ||
+                    ""
+                ).trim();
+
+            const addonText =
+                String(
+                    item.addon_text || ""
+                ).trim();
+
+            if (
+                baseText &&
+                baseText.toLowerCase() !==
+                    "default"
+            ) {
+                details.push(baseText);
+            }
+
+            if (
+                comboText &&
+                comboText !== "[]" &&
+                comboText.toLowerCase() !==
+                    "null"
+            ) {
+                details.push(comboText);
+            }
+
+            if (
+                addonText &&
+                addonText !== "[]" &&
+                addonText.toLowerCase() !==
+                    "null" &&
+                addonText.toLowerCase() !==
+                    "no add-on"
+            ) {
+                details.push(addonText);
+            }
+
+            return `
+                <div class="order-qr-item">
+
+                    <div class="order-qr-item-main">
+
+                        <span class="order-qr-item-quantity">
+                            ${quantity}×
+                        </span>
+
+                        <div>
+                            <strong>
+                                ${escapeHtml(
+                                    item.product_name ||
+                                    "Order Item"
+                                )}
+                            </strong>
+
+                            ${
+                                details.length > 0
+                                    ? `
+                                        <small>
+                                            ${details
+                                                .map(
+                                                    escapeHtml
+                                                )
+                                                .join(
+                                                    " • "
+                                                )}
+                                        </small>
+                                    `
+                                    : ""
+                            }
+                        </div>
+
+                    </div>
+
+                    <strong class="order-qr-item-price">
+                        ${formatPrice(
+                            itemSubtotal
+                        )}
+                    </strong>
+
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function renderOrderQrPendingState() {
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    const headerIcon =
+        document.getElementById(
+            "orderQrHeaderIcon"
+        );
+
+    const label =
+        document.getElementById(
+            "orderQrLabel"
+        );
+
+    const title =
+        document.getElementById(
+            "orderQrTitle"
+        );
+
+    const description =
+        document.getElementById(
+            "orderQrDescription"
+        );
+
+    const statusIcon =
+        document.getElementById(
+            "orderQrStatusIcon"
+        );
+
+    const statusTitle =
+        document.getElementById(
+            "orderQrStatusTitle"
+        );
+
+    const statusDescription =
+        document.getElementById(
+            "orderQrStatusDescription"
+        );
+
+    const qrCodeSection =
+        document.getElementById(
+            "orderQrCodeSection"
+        );
+
+    const reminder =
+        document.getElementById(
+            "orderQrReminder"
+        );
+
+    const goToOrdersButton =
+        document.getElementById(
+            "orderQrGoToOrders"
+        );
+
+    modal?.classList.remove(
+        "verified"
+    );
+
+    if (headerIcon) {
+        headerIcon.className =
+            "fa-solid fa-circle-check";
+    }
+
+    if (label) {
+        label.textContent =
+            "Order placed successfully";
+    }
+
+    if (title) {
+        title.textContent =
+            "Present Your Order QR";
+    }
+
+    if (description) {
+        description.textContent =
+            "Show this QR code to the restaurant cashier. Your order will enter the processing queue after verification.";
+    }
+
+    if (statusIcon) {
+        statusIcon.className =
+            "fa-solid fa-clock";
+    }
+
+    if (statusTitle) {
+        statusTitle.textContent =
+            "Waiting for QR Verification";
+    }
+
+    if (statusDescription) {
+        statusDescription.textContent =
+            "The cashier must scan this QR before preparing your order.";
+    }
+
+    if (qrCodeSection) {
+        qrCodeSection.hidden = false;
+    }
+
+    if (reminder) {
+        reminder.hidden = false;
+    }
+
+    if (goToOrdersButton) {
+        goToOrdersButton.hidden = true;
+    }
+}
+
+function renderOrderQrVerifiedState(
+    orderData
+) {
+stopOrderQrCountdown();
+
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    const headerIcon =
+        document.getElementById(
+            "orderQrHeaderIcon"
+        );
+
+    const label =
+        document.getElementById(
+            "orderQrLabel"
+        );
+
+    const title =
+        document.getElementById(
+            "orderQrTitle"
+        );
+
+    const description =
+        document.getElementById(
+            "orderQrDescription"
+        );
+
+    const statusIcon =
+        document.getElementById(
+            "orderQrStatusIcon"
+        );
+
+    const statusTitle =
+        document.getElementById(
+            "orderQrStatusTitle"
+        );
+
+    const statusDescription =
+        document.getElementById(
+            "orderQrStatusDescription"
+        );
+
+    const qrCodeSection =
+        document.getElementById(
+            "orderQrCodeSection"
+        );
+
+    const reminder =
+        document.getElementById(
+            "orderQrReminder"
+        );
+
+    const goToOrdersButton =
+        document.getElementById(
+            "orderQrGoToOrders"
+        );
+
+    modal?.classList.add(
+        "verified"
+    );
+
+    if (headerIcon) {
+        headerIcon.className =
+            "fa-solid fa-circle-check";
+    }
+
+    if (label) {
+        label.textContent =
+            "QR verified successfully";
+    }
+
+    if (title) {
+        title.textContent =
+            "Order Received";
+    }
+
+    if (description) {
+        description.textContent =
+            "Your QR has been verified. The restaurant can now process your order.";
+    }
+
+    if (statusIcon) {
+        statusIcon.className =
+            "fa-solid fa-check";
+    }
+
+    if (statusTitle) {
+        statusTitle.textContent =
+            "QR Verified";
+    }
+
+    if (statusDescription) {
+        const trackingStatus =
+            getCustomerTrackingStatus(
+                orderData
+            );
+
+        statusDescription.textContent =
+            trackingStatus === "preparing"
+                ? "The restaurant is now preparing your order."
+                : "Your order has been added to the restaurant processing queue.";
+    }
+
+    if (qrCodeSection) {
+        qrCodeSection.hidden = true;
+    }
+
+    if (reminder) {
+        reminder.hidden = true;
+    }
+
+    if (goToOrdersButton) {
+        goToOrdersButton.hidden = false;
+    }
+}
+
+function renderOrderQrCancelledState() {
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    const label =
+        document.getElementById(
+            "orderQrLabel"
+        );
+
+    const title =
+        document.getElementById(
+            "orderQrTitle"
+        );
+
+    const description =
+        document.getElementById(
+            "orderQrDescription"
+        );
+
+    const statusIcon =
+        document.getElementById(
+            "orderQrStatusIcon"
+        );
+
+    const statusTitle =
+        document.getElementById(
+            "orderQrStatusTitle"
+        );
+
+    const statusDescription =
+        document.getElementById(
+            "orderQrStatusDescription"
+        );
+
+    const qrCodeSection =
+        document.getElementById(
+            "orderQrCodeSection"
+        );
+
+    const reminder =
+        document.getElementById(
+            "orderQrReminder"
+        );
+
+    const goToOrdersButton =
+        document.getElementById(
+            "orderQrGoToOrders"
+        );
+
+    modal?.classList.remove(
+        "verified"
+    );
+
+    if (label) {
+        label.textContent =
+            "Order cancelled";
+    }
+
+    if (title) {
+        title.textContent =
+            "Order Is No Longer Active";
+    }
+
+    if (description) {
+        description.textContent =
+            "This order has been cancelled and its QR code can no longer be used.";
+    }
+
+    if (statusIcon) {
+        statusIcon.className =
+            "fa-solid fa-ban";
+    }
+
+    if (statusTitle) {
+        statusTitle.textContent =
+            "Order Cancelled";
+    }
+
+    if (statusDescription) {
+        statusDescription.textContent =
+            "The cashier should not process this QR code.";
+    }
+
+    if (qrCodeSection) {
+        qrCodeSection.hidden = true;
+    }
+
+    if (reminder) {
+        reminder.hidden = true;
+    }
+
+    if (goToOrdersButton) {
+        goToOrdersButton.hidden = false;
+    }
+}
+
+function syncOpenOrderQrModal() {
+    if (activeQrModalOrderId <= 0) {
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    if (
+        !modal ||
+        !modal.classList.contains(
+            "show"
+        )
+    ) {
+        return;
+    }
+
+    const updatedOrder =
+        customerOrders.find(
+            (order) =>
+                Number(
+                    order.order_id
+                ) ===
+                activeQrModalOrderId
+        );
+
+    if (!updatedOrder) {
+        return;
+    }
+
+    const orderStatus =
+        String(
+            updatedOrder.order_status ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+    if (
+        orderStatus === "cancelled"
+    ) {
+        stopOrderQrCountdown();
+        return;
+    }
+
+    if (
+        updatedOrder.qr_expired === true
+    ) {
+        renderOrderQrExpiredState();
+        return;
+    }
+
+    if (
+        updatedOrder.qr_verified === true ||
+        updatedOrder.qr_verified_at
+    ) {
+        renderOrderQrVerifiedState(
+            updatedOrder
+        );
+
+        return;
+    }
+
+    startOrderQrCountdown(
+        updatedOrder.qr_expires_at
     );
 }
 
@@ -1241,6 +2085,36 @@ function showOrderQrModal(orderData) {
             "orderQrQueueNumber"
         );
 
+    const restaurantNameElement =
+        document.getElementById(
+            "orderQrRestaurantName"
+        );
+
+    const orderTypeElement =
+        document.getElementById(
+            "orderQrOrderType"
+        );
+
+    const itemsElement =
+        document.getElementById(
+            "orderQrItems"
+        );
+
+    const subtotalElement =
+        document.getElementById(
+            "orderQrSubtotal"
+        );
+
+    const deliveryFeeElement =
+        document.getElementById(
+            "orderQrDeliveryFee"
+        );
+
+    const totalElement =
+        document.getElementById(
+            "orderQrTotal"
+        );
+
     if (
         !modal ||
         !qrContainer ||
@@ -1253,47 +2127,155 @@ function showOrderQrModal(orderData) {
         return;
     }
 
- 
+    const token =
+        String(
+            orderData.order_qr_token ||
+            ""
+        ).trim();
 
-const qrValue =
-    orderData.order_qr_value ||
-    (
-        "FOODCONNECT_ORDER:" +
-        orderData.order_qr_token
-    );
+    const qrValue =
+        String(
+            orderData.order_qr_value ||
+            ""
+        ).trim() ||
+        (
+            token
+                ? (
+                    "FOODCONNECT_ORDER:" +
+                    token
+                )
+                : ""
+        );
 
-    if (!orderData.order_qr_token) {
+    if (!qrValue) {
         console.error(
-            "The checkout response did not include an Order QR token."
+            "Unable to generate the customer QR."
         );
 
         return;
     }
 
-    qrContainer.innerHTML = "";
+    const orderId =
+        Number(
+            orderData.order_id || 0
+        );
+
+    activeQrModalOrderId =
+        Number.isInteger(orderId)
+            ? orderId
+            : 0;
+
+    renderOrderQrPendingState();
+
+if (
+    orderData.qr_expired === true
+) {
+    renderOrderQrExpiredState();
+} else {
+    startOrderQrCountdown(
+        orderData.qr_expires_at
+    );
+}
+
+qrContainer.innerHTML = "";
 
     if (orderIdElement) {
         orderIdElement.textContent =
-            orderData.order_id || "—";
+            formatOrderNumber(orderId);
     }
 
     if (queueNumberElement) {
+        const queueNumber =
+            orderData.queue_number;
+
         queueNumberElement.textContent =
-            orderData.queue_number || "—";
+            queueNumber !== null &&
+            queueNumber !== undefined &&
+            String(queueNumber).trim() !== ""
+                ? String(queueNumber)
+                : "Pending";
     }
 
+    if (restaurantNameElement) {
+        restaurantNameElement.textContent =
+            orderData.restaurant_name ||
+            orderData.restaurant?.name ||
+            "FoodConnect Restaurant";
+    }
+
+    if (orderTypeElement) {
+        orderTypeElement.textContent =
+            formatOrderType(
+                orderData.order_type ||
+                "Order"
+            );
+    }
+
+    if (itemsElement) {
+        itemsElement.innerHTML =
+            buildOrderQrReceiptItems(
+                orderData
+            );
+    }
+
+    const subtotal =
+        Number(
+            orderData.subtotal ??
+            (
+                Number(
+                    orderData.total_amount ||
+                    0
+                ) -
+                Number(
+                    orderData.delivery_fee ||
+                    0
+                )
+            )
+        );
+
+    const deliveryFee =
+        Number(
+            orderData.delivery_fee || 0
+        );
+
+    const total =
+        Number(
+            orderData.total_amount || 0
+        );
+
+    if (subtotalElement) {
+        subtotalElement.textContent =
+            formatPrice(subtotal);
+    }
+
+    if (deliveryFeeElement) {
+        deliveryFeeElement.textContent =
+            formatPrice(deliveryFee);
+    }
+
+    if (totalElement) {
+        totalElement.textContent =
+            formatPrice(total);
+    }
+
+   if (
+    orderData.qr_expired !== true
+) {
     new QRCode(
         qrContainer,
         {
             text: qrValue,
-            width: 220,
-            height: 220,
+            width: 260,
+            height: 260,
             correctLevel:
                 QRCode.CorrectLevel.H
         }
     );
+}
 
-    modal.classList.add("show");
+    modal.classList.add(
+        "show"
+    );
 
     modal.setAttribute(
         "aria-hidden",
@@ -1531,7 +2513,26 @@ if (
     type === "dine-in" ||
     type === "takeout"
 ) {
-    showOrderQrModal(data);
+    let completeOrder = null;
+
+    await loadCustomerOrders(
+        false
+    );
+
+    completeOrder =
+        customerOrders.find(
+            (order) =>
+                Number(
+                    order.order_id
+                ) ===
+                Number(
+                    data.order_id
+                )
+        ) || null;
+
+    showOrderQrModal(
+        completeOrder || data
+    );
 }
 
         if (buttonLabel) {
@@ -1551,9 +2552,21 @@ if (
             "dynamicFields"
         ).innerHTML = "";
 
-        await loadCart();
+       await loadCart();
 
-        window.setTimeout(() => {
+isPlacingOrder = false;
+
+if (placeOrderButton) {
+    placeOrderButton.disabled = false;
+}
+
+if (buttonLabel) {
+    buttonLabel.textContent =
+        "Place Order";
+}
+
+window.setTimeout(() => {
+
             const checkoutSection =
                 document.getElementById(
                     "checkoutSection"
@@ -1667,20 +2680,53 @@ function formatOrderDate(value) {
 function getCustomerTrackingStatus(order) {
     const orderStatus =
         normalizeOrderStatus(
-            order.order_status
+            order?.order_status
         );
 
     const deliveryStatus =
         normalizeOrderStatus(
-            order.delivery
+            order?.delivery
                 ?.delivery_status
         );
 
     const orderType =
         normalizeOrderType(
-            order.order_type
+            order?.order_type
         );
 
+    const requiresQrVerification =
+        [
+            "dine-in",
+            "take-out"
+        ].includes(orderType);
+
+    /*
+     * qr_verified_at is the authoritative database field.
+     *
+     * Accept qr_verified only when it is an actual true
+     * boolean or numeric/string 1. Do not use Boolean()
+     * because the string "false" becomes true.
+     */
+    const qrVerifiedAt =
+        String(
+            order?.qr_verified_at ?? ""
+        ).trim();
+
+    const qrVerifiedFlag =
+        order?.qr_verified === true ||
+        order?.qr_verified === 1 ||
+        order?.qr_verified === "1";
+
+    const qrVerified =
+        qrVerifiedAt !== "" &&
+        qrVerifiedAt !==
+            "0000-00-00 00:00:00"
+            ? true
+            : qrVerifiedFlag;
+
+    /*
+     * Cancellation and completion always take priority.
+     */
     if (orderStatus === "cancelled") {
         return "cancelled";
     }
@@ -1693,6 +2739,17 @@ function getCustomerTrackingStatus(order) {
             "picked_up_by_customer"
     ) {
         return "completed";
+    }
+
+    /*
+     * Dine-in and takeout must remain here until the
+     * cashier successfully scans the order QR.
+     */
+    if (
+        requiresQrVerification &&
+        !qrVerified
+    ) {
+        return "waiting_for_qr";
     }
 
     if (
@@ -1719,14 +2776,23 @@ function getCustomerTrackingStatus(order) {
 
     if (
         orderType !== "delivery" &&
-        orderStatus === "ready"
+        [
+            "preparing",
+            "ready"
+        ].includes(orderStatus)
     ) {
         return "preparing";
     }
 
+    /*
+     * A pending order is received only after its QR
+     * requirement has passed.
+     */
     if (
-        orderStatus ===
-        "order_received"
+        [
+            "pending",
+            "order_received"
+        ].includes(orderStatus)
     ) {
         return "order_received";
     }
@@ -1737,6 +2803,9 @@ function getCustomerTrackingStatus(order) {
 
 function getOrderStatusLabel(status) {
     const labels = {
+        waiting_for_qr:
+            "Waiting for QR Verification",
+
         order_received:
             "Order Received",
 
@@ -2023,68 +3092,52 @@ function buildCustomerOrderTimeline(
             order.order_type
         );
 
-    const steps =
-        orderType === "delivery"
-            ? [
-                {
-                    key:
-                        "order_received",
-                    label:
-                        "Order Received",
-                    icon:
-                        "fa-receipt"
-                },
-                {
-                    key:
-                        "preparing",
-                    label:
-                        "Preparing",
-                    icon:
-                        "fa-fire-burner"
-                },
-                {
-                    key:
-                        "out_for_delivery",
-                    label:
-                        "Out for Delivery",
-                    icon:
-                        "fa-motorcycle"
-                },
-                {
-                    key:
-                        "completed",
-                    label:
-                        "Completed",
-                    icon:
-                        "fa-circle-check"
-                }
-            ]
-            : [
-                {
-                    key:
-                        "order_received",
-                    label:
-                        "Order Received",
-                    icon:
-                        "fa-receipt"
-                },
-                {
-                    key:
-                        "preparing",
-                    label:
-                        "Preparing",
-                    icon:
-                        "fa-fire-burner"
-                },
-                {
-                    key:
-                        "completed",
-                    label:
-                        "Completed",
-                    icon:
-                        "fa-circle-check"
-                }
-            ];
+  const steps =
+    orderType === "delivery"
+        ? [
+            {
+                key: "order_received",
+                label: "Order Received",
+                icon: "fa-receipt"
+            },
+            {
+                key: "preparing",
+                label: "Preparing",
+                icon: "fa-fire-burner"
+            },
+            {
+                key: "out_for_delivery",
+                label: "Out for Delivery",
+                icon: "fa-motorcycle"
+            },
+            {
+                key: "completed",
+                label: "Completed",
+                icon: "fa-circle-check"
+            }
+        ]
+        : [
+            {
+                key: "waiting_for_qr",
+                label: "Waiting for QR Verification",
+                icon: "fa-qrcode"
+            },
+            {
+                key: "order_received",
+                label: "Order Received",
+                icon: "fa-receipt"
+            },
+            {
+                key: "preparing",
+                label: "Preparing",
+                icon: "fa-fire-burner"
+            },
+            {
+                key: "completed",
+                label: "Completed",
+                icon: "fa-circle-check"
+            }
+        ];
 
     if (currentStatus === "cancelled") {
         return `
@@ -2215,6 +3268,14 @@ function buildCustomerOrderCard(order) {
             order.total_amount || 0
         );
 
+        const canShowQr =
+    status === "waiting_for_qr" &&
+    Boolean(
+        String(
+            order.order_qr_token || ""
+        ).trim()
+    );
+
     return `
         <article
             class="customer-order-card ${
@@ -2323,6 +3384,27 @@ function buildCustomerOrderCard(order) {
                     </div>
 
                 </div>
+
+                ${
+    canShowQr
+        ? `
+            <div class="customer-order-qr-action">
+                <button
+                    type="button"
+                    class="customer-order-show-qr-button"
+                    data-show-order-qr="${orderId}"
+                >
+                    <i class="fa-solid fa-qrcode"></i>
+                    Show Order QR
+                </button>
+
+                <p class="customer-order-item-meta">
+                    Present this QR code to the cashier.
+                </p>
+            </div>
+        `
+        : ""
+}
 
                 ${buildCustomerOrderTimeline(
                     order,
@@ -2511,13 +3593,15 @@ async function loadCustomerOrders(
         }
 
         customerOrders =
-            Array.isArray(
-                data.orders
-            )
-                ? data.orders
-                : [];
+    Array.isArray(
+        data.orders
+    )
+        ? data.orders
+        : [];
 
-        renderFilteredCustomerOrders();
+syncOpenOrderQrModal();
+
+renderFilteredCustomerOrders();
 
         return true;
 
@@ -2704,9 +3788,9 @@ const orderQrBackdrop =
         "[data-close-order-qr]"
     );
 
-const viewOrdersAfterCheckoutButton =
+const orderQrGoToOrdersButton =
     document.getElementById(
-        "viewOrdersAfterCheckout"
+        "orderQrGoToOrders"
     );
 
 closeOrderQrButton?.addEventListener(
@@ -2714,12 +3798,7 @@ closeOrderQrButton?.addEventListener(
     closeOrderQrModal
 );
 
-orderQrBackdrop?.addEventListener(
-    "click",
-    closeOrderQrModal
-);
-
-viewOrdersAfterCheckoutButton
+orderQrGoToOrdersButton
     ?.addEventListener(
         "click",
         async () => {
@@ -2734,6 +3813,11 @@ viewOrdersAfterCheckoutButton
             );
         }
     );
+
+orderQrBackdrop?.addEventListener(
+    "click",
+    closeOrderQrModal
+);
 
             showCartTabButton?.addEventListener(
     "click",
@@ -2881,6 +3965,71 @@ clearCompletedOrdersButton
 ordersContent?.addEventListener(
     "click",
     (event) => {
+        const showQrButton =
+            event.target.closest(
+                "[data-show-order-qr]"
+            );
+
+        if (showQrButton) {
+            const orderId =
+                Number(
+                    showQrButton.dataset
+                        .showOrderQr
+                );
+
+            if (
+                !Number.isInteger(orderId) ||
+                orderId <= 0
+            ) {
+                return;
+            }
+
+            const order =
+                customerOrders.find(
+                    (customerOrder) =>
+                        Number(
+                            customerOrder.order_id
+                        ) === orderId
+                );
+
+            if (!order) {
+                window.alert(
+                    "The order could not be found. Please refresh your orders."
+                );
+
+                return;
+            }
+
+            if (
+                getCustomerTrackingStatus(
+                    order
+                ) !== "waiting_for_qr"
+            ) {
+                window.alert(
+                    "This order QR has already been verified."
+                );
+
+                loadCustomerOrders(true);
+                return;
+            }
+
+            if (
+                !String(
+                    order.order_qr_token || ""
+                ).trim()
+            ) {
+                window.alert(
+                    "The QR code is unavailable. Please refresh your orders."
+                );
+
+                loadCustomerOrders(true);
+                return;
+            }
+
+            showOrderQrModal(order);
+            return;
+        }
+
         const toggleButton =
             event.target.closest(
                 "[data-toggle-customer-order]"
@@ -2897,9 +4046,7 @@ ordersContent?.addEventListener(
             );
 
         if (
-            !Number.isInteger(
-                orderId
-            ) ||
+            !Number.isInteger(orderId) ||
             orderId <= 0
         ) {
             return;
@@ -3053,11 +4200,13 @@ ordersContent?.addEventListener(
             showCheckoutMessage();
 
             document
-                .getElementById("cartMainLayout")
-                ?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+    .getElementById(
+        "cartTabSection"
+    )
+    ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
         }
 
         backToCartButton?.addEventListener(
@@ -3121,17 +4270,6 @@ window.addEventListener(
         }
     }
 );
-
-/*contact number validation */
-
-const phone = document.getElementById("contactNumber");
-
-if(phone) {
-    phone.addEventListener("input", function () {
-        this.value = this.value.replace(/\D/g, "").substring(0, 10);    
-    });
-}
-
 
 document.addEventListener(
     "keydown",

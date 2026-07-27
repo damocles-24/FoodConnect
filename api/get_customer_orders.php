@@ -11,8 +11,16 @@ header(
 header("Pragma: no-cache");
 header("Expires: 0");
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ini_set("display_errors", "0");
+error_reporting(
+    E_ALL &
+    ~E_NOTICE &
+    ~E_WARNING
+);
+
+ini_set(
+    "display_errors",
+    "0"
+);
 
 session_set_cookie_params(
     0,
@@ -23,7 +31,6 @@ session_set_cookie_params(
 );
 
 require_once __DIR__ . "/session_config.php";
-
 require_once __DIR__ . "/db.php";
 
 /* =========================================================
@@ -34,7 +41,9 @@ function respond_json(
     array $data,
     int $statusCode = 200
 ): void {
-    http_response_code($statusCode);
+    http_response_code(
+        $statusCode
+    );
 
     echo json_encode(
         $data,
@@ -63,14 +72,9 @@ if (
 
 /* =========================================================
    AUTHENTICATION
-
-   Customers are authenticated by user_id.
-
-   Do not require restaurant_id because customers are not
-   permanently assigned to one restaurant.
 ========================================================= */
 
-$customer_id = (int)(
+$customerId = (int)(
     $_SESSION["user_id"] ?? 0
 );
 
@@ -82,7 +86,7 @@ $role = strtolower(
     )
 );
 
-if ($customer_id <= 0) {
+if ($customerId <= 0) {
     respond_json([
         "success" => false,
         "message" =>
@@ -90,12 +94,6 @@ if ($customer_id <= 0) {
     ], 401);
 }
 
-/*
- * This endpoint is for customer order history.
- *
- * Keep this check to prevent owner/cashier sessions from
- * requesting another user's customer orders.
- */
 if (
     $role !== "" &&
     $role !== "customer"
@@ -108,7 +106,7 @@ if (
 }
 
 /* =========================================================
-   DATABASE CONNECTION CHECK
+   DATABASE CONNECTION
 ========================================================= */
 
 if (
@@ -122,16 +120,12 @@ if (
     ], 500);
 }
 
-$conn->set_charset("utf8mb4");
+$conn->set_charset(
+    "utf8mb4"
+);
 
 /* =========================================================
    LOAD CUSTOMER ORDERS
-
-   Security:
-   - Orders are filtered using o.user_id.
-   - Restaurant information comes from each order's own
-     restaurant_id.
-   - A customer cannot retrieve another customer's orders.
 ========================================================= */
 
 try {
@@ -139,6 +133,7 @@ try {
     $orderStmt = $conn->prepare("
         SELECT
             o.order_id,
+            o.order_qr_token,
             o.queue_number,
             o.restaurant_id,
             o.user_id,
@@ -146,6 +141,8 @@ try {
             o.contact_number,
             o.order_type,
             o.order_status,
+            o.qr_verified_at,
+            o.qr_expires_at,
             o.cancellation_reason,
             o.cancelled_by,
             o.cancelled_at
@@ -203,12 +200,14 @@ try {
                o.restaurant_id
 
         LEFT JOIN tbl_delivery_assignments da
-            ON da.order_id = o.order_id
+            ON da.order_id =
+               o.order_id
            AND da.restaurant_id =
                o.restaurant_id
 
         LEFT JOIN tbl_users rider
-            ON rider.user_id = da.rider_id
+            ON rider.user_id =
+               da.rider_id
 
         WHERE o.user_id = ?
 
@@ -226,7 +225,7 @@ try {
 
     $orderStmt->bind_param(
         "i",
-        $customer_id
+        $customerId
     );
 
     if (!$orderStmt->execute()) {
@@ -243,7 +242,8 @@ try {
     $orderIds = [];
 
     while (
-        $row = $orderResult->fetch_assoc()
+        $row =
+        $orderResult->fetch_assoc()
     ) {
         $orderId = (int)(
             $row["order_id"] ?? 0
@@ -253,35 +253,48 @@ try {
             continue;
         }
 
-        $orderIds[] = $orderId;
+        $orderIds[] =
+            $orderId;
 
         $delivery = null;
 
         if (
-            !empty($row["assignment_id"])
+            !empty(
+                $row["assignment_id"]
+            )
         ) {
             $delivery = [
                 "assignment_id" =>
-                    (int)$row["assignment_id"],
+                    (int)$row[
+                        "assignment_id"
+                    ],
 
                 "order_id" =>
                     $orderId,
 
                 "restaurant_id" =>
-                    (int)$row["restaurant_id"],
+                    (int)$row[
+                        "restaurant_id"
+                    ],
 
                 "rider_id" =>
                     $row["rider_id"] !== null
-                        ? (int)$row["rider_id"]
+                        ? (int)$row[
+                            "rider_id"
+                        ]
                         : null,
 
                 "rider_name" =>
                     $row["rider_name"] !== null
-                        ? (string)$row["rider_name"]
+                        ? (string)$row[
+                            "rider_name"
+                        ]
                         : null,
 
                 "rider_contact_number" =>
-                    $row["rider_contact_number"] !== null
+                    $row[
+                        "rider_contact_number"
+                    ] !== null
                         ? (string)$row[
                             "rider_contact_number"
                         ]
@@ -289,19 +302,23 @@ try {
 
                 "assigned_by" =>
                     $row["assigned_by"] !== null
-                        ? (int)$row["assigned_by"]
+                        ? (int)$row[
+                            "assigned_by"
+                        ]
                         : null,
 
                 "assignment_type" =>
                     (string)(
-                        $row["assignment_type"] ??
-                        ""
+                        $row[
+                            "assignment_type"
+                        ] ?? ""
                     ),
 
                 "delivery_status" =>
                     (string)(
-                        $row["delivery_status"] ??
-                        ""
+                        $row[
+                            "delivery_status"
+                        ] ?? ""
                     ),
 
                 "delivery_fee" =>
@@ -338,7 +355,9 @@ try {
                     $row["picked_up_at"],
 
                 "out_for_delivery_at" =>
-                    $row["out_for_delivery_at"],
+                    $row[
+                        "out_for_delivery_at"
+                    ],
 
                 "completed_at" =>
                     $row["completed_at"],
@@ -349,97 +368,223 @@ try {
                     ],
 
                 "created_at" =>
-                    $row["delivery_created_at"],
+                    $row[
+                        "delivery_created_at"
+                    ],
 
                 "updated_at" =>
-                    $row["delivery_updated_at"]
+                    $row[
+                        "delivery_updated_at"
+                    ]
             ];
         }
+
+        $orderType = strtolower(
+            trim(
+                (string)(
+                    $row[
+                        "order_type"
+                    ] ?? ""
+                )
+            )
+        );
+
+        $orderStatus = strtolower(
+            trim(
+                (string)(
+                    $row[
+                        "order_status"
+                    ] ?? ""
+                )
+            )
+        );
+
+        $qrVerified =
+            !empty(
+                $row[
+                    "qr_verified_at"
+                ]
+            );
+
+        $qrExpiresAt =
+            $row[
+                "qr_expires_at"
+            ] ?? null;
+
+        $qrExpirationTimestamp =
+            $qrExpiresAt
+                ? strtotime(
+                    (string)$qrExpiresAt
+                )
+                : false;
+
+        $qrExpired =
+            !$qrVerified &&
+            $qrExpirationTimestamp !== false &&
+            $qrExpirationTimestamp <=
+                time();
+
+        $requiresQr =
+            in_array(
+                $orderType,
+                [
+                    "dine-in",
+                    "dinein",
+                    "takeout",
+                    "take-out"
+                ],
+                true
+            );
+
+        $canReturnQr =
+            !$qrVerified &&
+            !$qrExpired &&
+            $requiresQr &&
+            $orderStatus !==
+                "cancelled" &&
+            !empty(
+                $row[
+                    "order_qr_token"
+                ]
+            );
 
         $orders[$orderId] = [
             "order_id" =>
                 $orderId,
 
             "queue_number" =>
-                $row["queue_number"] !== null
-                    ? (int)$row["queue_number"]
+                $row[
+                    "queue_number"
+                ] !== null
+                    ? (int)$row[
+                        "queue_number"
+                    ]
                     : null,
 
             "restaurant_id" =>
-                (int)$row["restaurant_id"],
+                (int)$row[
+                    "restaurant_id"
+                ],
 
             "user_id" =>
-                (int)$row["user_id"],
+                (int)$row[
+                    "user_id"
+                ],
 
             "customer_name" =>
                 (string)(
-                    $row["customer_name"] ??
-                    ""
+                    $row[
+                        "customer_name"
+                    ] ?? ""
                 ),
 
             "contact_number" =>
                 (string)(
-                    $row["contact_number"] ??
-                    ""
+                    $row[
+                        "contact_number"
+                    ] ?? ""
                 ),
 
             "order_type" =>
                 (string)(
-                    $row["order_type"] ??
-                    ""
+                    $row[
+                        "order_type"
+                    ] ?? ""
                 ),
 
             "order_status" =>
                 (string)(
-                    $row["order_status"] ??
+                    $row[
+                        "order_status"
+                    ] ?? ""
+                ),
+
+            "order_qr_token" =>
+                $canReturnQr
+                    ? (string)$row[
+                        "order_qr_token"
+                    ]
+                    : null,
+
+            "order_qr_value" =>
+                $canReturnQr
+                    ? (
+                        "FOODCONNECT_ORDER:" .
+                        (string)$row[
+                            "order_qr_token"
+                        ]
+                    )
+                    : null,
+
+            "qr_verified_at" =>
+                $row[
+                    "qr_verified_at"
+                ] ?? null,
+
+            "qr_expires_at" =>
+                $qrExpiresAt,
+
+            "qr_expired" =>
+                $qrExpired,
+
+            "qr_verified" =>
+                $qrVerified,
+
+            "cancellation_reason" =>
+                $row[
+                    "cancellation_reason"
+                ],
+
+            "cancelled_by" =>
+                $row[
+                    "cancelled_by"
+                ],
+
+            "cancelled_at" =>
+                $row[
+                    "order_cancelled_at"
+                ],
+
+            "subtotal" =>
+                number_format(
+                    (float)(
+                        $row[
+                            "subtotal"
+                        ] ?? 0
+                    ),
+                    2,
+                    ".",
                     ""
                 ),
 
-            "cancellation_reason" =>
-                $row["cancellation_reason"],
+            "delivery_fee" =>
+                number_format(
+                    (float)(
+                        $row[
+                            "delivery_fee"
+                        ] ?? 0
+                    ),
+                    2,
+                    ".",
+                    ""
+                ),
 
-            "cancelled_by" =>
-                $row["cancelled_by"],
-
-            /*
-             * Use the order cancellation timestamp,
-             * not the delivery cancellation timestamp.
-             */
-            "cancelled_at" =>
-    $row["order_cancelled_at"],
-
-"subtotal" =>
-    number_format(
-        (float)(
-            $row["subtotal"] ?? 0
-        ),
-        2,
-        ".",
-        ""
-    ),
-
-"delivery_fee" =>
-    number_format(
-        (float)(
-            $row["delivery_fee"] ?? 0
-        ),
-        2,
-        ".",
-        ""
-    ),
-
-"total_amount" =>
-    number_format(
-        (float)(
-            $row["total_amount"] ?? 0
-        ),
-        2,
-        ".",
-        ""
-    ),
+            "total_amount" =>
+                number_format(
+                    (float)(
+                        $row[
+                            "total_amount"
+                        ] ?? 0
+                    ),
+                    2,
+                    ".",
+                    ""
+                ),
 
             "payment_method" =>
-                $row["payment_method"],
+                $row[
+                    "payment_method"
+                ],
 
             "address" =>
                 $row["address"],
@@ -448,26 +593,35 @@ try {
                 $row["landmark"],
 
             "table_number" =>
-                $row["table_number"],
+                $row[
+                    "table_number"
+                ],
 
             "pickup_time" =>
-                $row["pickup_time"],
+                $row[
+                    "pickup_time"
+                ],
 
             "notes" =>
                 $row["notes"],
 
             "created_at" =>
-                $row["created_at"],
+                $row[
+                    "created_at"
+                ],
 
             "restaurant_name" =>
                 (string)(
-                    $row["restaurant_name"] ??
-                    "Restaurant"
+                    $row[
+                        "restaurant_name"
+                    ] ?? "Restaurant"
                 ),
 
             "restaurant" => [
                 "restaurant_id" =>
-                    (int)$row["restaurant_id"],
+                    (int)$row[
+                        "restaurant_id"
+                    ],
 
                 "name" =>
                     (string)(
@@ -499,13 +653,16 @@ try {
                     ),
 
                 "business_status" =>
-                    $row["business_status"]
+                    $row[
+                        "business_status"
+                    ]
             ],
 
             "delivery" =>
                 $delivery,
 
-            "items" => []
+            "items" =>
+                []
         ];
     }
 
@@ -513,21 +670,20 @@ try {
 
     /* =====================================================
        LOAD ORDER ITEMS
-
-       Items are loaded in one query instead of one query
-       for every order.
     ===================================================== */
 
-    if (count($orderIds) > 0) {
-
-        $placeholders = implode(
-            ",",
-            array_fill(
-                0,
-                count($orderIds),
-                "?"
-            )
-        );
+    if (
+        count($orderIds) > 0
+    ) {
+        $placeholders =
+            implode(
+                ",",
+                array_fill(
+                    0,
+                    count($orderIds),
+                    "?"
+                )
+            );
 
         $itemSql = "
             SELECT
@@ -571,9 +727,10 @@ try {
                 oi.order_item_id ASC
         ";
 
-        $itemStmt = $conn->prepare(
-            $itemSql
-        );
+        $itemStmt =
+            $conn->prepare(
+                $itemSql
+            );
 
         if (!$itemStmt) {
             throw new RuntimeException(
@@ -582,23 +739,25 @@ try {
             );
         }
 
-        /*
-         * Bind all order IDs followed by customer_id.
-         */
         $bindTypes =
             str_repeat(
                 "i",
                 count($orderIds) + 1
             );
 
-        $bindValues = $orderIds;
-        $bindValues[] = $customer_id;
+        $bindValues =
+            $orderIds;
+
+        $bindValues[] =
+            $customerId;
 
         $bindReferences = [];
-        $bindReferences[] = $bindTypes;
+        $bindReferences[] =
+            $bindTypes;
 
         foreach (
-            $bindValues as $index => $value
+            $bindValues as
+            $index => $value
         ) {
             $bindValues[$index] =
                 (int)$value;
@@ -630,35 +789,39 @@ try {
             $itemResult->fetch_assoc()
         ) {
             $orderId = (int)(
-                $item["order_id"] ?? 0
+                $item[
+                    "order_id"
+                ] ?? 0
             );
 
             if (
                 $orderId <= 0 ||
-                !isset($orders[$orderId])
+                !isset(
+                    $orders[
+                        $orderId
+                    ]
+                )
             ) {
                 continue;
             }
 
-            /*
-             * Keep the saved checkout product name.
-             * Fall back to the current product record only
-             * for older rows where product_name is empty.
-             */
-            $savedProductName = trim(
-                (string)(
-                    $item["product_name"] ??
-                    ""
-                )
-            );
+            $savedProductName =
+                trim(
+                    (string)(
+                        $item[
+                            "product_name"
+                        ] ?? ""
+                    )
+                );
 
-            $currentProductName = trim(
-                (string)(
-                    $item[
-                        "current_product_name"
-                    ] ?? ""
-                )
-            );
+            $currentProductName =
+                trim(
+                    (string)(
+                        $item[
+                            "current_product_name"
+                        ] ?? ""
+                    )
+                );
 
             $displayProductName =
                 $savedProductName !== ""
@@ -672,15 +835,21 @@ try {
             $quantity = max(
                 1,
                 (int)(
-                    $item["quantity"] ?? 1
+                    $item[
+                        "quantity"
+                    ] ?? 1
                 )
             );
 
             $unitPrice = (float)(
-                $item["price"] ?? 0
+                $item[
+                    "price"
+                ] ?? 0
             );
 
-            $orders[$orderId]["items"][] = [
+            $orders[
+                $orderId
+            ]["items"][] = [
                 "order_item_id" =>
                     (int)$item[
                         "order_item_id"
@@ -690,14 +859,18 @@ try {
                     $orderId,
 
                 "product_id" =>
-                    $item["product_id"] !== null
+                    $item[
+                        "product_id"
+                    ] !== null
                         ? (int)$item[
                             "product_id"
                         ]
                         : null,
 
                 "combo_id" =>
-                    $item["combo_id"] !== null
+                    $item[
+                        "combo_id"
+                    ] !== null
                         ? (int)$item[
                             "combo_id"
                         ]
@@ -725,14 +898,17 @@ try {
 
                 "subtotal" =>
                     number_format(
-                        $unitPrice * $quantity,
+                        $unitPrice *
+                        $quantity,
                         2,
                         ".",
                         ""
                     ),
 
                 "base_text" =>
-                    $item["base_text"],
+                    $item[
+                        "base_text"
+                    ],
 
                 "combo_choice_text" =>
                     $item[
@@ -745,7 +921,9 @@ try {
                     ],
 
                 "addon_text" =>
-                    $item["addon_text"],
+                    $item[
+                        "addon_text"
+                    ],
 
                 "addon_ids_json" =>
                     $item[
@@ -757,27 +935,32 @@ try {
         $itemStmt->close();
     }
 
-    /* =====================================================
-       NORMALIZE RESPONSE ARRAY
-    ===================================================== */
-
     $responseOrders =
-        array_values($orders);
+        array_values(
+            $orders
+        );
 
     respond_json([
         "success" => true,
+
         "message" =>
             "Customer orders loaded successfully.",
+
         "customer_id" =>
-            $customer_id,
+            $customerId,
+
         "count" =>
-            count($responseOrders),
+            count(
+                $responseOrders
+            ),
+
         "orders" =>
             $responseOrders
     ]);
 
-} catch (Throwable $exception) {
-
+} catch (
+    Throwable $exception
+) {
     error_log(
         "FoodConnect get customer orders error: " .
         $exception->getMessage()

@@ -295,26 +295,34 @@ $customer_name = "Customer";
        STATUS TRANSITIONS
     ===================================================== */
 
-    $allowedTransitions = [
-        "pending" => [
-            "preparing",
-            "cancelled"
-        ],
+   $allowedTransitions = [
+    "pending" => [
+        "preparing",
+        "cancelled"
+    ],
 
-        "preparing" => [
-            "ready",
-            "cancelled"
-        ],
+    /*
+     * Dine-in and Takeout orders can be
+     * completed directly from Preparing.
+     *
+     * Ready remains supported for older
+     * existing records.
+     */
+    "preparing" => [
+        "ready",
+        "completed",
+        "cancelled"
+    ],
 
-        "ready" => [
-            "completed",
-            "cancelled"
-        ],
+    "ready" => [
+        "completed",
+        "cancelled"
+    ],
 
-        "completed" => [],
+    "completed" => [],
 
-        "cancelled" => []
-    ];
+    "cancelled" => []
+];
 
     $allowedNextStatuses =
         $allowedTransitions[
@@ -341,23 +349,25 @@ $customer_name = "Customer";
         ], 409);
     }
 
-    /*
-     * Delivery orders cannot be completed directly by
-     * the cashier from Ready.
-     */
-    if (
-        $order_type === "delivery" &&
-        $current_status === "ready" &&
-        $new_status === "completed"
-    ) {
-        $conn->rollback();
+   /*
+ * Delivery orders cannot be completed directly
+ * by the cashier.
+ *
+ * They must go through rider assignment and the
+ * delivery workflow.
+ */
+if (
+    $order_type === "delivery" &&
+    $new_status === "completed"
+) {
+    $conn->rollback();
 
-        respond_json([
-            "success" => false,
-            "message" =>
-                "A delivery order must be assigned and delivered before completion."
-        ], 409);
-    }
+    respond_json([
+        "success" => false,
+        "message" =>
+            "A delivery order must be assigned and delivered before completion."
+    ], 409);
+}
 
     /* =====================================================
        STOCK RESTORATION

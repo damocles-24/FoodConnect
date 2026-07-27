@@ -854,6 +854,8 @@
         aria-modal="true"
         aria-labelledby="orderQrTitle"
     >
+        <div class="order-qr-accent"></div>
+
         <button
             type="button"
             id="closeOrderQrModal"
@@ -863,56 +865,231 @@
             <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <div class="order-qr-success-icon">
-            <i class="fa-solid fa-circle-check"></i>
-        </div>
+        <header class="order-qr-header">
 
-        <span class="order-qr-label">
-            Order placed successfully
-        </span>
+            <div class="order-qr-success-icon">
+                <i
+                    id="orderQrHeaderIcon"
+                    class="fa-solid fa-circle-check"
+                ></i>
+            </div>
 
-        <h2 id="orderQrTitle">
-            Your FoodConnect Order QR
-        </h2>
+            <span
+                id="orderQrLabel"
+                class="order-qr-label"
+            >
+                Order placed successfully
+            </span>
 
-        <p class="order-qr-description">
-            Present this QR code to the restaurant cashier.
-        </p>
+            <h2 id="orderQrTitle">
+                Present Your Order QR
+            </h2>
+
+            <p
+                id="orderQrDescription"
+                class="order-qr-description"
+            >
+                Show this QR code to the restaurant cashier.
+                Your order will enter the processing queue
+                after verification.
+            </p>
+
+        </header>
+
+        <section class="order-qr-restaurant">
+
+            <span class="order-qr-restaurant-icon">
+                <i class="fa-solid fa-store"></i>
+            </span>
+
+            <div>
+                <small>
+                    Restaurant
+                </small>
+
+                <strong id="orderQrRestaurantName">
+                    FoodConnect Restaurant
+                </strong>
+            </div>
+
+        </section>
 
         <div class="order-qr-information">
-            <div>
-                <span>Order ID</span>
 
-                <strong id="orderQrOrderId">
-                    —
-                </strong>
+            <div class="order-qr-information-card">
+
+                <span class="order-qr-information-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </span>
+
+                <div>
+                    <small>
+                        Order Number
+                    </small>
+
+                    <strong id="orderQrOrderId">
+                        #000000
+                    </strong>
+                </div>
+
             </div>
 
-            <div>
-                <span>Queue Number</span>
+            <div class="order-qr-information-card featured">
 
-                <strong id="orderQrQueueNumber">
-                    —
-                </strong>
+                <span class="order-qr-information-icon">
+                    <i class="fa-solid fa-list-ol"></i>
+                </span>
+
+                <div>
+                    <small>
+                        Queue Number
+                    </small>
+
+                    <strong id="orderQrQueueNumber">
+                        —
+                    </strong>
+                </div>
+
             </div>
+
         </div>
 
-        <div
-            id="customerOrderQrCode"
-            class="customer-order-qr-code"
-        ></div>
+        <section class="order-qr-receipt">
 
-        <p class="order-qr-reminder">
-            This QR is for Dine-in and Takeout orders only.
+            <div class="order-qr-section-heading">
+
+                <div>
+                    <span class="order-qr-section-icon">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                    </span>
+
+                    <h3>
+                        Order Summary
+                    </h3>
+                </div>
+
+                <span
+                    id="orderQrOrderType"
+                    class="order-qr-type-badge"
+                >
+                    Order
+                </span>
+
+            </div>
+
+            <div
+                id="orderQrItems"
+                class="order-qr-items"
+            >
+                <p class="order-qr-empty-items">
+                    Loading order items...
+                </p>
+            </div>
+
+            <div class="order-qr-totals">
+
+                <div>
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong id="orderQrSubtotal">
+                        ₱0.00
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        Delivery Fee
+                    </span>
+
+                    <strong id="orderQrDeliveryFee">
+                        ₱0.00
+                    </strong>
+                </div>
+
+                <div class="order-qr-total-row">
+                    <span>
+                        Total
+                    </span>
+
+                    <strong id="orderQrTotal">
+                        ₱0.00
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section
+            id="orderQrCodeSection"
+            class="order-qr-code-section"
+        >
+            <div class="order-qr-code-heading">
+
+                <span>
+                    Scan at the cashier
+                </span>
+
+                <small>
+                    Keep the code clear and fully visible.
+                </small>
+
+            </div>
+
+            <div
+                id="customerOrderQrCode"
+                class="customer-order-qr-code"
+            ></div>
+        </section>
+
+        <div
+            id="orderQrVerificationStatus"
+            class="order-qr-verification-status"
+        >
+            <span class="order-qr-status-icon">
+                <i
+                    id="orderQrStatusIcon"
+                    class="fa-solid fa-clock"
+                ></i>
+            </span>
+
+            <span>
+                <strong id="orderQrStatusTitle">
+                    Waiting for QR Verification
+                </strong>
+
+                <small id="orderQrStatusDescription">
+                    The cashier must scan this QR before
+                    preparing your order.
+                </small>
+            </span>
+        </div>
+
+        <p
+            id="orderQrReminder"
+            class="order-qr-reminder"
+        >
+            QR verification is required for Dine-in and
+            Takeout orders.
         </p>
 
         <button
             type="button"
-            id="viewOrdersAfterCheckout"
-            class="order-qr-view-orders-button"
+            id="orderQrGoToOrders"
+            class="order-qr-go-orders-button"
+            hidden
         >
-            View My Orders
+            <i class="fa-solid fa-receipt"></i>
+
+            <span>
+                View Order Status
+            </span>
+
+            <i class="fa-solid fa-arrow-right"></i>
         </button>
+
     </div>
 </div>
 
@@ -930,7 +1107,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
 ></script>
 
-<script src="../js/cart.js?v=14"></script>
+<script src="../js/cart.js?v=17"></script>
 
 </body>
 </html>
