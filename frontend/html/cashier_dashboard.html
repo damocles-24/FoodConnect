@@ -76,15 +76,30 @@
         </div>
 
         <div class="topbar-actions">
-          <button class="sound-btn" id="soundToggle" title="Toggle Notification Sound">
-            <i class="fa-solid fa-volume-high"></i>
-          </button>
+  <button
+    type="button"
+    class="scan-order-qr-btn"
+    id="scanOrderQrBtn"
+    title="Scan customer order QR"
+  >
+    <i class="fa-solid fa-qrcode"></i>
+    <span>Scan Order QR</span>
+  </button>
 
-          <div class="cashier-profile">
-            <i class="fa-solid fa-user"></i>
-            <span>Cashier</span>
-          </div>
-        </div>
+  <button
+    type="button"
+    class="sound-btn"
+    id="soundToggle"
+    title="Toggle Notification Sound"
+  >
+    <i class="fa-solid fa-volume-high"></i>
+  </button>
+
+  <div class="cashier-profile">
+    <i class="fa-solid fa-user"></i>
+    <span>Cashier</span>
+  </div>
+</div>
       </header>
 
       <!-- ORDERS SECTION -->
@@ -949,8 +964,142 @@
 </div>
 
 <!-- NEW ORDER TOAST -->
+<!-- QR SCANNER MODAL -->
+<div
+  class="modal-overlay"
+  id="qrScannerModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="qrScannerTitle"
+>
+  <div class="qr-scanner-modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="qrScannerTitle">
+          Scan Order QR
+        </h2>
+
+        <p>
+          Scan a FoodConnect Dine-in or Takeout order QR.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-modal"
+        id="closeQrScannerBtn"
+        aria-label="Close QR scanner"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="qr-scanner-body">
+      <div
+        class="qr-scanner-reader"
+        id="qrScannerReader"
+      ></div>
+
+      <div
+        class="qr-scanner-message"
+        id="qrScannerMessage"
+        role="status"
+        aria-live="polite"
+      >
+        Press “Start Camera” to scan an order QR.
+      </div>
+
+      <p class="qr-scanner-reminder">
+        Only private FoodConnect order QR codes are accepted.
+      </p>
+    </div>
+
+    <div class="qr-scanner-footer">
+      <button
+        type="button"
+        class="qr-scanner-close-btn"
+        id="cancelQrScannerBtn"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="qr-scanner-start-btn"
+        id="startQrScannerBtn"
+      >
+        <i class="fa-solid fa-camera"></i>
+        Start Camera
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- QR SCANNER MODAL -->
+<div
+  class="modal-overlay"
+  id="qrScannerModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="qrScannerTitle"
+>
+  <div class="modal qr-scanner-modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="qrScannerTitle">Scan Order QR</h2>
+
+        <p>
+          Scan a FoodConnect Dine-in or Takeout order QR.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-modal"
+        id="closeQrScannerBtn"
+        aria-label="Close QR scanner"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="qr-scanner-body">
+      <div id="qrScannerReader"></div>
+
+      <p
+        class="qr-scanner-message"
+        id="qrScannerMessage"
+      >
+        Press Start Camera to begin scanning.
+      </p>
+    </div>
+
+    <div class="modal-footer qr-scanner-footer">
+      <button
+        type="button"
+        class="secondary-btn"
+        id="cancelQrScannerBtn"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="primary-btn"
+        id="startQrScannerBtn"
+      >
+        <i class="fa-solid fa-camera"></i>
+        Start Camera
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ORDER TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
-  <script src="../js/cashier_dashboard.js"></script>
+<script src="../js/libraries/html5-qrcode.min.js"></script>
+<script src="../js/cashier_dashboard.js"></script>
+
 </body>
 </html>

@@ -13,6 +13,14 @@ let confirmCallback = null;
 let restoreAssignModalAfterConfirm = false;
 let pendingCancellationReason = "";
 
+/* =========================================
+   QR SCANNER STATE
+========================================= */
+
+let orderQrScanner = null;
+let orderQrScannerRunning = false;
+let orderQrScanProcessing = false;
+
 document.addEventListener("DOMContentLoaded", () => {
   /* =========================================
      INITIAL DATA LOADING
@@ -85,6 +93,474 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    /* =========================================
+   QR SCANNER MODAL
+========================================= */
+
+/* =========================================
+   QR SCANNER MODAL
+========================================= */
+
+function openQrScannerModal() {
+  const modal =
+    document.getElementById(
+      "qrScannerModal"
+    );
+
+  const message =
+    document.getElementById(
+      "qrScannerMessage"
+    );
+
+  const startButton =
+    document.getElementById(
+      "startQrScannerBtn"
+    );
+
+  if (!modal) {
+    console.error(
+      "QR scanner modal was not found."
+    );
+
+    return;
+  }
+
+  if (message) {
+    message.textContent =
+      "Press Start Camera to begin scanning.";
+
+    message.classList.remove(
+      "success",
+      "error"
+    );
+  }
+
+  if (startButton) {
+    startButton.disabled = false;
+
+    startButton.innerHTML = `
+      <i class="fa-solid fa-camera"></i>
+      Start Camera
+    `;
+  }
+
+  orderQrScanProcessing = false;
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+async function closeQrScannerModal() {
+  await stopOrderQrScanner();
+
+  const modal =
+    document.getElementById(
+      "qrScannerModal"
+    );
+
+  modal?.classList.remove("active");
+
+  document.body.style.overflow = "";
+
+  orderQrScanProcessing = false;
+}
+
+/* =========================================
+   QR CAMERA CONTROL
+========================================= */
+
+async function startOrderQrScanner() {
+  const readerId = "qrScannerReader";
+
+  const reader =
+    document.getElementById(readerId);
+
+  const message =
+    document.getElementById(
+      "qrScannerMessage"
+    );
+
+  const startButton =
+    document.getElementById(
+      "startQrScannerBtn"
+    );
+
+  if (!reader) {
+    console.error(
+      "QR scanner reader was not found."
+    );
+
+    return;
+  }
+
+  if (
+    typeof Html5Qrcode !==
+    "function"
+  ) {
+    setQrScannerMessage(
+      "The QR scanner library could not be loaded.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (orderQrScannerRunning) {
+    return;
+  }
+
+  if (startButton) {
+    startButton.disabled = true;
+
+    startButton.innerHTML = `
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      Starting Camera...
+    `;
+  }
+
+  if (message) {
+    message.textContent =
+      "Requesting camera access...";
+
+    message.classList.remove(
+      "success",
+      "error"
+    );
+  }
+
+  try {
+    if (!orderQrScanner) {
+      orderQrScanner =
+        new Html5Qrcode(readerId);
+    }
+
+    orderQrScanProcessing = false;
+
+    await orderQrScanner.start(
+      {
+        facingMode: "environment"
+      },
+      {
+        fps: 10,
+
+        qrbox: (viewfinderWidth,
+                viewfinderHeight) => {
+          const minimumSide =
+            Math.min(
+              viewfinderWidth,
+              viewfinderHeight
+            );
+
+          const boxSize =
+            Math.floor(
+              minimumSide * 0.72
+            );
+
+          return {
+            width: boxSize,
+            height: boxSize
+          };
+        },
+
+        aspectRatio: 1
+      },
+      handleOrderQrDecoded,
+      () => {
+        /*
+         * Normal scan misses are ignored.
+         * The library repeatedly checks
+         * camera frames until a QR is found.
+         */
+      }
+    );
+
+    orderQrScannerRunning = true;
+
+    setQrScannerMessage(
+      "Camera is active. Point it at the customer's FoodConnect QR.",
+      ""
+    );
+
+    if (startButton) {
+      startButton.innerHTML = `
+        <i class="fa-solid fa-camera"></i>
+        Camera Active
+      `;
+    }
+  } catch (error) {
+    console.error(
+      "Unable to start QR scanner:",
+      error
+    );
+
+    orderQrScannerRunning = false;
+
+    if (startButton) {
+      startButton.disabled = false;
+
+      startButton.innerHTML = `
+        <i class="fa-solid fa-camera"></i>
+        Try Again
+      `;
+    }
+
+    let errorMessage =
+      "The camera could not be started.";
+
+    if (
+      window.isSecureContext === false
+    ) {
+      errorMessage =
+        "Camera access requires HTTPS or localhost.";
+    } else if (
+      error?.name ===
+      "NotAllowedError"
+    ) {
+      errorMessage =
+        "Camera permission was denied. Allow camera access in the browser and try again.";
+    } else if (
+      error?.name ===
+      "NotFoundError"
+    ) {
+      errorMessage =
+        "No available camera was found on this device.";
+    } else if (
+      error?.name ===
+      "NotReadableError"
+    ) {
+      errorMessage =
+        "The camera is being used by another application.";
+    }
+
+    setQrScannerMessage(
+      errorMessage,
+      "error"
+    );
+  }
+}
+
+async function stopOrderQrScanner() {
+  const startButton =
+    document.getElementById(
+      "startQrScannerBtn"
+    );
+
+  if (!orderQrScanner) {
+    orderQrScannerRunning = false;
+    return;
+  }
+
+  try {
+    if (orderQrScannerRunning) {
+      await orderQrScanner.stop();
+    }
+  } catch (error) {
+    console.warn(
+      "QR scanner stop warning:",
+      error
+    );
+  }
+
+  try {
+    orderQrScanner.clear();
+  } catch (error) {
+    console.warn(
+      "QR scanner clear warning:",
+      error
+    );
+  }
+
+  orderQrScanner = null;
+  orderQrScannerRunning = false;
+
+  if (startButton) {
+    startButton.disabled = false;
+
+    startButton.innerHTML = `
+      <i class="fa-solid fa-camera"></i>
+      Start Camera
+    `;
+  }
+}
+
+async function handleOrderQrDecoded(
+  decodedText
+) {
+  if (orderQrScanProcessing) {
+    return;
+  }
+
+  orderQrScanProcessing = true;
+
+  const scannedValue =
+    String(decodedText || "").trim();
+
+  await stopOrderQrScanner();
+
+  if (scannedValue === "") {
+    setQrScannerMessage(
+      "The scanned QR code is empty.",
+      "error"
+    );
+
+    orderQrScanProcessing = false;
+
+    return;
+  }
+
+  setQrScannerMessage(
+    "QR detected. Verifying the order...",
+    ""
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/scan_order_qr.php`,
+      {
+        method: "POST",
+
+        credentials: "include",
+
+        cache: "no-store",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          qr_value: scannedValue
+        })
+      }
+    );
+
+    const responseText =
+      await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      console.error(
+        "Invalid QR verification response:",
+        responseText
+      );
+
+      throw new Error(
+        "The server returned an invalid response."
+      );
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "The order QR could not be verified."
+      );
+    }
+
+    const orderId = Number(
+      data.order?.order_id || 0
+    );
+
+    if (
+      !Number.isInteger(orderId) ||
+      orderId <= 0
+    ) {
+      throw new Error(
+        "The verified QR did not return a valid order."
+      );
+    }
+
+    setQrScannerMessage(
+      `Order #${orderId} verified successfully.`,
+      "success"
+    );
+
+    /*
+     * Refresh the global orders array so that
+     * openOrderModal() can find the scanned order.
+     */
+    await loadOrders();
+
+    const scannedOrderExists =
+      orders.some(order => {
+        return (
+          Number(order.order_id) ===
+          orderId
+        );
+      });
+
+    if (!scannedOrderExists) {
+      throw new Error(
+        "The order was verified, but it is not currently available in the cashier order list."
+      );
+    }
+
+    /*
+     * Close the scanner before opening the
+     * normal cashier order details modal.
+     */
+    await closeQrScannerModal();
+
+    openOrderModal(orderId);
+
+    showToast(
+      "Order QR Verified",
+      `Order #${orderId} was opened successfully.`
+    );
+
+  } catch (error) {
+    console.error(
+      "Order QR verification error:",
+      error
+    );
+
+    setQrScannerMessage(
+      error.message ||
+      "Unable to verify the order QR.",
+      "error"
+    );
+
+    /*
+     * Allow the cashier to press Start Camera
+     * and scan again after an invalid QR.
+     */
+    orderQrScanProcessing = false;
+  }
+}
+
+function setQrScannerMessage(
+  text,
+  type = ""
+) {
+  const message =
+    document.getElementById(
+      "qrScannerMessage"
+    );
+
+  if (!message) {
+    return;
+  }
+
+  message.textContent = text;
+
+  message.classList.remove(
+    "success",
+    "error"
+  );
+
+  if (
+    type === "success" ||
+    type === "error"
+  ) {
+    message.classList.add(type);
+  }
+}
+
   /* =========================================
      SIDEBAR NAVIGATION
   ========================================= */
@@ -105,6 +581,49 @@ document.addEventListener("DOMContentLoaded", () => {
       document
         .getElementById("sidebar")
         ?.classList.toggle("active");
+    });
+
+      /* =========================================
+     QR SCANNER MODAL
+  ========================================= */
+
+  document
+    .getElementById("scanOrderQrBtn")
+    ?.addEventListener(
+      "click",
+      openQrScannerModal
+    );
+
+  document
+    .getElementById("closeQrScannerBtn")
+    ?.addEventListener(
+      "click",
+      closeQrScannerModal
+    );
+
+  document
+    .getElementById("cancelQrScannerBtn")
+    ?.addEventListener(
+      "click",
+      closeQrScannerModal
+    );
+
+      document
+    .getElementById("startQrScannerBtn")
+    ?.addEventListener(
+      "click",
+      startOrderQrScanner
+    );
+
+  document
+    .getElementById("qrScannerModal")
+    ?.addEventListener("click", (event) => {
+      if (
+        event.target.id ===
+        "qrScannerModal"
+      ) {
+        closeQrScannerModal();
+      }
     });
 
   /* =========================================
@@ -356,11 +875,27 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener(
     "keydown",
     (event) => {
-      if (event.key !== "Escape") {
+           if (event.key !== "Escape") {
+        return;
+      }
+
+      const qrScannerModal =
+        document.getElementById(
+          "qrScannerModal"
+        );
+
+      if (
+        qrScannerModal
+          ?.classList.contains(
+            "active"
+          )
+      ) {
+        closeQrScannerModal();
         return;
       }
 
       const cancellationModal =
+
         document.getElementById(
           "cancelReasonModal"
         );
