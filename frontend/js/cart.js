@@ -1198,6 +1198,113 @@ paymentMethod.value = "";
 
 let isPlacingOrder = false;
 
+function closeOrderQrModal() {
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("show");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.classList.remove(
+        "order-qr-modal-open"
+    );
+}
+
+function showOrderQrModal(orderData) {
+    const modal =
+        document.getElementById(
+            "orderQrModal"
+        );
+
+    const qrContainer =
+        document.getElementById(
+            "customerOrderQrCode"
+        );
+
+    const orderIdElement =
+        document.getElementById(
+            "orderQrOrderId"
+        );
+
+    const queueNumberElement =
+        document.getElementById(
+            "orderQrQueueNumber"
+        );
+
+    if (
+        !modal ||
+        !qrContainer ||
+        typeof QRCode === "undefined"
+    ) {
+        console.error(
+            "Order QR components are unavailable."
+        );
+
+        return;
+    }
+
+ 
+
+const qrValue =
+    orderData.order_qr_value ||
+    (
+        "FOODCONNECT_ORDER:" +
+        orderData.order_qr_token
+    );
+
+    if (!orderData.order_qr_token) {
+        console.error(
+            "The checkout response did not include an Order QR token."
+        );
+
+        return;
+    }
+
+    qrContainer.innerHTML = "";
+
+    if (orderIdElement) {
+        orderIdElement.textContent =
+            orderData.order_id || "—";
+    }
+
+    if (queueNumberElement) {
+        queueNumberElement.textContent =
+            orderData.queue_number || "—";
+    }
+
+    new QRCode(
+        qrContainer,
+        {
+            text: qrValue,
+            width: 220,
+            height: 220,
+            correctLevel:
+                QRCode.CorrectLevel.H
+        }
+    );
+
+    modal.classList.add("show");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.classList.add(
+        "order-qr-modal-open"
+    );
+}
+
 async function placeOrder() {
     if (isPlacingOrder) {
         return;
@@ -1263,10 +1370,10 @@ async function placeOrder() {
     }
 
     if (!/^9\d{9}$/.test(contact)) {
-        showCheckoutMessage(
-            "Enter a valid 11-digit Philippine mobile number .",
-            "error"
-        );
+    showCheckoutMessage(
+        "Enter a valid 10-digit mobile number after +63, starting with 9.",
+        "error"
+    );
 
         contactNumber?.focus();
         return;
@@ -1416,9 +1523,16 @@ async function placeOrder() {
         }
 
         showCheckoutMessage(
-            `Order placed successfully. Your order ID is ${data.order_id}.`,
-            "success"
-        );
+    `Order placed successfully. Your order ID is ${data.order_id}.`,
+    "success"
+);
+
+if (
+    type === "dine-in" ||
+    type === "takeout"
+) {
+    showOrderQrModal(data);
+}
 
         if (buttonLabel) {
             buttonLabel.textContent =
@@ -2580,6 +2694,47 @@ const showOrdersTabButton =
                 "contactNumber"
             );
 
+            const closeOrderQrButton =
+    document.getElementById(
+        "closeOrderQrModal"
+    );
+
+const orderQrBackdrop =
+    document.querySelector(
+        "[data-close-order-qr]"
+    );
+
+const viewOrdersAfterCheckoutButton =
+    document.getElementById(
+        "viewOrdersAfterCheckout"
+    );
+
+closeOrderQrButton?.addEventListener(
+    "click",
+    closeOrderQrModal
+);
+
+orderQrBackdrop?.addEventListener(
+    "click",
+    closeOrderQrModal
+);
+
+viewOrdersAfterCheckoutButton
+    ?.addEventListener(
+        "click",
+        async () => {
+            closeOrderQrModal();
+
+            switchCustomerTab(
+                "orders"
+            );
+
+            await loadCustomerOrders(
+                true
+            );
+        }
+    );
+
             showCartTabButton?.addEventListener(
     "click",
     () => {
@@ -2976,6 +3131,16 @@ if(phone) {
         this.value = this.value.replace(/\D/g, "").substring(0, 10);    
     });
 }
+
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+        if (event.key === "Escape") {
+            closeOrderQrModal();
+        }
+    }
+);
 
 /* Required for inline cart-item controls. */
 

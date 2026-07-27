@@ -294,14 +294,14 @@ if ($customer_name === "") {
 
 if (
     !preg_match(
-        '/^\d{11}$/',
+        '/^9\d{9}$/',
         $contact_number
     )
 ) {
     respond_json([
         "success" => false,
         "message" =>
-            "Contact number must contain exactly 11 digits."
+            "Enter a valid 10-digit mobile number after +63, starting with 9."
     ], 400);
 }
 
@@ -1594,9 +1594,14 @@ $total = round(
        CREATE ORDER HEADER
     ===================================================== */
 
-    $insertOrderStmt = $conn->prepare("
+    $order_qr_token = bin2hex(
+    random_bytes(32)
+);
+
+   $insertOrderStmt = $conn->prepare("
     INSERT INTO tbl_orders (
         queue_number,
+        order_qr_token,
         restaurant_id,
         user_id,
         customer_name,
@@ -1626,6 +1631,7 @@ $total = round(
         ?,
         ?,
         ?,
+        ?,
         'pending',
         ?,
         ?,
@@ -1640,8 +1646,9 @@ if (!$insertOrderStmt) {
 }
 
 $insertOrderStmt->bind_param(
-    "iiisssssssssddd",
+    "isiisssssssssddd",
     $queue_number,
+    $order_qr_token,
     $restaurant_id,
     $user_id,
     $customer_name,
@@ -2158,6 +2165,13 @@ $insertOrderStmt->bind_param(
 
     "queue_number" =>
         $queue_number,
+
+        "order_qr_token" =>
+    $order_qr_token,
+
+"order_qr_value" =>
+    "FOODCONNECT_ORDER:" .
+    $order_qr_token,
 
     "subtotal" =>
         round($subtotal, 2),

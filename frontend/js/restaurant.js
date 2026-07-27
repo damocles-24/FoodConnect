@@ -103,6 +103,71 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let loggedIn = false;
 
+  try {
+    const authResponse =
+        await fetch(
+            `${API}/me.php`,
+            {
+                credentials: "include",
+                cache: "no-store"
+            }
+        );
+
+    const authData =
+        await authResponse.json();
+
+    const authenticatedUser =
+    authData.user ||
+    authData.data?.user ||
+    authData;
+
+const authenticatedRole =
+    String(
+        authenticatedUser.role ||
+        authData.role ||
+        ""
+    )
+        .trim()
+        .toLowerCase();
+
+loggedIn =
+    authResponse.ok &&
+    authData.success === true &&
+    (
+        authenticatedRole ===
+            "customer" ||
+        Number(
+            authenticatedUser.user_id ||
+            authData.user_id ||
+            0
+        ) > 0
+    );
+
+    if (loggedIn) {
+        if (nameEl) {
+            nameEl.textContent =
+    authenticatedUser.full_name ||
+    authenticatedUser.name ||
+    "Customer";
+        }
+
+        wrapper?.classList.add(
+            "logged-in"
+        );
+    } else {
+        wrapper?.classList.remove(
+            "logged-in"
+        );
+    }
+} catch (error) {
+    console.error(
+        "Customer session check error:",
+        error
+    );
+
+    loggedIn = false;
+}
+
     /* =========================
      RESTAURANT IDENTITY
   ========================= */
@@ -3333,15 +3398,6 @@ async function handleProductGridClick(
     !button ||
     button.disabled
   ) {
-    return;
-  }
-
-  if (!loggedIn) {
-    alert("Please login first.");
-
-    window.location.href =
-      "login.html";
-
     return;
   }
 

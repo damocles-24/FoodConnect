@@ -838,6 +838,84 @@
     </div>
 </div>
 
+<div
+    id="orderQrModal"
+    class="order-qr-modal"
+    aria-hidden="true"
+>
+    <div
+        class="order-qr-modal-backdrop"
+        data-close-order-qr
+    ></div>
+
+    <div
+        class="order-qr-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orderQrTitle"
+    >
+        <button
+            type="button"
+            id="closeOrderQrModal"
+            class="order-qr-modal-close"
+            aria-label="Close Order QR"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="order-qr-success-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <span class="order-qr-label">
+            Order placed successfully
+        </span>
+
+        <h2 id="orderQrTitle">
+            Your FoodConnect Order QR
+        </h2>
+
+        <p class="order-qr-description">
+            Present this QR code to the restaurant cashier.
+        </p>
+
+        <div class="order-qr-information">
+            <div>
+                <span>Order ID</span>
+
+                <strong id="orderQrOrderId">
+                    —
+                </strong>
+            </div>
+
+            <div>
+                <span>Queue Number</span>
+
+                <strong id="orderQrQueueNumber">
+                    —
+                </strong>
+            </div>
+        </div>
+
+        <div
+            id="customerOrderQrCode"
+            class="customer-order-qr-code"
+        ></div>
+
+        <p class="order-qr-reminder">
+            This QR is for Dine-in and Takeout orders only.
+        </p>
+
+        <button
+            type="button"
+            id="viewOrdersAfterCheckout"
+            class="order-qr-view-orders-button"
+        >
+            View My Orders
+        </button>
+    </div>
+</div>
+
 <footer class="cart-footer">
 
     <p>
@@ -848,7 +926,11 @@
 
 </footer>
 
-<script src="../js/cart.js?v=13"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+></script>
+
+<script src="../js/cart.js?v=14"></script>
 
 </body>
 </html>
