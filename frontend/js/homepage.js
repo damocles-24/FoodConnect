@@ -1683,16 +1683,23 @@ function updateAllRestaurantCards() {
        RESTAURANT SEARCH FORM
     ========================= */
 
-    restaurantSearchForm?.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
+   restaurantSearchForm?.addEventListener(
+  "submit",
+  (event) => {
+    event.preventDefault();
 
-        filterRestaurants(
-          restaurantSearch?.value || ""
-        );
-      }
+    filterRestaurants(
+      restaurantSearch?.value || ""
     );
+
+    document
+      .querySelector(".restaurants-section")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+  }
+);
 
     /* =========================
        CATEGORY BUTTONS

@@ -101,6 +101,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const goProfileBtn = document.getElementById("goProfile");
 
+  /* =========================
+   ACCOUNT DROPDOWN
+========================= */
+
+accountBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  accountDropdown?.classList.toggle("show");
+});
+
+document.addEventListener("click", (e) => {
+  if (
+    accountDropdown &&
+    !accountDropdown.contains(e.target) &&
+    !accountBtn.contains(e.target)
+  ) {
+    accountDropdown.classList.remove("show");
+  }
+});
+
   let loggedIn = false;
 
   try {
@@ -3705,4 +3724,6 @@ await updateCartBadge();
 
 });
 
-  
+logoutBtn?.addEventListener("click", () => {
+    window.location.href = `${API}/logout.php`;
+});

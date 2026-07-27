@@ -1124,6 +1124,13 @@ footer{
   transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
 }
 
+.account-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
 .account-wrapper.open .account-dropdown{
   opacity: 1;
   visibility: visible;
