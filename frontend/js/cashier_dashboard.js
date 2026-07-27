@@ -20,6 +20,7 @@ let pendingCancellationReason = "";
 let orderQrScanner = null;
 let orderQrScannerRunning = false;
 let orderQrScanProcessing = false;
+let qrScannerRestartTimer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   /* =========================================
@@ -93,10 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    /* =========================================
-   QR SCANNER MODAL
-========================================= */
-
 /* =========================================
    QR SCANNER MODAL
 ========================================= */
@@ -151,6 +148,10 @@ function openQrScannerModal() {
 }
 
 async function closeQrScannerModal() {
+  if (qrScannerRestartTimer) {
+    clearTimeout(qrScannerRestartTimer);
+    qrScannerRestartTimer = null;
+}
   await stopOrderQrScanner();
 
   const modal =
@@ -340,6 +341,14 @@ async function startOrderQrScanner() {
 }
 
 async function stopOrderQrScanner() {
+    if (qrScannerRestartTimer) {
+    clearTimeout(
+      qrScannerRestartTimer
+    );
+
+    qrScannerRestartTimer = null;
+  }
+
   const startButton =
     document.getElementById(
       "startQrScannerBtn"
@@ -383,6 +392,69 @@ async function stopOrderQrScanner() {
   }
 }
 
+function restartOrderQrScanner(
+  delay = 2000
+) {
+  const modal =
+    document.getElementById(
+      "qrScannerModal"
+    );
+
+  /*
+   * Do not schedule a restart when the
+   * scanner modal has already been closed.
+   */
+  if (
+    !modal ||
+    !modal.classList.contains("active")
+  ) {
+    return;
+  }
+
+  /*
+   * Prevent multiple restart timers from
+   * being scheduled at the same time.
+   */
+  if (qrScannerRestartTimer) {
+    clearTimeout(
+      qrScannerRestartTimer
+    );
+  }
+
+  qrScannerRestartTimer =
+    setTimeout(async () => {
+      qrScannerRestartTimer = null;
+
+      /*
+       * Recheck the modal after the delay.
+       * The cashier may have closed it while
+       * the error message was displayed.
+       */
+      const currentModal =
+        document.getElementById(
+          "qrScannerModal"
+        );
+
+      if (
+        !currentModal ||
+        !currentModal.classList.contains(
+          "active"
+        )
+      ) {
+        return;
+      }
+
+      try {
+        await startOrderQrScanner();
+      } catch (error) {
+        console.error(
+          "Unable to restart QR scanner:",
+          error
+        );
+      }
+    }, delay);
+}
+
 async function handleOrderQrDecoded(
   decodedText
 ) {
@@ -397,21 +469,26 @@ async function handleOrderQrDecoded(
 
   await stopOrderQrScanner();
 
-  if (scannedValue === "") {
-    setQrScannerMessage(
-      "The scanned QR code is empty.",
-      "error"
-    );
-
-    orderQrScanProcessing = false;
-
-    return;
-  }
-
+if (scannedValue === "") {
   setQrScannerMessage(
-    "QR detected. Verifying the order...",
-    ""
+    "The scanned QR code is empty.",
+    "error"
   );
+
+  orderQrScanProcessing = false;
+
+  restartOrderQrScanner();
+
+  return;
+}
+
+ setQrScannerMessage(
+  "Verifying order...",
+  "loading"
+);
+
+const verificationStartedAt =
+  Date.now();
 
   try {
     const response = await fetch(
@@ -452,15 +529,33 @@ async function handleOrderQrDecoded(
       );
     }
 
-    if (
-      !response.ok ||
-      !data.success
-    ) {
-      throw new Error(
-        data.message ||
-        "The order QR could not be verified."
-      );
-    }
+   const verificationElapsed =
+  Date.now() - verificationStartedAt;
+
+const minimumLoadingTime = 1000;
+
+if (
+  verificationElapsed <
+  minimumLoadingTime
+) {
+  await new Promise(resolve => {
+    setTimeout(
+      resolve,
+      minimumLoadingTime -
+        verificationElapsed
+    );
+  });
+}
+
+if (
+  !response.ok ||
+  !data.success
+) {
+  throw new Error(
+    data.message ||
+    "The order QR could not be verified."
+  );
+}
 
     const orderId = Number(
       data.order?.order_id || 0
@@ -474,11 +569,6 @@ async function handleOrderQrDecoded(
         "The verified QR did not return a valid order."
       );
     }
-
-    setQrScannerMessage(
-      `Order #${orderId} verified successfully.`,
-      "success"
-    );
 
     /*
      * Refresh the global orders array so that
@@ -499,6 +589,21 @@ async function handleOrderQrDecoded(
         "The order was verified, but it is not currently available in the cashier order list."
       );
     }
+
+    setQrScannerMessage(
+  `Order #${orderId} verified successfully.`,
+  "success"
+);
+
+/*
+ * Keep the success state visible long
+ * enough for the cashier to notice it.
+ */
+await new Promise(resolve => {
+  requestAnimationFrame(() => {
+    setTimeout(resolve, 1500);
+  });
+});
 
     /*
      * Close the scanner before opening the
@@ -525,6 +630,8 @@ async function handleOrderQrDecoded(
       "error"
     );
 
+    restartOrderQrScanner();
+
     /*
      * Allow the cashier to press Start Camera
      * and scan again after an invalid QR.
@@ -546,19 +653,46 @@ function setQrScannerMessage(
     return;
   }
 
-  message.textContent = text;
-
   message.classList.remove(
     "success",
-    "error"
+    "error",
+    "loading"
   );
 
-  if (
-    type === "success" ||
-    type === "error"
-  ) {
-    message.classList.add(type);
+  if (type === "loading") {
+    message.innerHTML = `
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <span>${escapeHTML(text)}</span>
+    `;
+
+    message.classList.add("loading");
+
+    return;
   }
+
+  if (type === "success") {
+  message.innerHTML = `
+    <i class="fa-solid fa-circle-check"></i>
+    <span>${escapeHTML(text)}</span>
+  `;
+
+  message.classList.add("success");
+
+  return;
+}
+
+if (type === "error") {
+  message.innerHTML = `
+    <i class="fa-solid fa-circle-xmark"></i>
+    <span>${escapeHTML(text)}</span>
+  `;
+
+  message.classList.add("error");
+
+  return;
+}
+
+message.textContent = text;
 }
 
   /* =========================================

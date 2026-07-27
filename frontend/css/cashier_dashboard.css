@@ -3084,3 +3084,47 @@ button {
     width: 100%;
   }
 }
+
+#qrScannerMessage.loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#qrScannerMessage.loading i {
+  font-size: 1rem;
+}
+
+#qrScannerMessage.success,
+#qrScannerMessage.error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#qrScannerMessage.success i,
+#qrScannerMessage.error i {
+  font-size: 1.1rem;
+}
+
+#qrScannerMessage.success i {
+  animation: qrSuccessPop 0.35s ease;
+}
+
+@keyframes qrSuccessPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
