@@ -105,10 +105,8 @@ a {
    ========================================================= */
 
 .partner-header {
-    width: min(1180px, calc(100% - 40px));
-    min-height: 96px;
-    margin: 0 auto;
-
+    padding-left: 90px; 
+    width: min(1180px, calc(100% - 30px));
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -854,6 +852,7 @@ a {
     .partner-header {
         width: min(100% - 28px, 1180px);
         min-height: 82px;
+        padding-left: 0px; /* ADD THIS - match sa form card */
     }
 
     .foodconnect-logo {
@@ -929,8 +928,8 @@ a {
    ========================================================= */
 
 @media (max-width: 430px) {
-    .foodconnect-logo {
-        width: 160px;
+    .partner-header {
+        padding-left: 0px; /* ADD THIS - same lang */
     }
 
     .partner-intro h1 {
