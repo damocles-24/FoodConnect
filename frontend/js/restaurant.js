@@ -83,6 +83,9 @@ const CURRENT_RESTAURANT_ID =
     ? requestedRestaurantId
     : 0;
 
+    let resolvedRestaurantId =
+  CURRENT_RESTAURANT_ID;
+
 
 let databaseProductGroups = [];
 let databaseAddons = [];
@@ -624,6 +627,23 @@ async function loadRestaurantIdentity() {
 
     const restaurant =
       data.restaurant;
+
+      const loadedRestaurantId =
+  Number.parseInt(
+    restaurant.restaurant_id ||
+    0,
+    10
+  );
+
+if (
+  Number.isInteger(
+    loadedRestaurantId
+  ) &&
+  loadedRestaurantId > 0
+) {
+  resolvedRestaurantId =
+    loadedRestaurantId;
+}
 
     const name =
       String(
@@ -2617,8 +2637,9 @@ async function loadDatabaseProducts() {
   try {
 const response = await fetch(
   `${API}/get_public_products.php?restaurant_id=${encodeURIComponent(
-    CURRENT_RESTAURANT_ID
-  )}`,
+  resolvedRestaurantId
+)}`,
+
   {
     credentials: "include",
     cache: "no-store"
@@ -3007,7 +3028,7 @@ async function loadPopularProducts() {
 function showCorrectSubfilters() {
   /*
    * Subfilters were previously tied to
-   * BlackHabit-specific categories.
+   * restaurant-specific categories.
    *
    * Public restaurant filtering now
    * uses each restaurant's own dynamic
@@ -3685,26 +3706,20 @@ if (IS_PREVIEW_MODE) {
       true;
   }
 
-  if (menuFilters) {
-    menuFilters.innerHTML = `
-      <button
-        type="button"
-        class="filter-btn main-filter-btn active"
-        disabled
-      >
-        All
-      </button>
-    `;
-  }
+  await loadDatabaseProducts();
 
-  if (menuGrid) {
-    menuGrid.innerHTML = `
-      <div class="orders-empty">
-        Products will appear here after the restaurant
-        is approved and menu items are added.
-      </div>
-    `;
-  }
+  document
+    .querySelectorAll(
+      ".dynamic-add-to-cart"
+    )
+    .forEach((button) => {
+      button.disabled = true;
+      button.textContent =
+        "Preview Only";
+    });
+
+  showCorrectSubfilters();
+  applyFilters();
 
   return;
 }

@@ -81,12 +81,26 @@ if (
 
 $ownerStmt = $conn->prepare("
     SELECT
-        u.user_id,
-        u.full_name,
-        r.restaurant_id,
-        r.name AS restaurant_name    FROM tbl_users u
-    INNER JOIN tbl_restaurants r
-        ON r.restaurant_id = u.restaurant_id
+    u.user_id,
+    u.full_name,
+
+    r.restaurant_id,
+    r.name AS restaurant_name,
+    r.business_status,
+    r.customer_visibility,
+    r.setup_completed,
+
+    pa.application_id,
+    pa.application_status,
+    pa.rejection_reason
+
+FROM tbl_users u
+
+INNER JOIN tbl_restaurants r
+    ON r.restaurant_id = u.restaurant_id
+
+LEFT JOIN tbl_partner_applications pa
+    ON pa.owner_id = u.user_id
     WHERE u.user_id = ?
       AND u.restaurant_id = ?
       AND LOWER(u.role) = 'owner'
@@ -298,13 +312,44 @@ if ($bestSellerStmt) {
 respond_json([
     "success" => true,
 
-    "restaurant" => [
-        "restaurant_id" => $restaurant_id,
-        "restaurant_name" =>
-            $owner["restaurant_name"],
-        "owner_name" =>
-            $owner["full_name"]
-    ],
+  "restaurant" => [
+    "restaurant_id" =>
+        $restaurant_id,
+
+    "restaurant_name" =>
+        $owner["restaurant_name"],
+
+    "owner_name" =>
+        $owner["full_name"],
+
+    "business_status" =>
+        $owner["business_status"],
+
+    "customer_visibility" =>
+        $owner["customer_visibility"],
+
+    "setup_completed" =>
+        (int) $owner["setup_completed"],
+
+    "application_id" =>
+        isset($owner["application_id"])
+            ? (int) $owner["application_id"]
+            : null,
+
+    "application_status" =>
+        strtolower(
+            trim(
+                (string) (
+                    $owner["application_status"]
+                    ?? "draft"
+                )
+            )
+        ),
+
+    "rejection_reason" =>
+        $owner["rejection_reason"]
+        ?? null
+],
 
     "salesToday" =>
         (float) (

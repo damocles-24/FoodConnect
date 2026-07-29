@@ -3629,7 +3629,7 @@ ${
 
  const content = `
   <div class="receipt customer-receipt">
-    <h1>BlackHabit</h1>
+    <h1>${escapeHtml(order.restaurant_name || "FoodConnect")}</h1>
     <p class="center-text">CUSTOMER RECEIPT</p>
     <p class="center-text">Thank you for your order</p>
 

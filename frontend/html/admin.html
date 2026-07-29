@@ -17,7 +17,7 @@
 
 <link
   rel="stylesheet"
-  href="../css/admin.css?v=20260726-2"
+  href="../css/admin.css?v=20260728-1"
 >
 
   <link
@@ -297,6 +297,22 @@
 
         <button
           class="nav-item"
+          data-section="partnerRequestsSection"
+        >
+          <i class="fa-solid fa-handshake"></i>
+
+          <span>Partner Requests</span>
+
+          <span
+            id="pendingPartnerRequestsBadge"
+            class="nav-badge hidden"
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          class="nav-item"
           data-section="applicationsSection"
         >
           <i class="fa-solid fa-store"></i>
@@ -333,8 +349,7 @@
           <i class="fa-solid fa-clock-rotate-left"></i>
           <span>Activity Logs</span>
         </button>
-
-      </nav>
+</nav>
 
       <div class="sidebar-footer">
         <button
@@ -394,8 +409,7 @@
         id="dashboardMessage"
         class="dashboard-message hidden"
       ></div>
-
-      <!-- OVERVIEW -->
+    <!-- OVERVIEW -->
 
       <section
         id="overviewSection"
@@ -430,25 +444,251 @@
         <div class="content-card">
           <div class="card-heading">
             <div>
-              <h2>Platform overview</h2>
+              <h2>Platform Overview</h2>
 
               <p>
-                Review restaurant applications, restaurants,
-                users, and platform activities from one dashboard.
+                Review restaurant applications,
+                restaurants, users, and platform
+                activities from one dashboard.
               </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="empty-placeholder">
-            <i class="fa-solid fa-chart-line"></i>
+      <!-- =========================
+           PARTNER REQUESTS
+      ========================== -->
 
-            <h3>Dashboard analytics</h3>
+      <section
+        id="partnerRequestsSection"
+        class="dashboard-section"
+      >
+        <div class="summary-grid">
+
+          <article class="summary-card">
+            <div class="summary-icon orange">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <div>
+              <span>Pending Requests</span>
+
+              <strong id="pendingPartnerRequestsCount">
+                0
+              </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon green">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+              <span>Approved Requests</span>
+
+              <strong id="approvedPartnerRequestsCount">
+                0
+              </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon purple">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+
+            <div>
+              <span>Rejected Requests</span>
+
+              <strong id="rejectedPartnerRequestsCount">
+                0
+              </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon blue">
+              <i class="fa-solid fa-handshake"></i>
+            </div>
+
+            <div>
+              <span>Total Requests</span>
+
+              <strong id="totalPartnerRequestsCount">
+                0
+              </strong>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="content-card">
+
+          <div class="card-heading applications-heading">
+            <div>
+              <h2>Partner Requests</h2>
+
+              <p>
+                Review businesses requesting permission
+                to become FoodConnect restaurant partners.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="refreshPartnerRequestsButton"
+              class="secondary-button"
+            >
+              <i class="fa-solid fa-rotate"></i>
+              Refresh
+            </button>
+          </div>
+
+          <div class="partner-request-toolbar">
+
+            <div class="partner-request-search-group">
+              <i class="fa-solid fa-magnifying-glass"></i>
+
+              <input
+                type="search"
+                id="partnerRequestSearchInput"
+                placeholder="Search restaurant, owner, or email..."
+                autocomplete="off"
+                maxlength="100"
+              >
+            </div>
+
+            <select
+              id="partnerRequestStatusFilter"
+              class="partner-request-status-filter"
+              aria-label="Filter partner requests by status"
+            >
+              <option value="all">
+                All Statuses
+              </option>
+
+              <option value="pending">
+                Pending
+              </option>
+
+              <option value="approved">
+                Approved
+              </option>
+
+              <option value="rejected">
+                Rejected
+              </option>
+            </select>
+
+            <button
+              type="button"
+              id="searchPartnerRequestsButton"
+              class="primary-button partner-request-search-button"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+              Search
+            </button>
+
+            <button
+              type="button"
+              id="clearPartnerRequestSearchButton"
+              class="secondary-button partner-request-clear-button"
+            >
+              <i class="fa-solid fa-xmark"></i>
+              Clear
+            </button>
+
+          </div>
+
+          <div
+            id="partnerRequestResultCount"
+            class="partner-request-result-count"
+          >
+            0 requests
+          </div>
+
+          <div
+            id="partnerRequestsLoading"
+            class="table-loading hidden"
+          >
+            Loading partner requests...
+          </div>
+
+          <p
+            id="partnerRequestsMessage"
+            class="form-message"
+          ></p>
+
+          <div
+            id="partnerRequestsEmpty"
+            class="empty-placeholder hidden"
+          >
+            <i class="fa-solid fa-handshake"></i>
+
+            <h3>No partner requests</h3>
 
             <p>
-              Restaurant, user, order, and platform analytics
-              will appear here as FoodConnect grows.
+              Partner requests will appear here.
             </p>
           </div>
+
+          <div
+            id="partnerRequestsTableWrapper"
+            class="table-wrapper hidden"
+          >
+            <table class="admin-table partner-requests-table">
+              <thead>
+                <tr>
+                  <th>Restaurant</th>
+                  <th>Owner</th>
+                  <th>Email</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody
+                id="partnerRequestsTableBody"
+              ></tbody>
+            </table>
+          </div>
+
+          <div
+            id="partnerRequestPagination"
+            class="partner-request-pagination hidden"
+          >
+            <button
+              type="button"
+              id="partnerRequestPreviousButton"
+              class="secondary-button"
+            >
+              <i class="fa-solid fa-chevron-left"></i>
+              Previous
+            </button>
+
+            <div class="partner-request-pagination-info">
+              <span id="partnerRequestPageInfo">
+                Page 1 of 1
+              </span>
+
+              <small id="partnerRequestRangeInfo">
+                Showing 0–0 of 0
+              </small>
+            </div>
+
+            <button
+              type="button"
+              id="partnerRequestNextButton"
+              class="secondary-button"
+            >
+              Next
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
         </div>
       </section>
 
@@ -1122,7 +1362,9 @@
   </div>
 </section>
 
-    </main>
+
+</main>
+
   </div>
 
   <!-- APPLICATION MODAL -->
@@ -1145,6 +1387,29 @@
 
     </div>
   </div>
-<script src="../js/admin.js?v=20260726-4"></script>
+
+<!-- PARTNER REQUEST MODAL -->
+
+<div
+  id="partnerRequestModal"
+  class="modal-overlay hidden"
+>
+  <div class="application-modal">
+
+    <button
+      type="button"
+      id="closePartnerRequestModal"
+      class="modal-close"
+      aria-label="Close partner request details"
+    >
+      &times;
+    </button>
+
+    <div id="partnerRequestModalContent"></div>
+
+  </div>
+</div>
+
+<script src="../js/admin.js?v=20260728-1"></script>
 </body>
 </html>

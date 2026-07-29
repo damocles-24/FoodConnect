@@ -65,6 +65,31 @@ const profileRestaurantName =
     "profileRestaurantName"
   );
 
+  const goLivePanel =
+  document.getElementById(
+    "goLivePanel"
+  );
+
+const goLiveTitle =
+  document.getElementById(
+    "goLiveTitle"
+  );
+
+const goLiveMessage =
+  document.getElementById(
+    "goLiveMessage"
+  );
+
+const goLiveRequirements =
+  document.getElementById(
+    "goLiveRequirements"
+  );
+
+const applyGoLiveBtn =
+  document.getElementById(
+    "applyGoLiveBtn"
+  );
+
 const addProductModal = document.getElementById("addProductModal");
 const editProductModal = document.getElementById("editProductModal");
 const restockModal = document.getElementById("restockModal");
@@ -618,6 +643,137 @@ async function fetchJSON(url, options = {}) {
 /* =========================
    DASHBOARD SUMMARY
 ========================= */
+function renderGoLiveStatus(
+  restaurant,
+  totalProducts
+) {
+  if (
+    !goLivePanel ||
+    !goLiveTitle ||
+    !goLiveMessage ||
+    !applyGoLiveBtn
+  ) {
+    return;
+  }
+
+  const applicationStatus =
+    String(
+      restaurant?.application_status ||
+      "draft"
+    )
+      .trim()
+      .toLowerCase();
+
+  const visibility =
+    String(
+      restaurant?.customer_visibility ||
+      "Hidden"
+    )
+      .trim()
+      .toLowerCase();
+
+  const productCount =
+    Number(totalProducts) || 0;
+
+  applyGoLiveBtn.hidden = true;
+  applyGoLiveBtn.disabled = false;
+
+  if (visibility === "visible") {
+    goLiveTitle.textContent =
+      "Restaurant is Live";
+
+    goLiveMessage.textContent =
+      "Customers can currently discover and order from your restaurant.";
+
+    if (goLiveRequirements) {
+      goLiveRequirements.textContent =
+        "Continue keeping your products, inventory, hours, and staff information updated.";
+    }
+
+    return;
+  }
+
+  if (applicationStatus === "submitted") {
+    goLiveTitle.textContent =
+      "Under Administrator Review";
+
+    goLiveMessage.textContent =
+      "Your restaurant is still hidden while FoodConnect reviews your go-live application.";
+
+    if (goLiveRequirements) {
+      goLiveRequirements.textContent =
+        "You will be notified after the administrator approves, requests changes, or rejects the application.";
+    }
+
+    return;
+  }
+
+  if (applicationStatus === "needs_changes") {
+    goLiveTitle.textContent =
+      "Changes Required";
+
+    goLiveMessage.textContent =
+      restaurant?.rejection_reason ||
+      "The administrator requested changes before your restaurant can go live.";
+
+    if (goLiveRequirements) {
+      goLiveRequirements.textContent =
+        productCount > 0
+          ? "Complete the requested changes, then submit again."
+          : "Add at least one product and complete the requested changes.";
+    }
+
+    applyGoLiveBtn.textContent =
+      "Resubmit for Review";
+
+    applyGoLiveBtn.hidden = false;
+    applyGoLiveBtn.disabled =
+      productCount < 1;
+
+    return;
+  }
+
+  if (applicationStatus === "rejected") {
+    goLiveTitle.textContent =
+      "Application Rejected";
+
+    goLiveMessage.textContent =
+      restaurant?.rejection_reason ||
+      "This restaurant application was rejected.";
+
+    if (goLiveRequirements) {
+      goLiveRequirements.textContent =
+        "This application can no longer be resubmitted.";
+    }
+
+    return;
+  }
+
+  goLiveTitle.textContent =
+    "Private Restaurant Setup";
+
+  goLiveMessage.textContent =
+    "Your restaurant is hidden from customers. Prepare it before applying to go live.";
+
+  if (goLiveRequirements) {
+    goLiveRequirements.textContent =
+      productCount > 0
+        ? `${productCount} product${
+            productCount === 1
+              ? ""
+              : "s"
+          } added. You can now apply for review.`
+        : "Add at least one product before applying to go live.";
+  }
+
+  applyGoLiveBtn.textContent =
+    "Apply to Go Live";
+
+  applyGoLiveBtn.hidden = false;
+  applyGoLiveBtn.disabled =
+    productCount < 1;
+}
+
 async function loadDashboardSummary() {
   const salesToday =
     document.getElementById("salesToday");
@@ -675,6 +831,11 @@ async function loadDashboardSummary() {
         Number(data.totalProducts) || 0;
     }
 
+    renderGoLiveStatus(
+  data.restaurant || {},
+  data.totalProducts || 0
+);
+
     if (completedOrders) {
       completedOrders.textContent =
         Number(data.completedOrders) || 0;
@@ -718,6 +879,68 @@ async function loadDashboardSummary() {
       totalProducts.textContent = "0";
     }
   }
+}
+
+async function submitGoLiveApplication() {
+  if (!applyGoLiveBtn) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Submit your restaurant for administrator review? Your restaurant will remain hidden until it is approved."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const originalText =
+    applyGoLiveBtn.textContent;
+
+  applyGoLiveBtn.disabled = true;
+  applyGoLiveBtn.textContent =
+    "Submitting...";
+
+  try {
+    const result = await fetchJSON(
+      `${OWNER_API_BASE}/submit_restaurant_go_live.php`,
+      {
+        method: "POST",
+        body: JSON.stringify({})
+      }
+    );
+
+    alert(
+      result.message ||
+      "Restaurant submitted for review."
+    );
+
+    await Promise.all([
+      loadDashboardSummary(),
+      loadActivityLogs()
+    ]);
+  } catch (error) {
+    console.error(
+      "Go-live submission failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Unable to submit the restaurant for review."
+    );
+
+    applyGoLiveBtn.disabled = false;
+    applyGoLiveBtn.textContent =
+      originalText;
+  }
+}
+
+if (applyGoLiveBtn) {
+  applyGoLiveBtn.addEventListener(
+    "click",
+    submitGoLiveApplication
+  );
 }
 
 /* =========================

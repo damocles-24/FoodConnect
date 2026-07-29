@@ -1,27 +1,86 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
 
+header(
+    "Cache-Control: no-store, no-cache, must-revalidate"
+);
+
+header("Pragma: no-cache");
+
+error_reporting(
+    E_ALL &
+    ~E_NOTICE &
+    ~E_WARNING
+);
+
+ini_set(
+    "display_errors",
+    "0"
+);
+
+require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/mailer.php";
+
+/* =========================================================
+   JSON RESPONSE
+========================================================= */
 
 function respond_json(
     bool $success,
     string $message,
-    int $statusCode = 200
+    int $statusCode = 200,
+    array $extra = []
 ): void {
     http_response_code($statusCode);
 
-    echo json_encode([
-        "success" => $success,
-        "message" => $message
-    ]);
+    echo json_encode(
+        array_merge(
+            [
+                "success" => $success,
+                "message" => $message
+            ],
+            $extra
+        ),
+        JSON_UNESCAPED_UNICODE
+    );
 
     exit;
 }
 
-$rawInput = file_get_contents("php://input");
-$data = json_decode($rawInput, true);
+/* =========================================================
+   REQUEST METHOD
+========================================================= */
+
+if (
+    strtoupper(
+        (string) (
+            $_SERVER["REQUEST_METHOD"] ?? ""
+        )
+    ) !== "POST"
+) {
+    respond_json(
+        false,
+        "Method not allowed.",
+        405
+    );
+}
+
+/* =========================================================
+   READ JSON INPUT
+========================================================= */
+
+$rawInput =
+    file_get_contents("php://input");
+
+$data =
+    json_decode(
+        $rawInput,
+        true
+    );
 
 if (!is_array($data)) {
     respond_json(
@@ -31,41 +90,69 @@ if (!is_array($data)) {
     );
 }
 
-$fullName = trim(
-    (string) ($data["full_name"] ?? "")
-);
+/* =========================================================
+   INPUT VALUES
+========================================================= */
 
-$email = strtolower(trim(
-    (string) ($data["email"] ?? "")
-));
+$fullName =
+    trim(
+        (string) (
+            $data["full_name"] ?? ""
+        )
+    );
 
-$contactNumber = trim(
-    (string) ($data["contact_number"] ?? "")
-);
+$email =
+    strtolower(
+        trim(
+            (string) (
+                $data["email"] ?? ""
+            )
+        )
+    );
 
-$password = (string) (
-    $data["password"] ?? ""
-);
+$contactNumber =
+    trim(
+        (string) (
+            $data["contact_number"] ?? ""
+        )
+    );
 
-$restaurantName = trim(
-    (string) ($data["restaurant_name"] ?? "")
-);
+$password =
+    (string) (
+        $data["password"] ?? ""
+    );
 
-$restaurantAddress = trim(
-    (string) ($data["restaurant_address"] ?? "")
-);
+$restaurantName =
+    trim(
+        (string) (
+            $data["restaurant_name"] ?? ""
+        )
+    );
 
-$restaurantContact = trim(
-    (string) ($data["restaurant_contact"] ?? "")
-);
+$restaurantAddress =
+    trim(
+        (string) (
+            $data["restaurant_address"] ?? ""
+        )
+    );
 
-$cuisine = trim(
-    (string) ($data["cuisine"] ?? "")
-);
+$restaurantContact =
+    trim(
+        (string) (
+            $data["restaurant_contact"] ?? ""
+        )
+    );
+
+$cuisine =
+    trim(
+        (string) (
+            $data["cuisine"] ?? ""
+        )
+    );
 
 /* =========================================================
-   VALIDATION
-   ========================================================= */
+   REQUIRED FIELD VALIDATION
+========================================================= */
 
 if (
     $fullName === "" ||
@@ -84,7 +171,12 @@ if (
     );
 }
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+if (
+    !filter_var(
+        $email,
+        FILTER_VALIDATE_EMAIL
+    )
+) {
     respond_json(
         false,
         "Please enter a valid email address.",
@@ -92,7 +184,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     );
 }
 
-if (strlen($password) < 8) {
+if (
+    strlen($password) < 8
+) {
     respond_json(
         false,
         "Password must contain at least 8 characters.",
@@ -101,98 +195,118 @@ if (strlen($password) < 8) {
 }
 
 /* =========================================================
-   DUPLICATE EMAIL CHECK
-   ========================================================= */
-
-$checkStmt = $conn->prepare("
-    SELECT user_id
-    FROM tbl_users
-    WHERE email = ?
-    LIMIT 1
-");
-
-if (!$checkStmt) {
-    respond_json(
-        false,
-        "Unable to validate the email address.",
-        500
-    );
-}
-
-$checkStmt->bind_param(
-    "s",
-    $email
-);
-
-$checkStmt->execute();
-
-$existingUser =
-    $checkStmt
-        ->get_result()
-        ->fetch_assoc();
-
-$checkStmt->close();
-
-if ($existingUser) {
-    respond_json(
-        false,
-        "This email address is already registered.",
-        409
-    );
-}
-
-/* =========================================================
    PREPARE ACCOUNT DATA
-   ========================================================= */
+========================================================= */
 
 $role = "owner";
 
-$passwordHash = password_hash(
-    $password,
-    PASSWORD_DEFAULT
-);
+$passwordHash =
+    password_hash(
+        $password,
+        PASSWORD_DEFAULT
+    );
 
 $verificationToken =
-    bin2hex(random_bytes(32));
+    bin2hex(
+        random_bytes(32)
+    );
 
-$verificationExpiresAt = date(
-    "Y-m-d H:i:s",
-    time() + 86400
-);
+$verificationExpiresAt =
+    date(
+        "Y-m-d H:i:s",
+        time() + 86400
+    );
+
+/* =========================================================
+   DATABASE TRANSACTION
+========================================================= */
 
 try {
     $conn->begin_transaction();
 
     /* =====================================================
-       CREATE OWNER ACCOUNT
-       ===================================================== */
+       DUPLICATE EMAIL CHECK
+    ===================================================== */
 
-    $userStmt = $conn->prepare("
-        INSERT INTO tbl_users (
-            restaurant_id,
-            role,
-            full_name,
-            email,
-            contact_number,
-            password_hash,
-            status,
-            is_verified,
-            verification_token,
-            verification_expires_at
-        )
-        VALUES (
-            NULL,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            0,
-            0,
-            ?,
-            ?
-        )
-    ");
+    $checkStmt =
+        $conn->prepare("
+            SELECT user_id
+
+            FROM tbl_users
+
+            WHERE email = ?
+
+            LIMIT 1
+        ");
+
+    if (!$checkStmt) {
+        throw new RuntimeException(
+            "Unable to validate the email address."
+        );
+    }
+
+    $checkStmt->bind_param(
+        "s",
+        $email
+    );
+
+    if (!$checkStmt->execute()) {
+        $checkStmt->close();
+
+        throw new RuntimeException(
+            "Unable to validate the email address."
+        );
+    }
+
+    $existingUser =
+        $checkStmt
+            ->get_result()
+            ->fetch_assoc();
+
+    $checkStmt->close();
+
+    if ($existingUser) {
+        $conn->rollback();
+
+        respond_json(
+            false,
+            "This email address is already registered.",
+            409
+        );
+    }
+
+    /* =====================================================
+       CREATE OWNER ACCOUNT
+    ===================================================== */
+
+    $userStmt =
+        $conn->prepare("
+            INSERT INTO tbl_users (
+                restaurant_id,
+                role,
+                full_name,
+                email,
+                contact_number,
+                password_hash,
+                status,
+                is_verified,
+                verification_token,
+                verification_expires_at
+            )
+
+            VALUES (
+                NULL,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                0,
+                0,
+                ?,
+                ?
+            )
+        ");
 
     if (!$userStmt) {
         throw new RuntimeException(
@@ -212,37 +326,42 @@ try {
     );
 
     if (!$userStmt->execute()) {
+        $userStmt->close();
+
         throw new RuntimeException(
             "Unable to create owner account."
         );
     }
 
-    $ownerId = (int) $conn->insert_id;
+    $ownerId =
+        (int) $conn->insert_id;
 
     $userStmt->close();
 
     /* =====================================================
        CREATE PARTNER APPLICATION
-       ===================================================== */
+    ===================================================== */
 
-    $applicationStmt = $conn->prepare("
-        INSERT INTO tbl_partner_applications (
-            owner_id,
-            restaurant_name,
-            restaurant_address,
-            restaurant_contact,
-            cuisine,
-            application_status
-        )
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            'email_pending'
-        )
-    ");
+    $applicationStmt =
+        $conn->prepare("
+            INSERT INTO tbl_partner_applications (
+                owner_id,
+                restaurant_name,
+                restaurant_address,
+                restaurant_contact,
+                cuisine,
+                application_status
+            )
+
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                'email_pending'
+            )
+        ");
 
     if (!$applicationStmt) {
         throw new RuntimeException(
@@ -260,6 +379,8 @@ try {
     );
 
     if (!$applicationStmt->execute()) {
+        $applicationStmt->close();
+
         throw new RuntimeException(
             "Unable to create partner application."
         );
@@ -269,12 +390,29 @@ try {
 
     $conn->commit();
 } catch (Throwable $error) {
-    $conn->rollback();
+    if ($conn->errno === 0) {
+        /*
+         * The transaction may still be active even when
+         * no MySQL connection error is reported.
+         */
+    }
+
+    try {
+        $conn->rollback();
+    } catch (Throwable $rollbackError) {
+        error_log(
+            "partner_register rollback error: " .
+            $rollbackError->getMessage()
+        );
+    }
 
     error_log(
         "partner_register.php error: " .
         $error->getMessage()
     );
+
+    $errorMessage =
+        $error->getMessage();
 
     respond_json(
         false,
@@ -283,25 +421,28 @@ try {
     );
 }
 
+
 /* =========================================================
    EMAIL VERIFICATION
-   ========================================================= */
+========================================================= */
 
 $verificationLink =
     "http://localhost/FoodConnect/api/verify.php?token=" .
     urlencode($verificationToken);
 
-$safeName = htmlspecialchars(
-    $fullName,
-    ENT_QUOTES,
-    "UTF-8"
-);
+$safeName =
+    htmlspecialchars(
+        $fullName,
+        ENT_QUOTES,
+        "UTF-8"
+    );
 
-$safeRestaurantName = htmlspecialchars(
-    $restaurantName,
-    ENT_QUOTES,
-    "UTF-8"
-);
+$safeRestaurantName =
+    htmlspecialchars(
+        $restaurantName,
+        ENT_QUOTES,
+        "UTF-8"
+    );
 
 $emailBody = "
 <!DOCTYPE html>
@@ -442,22 +583,37 @@ $emailBody = "
 </html>
 ";
 
-$emailSent = sendBrevoSMTP(
-    $email,
-    "Verify your FoodConnect partner application",
-    $emailBody
-);
+/* =========================================================
+   SEND VERIFICATION EMAIL
+========================================================= */
+
+$emailSent =
+    sendBrevoSMTP(
+        $email,
+        "Verify your FoodConnect partner application",
+        $emailBody
+    );
 
 if (!$emailSent) {
     respond_json(
         false,
-        "Your application was saved, but the verification email could not be sent.",
-        500
+        "Your application was saved, but the verification email could not be sent. Use the resend verification option.",
+        500,
+        [
+            "application_saved" => true
+        ]
     );
 }
+
+/* =========================================================
+   SUCCESS RESPONSE
+========================================================= */
 
 respond_json(
     true,
     "Application submitted successfully. Please check your email for the verification link.",
-    201
+    201,
+    [
+        "application_saved" => true
+    ]
 );

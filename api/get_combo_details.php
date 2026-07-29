@@ -414,7 +414,7 @@ if ($available) {
         }
 
         /*
-         * Because BlackHabit requires one selection per group,
+         * Because the current combo flow requires one selection per group,
          * the largest available option stock is the practical
          * package limit before the customer chooses.
          */

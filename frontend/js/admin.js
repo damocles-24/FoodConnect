@@ -207,6 +207,139 @@ let currentApplicationStatus =
 let loadedApplications = [];
 
 /* =========================
+   PARTNER REQUEST ELEMENTS
+========================= */
+
+const refreshPartnerRequestsButton =
+  document.getElementById(
+    "refreshPartnerRequestsButton"
+  );
+
+  const partnerRequestSearchInput =
+  document.getElementById(
+    "partnerRequestSearchInput"
+  );
+
+  const partnerRequestStatusFilter =
+  document.getElementById(
+    "partnerRequestStatusFilter"
+  );
+
+const searchPartnerRequestsButton =
+  document.getElementById(
+    "searchPartnerRequestsButton"
+  );
+
+const clearPartnerRequestSearchButton =
+  document.getElementById(
+    "clearPartnerRequestSearchButton"
+  );
+
+const partnerRequestsLoading =
+  document.getElementById(
+    "partnerRequestsLoading"
+  );
+
+const partnerRequestsMessage =
+  document.getElementById(
+    "partnerRequestsMessage"
+  );
+
+const partnerRequestsEmpty =
+  document.getElementById(
+    "partnerRequestsEmpty"
+  );
+
+const partnerRequestsTableWrapper =
+  document.getElementById(
+    "partnerRequestsTableWrapper"
+  );
+
+const partnerRequestsTableBody =
+  document.getElementById(
+    "partnerRequestsTableBody"
+  );
+
+const pendingPartnerRequestsCount =
+  document.getElementById(
+    "pendingPartnerRequestsCount"
+  );
+
+const approvedPartnerRequestsCount =
+  document.getElementById(
+    "approvedPartnerRequestsCount"
+  );
+
+const rejectedPartnerRequestsCount =
+  document.getElementById(
+    "rejectedPartnerRequestsCount"
+  );
+
+  const partnerRequestResultCount =
+  document.getElementById(
+    "partnerRequestResultCount"
+  );
+
+const partnerRequestPagination =
+  document.getElementById(
+    "partnerRequestPagination"
+  );
+
+const partnerRequestPreviousButton =
+  document.getElementById(
+    "partnerRequestPreviousButton"
+  );
+
+const partnerRequestNextButton =
+  document.getElementById(
+    "partnerRequestNextButton"
+  );
+
+const partnerRequestPageInfo =
+  document.getElementById(
+    "partnerRequestPageInfo"
+  );
+
+const partnerRequestRangeInfo =
+  document.getElementById(
+    "partnerRequestRangeInfo"
+  );
+
+const totalPartnerRequestsCount =
+
+  document.getElementById(
+    "totalPartnerRequestsCount"
+  );
+
+const pendingPartnerRequestsBadge =
+  document.getElementById(
+    "pendingPartnerRequestsBadge"
+  );
+
+let loadedPartnerRequests = [];
+
+let filteredPartnerRequests = [];
+
+let currentPartnerRequestPage = 1;
+
+const partnerRequestsPerPage = 10;
+
+const partnerRequestModal =
+  document.getElementById(
+    "partnerRequestModal"
+  );
+
+const partnerRequestModalContent =
+  document.getElementById(
+    "partnerRequestModalContent"
+  );
+
+const closePartnerRequestModalButton =
+  document.getElementById(
+    "closePartnerRequestModal"
+  );
+
+/* =========================
    RESTAURANT ELEMENTS
 ========================= */
 
@@ -433,9 +566,6 @@ const userActivityLogsCount =
   );
 
 let loadedActivityLogs = [];
-
-let currentAdminId = 0;
-
 /* =========================
    INITIALIZATION
 ========================= */
@@ -495,6 +625,37 @@ function bindEvents() {
     handleAdminLogout
   );
 
+  partnerRequestsTableBody
+  ?.addEventListener(
+    "click",
+    handlePartnerRequestTableClick
+  );
+
+  partnerRequestModalContent
+  ?.addEventListener(
+    "click",
+    handlePartnerRequestModalClick
+  );
+
+closePartnerRequestModalButton
+  ?.addEventListener(
+    "click",
+    closePartnerRequestModal
+  );
+
+partnerRequestModal
+  ?.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        partnerRequestModal
+      ) {
+        closePartnerRequestModal();
+      }
+    }
+  );
+
   sidebarToggle?.addEventListener(
     "click",
     () => {
@@ -543,6 +704,105 @@ function bindEvents() {
       "click",
       loadApplications
     );
+
+    refreshPartnerRequestsButton
+  ?.addEventListener(
+    "click",
+    loadPartnerRequests
+  );
+
+ searchPartnerRequestsButton
+  ?.addEventListener(
+    "click",
+    applyPartnerRequestFilters
+  );
+
+partnerRequestSearchInput
+  ?.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+
+        applyPartnerRequestFilters();
+      }
+    }
+  );
+
+  partnerRequestStatusFilter
+  ?.addEventListener(
+    "change",
+    applyPartnerRequestFilters
+  );
+
+partnerRequestSearchInput
+  ?.addEventListener(
+    "input",
+    () => {
+      if (
+        !partnerRequestSearchInput.value
+          .trim()
+      ) {
+        applyPartnerRequestFilters();
+      }
+    }
+  );
+
+clearPartnerRequestSearchButton
+  ?.addEventListener(
+    "click",
+    () => {
+      if (partnerRequestSearchInput) {
+        partnerRequestSearchInput.value =
+          "";
+      }
+
+      if (partnerRequestStatusFilter) {
+        partnerRequestStatusFilter.value =
+          "all";
+      }
+
+      applyPartnerRequestFilters();
+
+      partnerRequestSearchInput?.focus();
+    }
+  );
+
+  partnerRequestPreviousButton
+  ?.addEventListener(
+    "click",
+    () => {
+      if (
+        currentPartnerRequestPage <= 1
+      ) {
+        return;
+      }
+
+      currentPartnerRequestPage -= 1;
+
+      renderPartnerRequestPage();
+    }
+  );
+
+partnerRequestNextButton
+  ?.addEventListener(
+    "click",
+    () => {
+      const totalPages =
+        getPartnerRequestTotalPages();
+
+      if (
+        currentPartnerRequestPage >=
+        totalPages
+      ) {
+        return;
+      }
+
+      currentPartnerRequestPage += 1;
+
+      renderPartnerRequestPage();
+    }
+  );
 
       refreshRestaurantsButton
     ?.addEventListener(
@@ -705,17 +965,18 @@ function bindEvents() {
   );
 
   document.addEventListener(
-    "keydown",
-    (event) => {
-      if (event.key === "Escape") {
-        closeDetailsModal();
+  "keydown",
+  (event) => {
+    if (event.key === "Escape") {
+      closeDetailsModal();
+      closePartnerRequestModal();
 
-        adminSidebar?.classList.remove(
-          "open"
-        );
-      }
+      adminSidebar?.classList.remove(
+        "open"
+      );
     }
-  );
+  }
+);
 }
 
 /* =========================
@@ -1337,6 +1598,13 @@ function openDashboardSection(navItem) {
   );
 
   if (
+  sectionId ===
+  "partnerRequestsSection"
+) {
+  loadPartnerRequests();
+}
+
+  if (
     sectionId ===
     "applicationsSection"
   ) {
@@ -1362,6 +1630,1311 @@ function openDashboardSection(navItem) {
     "activityLogsSection"
   ) {
     loadActivityLogs();
+  }
+}
+
+/* =========================
+   PARTNER REQUESTS
+========================= */
+
+async function loadPartnerRequests() {
+  partnerRequestsLoading
+    ?.classList.remove(
+      "hidden"
+    );
+
+  partnerRequestsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  partnerRequestsTableWrapper
+    ?.classList.add(
+      "hidden"
+    );
+
+    partnerRequestPagination
+  ?.classList.add(
+    "hidden"
+  );
+
+  if (partnerRequestsMessage) {
+    partnerRequestsMessage.textContent =
+      "";
+  }
+
+  try {
+    const params =
+      new URLSearchParams({
+        status: "all"
+      });
+
+      if (partnerRequestResultCount) {
+  partnerRequestResultCount.textContent =
+    "Loading requests...";
+}
+
+    const response = await fetch(
+      `${API_BASE}/get_partner_invitation_requests.php?${params.toString()}`,
+      {
+        method: "GET",
+
+        credentials: "include",
+
+        headers: {
+          "Accept":
+            "application/json"
+        }
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load partner requests."
+      );
+    }
+
+    loadedPartnerRequests =
+      Array.isArray(
+        data.requests
+      )
+        ? data.requests
+        : [];
+
+    updatePartnerRequestSummary(
+      data.summary || {}
+    );
+
+    applyPartnerRequestFilters();
+
+  } catch (error) {
+    console.error(
+      "Load partner requests error:",
+      error
+    );
+
+    if (partnerRequestResultCount) {
+  partnerRequestResultCount.textContent =
+    "Unable to load requests";
+}
+
+    loadedPartnerRequests = [];
+
+filteredPartnerRequests = [];
+
+currentPartnerRequestPage = 1;
+
+partnerRequestsTableWrapper
+  ?.classList.add(
+    "hidden"
+  );
+
+partnerRequestPagination
+  ?.classList.add(
+    "hidden"
+  );
+
+    if (partnerRequestsEmpty) {
+      partnerRequestsEmpty.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <h3>
+          Unable to load partner requests
+        </h3>
+
+        <p>
+          ${escapeHtml(
+            error.message ||
+            "Please try again."
+          )}
+        </p>
+      `;
+
+      partnerRequestsEmpty.classList.remove(
+        "hidden"
+      );
+    }
+  } finally {
+    partnerRequestsLoading
+      ?.classList.add(
+        "hidden"
+      );
+  }
+}
+
+/* =========================
+   PARTNER REQUEST FILTERS
+========================= */
+function applyPartnerRequestFilters() {
+  const searchTerm =
+    partnerRequestSearchInput
+      ?.value
+      .trim()
+      .toLowerCase() || "";
+
+  const selectedStatus =
+    partnerRequestStatusFilter
+      ?.value
+      .trim()
+      .toLowerCase() || "all";
+
+  filteredPartnerRequests =
+    loadedPartnerRequests.filter(
+      (request) => {
+        const restaurantName =
+          String(
+            request.intended_restaurant ||
+            ""
+          ).toLowerCase();
+
+        const ownerName =
+          String(
+            request.full_name || ""
+          ).toLowerCase();
+
+        const email =
+          String(
+            request.email || ""
+          ).toLowerCase();
+
+        const requestStatus =
+          String(
+            request.request_status ||
+            "pending"
+          ).toLowerCase();
+
+        const matchesSearch =
+          !searchTerm ||
+          restaurantName.includes(
+            searchTerm
+          ) ||
+          ownerName.includes(
+            searchTerm
+          ) ||
+          email.includes(
+            searchTerm
+          );
+
+        const matchesStatus =
+          selectedStatus === "all" ||
+          requestStatus ===
+            selectedStatus;
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+      }
+    );
+
+  const filtersApplied =
+    Boolean(searchTerm) ||
+    selectedStatus !== "all";
+
+  currentPartnerRequestPage = 1;
+
+  updatePartnerRequestResultCount({
+    visibleCount:
+      filteredPartnerRequests.length,
+
+    totalCount:
+      loadedPartnerRequests.length,
+
+    filtersApplied
+  });
+
+  renderPartnerRequestPage();
+}
+
+function updatePartnerRequestResultCount({
+  visibleCount = 0,
+  totalCount = 0,
+  filtersApplied = false
+}) {
+  if (!partnerRequestResultCount) {
+    return;
+  }
+
+  const visibleLabel =
+    visibleCount === 1
+      ? "request"
+      : "requests";
+
+  const totalLabel =
+    totalCount === 1
+      ? "request"
+      : "requests";
+
+  if (filtersApplied) {
+    partnerRequestResultCount.textContent =
+      `Showing ${visibleCount} of ${totalCount} ${totalLabel}`;
+
+    return;
+  }
+
+  partnerRequestResultCount.textContent =
+    `${totalCount} ${totalLabel}`;
+}
+
+/* =========================
+   PARTNER REQUEST PAGINATION
+========================= */
+
+function getPartnerRequestTotalPages() {
+  return Math.max(
+    1,
+    Math.ceil(
+      filteredPartnerRequests.length /
+      partnerRequestsPerPage
+    )
+  );
+}
+
+function renderPartnerRequestPage() {
+  const totalPages =
+    getPartnerRequestTotalPages();
+
+  if (
+    currentPartnerRequestPage >
+    totalPages
+  ) {
+    currentPartnerRequestPage =
+      totalPages;
+  }
+
+  if (
+    currentPartnerRequestPage < 1
+  ) {
+    currentPartnerRequestPage = 1;
+  }
+
+  const startIndex =
+    (
+      currentPartnerRequestPage - 1
+    ) *
+    partnerRequestsPerPage;
+
+  const endIndex =
+    startIndex +
+    partnerRequestsPerPage;
+
+  const requestsForPage =
+    filteredPartnerRequests.slice(
+      startIndex,
+      endIndex
+    );
+
+  const searchTerm =
+    partnerRequestSearchInput
+      ?.value
+      .trim() || "";
+
+  const selectedStatus =
+    partnerRequestStatusFilter
+      ?.value || "all";
+
+  const filtersApplied =
+    Boolean(searchTerm) ||
+    selectedStatus !== "all";
+
+  renderPartnerRequests(
+    requestsForPage,
+    filtersApplied
+  );
+
+  updatePartnerRequestPagination({
+    totalItems:
+      filteredPartnerRequests.length,
+
+    startIndex,
+
+    pageItemCount:
+      requestsForPage.length,
+
+    totalPages
+  });
+}
+
+function updatePartnerRequestPagination({
+  totalItems = 0,
+  startIndex = 0,
+  pageItemCount = 0,
+  totalPages = 1
+}) {
+  if (!partnerRequestPagination) {
+    return;
+  }
+
+  if (totalItems === 0) {
+    partnerRequestPagination
+      .classList.add(
+        "hidden"
+      );
+
+    return;
+  }
+
+  partnerRequestPagination
+    .classList.remove(
+      "hidden"
+    );
+
+  if (partnerRequestPageInfo) {
+    partnerRequestPageInfo.textContent =
+      `Page ${currentPartnerRequestPage} of ${totalPages}`;
+  }
+
+  if (partnerRequestRangeInfo) {
+    const rangeStart =
+      startIndex + 1;
+
+    const rangeEnd =
+      startIndex +
+      pageItemCount;
+
+    partnerRequestRangeInfo.textContent =
+      `Showing ${rangeStart}–${rangeEnd} of ${totalItems}`;
+  }
+
+  if (partnerRequestPreviousButton) {
+    partnerRequestPreviousButton.disabled =
+      currentPartnerRequestPage <= 1;
+  }
+
+  if (partnerRequestNextButton) {
+    partnerRequestNextButton.disabled =
+      currentPartnerRequestPage >=
+      totalPages;
+  }
+}
+
+/* =========================
+   PARTNER REQUEST SUMMARY
+========================= */
+
+function updatePartnerRequestSummary(
+  summary
+) {
+  const pending =
+    Number(
+      summary.pending || 0
+    );
+
+  const approved =
+    Number(
+      summary.approved || 0
+    );
+
+  const rejected =
+    Number(
+      summary.rejected || 0
+    );
+
+  const total =
+    Number(
+      summary.all || 0
+    );
+
+  setText(
+    pendingPartnerRequestsCount,
+    pending
+  );
+
+  setText(
+    approvedPartnerRequestsCount,
+    approved
+  );
+
+  setText(
+    rejectedPartnerRequestsCount,
+    rejected
+  );
+
+  setText(
+    totalPartnerRequestsCount,
+    total
+  );
+
+  if (
+    pendingPartnerRequestsBadge
+  ) {
+    pendingPartnerRequestsBadge.textContent =
+      String(pending);
+
+    pendingPartnerRequestsBadge
+      .classList.toggle(
+        "hidden",
+        pending === 0
+      );
+  }
+}
+
+/* =========================
+   PARTNER REQUEST TABLE
+========================= */
+function renderPartnerRequests(
+  requests,
+  filtersApplied = false
+) {
+  if (!partnerRequestsTableBody) {
+    return;
+  }
+
+  partnerRequestsTableBody.innerHTML =
+    "";
+
+  if (
+    !Array.isArray(requests) ||
+    requests.length === 0
+  ) {
+    const searchTerm =
+      partnerRequestSearchInput
+        ?.value
+        .trim() || "";
+
+    const selectedStatus =
+      partnerRequestStatusFilter
+        ?.value || "all";
+
+    let emptyTitle =
+      "No partner requests yet";
+
+    let emptyDescription =
+      "New partnership applications will appear here.";
+
+    if (
+      searchTerm &&
+      selectedStatus !== "all"
+    ) {
+      emptyTitle =
+        "No matching partner requests";
+
+      emptyDescription =
+        `No ${selectedStatus} requests match “${searchTerm}”.`;
+    } else if (searchTerm) {
+      emptyTitle =
+        "No matching partner requests";
+
+      emptyDescription =
+        `No requests match “${searchTerm}”.`;
+    } else if (
+      selectedStatus !== "all"
+    ) {
+      emptyTitle =
+        `No ${selectedStatus} requests`;
+
+      emptyDescription =
+        `There are currently no partner requests with the ${selectedStatus} status.`;
+    } else if (filtersApplied) {
+      emptyTitle =
+        "No matching partner requests";
+
+      emptyDescription =
+        "No requests match the selected filters.";
+    }
+
+        partnerRequestsTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    partnerRequestPagination
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (partnerRequestsEmpty) {
+
+      partnerRequestsEmpty.innerHTML = `
+        <div class="partner-request-empty-icon">
+          <i class="fa-solid fa-inbox"></i>
+        </div>
+
+        <h3>
+          ${escapeHtml(emptyTitle)}
+        </h3>
+
+        <p>
+          ${escapeHtml(
+            emptyDescription
+          )}
+        </p>
+      `;
+
+      partnerRequestsEmpty
+        .classList.remove(
+          "hidden"
+        );
+    }
+
+    return;
+  }
+
+  partnerRequestsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  requests.forEach(
+    (request) => {
+      const row =
+        document.createElement("tr");
+
+      const status =
+        String(
+          request.request_status ||
+          "pending"
+        ).toLowerCase();
+
+      row.innerHTML = `
+        <td>
+          <span class="table-primary">
+            ${escapeHtml(
+              request.intended_restaurant ||
+              "Unnamed Restaurant"
+            )}
+          </span>
+
+          <span class="table-secondary">
+            ${escapeHtml(
+              request.business_address ||
+              "No business address provided"
+            )}
+          </span>
+        </td>
+
+        <td>
+          <span class="table-primary">
+            ${escapeHtml(
+              request.full_name ||
+              "Not provided"
+            )}
+          </span>
+
+          <span class="table-secondary">
+            ${escapeHtml(
+              request.contact_number ||
+              "No contact number"
+            )}
+          </span>
+        </td>
+
+        <td>
+          ${escapeHtml(
+            request.email ||
+            "Not provided"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            formatDate(
+              request.created_at
+            )
+          )}
+        </td>
+
+        <td>
+          <span class="
+            status-badge
+            status-${escapeHtml(status)}
+          ">
+            ${escapeHtml(
+              formatStatus(status)
+            )}
+          </span>
+        </td>
+
+        <td>
+          <button
+            type="button"
+            class="
+              view-button
+              partner-request-view-button
+            "
+            data-request-id="${Number(
+              request.request_id || 0
+            )}"
+          >
+            View
+          </button>
+        </td>
+      `;
+
+      partnerRequestsTableBody
+        .appendChild(row);
+    }
+  );
+
+  partnerRequestsTableWrapper
+    ?.classList.remove(
+      "hidden"
+    );
+}
+
+/* =========================
+   PARTNER REQUEST MODAL
+========================= */
+
+function handlePartnerRequestTableClick(
+  event
+) {
+  const viewButton =
+    event.target.closest(
+      ".partner-request-view-button"
+    );
+
+  if (!viewButton) {
+    return;
+  }
+
+  const requestId =
+    Number(
+      viewButton.dataset.requestId || 0
+    );
+
+  if (!requestId) {
+    return;
+  }
+
+  openPartnerRequestModal(
+    requestId
+  );
+}
+
+function openPartnerRequestModal(
+  requestId
+) {
+  const request =
+    loadedPartnerRequests.find(
+      (item) =>
+        Number(item.request_id) ===
+        Number(requestId)
+    );
+
+  if (
+    !request ||
+    !partnerRequestModal ||
+    !partnerRequestModalContent
+  ) {
+    return;
+  }
+
+  const status =
+    String(
+      request.request_status ||
+      "pending"
+    ).toLowerCase();
+
+  let reviewDetailsHtml = "";
+
+  if (
+    status === "approved"
+  ) {
+    reviewDetailsHtml = `
+      <div class="application-detail-row">
+        <span>Reviewed by</span>
+
+        <strong>
+          ${escapeHtml(
+            request.reviewer_name ||
+            "Administrator"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Reviewed at</span>
+
+        <strong>
+          ${escapeHtml(
+            request.reviewed_at
+              ? formatDate(
+                  request.reviewed_at
+                )
+              : "Not available"
+          )}
+        </strong>
+      </div>
+    `;
+  }
+
+  if (
+    status === "rejected"
+  ) {
+    reviewDetailsHtml = `
+      <div class="application-detail-row">
+        <span>Reviewed by</span>
+
+        <strong>
+          ${escapeHtml(
+            request.reviewer_name ||
+            "Administrator"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Reviewed at</span>
+
+        <strong>
+          ${escapeHtml(
+            request.reviewed_at
+              ? formatDate(
+                  request.reviewed_at
+                )
+              : "Not available"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Rejection reason</span>
+
+        <strong>
+          ${escapeHtml(
+            request.rejection_reason ||
+            "No reason was recorded."
+          )}
+        </strong>
+      </div>
+    `;
+  }
+
+  const actionButtonsHtml =
+    status === "pending"
+      ? `
+        <div class="modal-actions">
+          <button type="button" class="secondary-button partner-request-reject-button" data-request-id="${Number(request.request_id)}">
+            <i class="fa-solid fa-xmark"></i> Reject
+          </button>
+          <button type="button" class="primary-button partner-request-approve-button" data-request-id="${Number(request.request_id)}">
+            <i class="fa-solid fa-check"></i> Approve
+          </button>
+        </div>
+      `
+      : "";
+
+  partnerRequestModalContent.innerHTML = `
+    <div class="application-modal-header">
+      <div>
+        <span class="
+          status-badge
+          status-${escapeHtml(status)}
+        ">
+          ${escapeHtml(
+            formatStatus(status)
+          )}
+        </span>
+
+        <h2>
+          ${escapeHtml(
+            request.intended_restaurant ||
+            "Partner Request"
+          )}
+        </h2>
+
+        <p>
+          Partner invitation request details
+        </p>
+      </div>
+    </div>
+
+    <div class="application-details-grid">
+
+      <div class="application-detail-row">
+        <span>Restaurant name</span>
+
+        <strong>
+          ${escapeHtml(
+            request.intended_restaurant ||
+            "Not provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Owner name</span>
+
+        <strong>
+          ${escapeHtml(
+            request.full_name ||
+            "Not provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Email address</span>
+
+        <strong>
+          ${escapeHtml(
+            request.email ||
+            "Not provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Contact number</span>
+
+        <strong>
+          ${escapeHtml(
+            request.contact_number ||
+            "Not provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Business address</span>
+
+        <strong>
+          ${escapeHtml(
+            request.business_address ||
+            "Not provided"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row">
+        <span>Submitted</span>
+
+        <strong>
+          ${escapeHtml(
+            request.created_at
+              ? formatDate(
+                  request.created_at
+                )
+              : "Not available"
+          )}
+        </strong>
+      </div>
+
+      <div class="application-detail-row application-detail-full">
+        <span>Applicant message</span>
+
+        <strong>
+          ${escapeHtml(
+            request.message ||
+            "No message was provided."
+          )}
+        </strong>
+      </div>
+
+      ${reviewDetailsHtml}
+
+    </div>
+
+      <p
+  id="partnerRequestReviewMessage"
+  class="form-message"
+></p>
+
+<div
+  id="partnerRequestRejectionPanel"
+  class="partner-request-rejection-panel hidden"
+></div>
+
+${actionButtonsHtml}
+  `;
+
+  partnerRequestModal.classList.remove(
+    "hidden"
+  );
+
+  document.body.classList.add(
+    "modal-open"
+  );
+}
+
+function closePartnerRequestModal() {
+  const rejectionReasonInput =
+    document.getElementById(
+      "partnerRequestRejectionReason"
+    );
+
+  if (
+    rejectionReasonInput &&
+    rejectionReasonInput.value.trim()
+  ) {
+    rejectionReasonInput.value = "";
+  }
+
+  partnerRequestModal
+    ?.classList.add(
+      "hidden"
+    );
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+  if (partnerRequestModalContent) {
+    partnerRequestModalContent.innerHTML =
+      "";
+  }
+}
+
+/* =========================
+   PARTNER REQUEST ACTIONS
+========================= */
+
+async function handlePartnerRequestModalClick(event) {
+  const approveButton = event.target.closest(".partner-request-approve-button");
+  const rejectButton = event.target.closest(".partner-request-reject-button");
+  const cancelRejectButton = event.target.closest(".partner-request-cancel-reject-button");
+  const confirmRejectButton = event.target.closest(".partner-request-confirm-reject-button");
+  const approvalDoneButton = event.target.closest(".partner-request-approval-done-button");
+
+  if (approvalDoneButton) { closePartnerRequestModal(); return; }
+
+  if (approveButton) {
+    const requestId = Number(approveButton.dataset.requestId || 0);
+    if (!requestId) return;
+    if (!window.confirm("Approve this partner request and email the registration instructions?")) return;
+    await reviewPartnerRequest({ requestId, decision: "approve", button: approveButton });
+    return;
+  }
+
+  if (rejectButton) {
+    const requestId = Number(rejectButton.dataset.requestId || 0);
+    if (requestId) openPartnerRequestRejectionForm(requestId);
+    return;
+  }
+
+  if (cancelRejectButton) { closePartnerRequestRejectionForm(); return; }
+
+  if (confirmRejectButton) {
+    const requestId = Number(confirmRejectButton.dataset.requestId || 0);
+    const input = document.getElementById("partnerRequestRejectionReason");
+    const rejectionReason = input?.value.trim() || "";
+    if (rejectionReason.length < 10) {
+      setPartnerRequestRejectionMessage("Enter a clear rejection reason with at least 10 characters.", "error");
+      input?.focus();
+      return;
+    }
+    if (!window.confirm("Reject this partner request and email the applicant?")) return;
+    await reviewPartnerRequest({ requestId, decision: "reject", rejectionReason, button: confirmRejectButton });
+  }
+}
+
+/* =========================
+   PARTNER REQUEST
+   REJECTION FORM
+========================= */
+
+function openPartnerRequestRejectionForm(
+  requestId
+) {
+  const rejectionPanel =
+    document.getElementById(
+      "partnerRequestRejectionPanel"
+    );
+
+  const modalActions =
+    partnerRequestModalContent
+      ?.querySelector(
+        ".modal-actions"
+      );
+
+  if (
+    !rejectionPanel ||
+    !requestId
+  ) {
+    return;
+  }
+
+  rejectionPanel.innerHTML = `
+    <div class="partner-request-rejection-header">
+      <div>
+        <h3>
+          Reject Partner Request
+        </h3>
+
+        <p>
+          Explain why this request is being rejected.
+          This reason will be included in the email
+          sent to the applicant.
+        </p>
+      </div>
+    </div>
+
+    <div class="partner-request-rejection-group">
+      <label
+        for="partnerRequestRejectionReason"
+      >
+        Rejection reason
+      </label>
+
+      <textarea
+        id="partnerRequestRejectionReason"
+        rows="5"
+        maxlength="1000"
+        placeholder="Enter a clear rejection reason..."
+      ></textarea>
+
+      <div class="partner-request-rejection-help">
+        <small>
+          Minimum 10 characters
+        </small>
+
+        <small
+          id="partnerRequestRejectionCount"
+        >
+          0 / 1000
+        </small>
+      </div>
+    </div>
+
+    <p
+      id="partnerRequestRejectionMessage"
+      class="partner-request-rejection-message"
+    ></p>
+
+    <div class="partner-request-rejection-actions">
+      <button
+        type="button"
+        class="
+          secondary-button
+          partner-request-cancel-reject-button
+        "
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="
+          reject-button
+          partner-request-confirm-reject-button
+        "
+        data-request-id="${Number(
+          requestId
+        )}"
+        disabled
+      >
+        <i class="fa-solid fa-envelope-circle-xmark"></i>
+
+        Reject & Send Email
+      </button>
+    </div>
+  `;
+
+  rejectionPanel.classList.remove(
+    "hidden"
+  );
+
+  modalActions?.classList.add(
+    "hidden"
+  );
+
+  setPartnerRequestReviewMessage(
+    ""
+  );
+
+  const rejectionReasonInput =
+    document.getElementById(
+      "partnerRequestRejectionReason"
+    );
+
+  rejectionReasonInput
+    ?.addEventListener(
+      "input",
+      handlePartnerRequestRejectionInput
+    );
+
+  rejectionReasonInput?.focus();
+}
+
+function closePartnerRequestRejectionForm() {
+  const rejectionPanel =
+    document.getElementById(
+      "partnerRequestRejectionPanel"
+    );
+
+  const modalActions =
+    partnerRequestModalContent
+      ?.querySelector(
+        ".modal-actions"
+      );
+
+  rejectionPanel?.classList.add(
+    "hidden"
+  );
+
+  if (rejectionPanel) {
+    rejectionPanel.innerHTML = "";
+  }
+
+  modalActions?.classList.remove(
+    "hidden"
+  );
+
+  setPartnerRequestReviewMessage(
+    ""
+  );
+}
+
+function handlePartnerRequestRejectionInput(
+  event
+) {
+  const textarea =
+    event.currentTarget;
+
+  const value =
+    textarea.value || "";
+
+  const cleanLength =
+    value.trim().length;
+
+  const countElement =
+    document.getElementById(
+      "partnerRequestRejectionCount"
+    );
+
+  const confirmButton =
+    partnerRequestModalContent
+      ?.querySelector(
+        ".partner-request-confirm-reject-button"
+      );
+
+  if (countElement) {
+    countElement.textContent =
+      `${value.length} / 1000`;
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled =
+      cleanLength < 10;
+  }
+
+  setPartnerRequestRejectionMessage(
+    cleanLength > 0 &&
+    cleanLength < 10
+      ? "The rejection reason must contain at least 10 characters."
+      : "",
+    cleanLength > 0 &&
+    cleanLength < 10
+      ? "error"
+      : ""
+  );
+}
+
+function setPartnerRequestRejectionMessage(
+  message,
+  type = ""
+) {
+  const messageElement =
+    document.getElementById(
+      "partnerRequestRejectionMessage"
+    );
+
+  if (!messageElement) {
+    return;
+  }
+
+  messageElement.textContent =
+    message;
+
+  messageElement.className =
+    "partner-request-rejection-message";
+
+  if (type) {
+    messageElement.classList.add(
+      type
+    );
+  }
+}
+
+function showPartnerRequestApprovalResult({ data, requestId }) {
+  if (!partnerRequestModalContent) return;
+  const request = loadedPartnerRequests.find((item) => Number(item.request_id) === Number(requestId)) || {};
+  const assignedEmail = String(data.assigned_email || request.email || "");
+  const restaurantName = String(data.intended_restaurant || request.intended_restaurant || "Restaurant");
+  const emailSent = data.email_sent !== false;
+  partnerRequestModalContent.innerHTML = `
+    <div class="partner-request-success-panel">
+      <div class="partner-request-success-icon"><i class="fa-solid fa-check"></i></div>
+      <div class="partner-request-success-heading">
+        <span>Partner Request Approved</span>
+        <h2>Registration is now allowed</h2>
+        <p>${escapeHtml(restaurantName)} may now create an owner account, verify the email, and continue to the restaurant setup wizard.</p>
+      </div>
+      <div class="partner-request-email-result ${emailSent ? "success" : "warning"}">
+        <i class="${emailSent ? "fa-solid fa-envelope-circle-check" : "fa-solid fa-triangle-exclamation"}"></i>
+        <div><strong>${emailSent ? "Registration instructions sent" : "Approved, but email delivery failed"}</strong>
+        <p>${emailSent ? `Instructions were sent to ${escapeHtml(assignedEmail || "the applicant")}.` : "The request is approved. Ask the applicant to open the partner registration page."}</p></div>
+      </div>
+      <div class="partner-request-success-actions"><button type="button" class="primary-button partner-request-approval-done-button"><i class="fa-solid fa-check"></i> Done</button></div>
+    </div>`;
+}
+
+async function reviewPartnerRequest({ requestId, decision, rejectionReason = "", button }) {
+  const modalButtons = partnerRequestModalContent?.querySelectorAll(`.partner-request-approve-button, .partner-request-reject-button, .partner-request-cancel-reject-button, .partner-request-confirm-reject-button`) || [];
+  modalButtons.forEach((actionButton) => { actionButton.disabled = true; });
+  const originalButtonHtml = button?.innerHTML || "";
+  if (button) button.innerHTML = decision === "approve" ? `<i class="fa-solid fa-spinner fa-spin"></i> Approving...` : `<i class="fa-solid fa-spinner fa-spin"></i> Rejecting...`;
+  setPartnerRequestReviewMessage(decision === "approve" ? "Approving partner request..." : "Rejecting partner request...", "loading");
+  try {
+    const payload = { request_id: requestId, decision };
+    if (decision === "reject") payload.rejection_reason = rejectionReason;
+    const response = await fetch(`${API_BASE}/review_partner_invitation_request.php`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(payload) });
+    const data = await readJson(response);
+    if (response.status === 401 || response.status === 403) { closePartnerRequestModal(); showAdminAccess(); throw new Error("Administrator session expired."); }
+    if (!response.ok || !data.success) throw new Error(data.message || "Unable to review the partner request.");
+    await loadPartnerRequests();
+    if (decision === "approve") { showPartnerRequestApprovalResult({ data, requestId }); return; }
+    setPartnerRequestReviewMessage(data.message || "Partner request rejected successfully.", "success");
+    window.setTimeout(() => closePartnerRequestModal(), 1200);
+  } catch (error) {
+    console.error("Partner request review error:", error);
+    setPartnerRequestReviewMessage(error.message || "Unable to review the partner request.", "error");
+    modalButtons.forEach((actionButton) => { actionButton.disabled = false; });
+    if (button) button.innerHTML = originalButtonHtml;
+  }
+}
+
+function setPartnerRequestReviewMessage(
+  message,
+  type = ""
+) {
+  const messageElement =
+    document.getElementById(
+      "partnerRequestReviewMessage"
+    );
+
+  if (!messageElement) {
+    return;
+  }
+
+  messageElement.textContent =
+    message;
+
+  messageElement.className =
+    "form-message";
+
+  if (type) {
+    messageElement.classList.add(
+      type
+    );
   }
 }
 

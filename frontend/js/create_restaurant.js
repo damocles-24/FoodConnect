@@ -2070,29 +2070,24 @@ async function saveApplication(
                     : "draft"
             );
 
-        if (action === "submit") {
-            currentApplicationStatus =
-                "submitted";
+       if (action === "submit") {
+    currentApplicationStatus =
+        "setup_completed";
 
-            renderApplicationStatus(
-                "submitted"
-            );
+    showToast(
+        "Setup completed",
+        result.message ||
+        "Your private restaurant has been created successfully.",
+        "success"
+    );
 
-            showWizardStep(
-                5,
-                false
-            );
+    window.setTimeout(() => {
+        window.location.href =
+            "/FoodConnect/frontend/html/owner_dashboard.html";
+    }, 1200);
 
-            applyStatusRestrictions(
-                "submitted"
-            );
-
-            submissionModal.classList.remove(
-                "hidden"
-            );
-
-            return true;
-        }
+    return true;
+}
 
         renderApplicationStatus(
             "draft"
@@ -3081,7 +3076,7 @@ function setSubmittingState(
     if (submitting) {
         if (action === "submit") {
             submitButton.textContent =
-                "Submitting...";
+            "Completing setup...";
         } else {
             saveDraftButton.textContent =
                 "Saving...";
@@ -3094,7 +3089,7 @@ function setSubmittingState(
         "Save as draft";
 
     submitButton.textContent =
-        "Submit for review";
+    "Complete setup";
 
     if (
         currentApplicationStatus ===

@@ -772,219 +772,122 @@ if ($decision === "reject") {
     ]);
 }
 
-    /* =====================================================
-       CHECK EXISTING RESTAURANT
-    ===================================================== */
+ /* =====================================================
+   LOAD EXISTING PRIVATE RESTAURANT
+===================================================== */
 
-    if (
-        !empty(
-            $owner["restaurant_id"]
-        )
-    ) {
-        throw new DomainException(
-            "This owner already has a linked restaurant."
-        );
-    }
-
-    $existingRestaurantStmt =
-        $conn->prepare("
-            SELECT restaurant_id
-            FROM tbl_restaurants
-            WHERE owner_id = ?
-            LIMIT 1
-            FOR UPDATE
-        ");
-
-    if (!$existingRestaurantStmt) {
-        throw new RuntimeException(
-            "Unable to verify existing restaurants."
-        );
-    }
-
-    $existingRestaurantStmt->bind_param(
-        "i",
-        $ownerId
+$restaurantId =
+    (int) (
+        $owner["restaurant_id"]
+        ?? 0
     );
 
-    $existingRestaurantStmt->execute();
-
-    $existingRestaurant =
-        $existingRestaurantStmt
-            ->get_result()
-            ->fetch_assoc();
-
-    $existingRestaurantStmt->close();
-
-    if ($existingRestaurant) {
-        throw new DomainException(
-            "This owner already has an approved restaurant."
-        );
-    }
-
-    /* =====================================================
-       CREATE RESTAURANT
-    ===================================================== */
-
-    $restaurantName =
-        trim(
-            (string)
-            $application["restaurant_name"]
-        );
-
-    $restaurantAddress =
-        trim(
-            (string)
-            $application["restaurant_address"]
-        );
-
-    $restaurantContact =
-        trim(
-            (string)
-            $application["restaurant_contact"]
-        );
-
-        $restaurantDescription =
-    trim(
-        (string) (
-            $application["restaurant_description"]
-            ?? ""
-        )
+if ($restaurantId <= 0) {
+    throw new DomainException(
+        "The owner does not have a completed private restaurant setup."
     );
+}
 
-$logoPath =
-    trim(
-        (string) (
-            $application["logo_path"] ?? ""
-        )
-    );
-
-    $deliveryFee =
-        max(
-            0,
-            (float)
-            $application["delivery_fee"]
-        );
-
-    $openingHours =
-        "Configured during partner application";
-
-    $businessStatus =
-        "Closed";
-
-    $staffAccessCode =
-        generate_staff_access_code();
-
-    $createRestaurantStmt =
+$restaurantStmt =
     $conn->prepare("
-        INSERT INTO tbl_restaurants (
-            name,
-            description,
-            logo_path,
-            address,
-            contact_number,
-            opening_hours,
-            delivery_fee,
-            business_status,
+        SELECT
+            restaurant_id,
             owner_id,
-            staff_access_code,
-            setup_completed,
-            customer_visibility
-        )
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            1,
-            'Visible'
-        )
+            name,
+            customer_visibility,
+            setup_completed
+        FROM tbl_restaurants
+        WHERE restaurant_id = ?
+          AND owner_id = ?
+        LIMIT 1
+        FOR UPDATE
     ");
 
-    if (!$createRestaurantStmt) {
-        throw new RuntimeException(
-            "Unable to create the approved restaurant."
-        );
-    }
+if (!$restaurantStmt) {
+    throw new RuntimeException(
+        "Unable to verify the private restaurant."
+    );
+}
 
-$createRestaurantStmt->bind_param(
-    "ssssssdsis",
-    $restaurantName,
-    $restaurantDescription,
-    $logoPath,
-    $restaurantAddress,
-    $restaurantContact,
-    $openingHours,
-    $deliveryFee,
-    $businessStatus,
-    $ownerId,
-    $staffAccessCode
+$restaurantStmt->bind_param(
+    "ii",
+    $restaurantId,
+    $ownerId
 );
 
-        if (
-        !$createRestaurantStmt->execute()
-    ) {
-        throw new RuntimeException(
-            "Unable to create the approved restaurant."
-        );
-    }
+if (!$restaurantStmt->execute()) {
+    throw new RuntimeException(
+        "Unable to verify the private restaurant."
+    );
+}
 
-    $restaurantId =
-        (int) $conn->insert_id;
+$existingRestaurant =
+    $restaurantStmt
+        ->get_result()
+        ->fetch_assoc();
 
-    $createRestaurantStmt->close();
+$restaurantStmt->close();
 
-    if ($restaurantId <= 0) {
-        throw new RuntimeException(
-            "The restaurant account was not created correctly."
-        );
-    }
+if (!$existingRestaurant) {
+    throw new DomainException(
+        "The owner's private restaurant could not be found."
+    );
+}
 
-    /* =====================================================
-       LINK RESTAURANT TO OWNER
-    ===================================================== */
+if (
+    (int) (
+        $existingRestaurant["setup_completed"]
+        ?? 0
+    ) !== 1
+) {
+    throw new DomainException(
+        "The restaurant setup must be completed before approval."
+    );
+}
 
-    $linkOwnerStmt =
-        $conn->prepare("
-            UPDATE tbl_users
-            SET restaurant_id = ?
-            WHERE user_id = ?
-              AND restaurant_id IS NULL
-            LIMIT 1
-        ");
-
-    if (!$linkOwnerStmt) {
-        throw new RuntimeException(
-            "Unable to link the restaurant to its owner."
-        );
-    }
-
-    $linkOwnerStmt->bind_param(
-        "ii",
-        $restaurantId,
-        $ownerId
+$restaurantName =
+    trim(
+        (string) (
+            $existingRestaurant["name"]
+            ?? $application["restaurant_name"]
+            ?? "Restaurant"
+        )
     );
 
-    if (!$linkOwnerStmt->execute()) {
-        throw new RuntimeException(
-            "Unable to link the restaurant to its owner."
-        );
-    }
+/* =====================================================
+   MAKE RESTAURANT VISIBLE
+===================================================== */
 
-    if ($linkOwnerStmt->affected_rows !== 1) {
-        $linkOwnerStmt->close();
+$publishStmt =
+    $conn->prepare("
+        UPDATE tbl_restaurants
+        SET
+            customer_visibility = 'Visible',
+            business_status = 'Closed'
+        WHERE restaurant_id = ?
+          AND owner_id = ?
+        LIMIT 1
+    ");
 
-        throw new RuntimeException(
-            "The owner account could not be linked to the restaurant."
-        );
-    }
+if (!$publishStmt) {
+    throw new RuntimeException(
+        "Unable to publish the approved restaurant."
+    );
+}
 
-    $linkOwnerStmt->close();
+$publishStmt->bind_param(
+    "ii",
+    $restaurantId,
+    $ownerId
+);
+
+if (!$publishStmt->execute()) {
+    throw new RuntimeException(
+        "Unable to publish the approved restaurant."
+    );
+}
+
+$publishStmt->close();
 
     /* =====================================================
        APPROVE APPLICATION
@@ -1039,13 +942,13 @@ $approveActionTitle =
     "Restaurant Approved";
 
 $approveDescription =
-    "The restaurant application \"" .
+    "The go-live application for \"" .
     $restaurantName .
     "\" owned by " .
     $ownerName .
-    " was approved and restaurant ID " .
+    " was approved. Restaurant ID " .
     $restaurantId .
-    " was created.";
+    " is now visible to customers.";
 
 $approveLogStmt =
     $conn->prepare("
@@ -1144,13 +1047,13 @@ $approvalBody = "
             border-left: 4px solid #238636;
             background: #f0fff4;
         \">
-            Your restaurant account has been created and linked
-            to your Owner account.
+           Your restaurant has passed the FoodConnect review
+           and is now visible to customers.
         </div>
 
         <p>
-            You may now log in through the FoodConnect Partner Portal
-            and access your Owner Dashboard.
+           You may now access your Owner Dashboard and open the
+           restaurant when you are ready to begin accepting orders.
         </p>
 
         <p>

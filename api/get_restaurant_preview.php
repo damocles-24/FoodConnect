@@ -153,36 +153,42 @@ if ($previewMode === "admin") {
 }
 
 if ($previewMode === "owner") {
-    $stmt =
-        $conn->prepare("
-            SELECT
-                application_id,
-                owner_id,
-                restaurant_name,
-                restaurant_address,
-                restaurant_contact,
-                cuisine,
-                restaurant_description,
-                logo_path,
-                business_email,
-                province,
-                city_municipality,
-                barangay,
-                postal_code,
-                business_hours_json,
-                delivery_options_json,
-                minimum_order,
-                delivery_fee,
-                application_status
+  $stmt =
+    $conn->prepare("
+        SELECT
+            pa.application_id,
+            pa.owner_id,
 
-            FROM tbl_partner_applications
+            u.restaurant_id,
 
-            WHERE owner_id = ?
+            pa.restaurant_name,
+            pa.restaurant_address,
+            pa.restaurant_contact,
+            pa.cuisine,
+            pa.restaurant_description,
+            pa.logo_path,
+            pa.business_email,
+            pa.province,
+            pa.city_municipality,
+            pa.barangay,
+            pa.postal_code,
+            pa.business_hours_json,
+            pa.delivery_options_json,
+            pa.minimum_order,
+            pa.delivery_fee,
+            pa.application_status
 
-            ORDER BY application_id DESC
+        FROM tbl_partner_applications AS pa
 
-            LIMIT 1
-        ");
+        INNER JOIN tbl_users AS u
+            ON u.user_id = pa.owner_id
+
+        WHERE pa.owner_id = ?
+
+        ORDER BY pa.application_id DESC
+
+        LIMIT 1
+    ");
 
     if (!$stmt) {
         error_log(
@@ -205,34 +211,40 @@ if ($previewMode === "owner") {
         $userId
     );
 } else {
-    $stmt =
-        $conn->prepare("
-            SELECT
-                application_id,
-                owner_id,
-                restaurant_name,
-                restaurant_address,
-                restaurant_contact,
-                cuisine,
-                restaurant_description,
-                logo_path,
-                business_email,
-                province,
-                city_municipality,
-                barangay,
-                postal_code,
-                business_hours_json,
-                delivery_options_json,
-                minimum_order,
-                delivery_fee,
-                application_status
+   $stmt =
+    $conn->prepare("
+        SELECT
+            pa.application_id,
+            pa.owner_id,
 
-            FROM tbl_partner_applications
+            u.restaurant_id,
 
-            WHERE application_id = ?
+            pa.restaurant_name,
+            pa.restaurant_address,
+            pa.restaurant_contact,
+            pa.cuisine,
+            pa.restaurant_description,
+            pa.logo_path,
+            pa.business_email,
+            pa.province,
+            pa.city_municipality,
+            pa.barangay,
+            pa.postal_code,
+            pa.business_hours_json,
+            pa.delivery_options_json,
+            pa.minimum_order,
+            pa.delivery_fee,
+            pa.application_status
 
-            LIMIT 1
-        ");
+        FROM tbl_partner_applications AS pa
+
+        INNER JOIN tbl_users AS u
+            ON u.user_id = pa.owner_id
+
+        WHERE pa.application_id = ?
+
+        LIMIT 1
+    ");
 
     if (!$stmt) {
         error_log(
@@ -355,7 +367,11 @@ respond_json(
                 (int) $application["application_id"],
 
             "restaurant_id" =>
-                null,
+    isset(
+        $application["restaurant_id"]
+    )
+        ? (int) $application["restaurant_id"]
+        : 0,
 
             "name" =>
                 (string) (

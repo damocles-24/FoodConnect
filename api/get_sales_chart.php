@@ -8,7 +8,16 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
-$restaurant_id = isset($_SESSION["restaurant_id"]) ? (int)$_SESSION["restaurant_id"] : 1;
+$restaurant_id = (int)($_SESSION["restaurant_id"] ?? 0);
+
+if ($restaurant_id <= 0) {
+    http_response_code(403);
+    echo json_encode([
+        "success" => false,
+        "message" => "No restaurant is assigned to this account."
+    ]);
+    exit;
+}
 $range = $_GET["range"] ?? "weekly";
 
 if ($range === "monthly") {

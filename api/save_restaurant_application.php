@@ -72,6 +72,15 @@ function validation_response(
     );
 }
 
+function generate_staff_access_code(): string
+{
+    return strtoupper(
+        bin2hex(
+            random_bytes(6)
+        )
+    );
+}
+
 /* =========================================================
    OWNER AUTHENTICATION
    ========================================================= */
@@ -765,125 +774,366 @@ $applicationId =
         "application_id"
     ];
 
-$newStatus =
-    $action === "submit"
-        ? "submitted"
-        : "draft";
+$isCompletingSetup =
+    $action === "submit";
 
-$submittedAt =
-    $action === "submit"
-        ? date(
-            "Y-m-d H:i:s"
-        )
-        : null;
+$newStatus =
+    "draft";
+
+$restaurantId =
+    0;
 
 /* =========================================================
-   UPDATE APPLICATION
-   ========================================================= */
+   SAVE APPLICATION AND COMPLETE PRIVATE SETUP
+========================================================= */
 
-$stmt =
-    $conn->prepare("
-        UPDATE tbl_partner_applications
-                SET
-            restaurant_name = ?,
-            restaurant_address = ?,
-            restaurant_contact = ?,
-            cuisine = ?,
-            restaurant_description = ?,
-            logo_path = ?,
-            business_email = ?,
-            province = ?,
-            city_municipality = ?,
-            barangay = ?,
-            postal_code = ?,
-            business_hours_json = ?,
-            delivery_options_json = ?,
-            minimum_order = ?,
-            delivery_fee = ?,
-            application_status = ?,
-            rejection_reason = NULL,
-            submitted_at = ?
+$conn->begin_transaction();
+
+try {
+    $stmt =
+        $conn->prepare("
+            UPDATE tbl_partner_applications
+            SET
+                restaurant_name = ?,
+                restaurant_address = ?,
+                restaurant_contact = ?,
+                cuisine = ?,
+                restaurant_description = ?,
+                logo_path = ?,
+                business_email = ?,
+                province = ?,
+                city_municipality = ?,
+                barangay = ?,
+                postal_code = ?,
+                business_hours_json = ?,
+                delivery_options_json = ?,
+                minimum_order = ?,
+                delivery_fee = ?,
+                application_status = 'draft',
+                rejection_reason = NULL,
+                submitted_at = NULL,
+                reviewed_at = NULL,
+                reviewed_by = NULL
             WHERE application_id = ?
-            AND owner_id = ?
+              AND owner_id = ?
             LIMIT 1
-    ");
+        ");
 
-if (!$stmt) {
-    error_log(
-        "save_restaurant_application update prepare error: " .
-        $conn->error
+    if (!$stmt) {
+        throw new RuntimeException(
+            "Unable to prepare the restaurant setup update."
+        );
+    }
+
+    $stmt->bind_param(
+        "sssssssssssssddii",
+        $restaurantName,
+        $restaurantAddress,
+        $restaurantContact,
+        $cuisine,
+        $restaurantDescription,
+        $logoPath,
+        $businessEmail,
+        $province,
+        $cityMunicipality,
+        $barangay,
+        $postalCode,
+        $businessHoursJson,
+        $deliveryOptionsJson,
+        $minimumOrder,
+        $deliveryFee,
+        $applicationId,
+        $ownerId
     );
 
-    respond_json(
-        [
-            "success" => false,
-            "message" =>
-                "Unable to prepare the restaurant application update."
-        ],
-        500
-    );
-}
-
-$stmt->bind_param(
-    "sssssssssssssddssii",
-    $restaurantName,
-    $restaurantAddress,
-    $restaurantContact,
-    $cuisine,
-    $restaurantDescription,
-    $logoPath,
-    $businessEmail,
-    $province,
-    $cityMunicipality,
-    $barangay,
-    $postalCode,
-    $businessHoursJson,
-    $deliveryOptionsJson,
-    $minimumOrder,
-    $deliveryFee,
-    $newStatus,
-    $submittedAt,
-    $applicationId,
-    $ownerId
-);
-
-if (!$stmt->execute()) {
-    error_log(
-        "save_restaurant_application update execute error: " .
-        $stmt->error
-    );
+    if (!$stmt->execute()) {
+        throw new RuntimeException(
+            "Unable to save the restaurant setup."
+        );
+    }
 
     $stmt->close();
 
-    respond_json(
-        [
-            "success" => false,
-            "message" =>
-                "Unable to save the restaurant application."
-        ],
-        500
-    );
-}
+    /* =====================================================
+       COMPLETE PRIVATE RESTAURANT SETUP
+    ===================================================== */
 
-$stmt->close();
+    if ($isCompletingSetup) {
+        $ownerStmt =
+            $conn->prepare("
+                SELECT
+                    user_id,
+                    restaurant_id,
+                    role,
+                    status,
+                    is_verified
+                FROM tbl_users
+                WHERE user_id = ?
+                LIMIT 1
+                FOR UPDATE
+            ");
 
-/* =========================================================
-   SUCCESS RESPONSE
-   ========================================================= */
+        if (!$ownerStmt) {
+            throw new RuntimeException(
+                "Unable to verify the restaurant owner."
+            );
+        }
 
-respond_json(
-    [
+        $ownerStmt->bind_param(
+            "i",
+            $ownerId
+        );
+
+        if (!$ownerStmt->execute()) {
+            throw new RuntimeException(
+                "Unable to verify the restaurant owner."
+            );
+        }
+
+        $owner =
+            $ownerStmt
+                ->get_result()
+                ->fetch_assoc();
+
+        $ownerStmt->close();
+
+        if (
+            !$owner ||
+            strtolower(
+                trim(
+                    (string) $owner["role"]
+                )
+            ) !== "owner" ||
+            (int) $owner["status"] !== 1 ||
+            (int) $owner["is_verified"] !== 1
+        ) {
+            throw new DomainException(
+                "The restaurant owner account is not active and verified."
+            );
+        }
+
+        if (
+            !empty(
+                $owner["restaurant_id"]
+            )
+        ) {
+            throw new DomainException(
+                "Your owner account already has a restaurant."
+            );
+        }
+
+        $existingRestaurantStmt =
+            $conn->prepare("
+                SELECT restaurant_id
+                FROM tbl_restaurants
+                WHERE owner_id = ?
+                LIMIT 1
+                FOR UPDATE
+            ");
+
+        if (!$existingRestaurantStmt) {
+            throw new RuntimeException(
+                "Unable to check existing restaurants."
+            );
+        }
+
+        $existingRestaurantStmt->bind_param(
+            "i",
+            $ownerId
+        );
+
+        if (
+            !$existingRestaurantStmt->execute()
+        ) {
+            throw new RuntimeException(
+                "Unable to check existing restaurants."
+            );
+        }
+
+        $existingRestaurant =
+            $existingRestaurantStmt
+                ->get_result()
+                ->fetch_assoc();
+
+        $existingRestaurantStmt->close();
+
+        if ($existingRestaurant) {
+            throw new DomainException(
+                "Your owner account already has a restaurant."
+            );
+        }
+
+        $staffAccessCode =
+            generate_staff_access_code();
+
+        $openingHours =
+            "Configured in restaurant setup";
+
+        $businessStatus =
+            "Closed";
+
+        $customerVisibility =
+            "Hidden";
+
+        $createRestaurantStmt =
+            $conn->prepare("
+                INSERT INTO tbl_restaurants (
+                    name,
+                    description,
+                    logo_path,
+                    address,
+                    contact_number,
+                    opening_hours,
+                    delivery_fee,
+                    business_status,
+                    owner_id,
+                    staff_access_code,
+                    setup_completed,
+                    customer_visibility
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    1,
+                    ?
+                )
+            ");
+
+        if (!$createRestaurantStmt) {
+            throw new RuntimeException(
+                "Unable to create the private restaurant."
+            );
+        }
+
+        $createRestaurantStmt->bind_param(
+            "ssssssdsiss",
+            $restaurantName,
+            $restaurantDescription,
+            $logoPath,
+            $restaurantAddress,
+            $restaurantContact,
+            $openingHours,
+            $deliveryFee,
+            $businessStatus,
+            $ownerId,
+            $staffAccessCode,
+            $customerVisibility
+        );
+
+        if (
+            !$createRestaurantStmt->execute()
+        ) {
+            throw new RuntimeException(
+                "Unable to create the private restaurant."
+            );
+        }
+
+        $restaurantId =
+            (int) $conn->insert_id;
+
+        $createRestaurantStmt->close();
+
+        if ($restaurantId <= 0) {
+            throw new RuntimeException(
+                "The private restaurant was not created correctly."
+            );
+        }
+
+        $linkOwnerStmt =
+            $conn->prepare("
+                UPDATE tbl_users
+                SET restaurant_id = ?
+                WHERE user_id = ?
+                  AND restaurant_id IS NULL
+                LIMIT 1
+            ");
+
+        if (!$linkOwnerStmt) {
+            throw new RuntimeException(
+                "Unable to link the restaurant to its owner."
+            );
+        }
+
+        $linkOwnerStmt->bind_param(
+            "ii",
+            $restaurantId,
+            $ownerId
+        );
+
+        if (!$linkOwnerStmt->execute()) {
+            throw new RuntimeException(
+                "Unable to link the restaurant to its owner."
+            );
+        }
+
+        if (
+            $linkOwnerStmt->affected_rows !== 1
+        ) {
+            $linkOwnerStmt->close();
+
+            throw new RuntimeException(
+                "The restaurant could not be linked to the owner."
+            );
+        }
+
+        $linkOwnerStmt->close();
+    }
+
+    $conn->commit();
+
+    respond_json([
         "success" => true,
 
         "message" =>
-            $action === "submit"
-                ? "Restaurant application submitted successfully."
-                : "Restaurant application draft saved successfully.",
+            $isCompletingSetup
+                ? "Restaurant setup completed successfully."
+                : "Restaurant setup draft saved successfully.",
 
         "status" =>
-            $newStatus,
+            $isCompletingSetup
+                ? "setup_completed"
+                : "draft",
 
         "application_id" =>
-            $applicationId
-    ]
-);
+            $applicationId,
+
+        "restaurant_id" =>
+            $restaurantId,
+
+        "customer_visibility" =>
+            $isCompletingSetup
+                ? "Hidden"
+                : null
+    ]);
+} catch (DomainException $error) {
+    $conn->rollback();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            $error->getMessage()
+    ], 409);
+    
+} catch (Throwable $error) {
+    $conn->rollback();
+
+    error_log(
+        "save_restaurant_application.php error: " .
+        $error->getMessage()
+    );
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Unable to save the restaurant setup."
+    ], 500);
+}
+

@@ -187,6 +187,7 @@ $sql = "
         o.order_id,
         o.queue_number,
         o.restaurant_id,
+        r.name AS restaurant_name,
         o.customer_name,
         o.contact_number,
         o.order_type,
