@@ -215,7 +215,80 @@ const openAddProductModal = document.getElementById("openAddProductModal");
 const closeAddProductModal = document.getElementById("closeAddProductModal");
 const closeEditProductModal = document.getElementById("closeEditProductModal");
 const closeRestockModal = document.getElementById("closeRestockModal");
+const productDiscountType =
+  document.getElementById(
+    "productDiscountType"
+  );
 
+const productDiscountFields =
+  document.getElementById(
+    "productDiscountFields"
+  );
+
+const productDiscountValue =
+  document.getElementById(
+    "productDiscountValue"
+  );
+
+const productDiscountValueHelp =
+  document.getElementById(
+    "productDiscountValueHelp"
+  );
+
+const productDiscountValueLabel =
+  document.getElementById(
+    "productDiscountValueLabel"
+  );
+
+const productDiscountScheduleHelp =
+  document.getElementById(
+    "productDiscountScheduleHelp"
+  );
+
+const productDiscountStatus =
+  document.getElementById(
+    "productDiscountStatus"
+  );
+
+const productDiscountSchedule =
+  document.getElementById(
+    "productDiscountSchedule"
+  );
+
+const productDiscountScheduleFields =
+  document.getElementById(
+    "productDiscountScheduleFields"
+  );
+
+const productDiscountStart =
+  document.getElementById(
+    "productDiscountStart"
+  );
+
+const productDiscountEnd =
+  document.getElementById(
+    "productDiscountEnd"
+  );
+
+const productDiscountOriginalPrice =
+  document.getElementById(
+    "productDiscountOriginalPrice"
+  );
+
+const productDiscountFinalPrice =
+  document.getElementById(
+    "productDiscountFinalPrice"
+  );
+
+const productDiscountSavings =
+  document.getElementById(
+    "productDiscountSavings"
+  );
+
+const productDiscountPreviewMessage =
+  document.getElementById(
+    "productDiscountPreviewMessage"
+  );
 const saveProductBtn = document.getElementById("saveProductBtn");
 const updateProductBtn = document.getElementById("updateProductBtn");
 const saveRestockBtn = document.getElementById("saveRestockBtn");
@@ -440,6 +513,39 @@ function getStockLevel(stock) {
   if (stock <= 0) return "out";
   if (stock <= 5) return "low";
   return "good";
+}
+
+function getProductDiscountLabel(
+  product
+) {
+  if (
+    !product ||
+    !product.isDiscountActive
+  ) {
+    return "";
+  }
+
+  if (
+    product.discountType ===
+    "percentage"
+  ) {
+    return `${
+      Number(
+        product.discountValue
+      ) || 0
+    }% OFF`;
+  }
+
+  if (
+    product.discountType ===
+    "fixed"
+  ) {
+    return `${formatPeso(
+      product.discountValue
+    )} OFF`;
+  }
+
+  return "";
 }
 
 function getStockLabel(stock) {
@@ -1575,26 +1681,113 @@ async function loadProducts() {
   const data = await fetchJSON("http://localhost/FoodConnect/api/get_products.php");
   const list = Array.isArray(data) ? data : data.products || [];
 
-  products = list.map(p => ({
-    id: p.product_id || p.id,
-    name: p.product_name || p.name || "Unnamed Product",
-    category: p.category || "Uncategorized",
-    size: p.size || "",
-    price: Number(p.price) || 0,
-    stock: Number(p.stock) || 0,
+ products = list.map(p => {
+  const regularPrice =
+    Number(
+      p.regular_price ??
+      p.price
+    ) || 0;
+
+  const finalPrice =
+    Number(
+      p.final_price ??
+      p.discounted_price ??
+      regularPrice
+    ) || regularPrice;
+
+  return {
+    id:
+      p.product_id ||
+      p.id,
+
+    name:
+      p.product_name ||
+      p.name ||
+      "Unnamed Product",
+
+    category:
+      p.category ||
+      "Uncategorized",
+
+    size:
+      p.size || "",
+
+    price:
+      regularPrice,
+
+    regularPrice:
+      regularPrice,
+
+    finalPrice:
+      finalPrice,
+
+    discountSavings:
+      Number(
+        p.discount_savings
+      ) || 0,
+
+    discountType:
+      String(
+        p.discount_type ||
+        "none"
+      )
+        .trim()
+        .toLowerCase(),
+
+    discountValue:
+      Number(
+        p.discount_value
+      ) || 0,
+
+    discountSchedule:
+      String(
+        p.discount_schedule ||
+        "permanent"
+      )
+        .trim()
+        .toLowerCase(),
+
+    discountStart:
+      p.discount_start ||
+      null,
+
+    discountEnd:
+      p.discount_end ||
+      null,
+
+    discountStatus:
+      String(
+        p.discount_status ||
+        "Inactive"
+      ).trim(),
+
+    isDiscountActive:
+      Boolean(
+        p.is_discount_active
+      ),
+
+    stock:
+      Number(
+        p.stock
+      ) || 0,
+
     status:
-    String(p.status || "").trim() ||
-  (
-    Number(p.stock) > 0
-      ? "Available"
-      : "Unavailable"
-  ),
-  image:
-  p.image_path ||
-  p.image ||
-  p.image_url ||
-  ""
-  }));
+      String(
+        p.status || ""
+      ).trim() ||
+      (
+        Number(p.stock) > 0
+          ? "Available"
+          : "Unavailable"
+      ),
+
+    image:
+      p.image_path ||
+      p.image ||
+      p.image_url ||
+      ""
+  };
+});
 
   populateProductCategories();
   applyProductFilters();
@@ -2466,8 +2659,46 @@ function renderProducts(list = products) {
         String(product.size || "").trim() ||
         "Standard";
 
+        const hasActiveDiscount =
+  Boolean(
+    product.isDiscountActive
+  ) &&
+  Number(
+    product.finalPrice
+  ) <
+  Number(
+    product.regularPrice
+  );
+
+const displayedPrice =
+  hasActiveDiscount
+    ? Number(
+        product.finalPrice
+      )
+    : Number(
+        product.regularPrice
+      );
+
+const discountLabel =
+  getProductDiscountLabel(
+    product
+  );
+
       return `
         <article class="product-card">
+
+        ${
+  hasActiveDiscount &&
+  discountLabel
+    ? `
+      <span class="product-discount-badge">
+        ${escapeHtml(
+          discountLabel
+        )}
+      </span>
+    `
+    : ""
+}
 
           ${
   product.image
@@ -2508,13 +2739,54 @@ function renderProducts(list = products) {
           </div>
 
           <div class="product-card-body">
-            <div class="product-price-block">
-              <span>Price</span>
+           <div
+  class="product-price-block ${
+    hasActiveDiscount
+      ? "has-discount"
+      : ""
+  }"
+>
+  <span>
+    ${
+      hasActiveDiscount
+        ? "Promo Price"
+        : "Price"
+    }
+  </span>
 
-              <strong>
-                ${formatPeso(product.price)}
-              </strong>
-            </div>
+  ${
+    hasActiveDiscount
+      ? `
+        <div class="product-discount-prices">
+          <del>
+            ${formatPeso(
+              product.regularPrice
+            )}
+          </del>
+
+          <strong>
+            ${formatPeso(
+              displayedPrice
+            )}
+          </strong>
+        </div>
+
+        <small class="product-discount-saving">
+          Save
+          ${formatPeso(
+            product.discountSavings
+          )}
+        </small>
+      `
+      : `
+        <strong>
+          ${formatPeso(
+            displayedPrice
+          )}
+        </strong>
+      `
+  }
+</div>
 
             <div class="product-details-grid">
               <div class="product-detail-item">
@@ -2614,8 +2886,37 @@ function applyProductFilters() {
   if (sort === "newest") list.sort((a, b) => b.id - a.id);
   if (sort === "name-az") list.sort((a, b) => a.name.localeCompare(b.name));
   if (sort === "name-za") list.sort((a, b) => b.name.localeCompare(a.name));
-  if (sort === "price-low") list.sort((a, b) => a.price - b.price);
-  if (sort === "price-high") list.sort((a, b) => b.price - a.price);
+  if (sort === "price-low") {
+  list.sort(
+    (a, b) =>
+      Number(
+        a.isDiscountActive
+          ? a.finalPrice
+          : a.regularPrice
+      ) -
+      Number(
+        b.isDiscountActive
+          ? b.finalPrice
+          : b.regularPrice
+      )
+  );
+}
+
+if (sort === "price-high") {
+  list.sort(
+    (a, b) =>
+      Number(
+        b.isDiscountActive
+          ? b.finalPrice
+          : b.regularPrice
+      ) -
+      Number(
+        a.isDiscountActive
+          ? a.finalPrice
+          : a.regularPrice
+      )
+  );
+}
   if (sort === "stock-low") list.sort((a, b) => a.stock - b.stock);
   if (sort === "stock-high") list.sort((a, b) => b.stock - a.stock);
 
@@ -2906,6 +3207,333 @@ function applyUserFilters() {
   renderUsers(list);
 }
 
+/* =========================
+   PRODUCT DISCOUNT
+========================= */
+
+function calculateDiscountPrice(
+  originalPrice,
+  discountType,
+  discountValue
+) {
+  const price =
+    Math.max(
+      0,
+      Number(originalPrice) || 0
+    );
+
+  const value =
+    Math.max(
+      0,
+      Number(discountValue) || 0
+    );
+
+  if (
+    discountType ===
+    "percentage"
+  ) {
+    const percentage =
+      Math.min(
+        100,
+        value
+      );
+
+    return Math.max(
+      0,
+      price -
+      (
+        price *
+        percentage /
+        100
+      )
+    );
+  }
+
+  if (
+    discountType ===
+    "fixed"
+  ) {
+    return Math.max(
+      0,
+      price - value
+    );
+  }
+
+  return price;
+}
+
+function updateAddDiscountPreview() {
+  const price =
+    Number(
+      document.getElementById(
+        "productPrice"
+      )?.value
+    ) || 0;
+
+  const type =
+    productDiscountType?.value ||
+    "none";
+
+  const value =
+    Number(
+      productDiscountValue?.value
+    ) || 0;
+
+  const finalPrice =
+    calculateDiscountPrice(
+      price,
+      type,
+      value
+    );
+
+  const savings =
+    Math.max(
+      0,
+      price - finalPrice
+    );
+
+  if (
+    productDiscountOriginalPrice
+  ) {
+    productDiscountOriginalPrice
+      .textContent =
+      `₱${price.toFixed(2)}`;
+  }
+
+  if (
+    productDiscountFinalPrice
+  ) {
+    productDiscountFinalPrice
+      .textContent =
+      `₱${finalPrice.toFixed(2)}`;
+  }
+
+  if (productDiscountSavings) {
+    productDiscountSavings
+      .textContent =
+      `₱${savings.toFixed(2)}`;
+  }
+
+  if (productDiscountPreviewMessage) {
+  if (price <= 0) {
+    productDiscountPreviewMessage.textContent =
+      "Enter the regular product price to calculate the promotion.";
+  } else if (type === "percentage" && value > 0) {
+    productDiscountPreviewMessage.textContent =
+      `${value}% will be deducted. The customer pays ₱${finalPrice.toFixed(
+        2
+      )} and saves ₱${savings.toFixed(2)}.`;
+  } else if (type === "fixed" && value > 0) {
+    productDiscountPreviewMessage.textContent =
+      `₱${value.toFixed(
+        2
+      )} will be deducted. The customer pays ₱${finalPrice.toFixed(
+        2
+      )}.`;
+  } else {
+    productDiscountPreviewMessage.textContent =
+      "Enter a discount greater than zero to see the customer's final price.";
+  }
+}
+}
+
+function updateAddDiscountVisibility() {
+  const type =
+    productDiscountType?.value ||
+    "none";
+
+  const hasDiscount =
+    type !== "none";
+
+  if (productDiscountFields) {
+    productDiscountFields.hidden =
+      !hasDiscount;
+  }
+
+  if (!hasDiscount) {
+    if (productDiscountValue) {
+      productDiscountValue.value =
+        "0";
+    }
+
+    if (productDiscountStatus) {
+      productDiscountStatus.value =
+        "Inactive";
+    }
+
+    if (productDiscountSchedule) {
+      productDiscountSchedule.value =
+        "permanent";
+    }
+
+    if (productDiscountStart) {
+      productDiscountStart.value =
+        "";
+    }
+
+    if (productDiscountEnd) {
+      productDiscountEnd.value =
+        "";
+    }
+  }
+
+  if (productDiscountValueLabel) {
+  productDiscountValueLabel.textContent =
+    type === "percentage"
+      ? "Discount Percentage (%)"
+      : type === "fixed"
+        ? "Discount Amount (₱)"
+        : "Discount Amount";
+}
+
+if (productDiscountValueHelp) {
+  productDiscountValueHelp.textContent =
+    type === "percentage"
+      ? "Enter the percentage customers will save. Example: Enter 10 for 10% OFF."
+      : type === "fixed"
+        ? "Enter the exact peso amount to deduct. Example: Enter 50 for ₱50 OFF."
+        : "Select a discount type to continue.";
+}
+
+  if (productDiscountValue) {
+  const regularPrice =
+    Number(
+      document.getElementById(
+        "productPrice"
+      )?.value
+    ) || 0;
+
+  if (type === "percentage") {
+    productDiscountValue.max = "100";
+    productDiscountValue.placeholder =
+      "Example: 10 for 10% OFF";
+  } else if (type === "fixed") {
+    if (regularPrice > 0) {
+      productDiscountValue.max =
+        String(regularPrice);
+    } else {
+      productDiscountValue.removeAttribute(
+        "max"
+      );
+    }
+
+    productDiscountValue.placeholder =
+      "Example: 50 for ₱50 OFF";
+  } else {
+    productDiscountValue.removeAttribute(
+      "max"
+    );
+
+    productDiscountValue.placeholder =
+      "Select a discount type first";
+  }
+}
+
+  updateAddDiscountScheduleVisibility();
+  updateAddDiscountPreview();
+}
+
+function updateAddDiscountScheduleVisibility() {
+  const scheduled =
+    productDiscountType?.value !==
+      "none" &&
+    productDiscountSchedule?.value ===
+      "scheduled";
+
+  if (productDiscountScheduleHelp) {
+    productDiscountScheduleHelp.textContent =
+      scheduled
+        ? "The promo will start and stop automatically using the dates below."
+        : "The discount remains available until you manually turn the promo off.";
+  }
+
+  if (
+    productDiscountScheduleFields
+  ) {
+    productDiscountScheduleFields
+      .hidden =
+      !scheduled;
+  }
+
+  if (!scheduled) {
+    if (productDiscountStart) {
+      productDiscountStart.value =
+        "";
+    }
+
+    if (productDiscountEnd) {
+      productDiscountEnd.value =
+        "";
+    }
+  }
+}
+
+function resetAddProductDiscount() {
+  if (productDiscountType) {
+    productDiscountType.value =
+      "none";
+  }
+
+  if (productDiscountValue) {
+    productDiscountValue.value =
+      "0";
+  }
+
+  if (productDiscountStatus) {
+    productDiscountStatus.value =
+      "Inactive";
+  }
+
+  if (productDiscountSchedule) {
+    productDiscountSchedule.value =
+      "permanent";
+  }
+
+  if (productDiscountStart) {
+    productDiscountStart.value =
+      "";
+  }
+
+  if (productDiscountEnd) {
+    productDiscountEnd.value =
+      "";
+  }
+
+  updateAddDiscountVisibility();
+}
+
+productDiscountType
+  ?.addEventListener(
+    "change",
+    updateAddDiscountVisibility
+  );
+
+productDiscountSchedule
+  ?.addEventListener(
+    "change",
+    updateAddDiscountScheduleVisibility
+  );
+
+productDiscountValue
+  ?.addEventListener(
+    "input",
+    updateAddDiscountPreview
+  );
+
+document
+  .getElementById(
+    "productPrice"
+  )
+  ?.addEventListener(
+    "input",
+    () => {
+      updateAddDiscountVisibility();
+      updateAddDiscountPreview();
+    }
+  );
+
+updateAddDiscountVisibility();
+
 const DEFAULT_PRODUCT_IMAGE = "";
 
 function validateProductImage(
@@ -3111,6 +3739,31 @@ if (saveProductBtn) {
           "productImage"
         );
 
+        const discountType =
+  productDiscountType?.value ||
+  "none";
+
+const discountValue =
+  Number(
+    productDiscountValue?.value
+  ) || 0;
+
+const discountStatus =
+  productDiscountStatus?.value ||
+  "Inactive";
+
+const discountSchedule =
+  productDiscountSchedule?.value ||
+  "permanent";
+
+const discountStart =
+  productDiscountStart?.value ||
+  "";
+
+const discountEnd =
+  productDiscountEnd?.value ||
+  "";
+
       const productName =
         nameInput?.value.trim() || "";
 
@@ -3168,6 +3821,87 @@ if (saveProductBtn) {
         return;
       }
 
+      if (
+  discountType !== "none"
+) {
+  if (discountValue <= 0) {
+    alert(
+      "Discount value must be greater than zero."
+    );
+
+    productDiscountValue?.focus();
+    return;
+  }
+
+  if (
+    discountType ===
+      "percentage" &&
+    discountValue > 100
+  ) {
+    alert(
+      "Percentage discount cannot exceed 100%."
+    );
+
+    productDiscountValue?.focus();
+    return;
+  }
+
+  if (
+    discountType === "fixed" &&
+    discountValue > price
+  ) {
+    alert(
+      "Fixed discount cannot exceed the regular product price."
+    );
+
+    productDiscountValue?.focus();
+    return;
+  }
+
+  if (
+    discountSchedule ===
+    "scheduled"
+  ) {
+    if (
+      !discountStart ||
+      !discountEnd
+    ) {
+      alert(
+        "Start and end dates are required for a scheduled promo."
+      );
+
+      return;
+    }
+
+    const startTime =
+      new Date(discountStart)
+        .getTime();
+
+    const endTime =
+      new Date(discountEnd)
+        .getTime();
+
+    if (
+      !Number.isFinite(startTime) ||
+      !Number.isFinite(endTime)
+    ) {
+      alert(
+        "Please enter valid promo dates."
+      );
+
+      return;
+    }
+
+    if (endTime <= startTime) {
+      alert(
+        "Promo end date must be later than its start date."
+      );
+
+      return;
+    }
+  }
+}
+
       const imageFile =
         imageInput?.files?.[0];
 
@@ -3213,6 +3947,52 @@ if (saveProductBtn) {
         status
       );
 
+      formData.append(
+  "discount_type",
+  discountType
+);
+
+formData.append(
+  "discount_value",
+  String(
+    discountType === "none"
+      ? 0
+      : discountValue
+  )
+);
+
+formData.append(
+  "discount_schedule",
+  discountType === "none"
+    ? "permanent"
+    : discountSchedule
+);
+
+const hasScheduledDiscount =
+  discountType !== "none" &&
+  discountSchedule === "scheduled";
+
+formData.append(
+  "discount_start",
+  hasScheduledDiscount
+    ? discountStart
+    : ""
+);
+
+formData.append(
+  "discount_end",
+  hasScheduledDiscount
+    ? discountEnd
+    : ""
+);
+
+formData.append(
+  "discount_status",
+  discountType === "none"
+    ? "Inactive"
+    : discountStatus
+);
+
       if (imageFile) {
         formData.append(
           "product_image",
@@ -3250,6 +4030,7 @@ if (saveProductBtn) {
           "Available";
 
         clearAddProductImage();
+        resetAddProductDiscount();
 
         await Promise.all([
           loadProducts(),

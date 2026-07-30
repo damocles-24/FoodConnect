@@ -187,49 +187,247 @@
   </div>
 </section>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-          <h3>Today's Sales</h3>
-          <p class="stat-value" id="salesToday">₱0.00</p>
-          <span>Completed orders today</span>
+       <div class="dashboard-summary">
+  <article class="summary-card summary-card-primary">
+    <div class="summary-card-top">
+      <div>
+        <span class="summary-label">
+          Today's Sales
+        </span>
+
+        <p
+          class="summary-value"
+          id="salesToday"
+        >
+          ₱0.00
+        </p>
+      </div>
+
+      <div
+        class="summary-icon"
+        aria-hidden="true"
+      >
+        ₱
+      </div>
+    </div>
+
+    <p class="summary-description">
+      Revenue from completed orders today
+    </p>
+  </article>
+
+  <article class="summary-card">
+    <div class="summary-card-top">
+      <div>
+        <span class="summary-label">
+          All Customer Orders
+        </span>
+
+        <p
+          class="summary-value"
+          id="totalOrders"
+        >
+          0
+        </p>
+      </div>
+
+      <div
+        class="summary-icon"
+        aria-hidden="true"
+      >
+        🧾
+      </div>
+    </div>
+
+    <p class="summary-description">
+      Total orders received by your restaurant
+    </p>
+  </article>
+
+  <article class="summary-card">
+    <div class="summary-card-top">
+      <div>
+        <span class="summary-label">
+          Active Staff
+        </span>
+
+        <p
+          class="summary-value"
+          id="activeStaff"
+        >
+          0
+        </p>
+      </div>
+
+      <div
+        class="summary-icon"
+        aria-hidden="true"
+      >
+        👥
+      </div>
+    </div>
+
+    <p class="summary-description">
+      Staff accounts currently allowed to work
+    </p>
+  </article>
+</div>
+
+<div class="dashboard-status-grid">
+  <article class="dashboard-status-panel">
+    <div class="dashboard-status-header">
+      <div>
+        <span class="dashboard-panel-overline">
+          Menu Status
+        </span>
+
+        <h2>Inventory Overview</h2>
+
+        <p>
+          Check whether your products are ready
+          for customer orders.
+        </p>
+      </div>
+
+      <div
+        class="dashboard-panel-icon"
+        aria-hidden="true"
+      >
+        📦
+      </div>
+    </div>
+
+    <div class="inventory-summary-list">
+      <div class="inventory-summary-item">
+        <div>
+          <span class="inventory-status-dot"></span>
+
+          <span>
+            Total Products
+          </span>
         </div>
 
-          <div class="stat-card">
-            <h3>Total Orders</h3>
-            <p class="stat-value" id="totalOrders">0</p>
-            <span>All customer orders</span>
-          </div>
+        <strong id="totalProducts">
+          0
+        </strong>
+      </div>
 
-          <div class="stat-card">
-            <h3>Total Products</h3>
-            <p class="stat-value" id="totalProducts">0</p>
-            <span>Current menu items</span>
-          </div>
+      <div class="inventory-summary-item">
+        <div>
+          <span
+            class="inventory-status-dot inventory-status-available"
+          ></span>
 
-          <div class="stat-card">
-            <h3>Available Products</h3>
-            <p class="stat-value" id="availableProducts">0</p>
-            <span>Enabled menu items</span>
-          </div>
-
-          <div class="stat-card">
-            <h3>Low Stock</h3>
-            <p class="stat-value" id="dashboardLowStock">0</p>
-            <span>Products with 1–10 units</span>
-          </div>
-
-          <div class="stat-card">
-            <h3>Out of Stock</h3>
-            <p class="stat-value" id="dashboardOutOfStock">0</p>
-            <span>Needs restocking</span>
-          </div>
-
-          <div class="stat-card">
-            <h3>Active Staff</h3>
-            <p class="stat-value" id="activeStaff">0</p>
-            <span>Enabled staff accounts</span>
-          </div>
+          <span>
+            Available Products
+          </span>
         </div>
+
+        <strong id="availableProducts">
+          0
+        </strong>
+      </div>
+
+      <div class="inventory-summary-item">
+        <div>
+          <span
+            class="inventory-status-dot inventory-status-warning"
+          ></span>
+
+          <span>
+            Low-Stock Products
+          </span>
+        </div>
+
+        <strong id="dashboardLowStock">
+          0
+        </strong>
+      </div>
+
+      <div class="inventory-summary-item">
+        <div>
+          <span
+            class="inventory-status-dot inventory-status-danger"
+          ></span>
+
+          <span>
+            Out-of-Stock Products
+          </span>
+        </div>
+
+        <strong id="dashboardOutOfStock">
+          0
+        </strong>
+      </div>
+    </div>
+  </article>
+
+  <article class="dashboard-status-panel attention-panel">
+    <div class="dashboard-status-header">
+      <div>
+        <span class="dashboard-panel-overline">
+          Quick Check
+        </span>
+
+        <h2>What Needs Attention?</h2>
+
+        <p>
+          Review these areas before accepting
+          more customer orders.
+        </p>
+      </div>
+
+      <div
+        class="dashboard-panel-icon"
+        aria-hidden="true"
+      >
+        💡
+      </div>
+    </div>
+
+    <div class="attention-list">
+      <div class="attention-item">
+        <span
+          class="attention-item-icon attention-item-warning"
+          aria-hidden="true"
+        >
+          !
+        </span>
+
+        <div>
+          <strong>
+            Check low-stock products
+          </strong>
+
+          <p>
+            Restock items early to prevent
+            unavailable orders.
+          </p>
+        </div>
+      </div>
+
+      <div class="attention-item">
+        <span
+          class="attention-item-icon"
+          aria-hidden="true"
+        >
+          ✓
+        </span>
+
+        <div>
+          <strong>
+            Keep menu availability updated
+          </strong>
+
+          <p>
+            Disable products that cannot be
+            prepared or sold.
+          </p>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
 
         <div class="dashboard-grid">
           <div class="panel">
@@ -1309,6 +1507,201 @@
 
           <strong>Unavailable</strong>
           keeps the product saved but prevents customers from ordering it.
+        </div>
+      </div>
+
+            <!-- PRODUCT DISCOUNT -->
+      <div class="form-group">
+        <label for="productDiscountType">
+          Discount
+          <span class="optional-label">
+            Optional
+          </span>
+        </label>
+
+        <select id="productDiscountType">
+
+          <option value="none">
+            No Discount — Sell at Regular Price
+          </option>
+
+          <option value="percentage">
+            Percentage Off (%) — Example: 10% OFF
+          </option>
+
+          <option value="fixed">
+            Peso Amount Off (₱) — Example: ₱50 OFF
+          </option>
+
+        </select>
+
+        <small class="form-helper">
+          Choose how much customers will save. Select percentage for discounts
+          such as 10% OFF, or peso amount for discounts such as ₱50 OFF.
+        </small>
+      </div>
+
+      <div
+        class="product-discount-fields"
+        id="productDiscountFields"
+        hidden
+      >
+
+<div class="form-group">
+  <label for="productDiscountSchedule">
+  How Long Will This Promo Run?
+  <span class="required-label">*</span>
+</label>
+
+<select id="productDiscountSchedule">
+  <option value="permanent">
+    Always Available — Turn It Off Manually
+  </option>
+
+  <option value="scheduled">
+    Limited-Time Promo — Set Start and End Dates
+  </option>
+</select>
+
+<small
+  class="form-helper"
+  id="productDiscountScheduleHelp"
+>
+  Always Available keeps the discount active until you manually turn it off.
+</small>
+</div>
+
+        <div class="product-form-grid">
+          <div class="form-group">
+           <label for="productDiscountValue">
+            <span id="productDiscountValueLabel">
+              Discount Amount
+            </span>
+
+            <span class="required-label">*</span>
+          </label>
+
+            <input
+                type="number"
+                id="productDiscountValue"
+                min="0"
+                step="0.01"
+                value="0"
+                placeholder="Enter discount amount"
+              />
+
+            <small
+              class="form-helper"
+              id="productDiscountValueHelp"
+            >
+              The meaning of this field will change based on the discount type selected.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="productDiscountStatus">
+            Turn This Promo On?
+            <span class="required-label">*</span>
+          </label>
+
+          <select id="productDiscountStatus">
+            <option value="Inactive">
+              No — Save It Without Applying the Discount
+            </option>
+
+            <option value="Active">
+              Yes — Apply the Discount to Customers
+            </option>
+          </select>
+
+          <small class="form-helper">
+            Select Yes when the promo is ready for customers. Select No to save it
+            for later without changing the product's selling price.
+          </small>
+          </div>
+        </div>
+
+           <div
+              class="product-form-grid"
+              id="productDiscountScheduleFields"
+              hidden
+            >
+          <div class="form-group">
+            <label for="productDiscountStart">
+              When Should the Promo Start?
+              <span class="required-label">
+                * Required
+              </span>
+            </label>
+
+            <input
+              type="datetime-local"
+              id="productDiscountStart"
+            />
+
+            <small class="form-helper">
+              Select the exact date and time when customers can begin using the discount.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="productDiscountEnd">
+              When Should the Promo End?
+              <span class="required-label">
+                * Required
+              </span>
+            </label>
+
+            <input
+              type="datetime-local"
+              id="productDiscountEnd"
+            />
+
+            <small class="form-helper">
+              Select when the discount should automatically stop being available.
+            </small>
+          </div>
+        </div>
+
+        <div
+          class="discount-price-preview"
+          id="productDiscountPreview"
+        >
+
+        <small
+        class="discount-preview-message"
+        id="productDiscountPreviewMessage"
+      >
+        Enter the product price and discount amount to preview what the customer will pay.
+      </small>
+          <div>
+            <span>Original Product Price</span>
+
+            <strong id="productDiscountOriginalPrice">
+              ₱0.00
+            </strong>
+          </div>
+
+          <div>
+           <span>Customer Will Pay</span>
+
+            <strong id="productDiscountFinalPrice">
+              ₱0.00
+            </strong>
+          </div>
+
+          <div>
+            <span>Customer Will Save</span>
+
+            <strong id="productDiscountSavings">
+              ₱0.00
+            </strong>
+          </div>
+        </div>
+
+        <div class="product-form-notice">
+          Percentage discounts cannot exceed 100%.
+          Fixed discounts cannot exceed the regular product price.
         </div>
       </div>
 

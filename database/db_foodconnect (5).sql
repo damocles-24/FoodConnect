@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 30, 2026 at 05:50 AM
+-- Generation Time: Jul 30, 2026 at 03:05 PM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -50,7 +50,14 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (14, 2, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Ayaw ko na Restaurant from Open to Closed.', '2026-07-29 03:06:24'),
 (15, 4, 22, 'owner', 'product', 'Product Added', 'Hotdog - Solo was added to the menu.', '2026-07-29 13:46:06'),
 (16, 4, 22, 'owner', 'restaurant_application', 'Go-Live Application Submitted', 'The owner submitted \"Test Environment\" for administrator review.', '2026-07-29 13:46:16'),
-(17, 4, 17, 'admin', 'restaurant_application', 'Restaurant Approved', 'The go-live application for \"Test Environment\" owned by Cj Tamayo Porto was approved. Restaurant ID 4 is now visible to customers.', '2026-07-29 14:21:48');
+(17, 4, 17, 'admin', 'restaurant_application', 'Restaurant Approved', 'The go-live application for \"Test Environment\" owned by Cj Tamayo Porto was approved. Restaurant ID 4 is now visible to customers.', '2026-07-29 14:21:48'),
+(18, 4, 22, 'owner', 'product', 'Product Updated', 'Hotdog malaki - Solo was updated.', '2026-07-30 05:08:59'),
+(19, 4, 22, 'owner', 'product', 'Product Added', 'Cheese Burger was added to the menu.', '2026-07-30 05:55:02'),
+(20, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burger was updated.', '2026-07-30 06:48:47'),
+(21, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burger was updated.', '2026-07-30 06:50:32'),
+(22, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burgers was updated.', '2026-07-30 06:50:37'),
+(23, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burgers was updated.', '2026-07-30 06:50:45'),
+(24, 4, 22, 'owner', 'product', 'Product Updated', 'Masarap was updated.', '2026-07-30 06:51:18');
 
 -- --------------------------------------------------------
 
@@ -371,7 +378,8 @@ CREATE TABLE `tbl_owner_trusted_devices` (
 
 INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selector`, `token_hash`, `expires_at`, `created_at`, `last_used_at`) VALUES
 (5, 19, '65778f3c9ccb58b8420414f048190e1b', '7f7c210a8d9f103fa60e9cc267e0b4b4c222641191d104f88da7cd6b7ddec484', '2026-08-24 15:49:51', '2026-07-25 21:49:51', '2026-07-26 12:38:34'),
-(6, 22, '62c8ed88b8a14e9d29affaf40754802d', 'f83f86701cadcf1a8844be0fd575b969aeb7f63b91b682529099cc1e53522622', '2026-08-28 15:45:29', '2026-07-29 21:45:29', '2026-07-29 21:55:59');
+(6, 22, '62c8ed88b8a14e9d29affaf40754802d', 'f83f86701cadcf1a8844be0fd575b969aeb7f63b91b682529099cc1e53522622', '2026-08-28 15:45:29', '2026-07-29 21:45:29', '2026-07-29 21:55:59'),
+(7, 22, '21fc4047af34c4e99437b6394ba1ac65', 'e9c43c3ec9ecf57711ede7520e7413100b7207a37d22ffe932dba12d5527ed1a', '2026-08-29 06:28:39', '2026-07-30 12:28:39', '2026-07-30 21:00:19');
 
 -- --------------------------------------------------------
 
@@ -453,15 +461,23 @@ CREATE TABLE `tbl_products` (
   `size` varchar(20) DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
   `stock` int(11) DEFAULT '0',
-  `status` enum('Available','Unavailable') DEFAULT 'Available'
+  `status` enum('Available','Unavailable') DEFAULT 'Available',
+  `image_path` varchar(255) DEFAULT NULL,
+  `discount_type` enum('none','percentage','fixed') NOT NULL DEFAULT 'none',
+  `discount_value` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_schedule` enum('permanent','scheduled') NOT NULL DEFAULT 'permanent',
+  `discount_start` datetime DEFAULT NULL,
+  `discount_end` datetime DEFAULT NULL,
+  `discount_status` enum('Active','Inactive') NOT NULL DEFAULT 'Inactive'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `tbl_products`
 --
 
-INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `size`, `price`, `stock`, `status`) VALUES
-(1, 4, 'Hotdog', 'Burgir', 'Solo', '200.00', 20, 'Available');
+INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
+(1, 4, 'Hotdog malaki', 'Burgir', 'Solo', '200.00', 20, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(2, 4, 'Masarap', 'Limited Edition', '', '99999999.99', 10, 'Available', '/FoodConnect/uploads/product_images/restaurant_4/product_2415e05751dd960d0282acb972ee152c.jpg', 'none', '0.00', 'permanent', NULL, NULL, 'Inactive');
 
 -- --------------------------------------------------------
 
@@ -754,7 +770,7 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
@@ -844,7 +860,7 @@ ALTER TABLE `tbl_order_items`
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
 --
 ALTER TABLE `tbl_owner_trusted_devices`
-  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `tbl_partner_applications`
@@ -862,7 +878,7 @@ ALTER TABLE `tbl_partner_invitation_requests`
 -- AUTO_INCREMENT for table `tbl_products`
 --
 ALTER TABLE `tbl_products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tbl_queue`

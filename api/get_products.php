@@ -75,15 +75,21 @@ if (
 
 $stmt = $conn->prepare("
     SELECT
-        product_id,
-        product_name,
-        category,
-        size,
-        price,
-        stock,
-        status,
-        image_path
-    FROM tbl_products
+    product_id,
+    product_name,
+    category,
+    size,
+    price,
+    stock,
+    status,
+    image_path,
+    discount_type,
+    discount_value,
+    discount_schedule,
+    discount_start,
+    discount_end,
+    discount_status
+FROM tbl_products
     WHERE restaurant_id = ?
     ORDER BY product_id DESC
 ");
@@ -171,22 +177,219 @@ while ($row = $result->fetch_assoc()) {
         $imagePath = null;
     }
 
+    $discountType = strtolower(
+    trim(
+        (string) (
+            $row["discount_type"] ??
+            "none"
+        )
+    )
+);
+
+$allowedDiscountTypes = [
+    "none",
+    "percentage",
+    "fixed"
+];
+
+if (
+    !in_array(
+        $discountType,
+        $allowedDiscountTypes,
+        true
+    )
+) {
+    $discountType = "none";
+}
+
+$discountValue = round(
+    max(
+        0,
+        (float) (
+            $row["discount_value"] ??
+            0
+        )
+    ),
+    2
+);
+
+$discountSchedule = strtolower(
+    trim(
+        (string) (
+            $row["discount_schedule"] ??
+            "permanent"
+        )
+    )
+);
+
+if (
+    !in_array(
+        $discountSchedule,
+        [
+            "permanent",
+            "scheduled"
+        ],
+        true
+    )
+) {
+    $discountSchedule =
+        "permanent";
+}
+
+$discountStart =
+    $row["discount_start"] ??
+    null;
+
+$discountEnd =
+    $row["discount_end"] ??
+    null;
+
+if (
+    $discountStart === "" ||
+    $discountStart ===
+        "0000-00-00 00:00:00"
+) {
+    $discountStart = null;
+}
+
+if (
+    $discountEnd === "" ||
+    $discountEnd ===
+        "0000-00-00 00:00:00"
+) {
+    $discountEnd = null;
+}
+
+$discountStatusValue =
+    strtolower(
+        trim(
+            (string) (
+                $row["discount_status"] ??
+                "inactive"
+            )
+        )
+    );
+
+$discountStatus =
+    $discountStatusValue ===
+        "active"
+        ? "Active"
+        : "Inactive";
+
+        $isDiscountActive = false;
+
+$currentDateTime =
+    new DateTime();
+
+if (
+    $discountType !== "none" &&
+    $discountValue > 0 &&
+    $discountStatus === "Active"
+) {
+    if (
+        $discountSchedule ===
+        "permanent"
+    ) {
+        $isDiscountActive = true;
+    } elseif (
+        $discountSchedule ===
+            "scheduled" &&
+        $discountStart !== null &&
+        $discountEnd !== null
+    ) {
+        try {
+            $discountStartObject =
+                new DateTime(
+                    $discountStart
+                );
+
+            $discountEndObject =
+                new DateTime(
+                    $discountEnd
+                );
+
+            $isDiscountActive =
+                $currentDateTime >=
+                    $discountStartObject &&
+                $currentDateTime <=
+                    $discountEndObject;
+        } catch (Exception $error) {
+            $isDiscountActive = false;
+        }
+    }
+}
+
+$regularPrice = round(
+    (float) (
+        $row["price"] ?? 0
+    ),
+    2
+);
+
+$finalPrice = $regularPrice;
+$discountSavings = 0.00;
+
+if ($isDiscountActive) {
+    if (
+        $discountType ===
+        "percentage"
+    ) {
+        $finalPrice =
+            $regularPrice -
+            (
+                $regularPrice *
+                $discountValue /
+                100
+            );
+    } elseif (
+        $discountType ===
+        "fixed"
+    ) {
+        $finalPrice =
+            $regularPrice -
+            $discountValue;
+    }
+
+    $finalPrice = round(
+        max(
+            0,
+            $finalPrice
+        ),
+        2
+    );
+
+    $discountSavings = round(
+        max(
+            0,
+            $regularPrice -
+            $finalPrice
+        ),
+        2
+    );
+}
+
     $products[] = [
         "id" => $productId,
         "product_id" => $productId,
 
-        "name" => $productName,
         "product_name" => $productName,
 
         "category" => $category,
         "size" => $size,
+        "price" =>
+    $regularPrice,
 
-        "price" => round(
-            (float) (
-                $row["price"] ?? 0
-            ),
-            2
-        ),
+"regular_price" =>
+    $regularPrice,
+
+"final_price" =>
+    $finalPrice,
+
+"discounted_price" =>
+    $finalPrice,
+
+"discount_savings" =>
+    $discountSavings,
 
         "stock" => max(
             0,
@@ -195,9 +398,35 @@ while ($row = $result->fetch_assoc()) {
             )
         ),
 
-        "status" => $status,
-        "image_path" => $imagePath,
-        "image" => $imagePath
+        "status" =>
+    $status,
+
+"image_path" =>
+    $imagePath,
+
+"image" =>
+    $imagePath,
+
+"discount_type" =>
+    $discountType,
+
+"discount_value" =>
+    $discountValue,
+
+"discount_schedule" =>
+    $discountSchedule,
+
+"discount_start" =>
+    $discountStart,
+
+"discount_end" =>
+    $discountEnd,
+
+"discount_status" =>
+    $discountStatus,
+
+"is_discount_active" =>
+    $isDiscountActive
     ];
 }
 
