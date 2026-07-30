@@ -490,6 +490,7 @@ const restaurantStaffCount =
   );
 
 let loadedPlatformUsers = [];
+let currentAdminId = 0;
 
 /* =========================
    ACTIVITY LOG ELEMENTS
@@ -911,12 +912,6 @@ partnerRequestNextButton
       }
     );
 
-  platformUserRoleFilter
-    ?.addEventListener(
-      "change",
-      loadPlatformUsers
-    );
-
   platformUserStatusFilter
     ?.addEventListener(
       "change",
@@ -930,11 +925,6 @@ partnerRequestNextButton
         if (platformUserSearchInput) {
           platformUserSearchInput.value =
             "";
-        }
-
-        if (platformUserRoleFilter) {
-          platformUserRoleFilter.value =
-            "all";
         }
 
         if (platformUserStatusFilter) {
@@ -3697,20 +3687,20 @@ async function loadPlatformUsers() {
         ?.value
         ?.trim() || "";
 
-    const role =
-      platformUserRoleFilter
-        ?.value || "all";
+   const status =
+  platformUserStatusFilter
+    ?.value || "all";
 
-    const status =
-      platformUserStatusFilter
-        ?.value || "all";
+const params =
+  new URLSearchParams();
 
-    const params =
-      new URLSearchParams({
-        search,
-        role,
-        status
-      });
+if (search) {
+  params.set("search", search);
+}
+
+if (status && status !== "all") {
+  params.set("status", status);
+}
 
     const response = await fetch(
       `${API_BASE}/get_platform_users.php?${params.toString()}`,

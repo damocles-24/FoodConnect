@@ -233,7 +233,18 @@ button {
   font-weight: 900;
 }
 
-.sidebar-brand strong,
+.sidebar-brand strong {
+    background: linear-gradient(
+        90deg,
+        #F58220 0%,
+        #F58220 38.8%,
+        #4CAF50 38.8%,
+        #4CAF50 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 .sidebar-brand span {
   display: block;
 }
