@@ -1,4 +1,3 @@
-let orders = [];
 let products = [];
 let salesData = [];
 let users = [];
@@ -21,27 +20,15 @@ let salesReport = {
 ========================= */
 const navItems = document.querySelectorAll(".nav-item[data-section]");
 const sections = document.querySelectorAll(".content-section");
-
-const recentOrdersBody = document.getElementById("recentOrdersBody");
-const ordersTableBody = document.getElementById("ordersTableBody");
 const productsGrid = document.getElementById("productsGrid");
 const productSearch = document.getElementById("productSearch");
 const productCategoryFilter = document.getElementById("productCategoryFilter");
 const productSort = document.getElementById("productSort");
 const lowStockList = document.getElementById("lowStockList");
 const salesChart = document.getElementById("salesChart");
-
 const salesRange = document.getElementById("salesRange");
-const statusFilter = document.getElementById("statusFilter");
-const orderSearch = document.getElementById("orderSearch");
 const globalSearch = document.getElementById("globalSearch");
-
-const orderModal = document.getElementById("orderModal");
-const modalBody = document.getElementById("modalBody");
-const closeModal = document.getElementById("closeModal");
-
 const sidebar = document.getElementById("sidebar");
-
 const menuToggle = document.getElementById("menuToggle");
 const closeSidebar = document.getElementById("closeSidebar");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -90,10 +77,139 @@ const applyGoLiveBtn =
     "applyGoLiveBtn"
   );
 
+const goLiveEyebrow =
+  document.getElementById(
+    "goLiveEyebrow"
+  );
+
+const goLiveStatusIcon =
+  document.getElementById(
+    "goLiveStatusIcon"
+  );
+
+const goLiveProgressText =
+  document.getElementById(
+    "goLiveProgressText"
+  );
+
+const goLiveProgressBar =
+  document.getElementById(
+    "goLiveProgressBar"
+  );
+
+const readinessChecklist =
+  document.getElementById(
+    "readinessChecklist"
+  );
+
+const readinessScore =
+  document.getElementById(
+    "readinessScore"
+  );
+
+const readinessCard =
+  document.getElementById(
+    "readinessCard"
+  );
+
+const readinessDescription =
+  document.getElementById(
+    "readinessDescription"
+  );
+
+const readinessToggleBtn =
+  document.getElementById(
+    "readinessToggleBtn"
+  );
+
+const readinessCompleteSummary =
+  document.getElementById(
+    "readinessCompleteSummary"
+  );
+
+const readinessCompleteMessage =
+  document.getElementById(
+    "readinessCompleteMessage"
+  );
+
 const addProductModal = document.getElementById("addProductModal");
 const editProductModal = document.getElementById("editProductModal");
 const restockModal = document.getElementById("restockModal");
+const editProductImageInput =
+  document.getElementById(
+    "editProductImage"
+  );
 
+const editProductImagePreview =
+  document.getElementById(
+    "editProductImagePreview"
+  );
+
+const editProductImagePreviewImg =
+  document.getElementById(
+    "editProductImagePreviewImg"
+  );
+
+const removeExistingImageInput =
+  document.getElementById(
+    "removeExistingProductImage"
+  );
+
+editProductImageInput?.addEventListener(
+  "change",
+  () => {
+    const file =
+      editProductImageInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      showImagePreview(
+        file,
+        editProductImagePreview,
+        editProductImagePreviewImg
+      );
+
+      if (removeExistingImageInput) {
+  removeExistingImageInput.value =
+    "0";
+}
+    } catch (error) {
+      alert(error.message);
+      editProductImageInput.value = "";
+    }
+  }
+);
+
+document
+  .getElementById(
+    "removeEditProductImageBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+     if (editProductImageInput) {
+  editProductImageInput.value = "";
+}
+
+if (editProductImagePreviewImg) {
+  editProductImagePreviewImg.src =
+    "";
+}
+
+if (editProductImagePreview) {
+  editProductImagePreview.hidden =
+    true;
+}
+
+if (removeExistingImageInput) {
+  removeExistingImageInput.value =
+    "1";
+}
+    }
+  );
 const openAddProductModal = document.getElementById("openAddProductModal");
 
 const closeAddProductModal = document.getElementById("closeAddProductModal");
@@ -229,6 +345,7 @@ const settingsFormControls = [
 let savedRestaurantSettings = null;
 let restaurantSettingsLoading = false;
 
+let readinessChecklistExpanded = false;
 
 settingsFormControls.forEach(control => {
   control.addEventListener(
@@ -588,30 +705,46 @@ function normalizeOwnerApiUrl(url) {
 /* =========================
    FETCH
 ========================= */
+async function fetchJSON(
+  url,
+  options = {}
+) {
+  const requestUrl =
+    normalizeOwnerApiUrl(url);
 
+  const isFormData =
+    options.body instanceof FormData;
 
-async function fetchJSON(url, options = {}) {
-  const requestUrl = normalizeOwnerApiUrl(url);
+  const requestHeaders = {
+    Accept: "application/json",
+    ...(options.headers || {})
+  };
 
-  const response = await fetch(requestUrl, {
-    ...options,
+  if (!isFormData) {
+    requestHeaders["Content-Type"] =
+      "application/json";
+  }
 
-    credentials: "include",
-    cache: "no-store",
-
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      ...(options.headers || {})
+  const response = await fetch(
+    requestUrl,
+    {
+      ...options,
+      credentials: "include",
+      cache: "no-store",
+      headers: requestHeaders
     }
-  });
+  );
 
-  const text = await response.text();
+  const text =
+    await response.text();
 
   let data;
 
   try {
-    data = text ? JSON.parse(text) : {};
+    data =
+      text
+        ? JSON.parse(text)
+        : {};
   } catch (error) {
     console.error(
       "Invalid JSON response:",
@@ -643,9 +776,272 @@ async function fetchJSON(url, options = {}) {
 /* =========================
    DASHBOARD SUMMARY
 ========================= */
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function openDashboardSection(
+  sectionId
+) {
+  const matchingNav =
+    document.querySelector(
+      `.nav-item[data-section="${sectionId}"]`
+    );
+
+  if (matchingNav) {
+    matchingNav.click();
+  }
+}
+
+function updateReadinessCollapseState(
+  isComplete
+) {
+  if (
+    !readinessChecklist ||
+    !readinessToggleBtn ||
+    !readinessCompleteSummary
+  ) {
+    return;
+  }
+
+  if (!isComplete) {
+    readinessChecklistExpanded = true;
+
+    readinessChecklist.hidden = false;
+    readinessCompleteSummary.hidden = true;
+    readinessToggleBtn.hidden = true;
+
+    if (readinessCard) {
+      readinessCard.classList.remove(
+        "is-complete",
+        "is-expanded"
+      );
+    }
+
+    return;
+  }
+
+  readinessCompleteSummary.hidden = false;
+  readinessToggleBtn.hidden = false;
+
+  readinessChecklist.hidden =
+    !readinessChecklistExpanded;
+
+  readinessToggleBtn.textContent =
+    readinessChecklistExpanded
+      ? "Hide checklist"
+      : "View checklist";
+
+  readinessToggleBtn.setAttribute(
+    "aria-expanded",
+    readinessChecklistExpanded
+      ? "true"
+      : "false"
+  );
+
+  if (readinessCard) {
+    readinessCard.classList.add(
+      "is-complete"
+    );
+
+    readinessCard.classList.toggle(
+      "is-expanded",
+      readinessChecklistExpanded
+    );
+  }
+}
+
+function renderReadinessChecklist(
+  readiness = {}
+) {
+  const items =
+    Array.isArray(readiness.items)
+      ? readiness.items
+      : [];
+
+  const percentage = Math.max(
+    0,
+    Math.min(
+      100,
+      Number(readiness.percentage) || 0
+    )
+  );
+
+  const readyToApply =
+  Boolean(
+    readiness.ready_to_apply
+  );
+
+const requiredCompleted =
+  Number(
+    readiness.required_completed
+  ) || 0;
+
+const requiredTotal =
+  Number(
+    readiness.required_total
+  ) || 0;
+
+const allRequirementsComplete =
+  readyToApply &&
+  requiredTotal > 0 &&
+  requiredCompleted >= requiredTotal;
+
+ if (readinessScore) {
+  readinessScore.textContent =
+    `${percentage}%`;
+}
+
+if (readinessDescription) {
+  const restaurantIsLive =
+    goLivePanel?.classList.contains(
+      "is-live"
+    );
+
+  if (allRequirementsComplete) {
+    readinessDescription.textContent =
+      restaurantIsLive
+        ? "Your restaurant setup and operational requirements are complete."
+        : "All required setup items are complete. You may now submit your restaurant for administrator review.";
+  } else if (restaurantIsLive) {
+    readinessDescription.textContent =
+      "Keep these restaurant details complete so customers receive accurate menu, stock, delivery, and operating information.";
+  } else {
+    readinessDescription.textContent =
+      "Complete the required items below before submitting your restaurant for administrator review.";
+  }
+}
+
+if (readinessCompleteMessage) {
+  readinessCompleteMessage.textContent =
+    `All ${requiredTotal} required setup item${
+      requiredTotal === 1
+        ? ""
+        : "s"
+    } are complete.`;
+}
+
+  if (!readinessChecklist) {
+    return;
+  }
+
+  if (!items.length) {
+    readinessChecklist.innerHTML = `
+      <div class="readiness-loading">
+        The readiness checklist is currently unavailable.
+      </div>
+    `;
+
+    return;
+  }
+
+  readinessChecklist.innerHTML =
+    items
+      .map((item) => {
+        const completed =
+          Boolean(item.completed);
+
+        const required =
+          Boolean(item.required);
+
+        const targetSection =
+          String(
+            item.target_section ||
+            "dashboardSection"
+          );
+
+        const label =
+          escapeHtml(
+            item.label ||
+            "Setup item"
+          );
+
+        const description =
+          escapeHtml(
+            item.description || ""
+          );
+
+        const safeTarget =
+          escapeHtml(targetSection);
+
+        return `
+          <article class="readiness-item ${
+            completed
+              ? "is-complete"
+              : ""
+          }">
+            <span
+              class="readiness-check"
+              aria-hidden="true"
+            >
+              ${completed ? "✓" : "!"}
+            </span>
+
+            <div class="readiness-content">
+              <strong>
+                ${label}
+              </strong>
+
+              <p>
+                ${description}
+              </p>
+
+              ${
+                !completed
+                  ? `
+                    <button
+                      type="button"
+                      class="readiness-action"
+                      data-readiness-target="${safeTarget}"
+                    >
+                      Complete this step →
+                    </button>
+                  `
+                  : ""
+              }
+            </div>
+
+            <span class="readiness-tag">
+              ${
+                required
+                  ? "Required"
+                  : "Optional"
+              }
+            </span>
+          </article>
+        `;
+      })
+      .join("");
+
+ readinessChecklist
+  .querySelectorAll(
+    "[data-readiness-target]"
+  )
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        openDashboardSection(
+          button.dataset
+            .readinessTarget
+        );
+      }
+    );
+  });
+
+updateReadinessCollapseState(
+  allRequirementsComplete
+);
+}
+
 function renderGoLiveStatus(
   restaurant,
-  totalProducts
+  readiness = {}
 ) {
   if (
     !goLivePanel ||
@@ -658,7 +1054,8 @@ function renderGoLiveStatus(
 
   const applicationStatus =
     String(
-      restaurant?.application_status ||
+      restaurant
+        ?.application_status ||
       "draft"
     )
       .trim()
@@ -666,51 +1063,146 @@ function renderGoLiveStatus(
 
   const visibility =
     String(
-      restaurant?.customer_visibility ||
+      restaurant
+        ?.customer_visibility ||
       "Hidden"
     )
       .trim()
       .toLowerCase();
 
-  const productCount =
-    Number(totalProducts) || 0;
+  const readyToApply =
+    Boolean(
+      readiness.ready_to_apply
+    );
+
+  const percentage = Math.max(
+    0,
+    Math.min(
+      100,
+      Number(
+        readiness.percentage
+      ) || 0
+    )
+  );
+
+  const requiredCompleted =
+    Number(
+      readiness.required_completed
+    ) || 0;
+
+  const requiredTotal =
+    Number(
+      readiness.required_total
+    ) || 0;
+
+  const blockers =
+    Array.isArray(
+      readiness.blockers
+    )
+      ? readiness.blockers
+      : [];
+
+  goLivePanel.classList.remove(
+    "is-live",
+    "is-review",
+    "is-warning",
+    "is-rejected"
+  );
+
+  if (goLiveProgressText) {
+    goLiveProgressText.textContent =
+      `${requiredCompleted} of ${requiredTotal} completed`;
+  }
+
+  if (goLiveProgressBar) {
+    goLiveProgressBar.style.width =
+      `${percentage}%`;
+  }
 
   applyGoLiveBtn.hidden = true;
   applyGoLiveBtn.disabled = false;
 
   if (visibility === "visible") {
+    goLivePanel.classList.add(
+      "is-live"
+    );
+
+    if (goLiveEyebrow) {
+      goLiveEyebrow.textContent =
+        "Approved / Live";
+    }
+
+    if (goLiveStatusIcon) {
+      goLiveStatusIcon.textContent =
+        "✓";
+    }
+
     goLiveTitle.textContent =
-      "Restaurant is Live";
+      "Your Restaurant Is Live";
 
     goLiveMessage.textContent =
-      "Customers can currently discover and order from your restaurant.";
+      "Customers can discover your restaurant and place orders.";
 
     if (goLiveRequirements) {
       goLiveRequirements.textContent =
-        "Continue keeping your products, inventory, hours, and staff information updated.";
+        "Next action: keep your menu, stock, operating hours, delivery settings, and staff information accurate.";
     }
 
     return;
   }
 
-  if (applicationStatus === "submitted") {
+  if (
+    applicationStatus ===
+    "submitted"
+  ) {
+    goLivePanel.classList.add(
+      "is-review"
+    );
+
+    if (goLiveEyebrow) {
+      goLiveEyebrow.textContent =
+        "Under Review";
+    }
+
+    if (goLiveStatusIcon) {
+      goLiveStatusIcon.textContent =
+        "…";
+    }
+
     goLiveTitle.textContent =
-      "Under Administrator Review";
+      "Administrator Review in Progress";
 
     goLiveMessage.textContent =
-      "Your restaurant is still hidden while FoodConnect reviews your go-live application.";
+      "Your restaurant remains private while FoodConnect reviews the submitted information and menu.";
 
     if (goLiveRequirements) {
       goLiveRequirements.textContent =
-        "You will be notified after the administrator approves, requests changes, or rejects the application.";
+        "Next action: continue preparing your restaurant. You will be notified when the application is approved, requires changes, or is rejected.";
     }
 
     return;
   }
 
-  if (applicationStatus === "needs_changes") {
+  if (
+    applicationStatus ===
+    "needs_changes"
+  ) {
+    goLivePanel.classList.add(
+      "is-warning"
+    );
+
+    if (goLiveEyebrow) {
+      goLiveEyebrow.textContent =
+        "Changes Required";
+    }
+
+    if (goLiveStatusIcon) {
+      goLiveStatusIcon.textContent =
+        "!";
+    }
+
     goLiveTitle.textContent =
-      "Changes Required";
+      "Update Your Restaurant Before Resubmitting";
 
     goLiveMessage.textContent =
       restaurant?.rejection_reason ||
@@ -718,91 +1210,169 @@ function renderGoLiveStatus(
 
     if (goLiveRequirements) {
       goLiveRequirements.textContent =
-        productCount > 0
-          ? "Complete the requested changes, then submit again."
-          : "Add at least one product and complete the requested changes.";
+        readyToApply
+          ? "Next action: review the administrator feedback, complete the requested changes, and resubmit for review."
+          : `Next action: complete the remaining required setup item${
+              blockers.length === 1
+                ? ""
+                : "s"
+            }: ${blockers.join(", ")}.`;
     }
 
     applyGoLiveBtn.textContent =
       "Resubmit for Review";
 
     applyGoLiveBtn.hidden = false;
+
     applyGoLiveBtn.disabled =
-      productCount < 1;
+      !readyToApply;
 
     return;
   }
 
-  if (applicationStatus === "rejected") {
+  if (
+    applicationStatus ===
+    "rejected"
+  ) {
+    goLivePanel.classList.add(
+      "is-rejected"
+    );
+
+    if (goLiveEyebrow) {
+      goLiveEyebrow.textContent =
+        "Rejected";
+    }
+
+    if (goLiveStatusIcon) {
+      goLiveStatusIcon.textContent =
+        "×";
+    }
+
     goLiveTitle.textContent =
-      "Application Rejected";
+      "Go-Live Application Rejected";
 
     goLiveMessage.textContent =
       restaurant?.rejection_reason ||
-      "This restaurant application was rejected.";
+      "The administrator rejected this restaurant application.";
 
     if (goLiveRequirements) {
       goLiveRequirements.textContent =
-        "This application can no longer be resubmitted.";
+        "Review the reason above. This application cannot currently be resubmitted through the dashboard.";
     }
 
     return;
   }
 
+  if (goLiveEyebrow) {
+    goLiveEyebrow.textContent =
+      "Private Setup";
+  }
+
+  if (goLiveStatusIcon) {
+    goLiveStatusIcon.textContent =
+      readyToApply
+        ? "✓"
+        : "●";
+  }
+
   goLiveTitle.textContent =
-    "Private Restaurant Setup";
+    readyToApply
+      ? "Your Restaurant Is Ready for Review"
+      : "Complete Your Private Restaurant Setup";
 
   goLiveMessage.textContent =
-    "Your restaurant is hidden from customers. Prepare it before applying to go live.";
+    readyToApply
+      ? "All required setup items are complete. Your restaurant is still hidden until an administrator approves it."
+      : "Your restaurant is hidden from customers while you prepare its information, menu, inventory, and settings.";
 
   if (goLiveRequirements) {
     goLiveRequirements.textContent =
-      productCount > 0
-        ? `${productCount} product${
-            productCount === 1
+      readyToApply
+        ? "Next action: submit your restaurant for administrator review."
+        : `Next action: complete ${
+            blockers.length
+          } remaining required item${
+            blockers.length === 1
               ? ""
               : "s"
-          } added. You can now apply for review.`
-        : "Add at least one product before applying to go live.";
+          }.`;
   }
 
   applyGoLiveBtn.textContent =
     "Apply to Go Live";
 
   applyGoLiveBtn.hidden = false;
+
   applyGoLiveBtn.disabled =
-    productCount < 1;
+    !readyToApply;
 }
 
 async function loadDashboardSummary() {
   const salesToday =
-    document.getElementById("salesToday");
+    document.getElementById(
+      "salesToday"
+    );
 
   const totalOrders =
-    document.getElementById("totalOrders");
+    document.getElementById(
+      "totalOrders"
+    );
 
   const pendingOrders =
-    document.getElementById("pendingOrders");
+    document.getElementById(
+      "pendingOrders"
+    );
 
   const totalProducts =
-    document.getElementById("totalProducts");
+    document.getElementById(
+      "totalProducts"
+    );
+
+  const availableProducts =
+    document.getElementById(
+      "availableProducts"
+    );
+
+  const dashboardLowStock =
+    document.getElementById(
+      "dashboardLowStock"
+    );
+
+  const dashboardOutOfStock =
+    document.getElementById(
+      "dashboardOutOfStock"
+    );
+
+  const activeStaff =
+    document.getElementById(
+      "activeStaff"
+    );
 
   const completedOrders =
-    document.getElementById("completedOrders");
+    document.getElementById(
+      "completedOrders"
+    );
 
   const cancelledOrders =
-    document.getElementById("cancelledOrders");
+    document.getElementById(
+      "cancelledOrders"
+    );
 
   const averageOrderValue =
-    document.getElementById("averageOrderValue");
+    document.getElementById(
+      "averageOrderValue"
+    );
 
   const bestSeller =
-    document.getElementById("bestSeller");
+    document.getElementById(
+      "bestSeller"
+    );
 
   try {
-    const data = await fetchJSON(
-      `${OWNER_API_BASE}/get_dashboard_summary.php`
-    );
+    const data =
+      await fetchJSON(
+        `${OWNER_API_BASE}/get_dashboard_summary.php`
+      );
 
     if (!data.success) {
       throw new Error(
@@ -813,37 +1383,81 @@ async function loadDashboardSummary() {
 
     if (salesToday) {
       salesToday.textContent =
-        formatPeso(data.salesToday || 0);
+        formatPeso(
+          data.salesToday || 0
+        );
     }
 
     if (totalOrders) {
       totalOrders.textContent =
-        Number(data.totalOrders) || 0;
+        Number(
+          data.totalOrders
+        ) || 0;
     }
 
     if (pendingOrders) {
       pendingOrders.textContent =
-        Number(data.pendingOrders) || 0;
+        Number(
+          data.pendingOrders
+        ) || 0;
     }
 
     if (totalProducts) {
       totalProducts.textContent =
-        Number(data.totalProducts) || 0;
+        Number(
+          data.totalProducts
+        ) || 0;
     }
 
+    if (availableProducts) {
+      availableProducts.textContent =
+        Number(
+          data.availableProducts
+        ) || 0;
+    }
+
+    if (dashboardLowStock) {
+      dashboardLowStock.textContent =
+        Number(
+          data.lowStockProducts
+        ) || 0;
+    }
+
+    if (dashboardOutOfStock) {
+      dashboardOutOfStock.textContent =
+        Number(
+          data.outOfStockProducts
+        ) || 0;
+    }
+
+    if (activeStaff) {
+      activeStaff.textContent =
+        Number(
+          data.activeStaff
+        ) || 0;
+    }
+
+    renderReadinessChecklist(
+      data.readiness || {}
+    );
+
     renderGoLiveStatus(
-  data.restaurant || {},
-  data.totalProducts || 0
-);
+      data.restaurant || {},
+      data.readiness || {}
+    );
 
     if (completedOrders) {
       completedOrders.textContent =
-        Number(data.completedOrders) || 0;
+        Number(
+          data.completedOrders
+        ) || 0;
     }
 
     if (cancelledOrders) {
       cancelledOrders.textContent =
-        Number(data.cancelledOrders) || 0;
+        Number(
+          data.cancelledOrders
+        ) || 0;
     }
 
     if (averageOrderValue) {
@@ -859,24 +1473,21 @@ async function loadDashboardSummary() {
     }
   } catch (error) {
     console.error(
-      "Load dashboard summary failed:",
+      "Dashboard summary error:",
       error
     );
 
-    if (salesToday) {
-      salesToday.textContent = "₱0.00";
+    if (readinessChecklist) {
+      readinessChecklist.innerHTML = `
+        <div class="readiness-loading">
+          Unable to load the restaurant readiness checklist.
+        </div>
+      `;
     }
 
-    if (totalOrders) {
-      totalOrders.textContent = "0";
-    }
-
-    if (pendingOrders) {
-      pendingOrders.textContent = "0";
-    }
-
-    if (totalProducts) {
-      totalProducts.textContent = "0";
+    if (goLiveMessage) {
+      goLiveMessage.textContent =
+        "The dashboard summary could not be loaded. Please refresh the page.";
     }
   }
 }
@@ -943,6 +1554,20 @@ if (applyGoLiveBtn) {
   );
 }
 
+if (readinessToggleBtn) {
+  readinessToggleBtn.addEventListener(
+    "click",
+    () => {
+      readinessChecklistExpanded =
+        !readinessChecklistExpanded;
+
+      updateReadinessCollapseState(
+        true
+      );
+    }
+  );
+}
+
 /* =========================
    PRODUCTS
 ========================= */
@@ -964,7 +1589,11 @@ async function loadProducts() {
       ? "Available"
       : "Unavailable"
   ),
-    image: p.image || p.image_url || "https://via.placeholder.com/400x250"
+  image:
+  p.image_path ||
+  p.image ||
+  p.image_url ||
+  ""
   }));
 
   populateProductCategories();
@@ -1001,17 +1630,6 @@ async function loadUsers() {
       : [];
 
   applyUserFilters();
-}
-
-/* =========================
-   ORDERS
-========================= */
-async function loadRecentOrders() {
-  const data = await fetchJSON("http://localhost/FoodConnect/api/get_recent_orders.php");
-  orders = Array.isArray(data) ? data : [];
-
-  renderRecentOrders();
-  renderOrders();
 }
 
 /* =========================
@@ -1738,46 +2356,6 @@ function exportSalesReportExcel() {
 }
 
 /* =========================
-   RENDER ORDERS
-========================= */
-function renderRecentOrders() {
-  if (!recentOrdersBody) return;
-
-  recentOrdersBody.innerHTML = orders.length
-    ? orders.slice(0, 5).map(o => `
-      <tr>
-        <td>${o.id}</td>
-        <td>${o.customer}</td>
-        <td>${formatPeso(o.total)}</td>
-        <td>${o.payment}</td>
-        <td><span class="status-badge ${getStatusClass(o.status)}">${normalizeStatus(o.status)}</span></td>
-        <td>${o.date}</td>
-        <td><button class="action-btn" onclick="openOrderModal('${o.id}')">View</button></td>
-      </tr>
-    `).join("")
-    : `<tr><td colspan="7">No recent orders found.</td></tr>`;
-}
-
-function renderOrders(list = orders) {
-  if (!ordersTableBody) return;
-
-  ordersTableBody.innerHTML = list.length
-    ? list.map(o => `
-      <tr>
-        <td>${o.id}</td>
-        <td>${o.customer}</td>
-        <td>${o.items?.join(", ") || "No items"}</td>
-        <td>${formatPeso(o.total)}</td>
-        <td>${o.payment}</td>
-        <td><span class="status-badge ${getStatusClass(o.status)}">${normalizeStatus(o.status)}</span></td>
-        <td>${o.date}</td>
-        <td><button class="action-btn" onclick="openOrderModal('${o.id}')">View</button></td>
-      </tr>
-    `).join("")
-    : `<tr><td colspan="8">No orders found.</td></tr>`;
-}
-
-/* =========================
    PRODUCTS RENDER
 ========================= */
 function renderProducts(list = products) {
@@ -1890,6 +2468,26 @@ function renderProducts(list = products) {
 
       return `
         <article class="product-card">
+
+          ${
+  product.image
+    ? `
+      <img
+        class="product-card-image"
+        src="${escapeHtml(product.image)}"
+        alt="${escapeHtml(product.name)}"
+        loading="lazy"
+        onerror="this.remove()"
+      />
+    `
+    : `
+      <div class="product-card-image product-card-image-empty">
+        <span>🍽️</span>
+        <small>No product image</small>
+      </div>
+    `
+}
+
           <div class="product-card-header">
             <div class="product-title-group">
               <span class="product-card-category">
@@ -2252,16 +2850,6 @@ function generateActivityLogs() {
 
   const logs = [];
 
-  orders.slice(0, 5).forEach(order => {
-    logs.push({
-      type: "order",
-      icon: "🧾",
-      title: "Order Activity",
-      message: `Order #${order.id} by ${order.customer} is currently ${normalizeStatus(order.status)}.`,
-      time: order.date || "Today"
-    });
-  });
-
   products
     .filter(product => product.stock <= 5)
     .slice(0, 5)
@@ -2318,231 +2906,610 @@ function applyUserFilters() {
   renderUsers(list);
 }
 
+const DEFAULT_PRODUCT_IMAGE = "";
+
+function validateProductImage(
+  file
+) {
+  if (!file) {
+    return;
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (
+    !allowedTypes.includes(
+      file.type
+    )
+  ) {
+    throw new Error(
+      "Product image must be JPG, PNG, or WEBP."
+    );
+  }
+
+  const maxSize =
+    2 * 1024 * 1024;
+
+  if (file.size > maxSize) {
+    throw new Error(
+      "Product image cannot exceed 2 MB."
+    );
+  }
+}
+
+function showImagePreview(
+  file,
+  previewContainer,
+  previewImage
+) {
+  validateProductImage(file);
+
+  const reader =
+    new FileReader();
+
+  reader.addEventListener(
+    "load",
+    () => {
+      previewImage.src =
+        reader.result;
+
+      previewContainer.hidden =
+        false;
+    }
+  );
+
+  reader.readAsDataURL(file);
+}
+
+function clearAddProductImage() {
+  const imageInput =
+    document.getElementById(
+      "productImage"
+    );
+
+  const preview =
+    document.getElementById(
+      "productImagePreview"
+    );
+
+  const previewImage =
+    document.getElementById(
+      "productImagePreviewImg"
+    );
+
+  if (imageInput) {
+    imageInput.value = "";
+  }
+
+  if (previewImage) {
+    previewImage.src = "";
+  }
+
+  if (preview) {
+    preview.hidden = true;
+  }
+}
+
+const productImageInput =
+  document.getElementById(
+    "productImage"
+  );
+
+const productImagePreview =
+  document.getElementById(
+    "productImagePreview"
+  );
+
+const productImagePreviewImg =
+  document.getElementById(
+    "productImagePreviewImg"
+  );
+
+productImageInput?.addEventListener(
+  "change",
+  () => {
+    const file =
+      productImageInput.files?.[0];
+
+    if (!file) {
+      clearAddProductImage();
+      return;
+    }
+
+    try {
+      showImagePreview(
+        file,
+        productImagePreview,
+        productImagePreviewImg
+      );
+    } catch (error) {
+      alert(error.message);
+      clearAddProductImage();
+    }
+  }
+);
+
+document
+  .getElementById(
+    "removeProductImageBtn"
+  )
+  ?.addEventListener(
+    "click",
+    clearAddProductImage
+  );
+
+document
+  .getElementById(
+    "cancelAddProductBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      addProductModal?.classList.remove(
+        "show"
+      );
+    }
+  );
+
+document
+  .getElementById(
+    "cancelEditProductBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      editProductModal?.classList.remove(
+        "show"
+      );
+    }
+  );
+
 /* =========================
    ADD PRODUCT
 ========================= */
+
 if (saveProductBtn) {
-  saveProductBtn.addEventListener("click", async () => {
-    const stockValue = Number(document.getElementById("productStock").value);
+  saveProductBtn.addEventListener(
+    "click",
+    async () => {
+      const nameInput =
+        document.getElementById(
+          "productName"
+        );
 
-    const payload = {
-      product_name: document.getElementById("productName").value.trim(),
-      category: document.getElementById("productCategory").value.trim(),
-      size: document.getElementById("productSize").value.trim(),
-      price: document.getElementById("productPrice").value,
-      stock: document.getElementById("productStock").value,
-      status: stockValue > 0 ? "Available" : "Unavailable"
-    };
+      const categoryInput =
+        document.getElementById(
+          "productCategory"
+        );
 
-    if (
-      !payload.product_name ||
-      !payload.category ||
-      !payload.size ||
-      Number(payload.price) <= 0 ||
-      stockValue < 0
-    ) {
-      alert("Please complete product name, category, variant/size, price, and stock correctly.");
-      return;
+      const sizeInput =
+        document.getElementById(
+          "productSize"
+        );
+
+      const priceInput =
+        document.getElementById(
+          "productPrice"
+        );
+
+      const stockInput =
+        document.getElementById(
+          "productStock"
+        );
+
+      const statusInput =
+        document.getElementById(
+          "productStatus"
+        );
+
+      const imageInput =
+        document.getElementById(
+          "productImage"
+        );
+
+      const productName =
+        nameInput?.value.trim() || "";
+
+      const category =
+        categoryInput?.value.trim() || "";
+
+      const size =
+        sizeInput?.value.trim() || "";
+
+      const price =
+        Number(priceInput?.value);
+
+      const stock =
+        Number(stockInput?.value);
+
+      const status =
+        statusInput?.value ||
+        "Available";
+
+      if (!productName) {
+        alert(
+          "Product name is required."
+        );
+        nameInput?.focus();
+        return;
+      }
+
+      if (!category) {
+        alert(
+          "Product category is required."
+        );
+        categoryInput?.focus();
+        return;
+      }
+
+      if (
+        !Number.isFinite(price) ||
+        price <= 0
+      ) {
+        alert(
+          "Price must be greater than zero."
+        );
+        priceInput?.focus();
+        return;
+      }
+
+      if (
+        !Number.isInteger(stock) ||
+        stock < 0
+      ) {
+        alert(
+          "Stock must be zero or a positive whole number."
+        );
+        stockInput?.focus();
+        return;
+      }
+
+      const imageFile =
+        imageInput?.files?.[0];
+
+      try {
+        validateProductImage(
+          imageFile
+        );
+      } catch (error) {
+        alert(error.message);
+        return;
+      }
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "product_name",
+        productName
+      );
+
+      formData.append(
+        "category",
+        category
+      );
+
+      formData.append(
+        "size",
+        size
+      );
+
+      formData.append(
+        "price",
+        String(price)
+      );
+
+      formData.append(
+        "stock",
+        String(stock)
+      );
+
+      formData.append(
+        "status",
+        status
+      );
+
+      if (imageFile) {
+        formData.append(
+          "product_image",
+          imageFile
+        );
+      }
+
+      const originalText =
+        saveProductBtn.textContent;
+
+      saveProductBtn.disabled = true;
+      saveProductBtn.textContent =
+        "Saving...";
+
+      try {
+        const result =
+          await fetchJSON(
+            `${OWNER_API_BASE}/add_product.php`,
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+        addProductModal?.classList.remove(
+          "show"
+        );
+
+        nameInput.value = "";
+        categoryInput.value = "";
+        sizeInput.value = "";
+        priceInput.value = "";
+        stockInput.value = "0";
+        statusInput.value =
+          "Available";
+
+        clearAddProductImage();
+
+        await Promise.all([
+          loadProducts(),
+          loadDashboardSummary()
+        ]);
+
+        await addActivityLog(
+          "product",
+          "🍔",
+          "Product Added",
+          `${productName}${
+            size
+              ? ` - ${size}`
+              : ""
+          } was added to the menu.`
+        );
+
+        alert(
+          result.message ||
+          "Product added successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Add product failed:",
+          error
+        );
+
+        alert(
+          error.message ||
+          "Unable to add product."
+        );
+      } finally {
+        saveProductBtn.disabled =
+          false;
+
+        saveProductBtn.textContent =
+          originalText;
+      }
     }
-
-    const result = await fetchJSON("http://localhost/FoodConnect/api/add_product.php", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    if (!result.success) {
-      alert(result.message || "Failed to add product.");
-      return;
-    }
-
-    addProductModal.classList.remove("show");
-
-    document.getElementById("productName").value = "";
-    document.getElementById("productCategory").value = "";
-    document.getElementById("productSize").value = "";
-    document.getElementById("productPrice").value = "";
-    document.getElementById("productStock").value = "";
-
-   await loadProducts();
-await loadDashboardSummary();
-
-addActivityLog(
-  "product",
-  "🍔",
-  "Product Added",
-  `${payload.product_name} - ${payload.size} was added to the menu.`
-);
-
-alert("Product added successfully.");
-  });
+  );
 }
 
 /* =========================
    UPDATE PRODUCT
 ========================= */
+
 if (updateProductBtn) {
-  updateProductBtn.addEventListener("click", async () => {
-    const stockValue = Number(document.getElementById("editProductStock").value);
+  updateProductBtn.addEventListener(
+    "click",
+    async () => {
+      const productId =
+        document.getElementById(
+          "editProductId"
+        )?.value || "";
 
-    const payload = {
-      product_id: document.getElementById("editProductId").value,
-      product_name: document.getElementById("editProductName").value.trim(),
-      category: document.getElementById("editProductCategory").value.trim(),
-      size: document.getElementById("editProductSize").value.trim(),
-      price: document.getElementById("editProductPrice").value,
-      stock: document.getElementById("editProductStock").value,
-      status: stockValue > 0 ? "Available" : "Unavailable"
-    };
+      const productName =
+        document.getElementById(
+          "editProductName"
+        )?.value.trim() || "";
 
-    if (
-      !payload.product_id ||
-      !payload.product_name ||
-      !payload.category ||
-      !payload.size ||
-      Number(payload.price) <= 0 ||
-      stockValue < 0
-    ) {
-      alert("Please complete all required fields correctly.");
-      return;
-    }
+      const category =
+        document.getElementById(
+          "editProductCategory"
+        )?.value.trim() || "";
 
-    try {
-      const result = await fetchJSON("http://localhost/FoodConnect/api/update_product.php", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
+      const size =
+        document.getElementById(
+          "editProductSize"
+        )?.value.trim() || "";
 
-      if (!result.success) {
-        alert(result.message || "Failed to update product.");
+      const price =
+        Number(
+          document.getElementById(
+            "editProductPrice"
+          )?.value
+        );
+
+      const stock =
+        Number(
+          document.getElementById(
+            "editProductStock"
+          )?.value
+        );
+
+      const status =
+        document.getElementById(
+          "editProductStatus"
+        )?.value ||
+        "Available";
+
+      const imageFile =
+        editProductImageInput
+          ?.files?.[0];
+
+      const removeImage =
+        removeExistingImageInput
+          ?.value || "0";
+
+      if (!productId) {
+        alert(
+          "Product ID is missing."
+        );
         return;
       }
 
-      editProductModal.classList.remove("show");
+      if (!productName) {
+        alert(
+          "Product name is required."
+        );
+        return;
+      }
 
-     await loadProducts();
-await loadDashboardSummary();
+      if (!category) {
+        alert(
+          "Product category is required."
+        );
+        return;
+      }
 
-addActivityLog(
-  "product",
-  "✏️",
-  "Product Updated",
-  `${payload.product_name} - ${payload.size} was updated.`
-);
+      if (
+        !Number.isFinite(price) ||
+        price <= 0
+      ) {
+        alert(
+          "Price must be greater than zero."
+        );
+        return;
+      }
 
-alert("Product updated successfully.");
+      if (
+        !Number.isInteger(stock) ||
+        stock < 0
+      ) {
+        alert(
+          "Stock must be zero or a positive whole number."
+        );
+        return;
+      }
 
-    } catch (error) {
-      console.error("Update product failed:", error);
-      alert("Error updating product. Check console.");
+      try {
+        validateProductImage(
+          imageFile
+        );
+      } catch (error) {
+        alert(error.message);
+        return;
+      }
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "product_id",
+        productId
+      );
+
+      formData.append(
+        "product_name",
+        productName
+      );
+
+      formData.append(
+        "category",
+        category
+      );
+
+      formData.append(
+        "size",
+        size
+      );
+
+      formData.append(
+        "price",
+        String(price)
+      );
+
+      formData.append(
+        "stock",
+        String(stock)
+      );
+
+      formData.append(
+        "status",
+        status
+      );
+
+      formData.append(
+        "remove_image",
+        removeImage
+      );
+
+      if (imageFile) {
+        formData.append(
+          "product_image",
+          imageFile
+        );
+      }
+
+      const originalText =
+        updateProductBtn.textContent;
+
+      updateProductBtn.disabled =
+        true;
+
+      updateProductBtn.textContent =
+        "Updating...";
+
+      try {
+        const result =
+          await fetchJSON(
+            `${OWNER_API_BASE}/update_product.php`,
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+        editProductModal?.classList.remove(
+          "show"
+        );
+
+        await Promise.all([
+          loadProducts(),
+          loadDashboardSummary()
+        ]);
+
+        await addActivityLog(
+          "product",
+          "✏️",
+          "Product Updated",
+          `${productName}${
+            size
+              ? ` - ${size}`
+              : ""
+          } was updated.`
+        );
+
+        alert(
+          result.message ||
+          "Product updated successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Update product failed:",
+          error
+        );
+
+        alert(
+          error.message ||
+          "Unable to update product."
+        );
+      } finally {
+        updateProductBtn.disabled =
+          false;
+
+        updateProductBtn.textContent =
+          originalText;
+      }
     }
-  });
-}
-
-if (updateUserBtn) {
-  updateUserBtn.addEventListener("click", async () => {
-    const payload = {
-  user_id: document.getElementById("editUserId").value,
-  full_name: document.getElementById("editUserFullName").value.trim(),
-  email: document.getElementById("editUserEmail").value.trim(),
-  contact_number: document.getElementById("editUserContactNumber").value.trim(),
-  address: document.getElementById("editUserAddress").value.trim(),
-  role: document.getElementById("editUserRole").value,
-  status: document.getElementById("editUserStatus").value
-};
-
-    if (
-      !payload.user_id ||
-      !payload.full_name ||
-      !payload.email ||
-      !payload.role
-    ) {
-      alert("Please complete all required fields.");
-      return;
-    }
-
-    const result = await fetchJSON("http://localhost/FoodConnect/api/update_user.php", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    if (!result.success) {
-      alert(result.message || "Failed to update user.");
-      return;
-    }
-
-    editUserModal.classList.remove("show");
-
-   await loadUsers();
-
-addActivityLog(
-  "staff",
-  "✏️",
-  "Staff Updated",
-  `${payload.full_name} account was updated.`
-);
-
-alert("User updated successfully.");
-  });
-}
-
-if (saveUserBtn) {
-  saveUserBtn.addEventListener("click", async () => {
-    const payload = {
-      full_name: document.getElementById("userFullName").value.trim(),
-      email: document.getElementById("userEmail").value.trim(),
-      password: document.getElementById("userPassword").value.trim(),
-      contact_number: document.getElementById("userContactNumber").value.trim(),
-      address: document.getElementById("userAddress").value.trim(),
-      role: document.getElementById("userRole").value,
-      status: document.getElementById("userStatus").value
-    };
-
-    if (
-      !payload.full_name ||
-      !payload.email ||
-      !payload.password ||
-      !payload.role
-    ) {
-      alert("Please complete all required fields.");
-      return;
-    }
-
-    if (payload.contact_number && !/^[0-9]{11}$/.test(payload.contact_number)) {
-      alert("Contact number must be exactly 11 digits.");
-      return;
-    }
-
-    const result = await fetchJSON("http://localhost/FoodConnect/api/add_user.php", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    if (!result.success) {
-      alert(result.message || "Failed to add user.");
-      return;
-    }
-
-    addUserModal.classList.remove("show");
-
-    document.getElementById("userFullName").value = "";
-    document.getElementById("userEmail").value = "";
-    document.getElementById("userPassword").value = "";
-    document.getElementById("userContactNumber").value = "";
-    document.getElementById("userAddress").value = "";
-    document.getElementById("userRole").value = "";
-    document.getElementById("userStatus").value = "1";
-
-    await loadUsers();
-
-addActivityLog(
-  "staff",
-  "👤",
-  "Staff Added",
-  `${payload.full_name} was added as ${payload.role}.`
-);
-
-alert("User added successfully.");
-  });
+  );
 }
 
 /* =========================
@@ -2762,38 +3729,22 @@ salesRange?.addEventListener("change", () => {
   loadSalesChart(salesRange.value);
 });
 
-statusFilter?.addEventListener("change", () => {
-  const value = statusFilter.value;
+globalSearch?.addEventListener(
+  "input",
+  () => {
+    const query =
+      globalSearch.value
+        .toLowerCase()
+        .trim();
 
-  if (value === "all") {
-    renderOrders();
-    return;
+    if (productSearch) {
+      productSearch.value =
+        query;
+    }
+
+    applyProductFilters();
   }
-
-  renderOrders(orders.filter(o => normalizeStatus(o.status) === value));
-});
-
-orderSearch?.addEventListener("input", () => {
-  const q = orderSearch.value.toLowerCase();
-
-  renderOrders(
-    orders.filter(o =>
-      String(o.id).toLowerCase().includes(q) ||
-      String(o.customer).toLowerCase().includes(q)
-    )
-  );
-});
-
-globalSearch?.addEventListener("input", () => {
-  const q = globalSearch.value.toLowerCase();
-
-  const filteredOrders = orders.filter(o =>
-    String(o.id).toLowerCase().includes(q) ||
-    String(o.customer).toLowerCase().includes(q)
-  );
-
-  renderOrders(filteredOrders);
-});
+);
 
 inventorySearch?.addEventListener("input", applyInventoryFilters);
 inventoryFilter?.addEventListener("change", applyInventoryFilters);
@@ -2822,8 +3773,6 @@ closeEditProductModal?.addEventListener("click", () => {
 });
 
 closeRestockModal?.addEventListener("click", () => restockModal.classList.remove("show"));
-closeModal?.addEventListener("click", () => orderModal.classList.remove("show"));
-
 logoutBtn?.addEventListener("click", () => {
   window.location.href = "/FoodConnect/api/logout.php";
 });
@@ -2873,21 +3822,124 @@ window.deleteUser = async function(id) {
 };
 
 window.openEditProductModal = function(id) {
-  const p = products.find(product => product.id == id);
+  const p = products.find(
+    product => product.id == id
+  );
 
   if (!p) {
     alert("Product not found.");
     return;
   }
 
-  document.getElementById("editProductId").value = p.id;
-  document.getElementById("editProductName").value = p.name;
-  document.getElementById("editProductSize").value = p.size;
-  document.getElementById("editProductCategory").value = p.category;
-  document.getElementById("editProductPrice").value = p.price;
-  document.getElementById("editProductStock").value = p.stock;
+  const editIdInput =
+    document.getElementById(
+      "editProductId"
+    );
 
-  editProductModal.classList.add("show");
+  const editNameInput =
+    document.getElementById(
+      "editProductName"
+    );
+
+  const editCategoryInput =
+    document.getElementById(
+      "editProductCategory"
+    );
+
+  const editSizeInput =
+    document.getElementById(
+      "editProductSize"
+    );
+
+  const editPriceInput =
+    document.getElementById(
+      "editProductPrice"
+    );
+
+  const editStockInput =
+    document.getElementById(
+      "editProductStock"
+    );
+
+  const editStatusInput =
+    document.getElementById(
+      "editProductStatus"
+    );
+
+  if (editIdInput) {
+    editIdInput.value = p.id;
+  }
+
+  if (editNameInput) {
+    editNameInput.value =
+      p.name || "";
+  }
+
+  if (editCategoryInput) {
+    editCategoryInput.value =
+      p.category || "";
+  }
+
+  if (editSizeInput) {
+    editSizeInput.value =
+      p.size || "";
+  }
+
+  if (editPriceInput) {
+    editPriceInput.value =
+      p.price;
+  }
+
+  if (editStockInput) {
+    editStockInput.value =
+      p.stock;
+  }
+
+  if (editStatusInput) {
+    editStatusInput.value =
+      String(p.status)
+        .trim()
+        .toLowerCase() ===
+      "unavailable"
+        ? "Unavailable"
+        : "Available";
+  }
+
+  if (editProductImageInput) {
+    editProductImageInput.value =
+      "";
+  }
+
+  if (removeExistingImageInput) {
+    removeExistingImageInput.value =
+      "0";
+  }
+
+  if (
+    p.image &&
+    editProductImagePreviewImg &&
+    editProductImagePreview
+  ) {
+    editProductImagePreviewImg.src =
+      p.image;
+
+    editProductImagePreview.hidden =
+      false;
+  } else {
+    if (editProductImagePreviewImg) {
+      editProductImagePreviewImg.src =
+        "";
+    }
+
+    if (editProductImagePreview) {
+      editProductImagePreview.hidden =
+        true;
+    }
+  }
+
+  editProductModal?.classList.add(
+    "show"
+  );
 };
 
 window.openOrderModal = function(id) {
@@ -3700,10 +4752,9 @@ async function refreshOwnerOperationalData() {
 
   try {
     await Promise.all([
-      loadProducts(),
-      loadRecentOrders(),
-      loadDashboardSummary()
-    ]);
+  loadProducts(),
+  loadDashboardSummary()
+]);
 
     await loadActivityLogs();
 
@@ -3783,15 +4834,14 @@ async function initDashboard() {
       return false;
     }
 
-    await Promise.all([
-      loadDashboardSummary(),
-      loadRecentOrders(),
-      loadProducts(),
-      loadUsers(),
-      loadSalesChart("weekly"),
-      loadSalesReport(),
-      loadRestaurantSettings()
-    ]);
+   await Promise.all([
+  loadDashboardSummary(),
+  loadProducts(),
+  loadUsers(),
+  loadSalesChart("weekly"),
+  loadSalesReport(),
+  loadRestaurantSettings()
+]);
 
     await loadActivityLogs();
 

@@ -7,6 +7,7 @@ header(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/product_image_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -126,33 +127,19 @@ if (!$ownerExists) {
 }
 
 /* =========================================================
-   READ JSON BODY
+   READ MULTIPART FORM DATA
 ========================================================= */
 
-$rawInput = file_get_contents("php://input");
-
-if (
-    $rawInput === false ||
-    trim($rawInput) === ""
-) {
-    respond_json([
-        "success" => false,
-        "message" => "Request data is required."
-    ], 400);
-}
-
-$data = json_decode(
-    $rawInput,
-    true
-);
+$data = $_POST;
 
 if (
     !is_array($data) ||
-    json_last_error() !== JSON_ERROR_NONE
+    empty($data)
 ) {
     respond_json([
         "success" => false,
-        "message" => "Invalid JSON request."
+        "message" =>
+            "Product form data is required."
     ], 400);
 }
 
@@ -203,24 +190,25 @@ if ($category === "") {
     ], 422);
 }
 
-if (mb_strlen($category) > 100) {
+if (mb_strlen($category) > 50) {
     respond_json([
         "success" => false,
-        "message" => "Product category is too long."
+        "message" =>
+            "Product category cannot exceed 50 characters."
     ], 422);
 }
 
-if ($size === "") {
+/*
+ * Variant / size is optional.
+ *
+ * Examples:
+ * Regular, Large, Hot, Iced.
+ */
+if (mb_strlen($size) > 20) {
     respond_json([
         "success" => false,
-        "message" => "Product size is required."
-    ], 422);
-}
-
-if (mb_strlen($size) > 100) {
-    respond_json([
-        "success" => false,
-        "message" => "Product size is too long."
+        "message" =>
+            "Variant or size cannot exceed 20 characters."
     ], 422);
 }
 
@@ -251,9 +239,56 @@ $price = round(
 
 $stock = (int) $stock;
 
-$status = $stock > 0
-    ? "Available"
-    : "Unavailable";
+$requestedStatus = trim(
+    (string) ($data["status"] ?? "Available")
+);
+
+$statusMap = [
+    "available" => "Available",
+    "unavailable" => "Unavailable"
+];
+
+$statusKey = strtolower(
+    $requestedStatus
+);
+
+if (!isset($statusMap[$statusKey])) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Availability must be Available or Unavailable."
+    ], 422);
+}
+
+$status = $statusMap[$statusKey];
+
+/* =========================================================
+   SAVE OPTIONAL PRODUCT IMAGE
+========================================================= */
+
+$image_path = null;
+
+if (
+    isset($_FILES["product_image"]) &&
+    (
+        $_FILES["product_image"]["error"] ??
+        UPLOAD_ERR_NO_FILE
+    ) !== UPLOAD_ERR_NO_FILE
+) {
+    try {
+        $image_path =
+            save_product_image(
+                $_FILES["product_image"],
+                $restaurant_id
+            );
+    } catch (RuntimeException $error) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                $error->getMessage()
+        ], 422);
+    }
+}
 
 /* =========================================================
    CHECK DUPLICATE PRODUCT
@@ -267,9 +302,15 @@ $duplicateStmt = $conn->prepare("
         product_id
     FROM tbl_products
     WHERE restaurant_id = ?
-      AND LOWER(TRIM(product_name)) = LOWER(TRIM(?))
-      AND LOWER(TRIM(category)) = LOWER(TRIM(?))
-      AND LOWER(TRIM(size)) = LOWER(TRIM(?))
+      AND LOWER(TRIM(product_name)) =
+          LOWER(TRIM(?))
+      AND LOWER(TRIM(category)) =
+          LOWER(TRIM(?))
+      AND LOWER(
+          TRIM(
+              COALESCE(size, '')
+          )
+      ) = LOWER(TRIM(?))
     LIMIT 1
 ");
 
@@ -302,10 +343,14 @@ $duplicateProduct = $duplicateStmt
 $duplicateStmt->close();
 
 if ($duplicateProduct) {
+    delete_product_image(
+        $image_path
+    );
+
     respond_json([
         "success" => false,
         "message" =>
-            "A product with the same name, category, and size already exists."
+            "A product with the same name, category, and variant already exists."
     ], 409);
 }
 
@@ -321,9 +366,10 @@ $stmt = $conn->prepare("
         size,
         price,
         stock,
-        status
+        status,
+        image_path
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ");
 
 if (!$stmt) {
@@ -339,14 +385,15 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "isssdis",
+    "isssdiss",
     $restaurant_id,
     $product_name,
     $category,
     $size,
     $price,
     $stock,
-    $status
+    $status,
+    $image_path
 );
 
 if (!$stmt->execute()) {
@@ -357,9 +404,14 @@ if (!$stmt->execute()) {
 
     $stmt->close();
 
+    delete_product_image(
+        $image_path
+    );
+
     respond_json([
         "success" => false,
-        "message" => "Failed to add product."
+        "message" =>
+            "Failed to add product."
     ], 500);
 }
 
@@ -380,6 +432,7 @@ respond_json([
         "size" => $size,
         "price" => $price,
         "stock" => $stock,
-        "status" => $status
+        "status" => $status,
+        "image_path" => $image_path
     ]
 ], 201);

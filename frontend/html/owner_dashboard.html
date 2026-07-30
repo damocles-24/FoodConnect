@@ -33,14 +33,13 @@
 
       <nav class="sidebar-nav">
         <button class="nav-item active" data-section="dashboardSection">Dashboard</button>
-        <button class="nav-item" data-section="ordersSection">Orders</button>
         <button class="nav-item" data-section="productsSection">Products</button>
         <button class="nav-item" data-section="inventorySection">Inventory</button>
         <button class="nav-item" data-section="logsSection">
           Activity Logs
         </button>
         <button class="nav-item" data-section="reportsSection">Sales Report</button>
-        <button class="nav-item" data-section="usersSection">Users</button>
+        <button class="nav-item" data-section="usersSection">Staff Management</button>
         <button class="nav-item" data-section="settingsSection">Settings</button>
         <button class="nav-item logout-btn" id="logoutBtn">Logout</button>
       </nav>
@@ -84,37 +83,110 @@
 
       <!-- DASHBOARD -->
       <section id="dashboardSection" class="content-section active-section">
-        <div
-  class="panel"
-  id="goLivePanel"
-  style="margin-bottom: 24px;"
+        <section class="go-live-card" id="goLivePanel">
+          <div class="go-live-main">
+            <div class="go-live-status-icon" id="goLiveStatusIcon" aria-hidden="true">●</div>
+
+            <div class="go-live-copy">
+              <span class="go-live-eyebrow" id="goLiveEyebrow">Restaurant status</span>
+              <h2 id="goLiveTitle">Restaurant Go-Live Status</h2>
+              <p id="goLiveMessage">Loading restaurant status...</p>
+
+              <div class="go-live-progress" id="goLiveProgressWrap">
+                <div class="go-live-progress-copy">
+                  <span>Required setup progress</span>
+                  <strong id="goLiveProgressText">0 of 0 completed</strong>
+                </div>
+                <div class="go-live-progress-track" aria-hidden="true">
+                  <span id="goLiveProgressBar" style="width: 0%;"></span>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="primary-btn go-live-action" id="applyGoLiveBtn" hidden>
+              Apply to Go Live
+            </button>
+          </div>
+
+          <div class="go-live-next-step" id="goLiveRequirements">
+            Checking what your restaurant needs next...
+          </div>
+        </section>
+
+       <section
+  class="readiness-card"
+  id="readinessCard"
+  aria-labelledby="readinessTitle"
 >
-  <div class="panel-header">
-    <div>
-      <h2 id="goLiveTitle">
-        Restaurant Go-Live Status
+  <div class="readiness-header">
+    <div class="readiness-heading">
+      <span class="section-eyebrow">
+        Setup guide
+      </span>
+
+      <h2 id="readinessTitle">
+        Restaurant Readiness Checklist
       </h2>
 
-      <p id="goLiveMessage">
-        Loading restaurant status...
+      <p id="readinessDescription">
+        Complete the required items below before submitting your restaurant for administrator review.
       </p>
     </div>
 
-    <button
-      type="button"
-      class="primary-btn"
-      id="applyGoLiveBtn"
-      hidden
-    >
-      Apply to Go Live
-    </button>
+    <div class="readiness-header-actions">
+      <div
+        class="readiness-score"
+        id="readinessScore"
+      >
+        0%
+      </div>
+
+      <button
+        type="button"
+        class="readiness-toggle-btn"
+        id="readinessToggleBtn"
+        hidden
+        aria-expanded="false"
+        aria-controls="readinessChecklist"
+      >
+        View checklist
+      </button>
+    </div>
   </div>
 
   <div
-    id="goLiveRequirements"
-    style="margin-top: 16px;"
-  ></div>
-</div>
+    class="readiness-complete-summary"
+    id="readinessCompleteSummary"
+    hidden
+  >
+    <span
+      class="readiness-complete-icon"
+      aria-hidden="true"
+    >
+      ✓
+    </span>
+
+    <div>
+      <strong>
+        Restaurant setup complete
+      </strong>
+
+      <p id="readinessCompleteMessage">
+        All required setup items are complete.
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="readiness-list"
+    id="readinessChecklist"
+  >
+    <div class="readiness-loading">
+      Loading checklist...
+    </div>
+  </div>
+</section>
+
         <div class="stats-grid">
           <div class="stat-card">
           <h3>Today's Sales</h3>
@@ -129,15 +201,33 @@
           </div>
 
           <div class="stat-card">
-            <h3>Pending Orders</h3>
-            <p class="stat-value" id="pendingOrders">0</p>
-            <span>Needs action</span>
-          </div>
-
-          <div class="stat-card">
             <h3>Total Products</h3>
             <p class="stat-value" id="totalProducts">0</p>
             <span>Current menu items</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Available Products</h3>
+            <p class="stat-value" id="availableProducts">0</p>
+            <span>Enabled menu items</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Low Stock</h3>
+            <p class="stat-value" id="dashboardLowStock">0</p>
+            <span>Products with 1–10 units</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Out of Stock</h3>
+            <p class="stat-value" id="dashboardOutOfStock">0</p>
+            <span>Needs restocking</span>
+          </div>
+
+          <div class="stat-card">
+            <h3>Active Staff</h3>
+            <p class="stat-value" id="activeStaff">0</p>
+            <span>Enabled staff accounts</span>
           </div>
         </div>
 
@@ -159,67 +249,6 @@
               <h2>Low Stock Products</h2>
             </div>
             <div id="lowStockList" class="list-box"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <h2>Recent Orders</h2>
-            <button class="view-all-btn" data-target="ordersSection">View All</button>
-          </div>
-
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Customer</th>
-                  <th>Total</th>
-                  <th>Payment</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="recentOrdersBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ORDERS -->
-      <section id="ordersSection" class="content-section">
-        <div class="section-header">
-          <h2>Orders Management</h2>
-          <div class="section-actions">
-            <input type="text" id="orderSearch" placeholder="Search by customer or order ID" />
-            <select id="statusFilter">
-              <option value="all">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Preparing">Preparing</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Customer</th>
-                  <th>Items</th>
-                  <th>Total</th>
-                  <th>Payment</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="ordersTableBody"></tbody>
-            </table>
           </div>
         </div>
       </section>
@@ -1135,86 +1164,416 @@
     </div>
   </div>
 
-  <!-- ADD PRODUCT MODAL -->
+ <!-- ADD PRODUCT MODAL -->
 <div class="modal-overlay" id="addProductModal">
-  <div class="modal">
+  <div class="modal product-form-modal">
     <div class="modal-header">
-      <h3>Add Product</h3>
-      <button id="closeAddProductModal">✕</button>
+      <div>
+        <span class="modal-eyebrow">
+          Menu item
+        </span>
+
+        <h3>Add Product</h3>
+
+        <p class="modal-description">
+          Add a menu item customers can view and order.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeAddProductModal"
+        aria-label="Close Add Product"
+      >
+        ✕
+      </button>
     </div>
 
-    <div class="modal-body">
+    <div class="modal-body product-form-body">
       <div class="form-group">
-        <label>Product Name</label>
-        <input type="text" id="productName">
+        <label for="productName">
+          Product Name
+          <span class="required-label">*</span>
+        </label>
+
+        <input
+          type="text"
+          id="productName"
+          maxlength="150"
+          placeholder="Example: Beef Burger"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          The name customers will see on your menu.
+        </small>
       </div>
 
       <div class="form-group">
-        <label>Category</label>
-        <input type="text" id="productCategory">
-      </div>
+        <label for="productCategory">
+          Category
+          <span class="required-label">*</span>
+        </label>
 
-               <div class="form-group">
-  <label>Variant / Size</label>
-  <input type="text" id="productSize" placeholder="Solo, Cheese, Regular, Large, Hot/Iced">
-</div>
+        <input
+          type="text"
+          id="productCategory"
+          maxlength="50"
+          placeholder="Example: Meals, Drinks, Snacks"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          Used to organise products into menu groups.
+        </small>
+      </div>
 
       <div class="form-group">
-        <label>Price</label>
-        <input type="number" id="productPrice">
+        <label for="productSize">
+          Variant / Size
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <input
+          type="text"
+          id="productSize"
+          maxlength="20"
+          placeholder="Example: Regular, Large, Hot, Iced"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          Leave this blank when the product has no variant.
+        </small>
+      </div>
+
+      <div class="product-form-grid">
+        <div class="form-group">
+          <label for="productPrice">
+            Selling Price
+            <span class="required-label">*</span>
+          </label>
+
+          <input
+            type="number"
+            id="productPrice"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+          />
+
+          <small class="form-helper">
+            The amount customers will pay.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="productStock">
+            Initial Stock
+            <span class="required-label">*</span>
+          </label>
+
+          <input
+            type="number"
+            id="productStock"
+            min="0"
+            step="1"
+            value="0"
+          />
+
+          <small class="form-helper">
+            The quantity currently available.
+          </small>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Stock</label>
-        <input type="number" id="productStock">
+        <label for="productStatus">
+          Availability
+          <span class="required-label">*</span>
+        </label>
+
+        <select id="productStatus">
+          <option value="Available">
+            Available
+          </option>
+
+          <option value="Unavailable">
+            Unavailable
+          </option>
+        </select>
+
+        <div class="availability-guide">
+          <strong>Available</strong>
+          allows ordering when stock is greater than zero.
+
+          <strong>Unavailable</strong>
+          keeps the product saved but prevents customers from ordering it.
+        </div>
       </div>
 
-      <button class="primary-btn" id="saveProductBtn">
-        Save Product
-      </button>
+      <div class="form-group product-image-field">
+        <label for="productImage">
+          Product Image
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <input
+          type="file"
+          id="productImage"
+          accept="image/jpeg,image/png,image/webp"
+        />
+
+        <small class="form-helper">
+          JPG, PNG, or WEBP only. Maximum file size: 2 MB.
+        </small>
+
+        <div
+          class="product-image-preview"
+          id="productImagePreview"
+          hidden
+        >
+          <img
+            id="productImagePreviewImg"
+            src=""
+            alt="Selected product image"
+          />
+
+          <button
+            type="button"
+            class="image-remove-btn"
+            id="removeProductImageBtn"
+          >
+            Remove selected image
+          </button>
+        </div>
+      </div>
+
+      <div class="product-form-notice">
+        A product with the exact same name, category, and
+        variant cannot be added twice.
+      </div>
+
+      <div class="modal-form-actions">
+        <button
+          type="button"
+          class="action-btn secondary"
+          id="cancelAddProductBtn"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="saveProductBtn"
+        >
+          Save Product
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- EDIT PRODUCT MODAL -->
 <div class="modal-overlay" id="editProductModal">
-  <div class="modal">
+  <div class="modal product-form-modal">
     <div class="modal-header">
-      <h3>Edit Product</h3>
-      <button id="closeEditProductModal">✕</button>
+      <div>
+        <span class="modal-eyebrow">
+          Menu item
+        </span>
+
+        <h3>Edit Product</h3>
+
+        <p class="modal-description">
+          Update product information, availability, stock,
+          or image.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeEditProductModal"
+        aria-label="Close Edit Product"
+      >
+        ✕
+      </button>
     </div>
 
-    <div class="modal-body">
-      <input type="hidden" id="editProductId">
+    <div class="modal-body product-form-body">
+      <input
+        type="hidden"
+        id="editProductId"
+      />
 
       <div class="form-group">
-        <label>Product Name</label>
-        <input type="text" id="editProductName">
+        <label for="editProductName">
+          Product Name
+          <span class="required-label">*</span>
+        </label>
+
+        <input
+          type="text"
+          id="editProductName"
+          maxlength="150"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          The name customers will see on your menu.
+        </small>
       </div>
 
       <div class="form-group">
-  <label>Variant / Size</label>
-  <input type="text" id="editProductSize">
-</div>
+        <label for="editProductCategory">
+          Category
+          <span class="required-label">*</span>
+        </label>
 
-      <div class="form-group">
-        <label>Category</label>
-        <input type="text" id="editProductCategory">
+        <input
+          type="text"
+          id="editProductCategory"
+          maxlength="50"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          Used to organise products into menu groups.
+        </small>
       </div>
 
       <div class="form-group">
-        <label>Price</label>
-        <input type="number" id="editProductPrice">
+        <label for="editProductSize">
+          Variant / Size
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <input
+          type="text"
+          id="editProductSize"
+          maxlength="20"
+          placeholder="Regular, Large, Hot, Iced"
+          autocomplete="off"
+        />
+
+        <small class="form-helper">
+          Leave blank when the product has no variant.
+        </small>
+      </div>
+
+      <div class="product-form-grid">
+        <div class="form-group">
+          <label for="editProductPrice">
+            Selling Price
+            <span class="required-label">*</span>
+          </label>
+
+          <input
+            type="number"
+            id="editProductPrice"
+            min="0.01"
+            step="0.01"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editProductStock">
+            Current Stock
+            <span class="required-label">*</span>
+          </label>
+
+          <input
+            type="number"
+            id="editProductStock"
+            min="0"
+            step="1"
+          />
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Stock</label>
-        <input type="number" id="editProductStock">
+        <label for="editProductStatus">
+          Availability
+          <span class="required-label">*</span>
+        </label>
+
+        <select id="editProductStatus">
+          <option value="Available">
+            Available
+          </option>
+
+          <option value="Unavailable">
+            Unavailable
+          </option>
+        </select>
+
+        <div class="availability-guide">
+          Availability and stock are separate. An unavailable
+          product cannot be ordered even when it still has stock.
+        </div>
       </div>
 
-      <button class="primary-btn" id="updateProductBtn">
-        Update Product
-      </button>
+      <div class="form-group product-image-field">
+        <label for="editProductImage">
+          Product Image
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <input
+          type="file"
+          id="editProductImage"
+          accept="image/jpeg,image/png,image/webp"
+        />
+
+        <small class="form-helper">
+          Select a new image to replace the current one.
+        </small>
+
+        <div
+          class="product-image-preview"
+          id="editProductImagePreview"
+          hidden
+        >
+          <img
+            id="editProductImagePreviewImg"
+            src=""
+            alt="Current product image"
+          />
+
+          <button
+            type="button"
+            class="image-remove-btn"
+            id="removeEditProductImageBtn"
+          >
+            Remove product image
+          </button>
+        </div>
+
+        <input
+          type="hidden"
+          id="removeExistingProductImage"
+          value="0"
+        />
+      </div>
+
+      <div class="modal-form-actions">
+        <button
+          type="button"
+          class="action-btn secondary"
+          id="cancelEditProductBtn"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="updateProductBtn"
+        >
+          Update Product
+        </button>
+      </div>
     </div>
   </div>
 </div>

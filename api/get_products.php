@@ -71,9 +71,6 @@ if (
 
 /* =========================================================
    LOAD PRODUCTS
-
-   Products are isolated using the restaurant ID stored
-   in the authenticated session.
 ========================================================= */
 
 $stmt = $conn->prepare("
@@ -84,7 +81,8 @@ $stmt = $conn->prepare("
         size,
         price,
         stock,
-        status
+        status,
+        image_path
     FROM tbl_products
     WHERE restaurant_id = ?
     ORDER BY product_id DESC
@@ -149,20 +147,31 @@ while ($row = $result->fetch_assoc()) {
         )
     );
 
-    $status = strtolower(
+    $statusValue = strtolower(
         trim(
             (string) (
                 $row["status"] ??
-                "inactive"
+                "unavailable"
             )
         )
     );
 
+    $status =
+        $statusValue === "available"
+            ? "Available"
+            : "Unavailable";
+
+    $imagePath = trim(
+        (string) (
+            $row["image_path"] ?? ""
+        )
+    );
+
+    if ($imagePath === "") {
+        $imagePath = null;
+    }
+
     $products[] = [
-        /*
-         * Keep both field names because the existing
-         * Owner Dashboard may use either format.
-         */
         "id" => $productId,
         "product_id" => $productId,
 
@@ -186,14 +195,12 @@ while ($row = $result->fetch_assoc()) {
             )
         ),
 
-        "status" => $status
+        "status" => $status,
+        "image_path" => $imagePath,
+        "image" => $imagePath
     ];
 }
 
 $stmt->close();
 
-/*
- * Keep the successful response as a plain array
- * for compatibility with the current JavaScript.
- */
 respond_json($products);
