@@ -54,13 +54,7 @@ html {
 
 body {
     min-height: 100vh;
-
-    font-family:
-        "Inter",
-        Arial,
-        Helvetica,
-        sans-serif;
-
+    font-family: "Poppins", Arial, sans-serif;
     color: var(--fc-text);
 
     background:
