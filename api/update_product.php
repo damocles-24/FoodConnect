@@ -197,6 +197,50 @@ $requestedStatus = trim(
     )
 );
 
+$discount_type = strtolower(
+    trim(
+        (string) (
+            $data["discount_type"] ??
+            "none"
+        )
+    )
+);
+
+$discount_value = filter_var(
+    $data["discount_value"] ?? 0,
+    FILTER_VALIDATE_FLOAT
+);
+
+$discount_schedule = strtolower(
+    trim(
+        (string) (
+            $data["discount_schedule"] ??
+            "permanent"
+        )
+    )
+);
+
+$discount_start_raw = trim(
+    (string) (
+        $data["discount_start"] ?? ""
+    )
+);
+
+$discount_end_raw = trim(
+    (string) (
+        $data["discount_end"] ?? ""
+    )
+);
+
+$discount_status_raw = strtolower(
+    trim(
+        (string) (
+            $data["discount_status"] ??
+            "inactive"
+        )
+    )
+);
+
 $removeImage =
     (string) (
         $data["remove_image"] ?? "0"
@@ -302,6 +346,189 @@ $price = round(
 );
 
 $stock = (int) $stock;
+
+/* =========================================================
+   VALIDATE DISCOUNT
+========================================================= */
+
+$allowedDiscountTypes = [
+    "none",
+    "percentage",
+    "fixed"
+];
+
+if (
+    !in_array(
+        $discount_type,
+        $allowedDiscountTypes,
+        true
+    )
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Invalid discount type."
+    ], 422);
+}
+
+if (
+    $discount_value === false
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Discount value must be a valid number."
+    ], 422);
+}
+
+$discount_value = round(
+    max(
+        0,
+        (float) $discount_value
+    ),
+    2
+);
+
+$allowedSchedules = [
+    "permanent",
+    "scheduled"
+];
+
+if (
+    !in_array(
+        $discount_schedule,
+        $allowedSchedules,
+        true
+    )
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Invalid promotion schedule."
+    ], 422);
+}
+
+$discountStatusMap = [
+    "active" => "Active",
+    "inactive" => "Inactive"
+];
+
+if (
+    !isset(
+        $discountStatusMap[
+            $discount_status_raw
+        ]
+    )
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Promotion status must be Active or Inactive."
+    ], 422);
+}
+
+$discount_status =
+    $discountStatusMap[
+        $discount_status_raw
+    ];
+
+$discount_start = null;
+$discount_end = null;
+
+if ($discount_type === "none") {
+    $discount_value = 0;
+    $discount_schedule =
+        "permanent";
+    $discount_status =
+        "Inactive";
+} else {
+    if ($discount_value <= 0) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Discount value must be greater than zero."
+        ], 422);
+    }
+
+    if (
+        $discount_type ===
+            "percentage" &&
+        $discount_value > 100
+    ) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Percentage discount cannot exceed 100%."
+        ], 422);
+    }
+
+    if (
+        $discount_type === "fixed" &&
+        $discount_value > $price
+    ) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Fixed discount cannot exceed the regular product price."
+        ], 422);
+    }
+
+    if (
+        $discount_schedule ===
+        "scheduled"
+    ) {
+        if (
+            $discount_start_raw === "" ||
+            $discount_end_raw === ""
+        ) {
+            respond_json([
+                "success" => false,
+                "message" =>
+                    "Scheduled promotions require both start and end dates."
+            ], 422);
+        }
+
+        $startTimestamp = strtotime(
+            $discount_start_raw
+        );
+
+        $endTimestamp = strtotime(
+            $discount_end_raw
+        );
+
+        if (
+            $startTimestamp === false ||
+            $endTimestamp === false
+        ) {
+            respond_json([
+                "success" => false,
+                "message" =>
+                    "Invalid promotion date or time."
+            ], 422);
+        }
+
+        if (
+            $endTimestamp <=
+            $startTimestamp
+        ) {
+            respond_json([
+                "success" => false,
+                "message" =>
+                    "Promotion end date must be later than the start date."
+            ], 422);
+        }
+
+        $discount_start = date(
+            "Y-m-d H:i:s",
+            $startTimestamp
+        );
+
+        $discount_end = date(
+            "Y-m-d H:i:s",
+            $endTimestamp
+        );
+    }
+}
 
 /* =========================================================
    VERIFY PRODUCT OWNERSHIP
@@ -476,7 +703,13 @@ $stmt = $conn->prepare("
         price = ?,
         stock = ?,
         status = ?,
-        image_path = ?
+        image_path = ?,
+        discount_type = ?,
+        discount_value = ?,
+        discount_schedule = ?,
+        discount_start = ?,
+        discount_end = ?,
+        discount_status = ?
     WHERE product_id = ?
       AND restaurant_id = ?
 ");
@@ -501,7 +734,7 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "sssdissii",
+    "sssdisssdssssii",
     $product_name,
     $category,
     $size,
@@ -509,6 +742,12 @@ $stmt->bind_param(
     $stock,
     $status,
     $newImagePath,
+    $discount_type,
+    $discount_value,
+    $discount_schedule,
+    $discount_start,
+    $discount_end,
+    $discount_status,
     $product_id,
     $restaurant_id
 );
@@ -569,8 +808,20 @@ respond_json([
         "size" => $size,
         "price" => $price,
         "stock" => $stock,
-        "status" => $status,
+                "status" => $status,
         "image_path" => $newImagePath,
-        "image" => $newImagePath
+        "image" => $newImagePath,
+        "discount_type" =>
+            $discount_type,
+        "discount_value" =>
+            $discount_value,
+        "discount_schedule" =>
+            $discount_schedule,
+        "discount_start" =>
+            $discount_start,
+        "discount_end" =>
+            $discount_end,
+        "discount_status" =>
+            $discount_status
     ]
 ]);

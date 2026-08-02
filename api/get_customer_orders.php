@@ -693,6 +693,11 @@ try {
                 oi.combo_id,
                 oi.quantity,
                 oi.price,
+                oi.regular_price,
+                oi.discount_type,
+                oi.discount_value,
+                oi.discount_savings,
+                oi.discount_applied,
                 oi.product_name,
                 oi.base_text,
                 oi.combo_choice_text,
@@ -841,11 +846,71 @@ try {
                 )
             );
 
-            $unitPrice = (float)(
-                $item[
-                    "price"
-                ] ?? 0
-            );
+            $unitPrice = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "price"
+            ] ?? 0
+        )
+    ),
+    2
+);
+
+$regularPrice = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "regular_price"
+            ] ?? $unitPrice
+        )
+    ),
+    2
+);
+
+$discountType = strtolower(
+    trim(
+        (string)(
+            $item[
+                "discount_type"
+            ] ?? "none"
+        )
+    )
+);
+
+$discountValue = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "discount_value"
+            ] ?? 0
+        )
+    ),
+    2
+);
+
+$discountSavings = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "discount_savings"
+            ] ?? 0
+        )
+    ),
+    2
+);
+
+$discountApplied =
+    (int)(
+        $item[
+            "discount_applied"
+        ] ?? 0
+    ) === 1 &&
+    $discountSavings > 0;
 
             $orders[
                 $orderId
@@ -889,14 +954,44 @@ try {
                     $quantity,
 
                 "price" =>
-                    number_format(
-                        $unitPrice,
-                        2,
-                        ".",
-                        ""
-                    ),
+    number_format(
+        $unitPrice,
+        2,
+        ".",
+        ""
+    ),
 
-                "subtotal" =>
+"regular_price" =>
+    number_format(
+        $regularPrice,
+        2,
+        ".",
+        ""
+    ),
+
+"discount_type" =>
+    $discountType,
+
+"discount_value" =>
+    number_format(
+        $discountValue,
+        2,
+        ".",
+        ""
+    ),
+
+"discount_savings" =>
+    number_format(
+        $discountSavings,
+        2,
+        ".",
+        ""
+    ),
+
+"discount_applied" =>
+    $discountApplied,
+
+"subtotal" =>
                     number_format(
                         $unitPrice *
                         $quantity,

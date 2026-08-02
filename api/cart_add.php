@@ -17,6 +17,14 @@ require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
 
+/*
+ * Product promotion schedules use Philippine local time.
+ */
+$promotionTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
+
 /* =========================================================
    JSON RESPONSE
 ========================================================= */
@@ -224,15 +232,21 @@ try {
     ===================================================== */
 
     $productStmt = $conn->prepare("
-        SELECT
-            product_id,
-            restaurant_id,
-            product_name,
-            category,
-            size,
-            price,
-            stock,
-            status
+       SELECT
+    product_id,
+    restaurant_id,
+    product_name,
+    category,
+    size,
+    price,
+    stock,
+    status,
+    discount_type,
+    discount_value,
+    discount_schedule,
+    discount_start,
+    discount_end,
+    discount_status
 
         FROM tbl_products
 
@@ -290,13 +304,112 @@ try {
         )
     );
 
-    $base_price = (float)(
-        $product["price"] ?? 0
-    );
+    $regular_base_price = round(
+    max(
+        0,
+        (float)(
+            $product["price"] ?? 0
+        )
+    ),
+    2
+);
 
-    $product_stock = (int)(
-        $product["stock"] ?? 0
-    );
+$discount_type = strtolower(
+    trim(
+        (string)(
+            $product["discount_type"] ??
+            "none"
+        )
+    )
+);
+
+if (
+    !in_array(
+        $discount_type,
+        [
+            "none",
+            "percentage",
+            "fixed"
+        ],
+        true
+    )
+) {
+    $discount_type = "none";
+}
+
+$discount_value = round(
+    max(
+        0,
+        (float)(
+            $product["discount_value"] ??
+            0
+        )
+    ),
+    2
+);
+
+$discount_schedule = strtolower(
+    trim(
+        (string)(
+            $product["discount_schedule"] ??
+            "permanent"
+        )
+    )
+);
+
+if (
+    !in_array(
+        $discount_schedule,
+        [
+            "permanent",
+            "scheduled"
+        ],
+        true
+    )
+) {
+    $discount_schedule =
+        "permanent";
+}
+
+$discount_start =
+    $product["discount_start"] ??
+    null;
+
+$discount_end =
+    $product["discount_end"] ??
+    null;
+
+if (
+    $discount_start === "" ||
+    $discount_start ===
+        "0000-00-00 00:00:00"
+) {
+    $discount_start = null;
+}
+
+if (
+    $discount_end === "" ||
+    $discount_end ===
+        "0000-00-00 00:00:00"
+) {
+    $discount_end = null;
+}
+
+$discount_status =
+    strtolower(
+        trim(
+            (string)(
+                $product["discount_status"] ??
+                "inactive"
+            )
+        )
+    ) === "active"
+        ? "Active"
+        : "Inactive";
+
+$product_stock = (int)(
+    $product["stock"] ?? 0
+);
 
     $product_status = strtolower(
         trim(
@@ -317,6 +430,99 @@ try {
             400
         );
     }
+
+    /* =====================================================
+   AUTHORITATIVE PRODUCT PROMOTION PRICE
+===================================================== */
+
+$is_discount_active = false;
+
+$currentDateTime =
+    new DateTime(
+        "now",
+        $promotionTimezone
+    );
+
+if (
+    $discount_type !== "none" &&
+    $discount_value > 0 &&
+    $discount_status === "Active"
+) {
+    if (
+        $discount_schedule ===
+        "permanent"
+    ) {
+        $is_discount_active = true;
+    } elseif (
+        $discount_schedule ===
+            "scheduled" &&
+        $discount_start !== null &&
+        $discount_end !== null
+    ) {
+        try {
+            $discountStartObject =
+                new DateTime(
+                    $discount_start,
+                    $promotionTimezone
+                );
+
+            $discountEndObject =
+                new DateTime(
+                    $discount_end,
+                    $promotionTimezone
+                );
+
+            $is_discount_active =
+                $currentDateTime >=
+                    $discountStartObject &&
+                $currentDateTime <=
+                    $discountEndObject;
+        } catch (Throwable $error) {
+            $is_discount_active = false;
+        }
+    }
+}
+
+$base_price =
+    $regular_base_price;
+
+if ($is_discount_active) {
+    if (
+        $discount_type ===
+        "percentage"
+    ) {
+        $base_price =
+            $regular_base_price -
+            (
+                $regular_base_price *
+                $discount_value /
+                100
+            );
+    } elseif (
+        $discount_type === "fixed"
+    ) {
+        $base_price =
+            $regular_base_price -
+            $discount_value;
+    }
+
+    $base_price = round(
+        max(
+            0,
+            $base_price
+        ),
+        2
+    );
+}
+
+$discount_savings = round(
+    max(
+        0,
+        $regular_base_price -
+        $base_price
+    ),
+    2
+);
 
     /* =====================================================
        DETECT COMBO OR BUNDLE
@@ -1298,13 +1504,34 @@ try {
                     ? $combo_id
                     : null,
 
-            "base_price" =>
-                round(
-                    $base_price,
-                    2
-                ),
+            "regular_base_price" =>
+    round(
+        $regular_base_price,
+        2
+    ),
 
-            "choice_price_adjustment" =>
+"base_price" =>
+    round(
+        $base_price,
+        2
+    ),
+
+"discount_savings" =>
+    round(
+        $discount_savings,
+        2
+    ),
+
+"discount_type" =>
+    $discount_type,
+
+"discount_value" =>
+    $discount_value,
+
+"is_discount_active" =>
+    $is_discount_active,
+
+"choice_price_adjustment" =>
                 round(
                     $choice_price_adjustment,
                     2
@@ -1407,13 +1634,34 @@ try {
                 ? $combo_id
                 : null,
 
-        "base_price" =>
-            round(
-                $base_price,
-                2
-            ),
+        "regular_base_price" =>
+    round(
+        $regular_base_price,
+        2
+    ),
 
-        "choice_price_adjustment" =>
+"base_price" =>
+    round(
+        $base_price,
+        2
+    ),
+
+"discount_savings" =>
+    round(
+        $discount_savings,
+        2
+    ),
+
+"discount_type" =>
+    $discount_type,
+
+"discount_value" =>
+    $discount_value,
+
+"is_discount_active" =>
+    $is_discount_active,
+
+"choice_price_adjustment" =>
             round(
                 $choice_price_adjustment,
                 2

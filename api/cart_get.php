@@ -17,6 +17,14 @@ require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
 
+/*
+ * Product promotion schedules use Philippine local time.
+ */
+$promotionTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
+
 /* =========================================================
    JSON RESPONSE
 ========================================================= */
@@ -104,12 +112,20 @@ $cartStmt = $conn->prepare("
         c.price_at_time,
         c.subtotal,
 
-        p.product_name,
+               p.product_name,
         p.category,
         p.size,
-        p.price AS base_price,
+        p.price AS regular_base_price,
         p.stock,
-        p.status
+        p.status,
+        p.image_path,
+
+        p.discount_type,
+        p.discount_value,
+        p.discount_schedule,
+        p.discount_start,
+        p.discount_end,
+        p.discount_status
 
     FROM tbl_cart c
 
@@ -273,6 +289,47 @@ if (!$comboOptionStmt) {
 }
 
 /* =========================================================
+   PREPARE CART PRICE REFRESH
+
+   Used when a promotion starts, ends, or changes while an
+   item is already stored in the customer's cart.
+========================================================= */
+
+$cartPriceUpdateStmt =
+    $conn->prepare("
+        UPDATE tbl_cart
+
+        SET
+            price_at_time = ?,
+            subtotal = ?
+
+        WHERE cart_id = ?
+          AND user_id = ?
+
+        LIMIT 1
+    ");
+
+if (!$cartPriceUpdateStmt) {
+    error_log(
+        "cart_get.php price update prepare error: " .
+        $conn->error
+    );
+
+    $cartStmt->close();
+    $addonStmt->close();
+    $comboOptionStmt->close();
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Unable to prepare cart price validation.",
+        "items" => [],
+        "total_items" => 0,
+        "total_price" => 0
+    ], 500);
+}
+
+/* =========================================================
    BUILD CART RESPONSE
 ========================================================= */
 
@@ -280,6 +337,8 @@ $items = [];
 
 $total_items = 0;
 $total_price = 0.00;
+$total_discount_savings = 0.00;
+$has_price_changes = false;
 
 $cart_restaurant_id = 0;
 $has_mixed_restaurants = false;
@@ -301,8 +360,42 @@ while ($row = $cartResult->fetch_assoc()) {
     $has_mixed_restaurants = true;
 }
 
-    $base_price = (float)$row["base_price"];
-    $stock = (int)$row["stock"];
+        $regular_base_price = round(
+        max(
+            0,
+            (float)(
+                $row[
+                    "regular_base_price"
+                ] ?? 0
+            )
+        ),
+        2
+    );
+
+    $stored_unit_price = round(
+        max(
+            0,
+            (float)(
+                $row[
+                    "price_at_time"
+                ] ?? 0
+            )
+        ),
+        2
+    );
+
+    $stored_subtotal = round(
+        max(
+            0,
+            (float)(
+                $row["subtotal"] ?? 0
+            )
+        ),
+        2
+    );
+
+    $stock =
+        (int)($row["stock"] ?? 0);
 
     if (
         $cart_id <= 0 ||
@@ -311,6 +404,227 @@ while ($row = $cartResult->fetch_assoc()) {
         $quantity < 1
     ) {
         continue;
+    }
+
+        /* =====================================================
+       CURRENT PRODUCT PROMOTION
+    ===================================================== */
+
+    $discount_type = strtolower(
+        trim(
+            (string)(
+                $row["discount_type"] ??
+                "none"
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $discount_type,
+            [
+                "none",
+                "percentage",
+                "fixed"
+            ],
+            true
+        )
+    ) {
+        $discount_type = "none";
+    }
+
+    $discount_value = round(
+        max(
+            0,
+            (float)(
+                $row["discount_value"] ??
+                0
+            )
+        ),
+        2
+    );
+
+    $discount_schedule = strtolower(
+        trim(
+            (string)(
+                $row["discount_schedule"] ??
+                "permanent"
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $discount_schedule,
+            [
+                "permanent",
+                "scheduled"
+            ],
+            true
+        )
+    ) {
+        $discount_schedule =
+            "permanent";
+    }
+
+    $discount_start =
+        $row["discount_start"] ??
+        null;
+
+    $discount_end =
+        $row["discount_end"] ??
+        null;
+
+    if (
+        $discount_start === "" ||
+        $discount_start ===
+            "0000-00-00 00:00:00"
+    ) {
+        $discount_start = null;
+    }
+
+    if (
+        $discount_end === "" ||
+        $discount_end ===
+            "0000-00-00 00:00:00"
+    ) {
+        $discount_end = null;
+    }
+
+    $discount_status =
+        strtolower(
+            trim(
+                (string)(
+                    $row["discount_status"] ??
+                    "inactive"
+                )
+            )
+        ) === "active"
+            ? "Active"
+            : "Inactive";
+
+    $is_discount_active = false;
+
+    $currentDateTime =
+        new DateTime(
+            "now",
+            $promotionTimezone
+        );
+
+    if (
+        $discount_type !== "none" &&
+        $discount_value > 0 &&
+        $discount_status === "Active"
+    ) {
+        if (
+            $discount_schedule ===
+            "permanent"
+        ) {
+            $is_discount_active = true;
+        } elseif (
+            $discount_schedule ===
+                "scheduled" &&
+            $discount_start !== null &&
+            $discount_end !== null
+        ) {
+            try {
+                $discountStartObject =
+                    new DateTime(
+                        $discount_start,
+                        $promotionTimezone
+                    );
+
+                $discountEndObject =
+                    new DateTime(
+                        $discount_end,
+                        $promotionTimezone
+                    );
+
+                $is_discount_active =
+                    $currentDateTime >=
+                        $discountStartObject &&
+                    $currentDateTime <=
+                        $discountEndObject;
+            } catch (Throwable $error) {
+                $is_discount_active = false;
+            }
+        }
+    }
+
+    $base_price =
+        $regular_base_price;
+
+    if ($is_discount_active) {
+        if (
+            $discount_type ===
+            "percentage"
+        ) {
+            $base_price =
+                $regular_base_price -
+                (
+                    $regular_base_price *
+                    $discount_value /
+                    100
+                );
+        } elseif (
+            $discount_type ===
+            "fixed"
+        ) {
+            $base_price =
+                $regular_base_price -
+                $discount_value;
+        }
+
+        $base_price = round(
+            max(
+                0,
+                $base_price
+            ),
+            2
+        );
+    }
+
+    $discount_savings = round(
+        max(
+            0,
+            $regular_base_price -
+            $base_price
+        ),
+        2
+    );
+
+    $discount_label = "";
+
+    if ($is_discount_active) {
+        if (
+            $discount_type ===
+            "percentage"
+        ) {
+            $discount_label =
+                (
+                    floor($discount_value) ==
+                    $discount_value
+                )
+                    ? number_format(
+                        $discount_value,
+                        0
+                    ) . "% OFF"
+                    : number_format(
+                        $discount_value,
+                        2
+                    ) . "% OFF";
+        } elseif (
+            $discount_type ===
+            "fixed"
+        ) {
+            $discount_label =
+                "₱" .
+                number_format(
+                    $discount_value,
+                    2
+                ) .
+                " OFF";
+        }
     }
 
     /* =====================================================
@@ -530,6 +844,59 @@ while ($row = $cartResult->fetch_assoc()) {
         $unit_price *
         $quantity;
 
+            $unit_price = round(
+        max(
+            0,
+            $unit_price
+        ),
+        2
+    );
+
+    $subtotal = round(
+        max(
+            0,
+            $subtotal
+        ),
+        2
+    );
+
+    /* =====================================================
+       REFRESH STALE CART PRICE
+    ===================================================== */
+
+    $price_changed =
+        abs(
+            $stored_unit_price -
+            $unit_price
+        ) >= 0.01 ||
+        abs(
+            $stored_subtotal -
+            $subtotal
+        ) >= 0.01;
+
+    if ($price_changed) {
+        $cartPriceUpdateStmt
+            ->bind_param(
+                "ddii",
+                $unit_price,
+                $subtotal,
+                $cart_id,
+                $user_id
+            );
+
+        if (
+            !$cartPriceUpdateStmt
+                ->execute()
+        ) {
+            error_log(
+                "cart_get.php price refresh error for cart ID " .
+                $cart_id .
+                ": " .
+                $cartPriceUpdateStmt->error
+            );
+        }
+    }
+
     /* =====================================================
        RESPONSE ITEM
     ===================================================== */
@@ -553,8 +920,64 @@ while ($row = $cartResult->fetch_assoc()) {
         "base_text" =>
             $base_text,
 
+                "regular_base_price" =>
+            round(
+                $regular_base_price,
+                2
+            ),
+
         "base_price" =>
-            round($base_price, 2),
+            round(
+                $base_price,
+                2
+            ),
+
+        "final_base_price" =>
+            round(
+                $base_price,
+                2
+            ),
+
+        "discount_type" =>
+            $discount_type,
+
+        "discount_value" =>
+            $discount_value,
+
+        "discount_schedule" =>
+            $discount_schedule,
+
+        "discount_start" =>
+            $discount_start,
+
+        "discount_end" =>
+            $discount_end,
+
+        "discount_status" =>
+            $discount_status,
+
+        "is_discount_active" =>
+            $is_discount_active,
+
+        "discount_savings" =>
+            round(
+                $discount_savings,
+                2
+            ),
+
+        "discount_label" =>
+            $discount_label,
+
+        "price_changed" =>
+            $price_changed,
+
+        "image_path" =>
+            $row["image_path"] ??
+            null,
+
+        "image" =>
+            $row["image_path"] ??
+            null,
 
         "addon_ids" =>
             $addon_ids,
@@ -605,8 +1028,16 @@ while ($row = $cartResult->fetch_assoc()) {
             $row["status"]
     ];
 
-    $total_items += $quantity;
+       $total_items += $quantity;
     $total_price += $subtotal;
+
+    $total_discount_savings +=
+        $discount_savings *
+        $quantity;
+
+    if ($price_changed) {
+        $has_price_changes = true;
+    }
 }
 
 /* =========================================================
@@ -616,6 +1047,7 @@ while ($row = $cartResult->fetch_assoc()) {
 $cartStmt->close();
 $addonStmt->close();
 $comboOptionStmt->close();
+$cartPriceUpdateStmt->close();
 
 /* =========================================================
    LOAD RESTAURANT DELIVERY FEE
@@ -727,9 +1159,24 @@ respond_json([
     "total_price" =>
         round($total_price, 2),
 
-    "subtotal" =>
-        round($total_price, 2),
+       "subtotal" =>
+        round(
+            $total_price,
+            2
+        ),
+
+    "total_discount_savings" =>
+        round(
+            $total_discount_savings,
+            2
+        ),
+
+    "prices_updated" =>
+        $has_price_changes,
 
     "delivery_fee" =>
-        round($delivery_fee, 2)
+        round(
+            $delivery_fee,
+            2
+        )
 ]);

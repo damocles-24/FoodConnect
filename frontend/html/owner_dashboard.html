@@ -528,6 +528,113 @@
     </article>
   </div>
 
+   <section
+    class="promotion-overview-section"
+    aria-labelledby="promotionOverviewTitle"
+  >
+    <div class="promotion-overview-heading">
+      <div>
+        <span class="section-overline">
+          Promotion Summary
+        </span>
+
+        <h3 id="promotionOverviewTitle">
+          Product Promotions
+        </h3>
+      </div>
+
+      <p>
+        Review which promotions are active, scheduled,
+        expired, disabled, or not yet created.
+      </p>
+    </div>
+
+    <div
+      class="promotion-overview"
+      aria-label="Promotion overview"
+    >
+      <article
+        class="promotion-overview-card is-active"
+      >
+        <div class="promotion-overview-icon">
+          ●
+        </div>
+
+        <div>
+          <span>Active Promos</span>
+
+          <strong id="promotionOverviewActive">
+            0
+          </strong>
+        </div>
+      </article>
+
+      <article
+        class="promotion-overview-card is-scheduled"
+      >
+        <div class="promotion-overview-icon">
+          ◷
+        </div>
+
+        <div>
+          <span>Scheduled</span>
+
+          <strong id="promotionOverviewScheduled">
+            0
+          </strong>
+        </div>
+      </article>
+
+      <article
+        class="promotion-overview-card is-expired"
+      >
+        <div class="promotion-overview-icon">
+          ×
+        </div>
+
+        <div>
+          <span>Expired</span>
+
+          <strong id="promotionOverviewExpired">
+            0
+          </strong>
+        </div>
+      </article>
+
+      <article
+        class="promotion-overview-card is-disabled"
+      >
+        <div class="promotion-overview-icon">
+          ‖
+        </div>
+
+        <div>
+          <span>Promo Off</span>
+
+          <strong id="promotionOverviewDisabled">
+            0
+          </strong>
+        </div>
+      </article>
+
+      <article
+        class="promotion-overview-card is-none"
+      >
+        <div class="promotion-overview-icon">
+          —
+        </div>
+
+        <div>
+          <span>No Promo</span>
+
+          <strong id="promotionOverviewNone">
+            0
+          </strong>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <div class="product-toolbar">
     <div class="product-search-box">
       <span class="product-search-icon">
@@ -657,10 +764,106 @@
 
 <section id="usersSection" class="content-section">
   <div class="section-header">
-    <h2>User & Staff Management</h2>
+    <div>
+      <h2>User & Staff Management</h2>
+
+      <p>
+        Create staff accounts and manage the restaurant access code
+        staff members must enter before signing in.
+      </p>
+    </div>
 
     <div class="section-actions">
-      <button class="primary-btn" id="openAddUserModal">+ Add User</button>
+      <button class="primary-btn" id="openAddUserModal">
+        + Add User
+      </button>
+    </div>
+  </div>
+
+  <div class="staff-access-code-card">
+    <div class="staff-access-code-content">
+      <div class="staff-access-code-icon">
+        🔐
+      </div>
+
+      <div>
+        <span class="staff-access-code-eyebrow">
+          Staff Verification
+        </span>
+
+        <h3>
+          Restaurant Staff Access Code
+        </h3>
+
+        <p>
+          Give this code only to authorized staff. They must enter it
+          before using their cashier, kitchen, or delivery account.
+        </p>
+      </div>
+    </div>
+
+    <div class="staff-access-code-controls">
+      <div class="staff-access-code-value">
+        <span id="staffAccessCodeDisplay">
+          Loading...
+        </span>
+
+      <button
+    type="button"
+    class="staff-code-icon-button"
+    id="toggleStaffAccessCode"
+    aria-label="Hide staff access code"
+    title="Show or hide staff access code"
+>
+    <svg
+        id="staffAccessCodeEyeIcon"
+        class="staff-access-eye-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+        ></path>
+
+        <circle
+            cx="12"
+            cy="12"
+            r="3"
+        ></circle>
+    </svg>
+</button>
+      </div>
+
+      <div class="staff-access-code-actions">
+        <button
+          type="button"
+          class="secondary-btn"
+          id="copyStaffAccessCode"
+          disabled
+        >
+          Copy Code
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="regenerateStaffAccessCode"
+        >
+          Generate New Code
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="staff-access-code-message"
+      id="staffAccessCodeMessage"
+      hidden
+    ></div>
+
+    <div class="staff-access-code-warning">
+      <strong>Important:</strong>
+      Generating a new code immediately stops the previous code from
+      working. Existing staff accounts are not deleted.
     </div>
   </div>
 
@@ -1689,14 +1892,6 @@
               ₱0.00
             </strong>
           </div>
-
-          <div>
-            <span>Customer Will Save</span>
-
-            <strong id="productDiscountSavings">
-              ₱0.00
-            </strong>
-          </div>
         </div>
 
         <div class="product-form-notice">
@@ -1904,6 +2099,197 @@
         <div class="availability-guide">
           Availability and stock are separate. An unavailable
           product cannot be ordered even when it still has stock.
+        </div>
+      </div>
+
+            <!-- EDIT PRODUCT DISCOUNT -->
+      <div class="form-group">
+        <label for="editProductDiscountType">
+          Discount
+          <span class="optional-label">
+            Optional
+          </span>
+        </label>
+
+        <select id="editProductDiscountType">
+          <option value="none">
+            No Discount — Sell at Regular Price
+          </option>
+
+          <option value="percentage">
+            Percentage Off (%) — Example: 10% OFF
+          </option>
+
+          <option value="fixed">
+            Peso Amount Off (₱) — Example: ₱50 OFF
+          </option>
+        </select>
+
+        <small class="form-helper">
+          Choose how much customers will save. The existing
+          promotion values will automatically appear when
+          editing this product.
+        </small>
+      </div>
+
+      <div
+        class="product-discount-fields"
+        id="editProductDiscountFields"
+        hidden
+      >
+        <div class="form-group">
+          <label for="editProductDiscountSchedule">
+            How Long Will This Promo Run?
+            <span class="required-label">*</span>
+          </label>
+
+          <select id="editProductDiscountSchedule">
+            <option value="permanent">
+              Always Available — Turn It Off Manually
+            </option>
+
+            <option value="scheduled">
+              Limited-Time Promo — Set Start and End Dates
+            </option>
+          </select>
+
+          <small
+            class="form-helper"
+            id="editProductDiscountScheduleHelp"
+          >
+            Always Available keeps the discount active until
+            you manually turn it off.
+          </small>
+        </div>
+
+        <div class="product-form-grid">
+          <div class="form-group">
+            <label for="editProductDiscountValue">
+              <span id="editProductDiscountValueLabel">
+                Discount Amount
+              </span>
+
+              <span class="required-label">*</span>
+            </label>
+
+            <input
+              type="number"
+              id="editProductDiscountValue"
+              min="0"
+              step="0.01"
+              value="0"
+              placeholder="Enter discount amount"
+            />
+
+            <small
+              class="form-helper"
+              id="editProductDiscountValueHelp"
+            >
+              Select a discount type to continue.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="editProductDiscountStatus">
+              Turn This Promo On?
+              <span class="required-label">*</span>
+            </label>
+
+            <select id="editProductDiscountStatus">
+              <option value="Inactive">
+                No — Save It Without Applying the Discount
+              </option>
+
+              <option value="Active">
+                Yes — Apply the Discount to Customers
+              </option>
+            </select>
+
+            <small class="form-helper">
+              Select Yes when customers should receive this
+              discount. Select No to keep the promotion saved
+              but disabled.
+            </small>
+          </div>
+        </div>
+
+        <div
+          class="product-form-grid"
+          id="editProductDiscountScheduleFields"
+          hidden
+        >
+          <div class="form-group">
+            <label for="editProductDiscountStart">
+              When Should the Promo Start?
+              <span class="required-label">
+                * Required
+              </span>
+            </label>
+
+            <input
+              type="datetime-local"
+              id="editProductDiscountStart"
+            />
+
+            <small class="form-helper">
+              Select the exact date and time when customers
+              can begin using the discount.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="editProductDiscountEnd">
+              When Should the Promo End?
+              <span class="required-label">
+                * Required
+              </span>
+            </label>
+
+            <input
+              type="datetime-local"
+              id="editProductDiscountEnd"
+            />
+
+            <small class="form-helper">
+              Select when the discount should automatically
+              stop being available.
+            </small>
+          </div>
+        </div>
+
+        <div
+          class="discount-price-preview"
+          id="editProductDiscountPreview"
+        >
+          <small
+            class="discount-preview-message"
+            id="editProductDiscountPreviewMessage"
+          >
+            Edit the regular price or discount amount to
+            preview the customer's final price.
+          </small>
+
+          <div>
+            <span>Original Price</span>
+
+            <strong id="editProductDiscountOriginalPrice">
+              ₱0.00
+            </strong>
+          </div>
+
+          <div>
+            <span>Promo Price</span>
+
+            <strong id="editProductDiscountFinalPrice">
+              ₱0.00
+            </strong>
+          </div>
+        </div>
+
+        <div class="product-form-notice">
+          Percentage discounts cannot exceed 100%.
+          Fixed discounts cannot exceed the regular product
+          price.
         </div>
       </div>
 

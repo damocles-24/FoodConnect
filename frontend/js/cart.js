@@ -9,6 +9,7 @@ let deliveryAvailability = {
 
 let cartPricing = {
     subtotal: 0,
+    promotionSavings: 0,
     deliveryFee: 0,
     selectedOrderType: ""
 };
@@ -168,25 +169,40 @@ const cartTabCount =
             "subtotalPrice"
         );
 
-    const deliveryFeeElement =
-        document.getElementById(
-            "deliveryFeePrice"
-        );
+    const promotionSavingsSummary =
+    document.getElementById(
+        "promotionSavingsSummary"
+    );
 
-    const totalPriceElement =
-        document.getElementById(
-            "totalPrice"
-        );
+const promotionSavingsElement =
+    document.getElementById(
+        "promotionSavingsPrice"
+    );
+
+const deliveryFeeElement =
+    document.getElementById(
+        "deliveryFeePrice"
+    );
+
+const totalPriceElement =
+    document.getElementById(
+        "totalPrice"
+    );
 
     const subtotal =
         Number(
             cartPricing.subtotal || 0
         );
 
-    const restaurantDeliveryFee =
-        Number(
-            cartPricing.deliveryFee || 0
-        );
+    const promotionSavings =
+    Number(
+        cartPricing.promotionSavings || 0
+    );
+
+const restaurantDeliveryFee =
+    Number(
+        cartPricing.deliveryFee || 0
+    );
 
     const appliedDeliveryFee =
         cartPricing.selectedOrderType ===
@@ -217,6 +233,18 @@ const cartTabCount =
             formatPrice(subtotal);
     }
 
+    if (promotionSavingsSummary) {
+    promotionSavingsSummary.hidden =
+        promotionSavings <= 0;
+}
+
+if (promotionSavingsElement) {
+    promotionSavingsElement.textContent =
+        `−${formatPrice(
+            promotionSavings
+        )}`;
+}
+
     if (deliveryFeeElement) {
         deliveryFeeElement.textContent =
             formatPrice(
@@ -235,6 +263,7 @@ const cartTabCount =
 function resetCartPricing() {
     cartPricing = {
         subtotal: 0,
+        promotionSavings: 0,
         deliveryFee: 0,
         selectedOrderType: ""
     };
@@ -469,6 +498,12 @@ async function loadCart() {
         0
     );
 
+cartPricing.promotionSavings =
+    Number(
+        data.total_discount_savings ??
+        0
+    );
+
 cartPricing.deliveryFee =
     Number(
         data.delivery_fee ?? 0
@@ -483,9 +518,16 @@ updateTotals(
     data.total_items
 );
 
-        setCartActionState(true);
+       setCartActionState(true);
 
-        if (checkoutSection) {
+if (data.prices_updated === true) {
+    showCartNotice(
+        "Your cart prices were updated using the latest available promotions.",
+        "info"
+    );
+}
+
+if (checkoutSection) {
             checkoutSection.style.display =
                 "none";
         }
@@ -515,11 +557,44 @@ function renderCartItem(item) {
     const subtotal =
         Number(item.subtotal);
 
-    const basePrice =
-        Number(item.base_price);
+    const regularBasePrice =
+    Number(
+        item.regular_base_price ??
+        item.base_price ??
+        0
+    );
 
-    const addonTotal =
-        Number(item.addon_total);
+const basePrice =
+    Number(
+        item.final_base_price ??
+        item.base_price ??
+        regularBasePrice
+    );
+
+const discountSavings =
+    Number(
+        item.discount_savings ?? 0
+    );
+
+const discountLabel =
+    String(
+        item.discount_label || ""
+    ).trim();
+
+const isDiscountActive =
+    item.is_discount_active === true ||
+    item.is_discount_active === 1 ||
+    String(
+        item.is_discount_active
+    ).trim() === "1";
+
+const hasActivePromotion =
+    isDiscountActive &&
+    basePrice < regularBasePrice &&
+    discountSavings > 0;
+
+const addonTotal =
+    Number(item.addon_total);
 
     const comboChoiceText =
         String(
@@ -591,9 +666,22 @@ function renderCartItem(item) {
     return `
         <article class="cart-item">
 
-            <div class="cart-item-image">
+           <div class="cart-item-image">
 
-                <img
+    ${
+        hasActivePromotion &&
+        discountLabel
+            ? `
+                <span class="cart-image-promo-badge">
+                    ${escapeHtml(
+                        discountLabel
+                    )}
+                </span>
+            `
+            : ""
+    }
+
+    <img
                     src="${escapeHtml(imageSource)}"
                     alt="${escapeHtml(item.product_name)}"
                     loading="lazy"
@@ -606,9 +694,31 @@ function renderCartItem(item) {
 
             <div class="cart-info">
 
-                <h3>
-                    ${escapeHtml(item.product_name)}
-                </h3>
+                <div class="cart-product-heading">
+    <h3>
+        ${escapeHtml(
+            item.product_name
+        )}
+    </h3>
+
+    ${
+        hasActivePromotion &&
+        discountLabel
+            ? `
+                <span class="cart-promo-badge">
+                    <span
+                        class="cart-promo-dot"
+                        aria-hidden="true"
+                    ></span>
+
+                    ${escapeHtml(
+                        discountLabel
+                    )}
+                </span>
+            `
+            : ""
+    }
+</div>
 
                 ${
                     metaItems.length
@@ -622,15 +732,57 @@ function renderCartItem(item) {
 
                 <div class="cart-price-breakdown">
 
-                    <p>
-                        <span>
-                            Base price
-                        </span>
+                   ${
+    hasActivePromotion
+        ? `
+            <div class="cart-promotion-pricing">
+                <div class="cart-promo-current-price">
+                    <span>
+                        Promo price
+                    </span>
 
-                        <strong>
-                            ${formatPrice(basePrice)}
-                        </strong>
-                    </p>
+                    <strong>
+                        ${formatPrice(
+                            basePrice
+                        )}
+                    </strong>
+                </div>
+
+                <div class="cart-promo-regular-price">
+                    <span>
+                        Regular price
+                    </span>
+
+                    <del>
+                        ${formatPrice(
+                            regularBasePrice
+                        )}
+                    </del>
+                </div>
+
+                <small class="cart-promo-savings">
+                    You save
+                    ${formatPrice(
+                        discountSavings
+                    )}
+                    per item
+                </small>
+            </div>
+        `
+        : `
+            <p>
+                <span>
+                    Base price
+                </span>
+
+                <strong>
+                    ${formatPrice(
+                        basePrice
+                    )}
+                </strong>
+            </p>
+        `
+}
 
                     ${
                         addonTotal > 0
@@ -1575,6 +1727,57 @@ function buildOrderQrReceiptItems(
                     )
                 );
 
+                const unitPrice =
+    Number(item.price || 0);
+
+const regularPrice =
+    Number(
+        item.regular_price ??
+        unitPrice
+    );
+
+const discountSavings =
+    Number(
+        item.discount_savings ?? 0
+    );
+
+const discountApplied =
+    item.discount_applied === true ||
+    item.discount_applied === 1;
+
+const hasPromotion =
+    discountApplied &&
+    regularPrice > unitPrice &&
+    discountSavings > 0;
+
+let discountLabel = "";
+
+if (hasPromotion) {
+
+    if (
+        item.discount_type ===
+        "percentage"
+    ) {
+
+        discountLabel =
+            `${Number(
+                item.discount_value
+            )}% OFF`;
+
+    } else if (
+        item.discount_type ===
+        "fixed"
+    ) {
+
+        discountLabel =
+            `Save ${formatPrice(
+                item.discount_value
+            )}`;
+
+    }
+
+}
+
             const details = [];
 
             const baseText =
@@ -1657,11 +1860,46 @@ function buildOrderQrReceiptItems(
 
                     </div>
 
-                    <strong class="order-qr-item-price">
-                        ${formatPrice(
-                            itemSubtotal
-                        )}
-                    </strong>
+                    <div class="order-qr-item-price">
+
+    <strong>
+        ${formatPrice(itemSubtotal)}
+    </strong>
+
+    ${
+        hasPromotion
+            ? `
+               <div class="order-qr-item-promo">
+
+    <div class="order-qr-promo-line">
+        <del>
+            ${formatPrice(
+                regularPrice *
+                quantity
+            )}
+        </del>
+
+        <span class="order-qr-discount-badge">
+            ${escapeHtml(
+                discountLabel
+            )}
+        </span>
+    </div>
+
+    <small>
+        Saved
+        ${formatPrice(
+            discountSavings *
+            quantity
+        )}
+    </small>
+
+</div>
+            `
+            : ""
+    }
+
+</div>
 
                 </div>
             `;

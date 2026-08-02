@@ -155,6 +155,39 @@ const removeExistingImageInput =
     "removeExistingProductImage"
   );
 
+  const staffAccessCodeDisplay =
+  document.getElementById(
+    "staffAccessCodeDisplay"
+  );
+
+const toggleStaffAccessCodeButton =
+  document.getElementById(
+    "toggleStaffAccessCode"
+  );
+
+  const staffAccessCodeEyeIcon =
+    document.getElementById(
+        "staffAccessCodeEyeIcon"
+    );
+
+const copyStaffAccessCodeButton =
+  document.getElementById(
+    "copyStaffAccessCode"
+  );
+
+const regenerateStaffAccessCodeButton =
+  document.getElementById(
+    "regenerateStaffAccessCode"
+  );
+
+const staffAccessCodeMessage =
+  document.getElementById(
+    "staffAccessCodeMessage"
+  );
+
+let currentStaffAccessCode = "";
+let staffAccessCodeVisible = false;
+
 editProductImageInput?.addEventListener(
   "change",
   () => {
@@ -284,11 +317,90 @@ const productDiscountSavings =
   document.getElementById(
     "productDiscountSavings"
   );
-
 const productDiscountPreviewMessage =
   document.getElementById(
     "productDiscountPreviewMessage"
   );
+
+/* =========================
+   EDIT PRODUCT DISCOUNT
+========================= */
+
+const editProductDiscountType =
+  document.getElementById(
+    "editProductDiscountType"
+  );
+
+const editProductDiscountFields =
+  document.getElementById(
+    "editProductDiscountFields"
+  );
+
+const editProductDiscountValue =
+  document.getElementById(
+    "editProductDiscountValue"
+  );
+
+const editProductDiscountValueLabel =
+  document.getElementById(
+    "editProductDiscountValueLabel"
+  );
+
+const editProductDiscountValueHelp =
+  document.getElementById(
+    "editProductDiscountValueHelp"
+  );
+
+const editProductDiscountStatus =
+  document.getElementById(
+    "editProductDiscountStatus"
+  );
+
+const editProductDiscountSchedule =
+  document.getElementById(
+    "editProductDiscountSchedule"
+  );
+
+const editProductDiscountScheduleHelp =
+  document.getElementById(
+    "editProductDiscountScheduleHelp"
+  );
+
+const editProductDiscountScheduleFields =
+  document.getElementById(
+    "editProductDiscountScheduleFields"
+  );
+
+const editProductDiscountStart =
+  document.getElementById(
+    "editProductDiscountStart"
+  );
+
+const editProductDiscountEnd =
+  document.getElementById(
+    "editProductDiscountEnd"
+  );
+
+const editProductDiscountOriginalPrice =
+  document.getElementById(
+    "editProductDiscountOriginalPrice"
+  );
+
+const editProductDiscountFinalPrice =
+  document.getElementById(
+    "editProductDiscountFinalPrice"
+  );
+
+const editProductDiscountSavings =
+  document.getElementById(
+    "editProductDiscountSavings"
+  );
+
+const editProductDiscountPreviewMessage =
+  document.getElementById(
+    "editProductDiscountPreviewMessage"
+  );
+
 const saveProductBtn = document.getElementById("saveProductBtn");
 const updateProductBtn = document.getElementById("updateProductBtn");
 const saveRestockBtn = document.getElementById("saveRestockBtn");
@@ -518,30 +630,40 @@ function getStockLevel(stock) {
 function getProductDiscountLabel(
   product
 ) {
-  if (
-    !product ||
-    !product.isDiscountActive
-  ) {
+  if (!product) {
+    return "";
+  }
+
+  const discountType =
+    String(
+      product.discountType ||
+      "none"
+    )
+      .trim()
+      .toLowerCase();
+
+  const discountValue =
+    Number(
+      product.discountValue
+    ) || 0;
+
+  if (discountValue <= 0) {
     return "";
   }
 
   if (
-    product.discountType ===
+    discountType ===
     "percentage"
   ) {
-    return `${
-      Number(
-        product.discountValue
-      ) || 0
-    }% OFF`;
+    return `${discountValue}% OFF`;
   }
 
   if (
-    product.discountType ===
+    discountType ===
     "fixed"
   ) {
     return `${formatPeso(
-      product.discountValue
+      discountValue
     )} OFF`;
   }
 
@@ -1762,9 +1884,16 @@ async function loadProducts() {
       ).trim(),
 
     isDiscountActive:
-      Boolean(
-        p.is_discount_active
-      ),
+  p.is_discount_active === true ||
+  p.is_discount_active === 1 ||
+  String(
+    p.is_discount_active
+  )
+    .trim()
+    .toLowerCase() === "true" ||
+  String(
+    p.is_discount_active
+  ).trim() === "1",
 
     stock:
       Number(
@@ -1796,6 +1925,293 @@ async function loadProducts() {
   applyInventoryFilters();
   
 }
+
+/* =========================
+   STAFF ACCESS CODE
+========================= */
+
+function showStaffAccessCodeMessage(
+  message = "",
+  type = ""
+) {
+  if (!staffAccessCodeMessage) {
+    return;
+  }
+
+  staffAccessCodeMessage.textContent =
+    message;
+
+  staffAccessCodeMessage.classList.remove(
+    "success",
+    "error",
+    "info"
+  );
+
+  staffAccessCodeMessage.hidden =
+    message === "";
+
+  if (message && type) {
+    staffAccessCodeMessage.classList.add(
+      type
+    );
+  }
+}
+
+function renderStaffAccessCode() {
+  if (!staffAccessCodeDisplay) {
+    return;
+  }
+
+  if (!currentStaffAccessCode) {
+    staffAccessCodeDisplay.textContent =
+      "No code available";
+
+    if (copyStaffAccessCodeButton) {
+      copyStaffAccessCodeButton.disabled =
+        true;
+    }
+
+    return;
+  }
+
+  staffAccessCodeDisplay.textContent =
+    staffAccessCodeVisible
+      ? currentStaffAccessCode
+      : "••••-••••-••••";
+
+ if (
+  staffAccessCodeEyeIcon &&
+  toggleStaffAccessCodeButton
+) {
+  staffAccessCodeEyeIcon.innerHTML =
+    staffAccessCodeVisible
+      ? `
+          <path
+            d="M3 3l18 18"
+          ></path>
+
+          <path
+            d="M10.6 10.7a2 2 0 0 0 2.7 2.7"
+          ></path>
+
+          <path
+            d="M9.9 4.2A10.8 10.8 0 0 1 12 4c6.5 0 10 8 10 8a18 18 0 0 1-2.1 3.2"
+          ></path>
+
+          <path
+            d="M6.6 6.6C3.7 8.4 2 12 2 12s3.5 8 10 8a9.8 9.8 0 0 0 4.1-.9"
+          ></path>
+        `
+      : `
+          <path
+            d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+          ></path>
+
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          ></circle>
+        `;
+
+  toggleStaffAccessCodeButton.setAttribute(
+    "aria-label",
+    staffAccessCodeVisible
+      ? "Hide staff access code"
+      : "Show staff access code"
+  );
+
+  toggleStaffAccessCodeButton.title =
+    staffAccessCodeVisible
+      ? "Hide staff access code"
+      : "Show staff access code";
+}
+
+  if (copyStaffAccessCodeButton) {
+    copyStaffAccessCodeButton.disabled =
+      false;
+  }
+}
+
+async function loadStaffAccessCode() {
+  if (!staffAccessCodeDisplay) {
+    return;
+  }
+
+  staffAccessCodeDisplay.textContent =
+    "Loading...";
+
+  showStaffAccessCodeMessage();
+
+  try {
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/manage_staff_access_code.php`,
+      {
+        method: "GET"
+      }
+    );
+
+    if (!data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to load the staff access code."
+      );
+    }
+
+    currentStaffAccessCode =
+      String(
+        data.staff_access_code || ""
+      ).trim();
+
+    staffAccessCodeVisible = false;
+
+    renderStaffAccessCode();
+
+  } catch (error) {
+    console.error(
+      "Staff access code load error:",
+      error
+    );
+
+    currentStaffAccessCode = "";
+
+    staffAccessCodeDisplay.textContent =
+      "Unable to load code";
+
+    showStaffAccessCodeMessage(
+      error.message ||
+      "Unable to load the staff access code.",
+      "error"
+    );
+  }
+}
+
+toggleStaffAccessCodeButton
+  ?.addEventListener(
+    "click",
+    () => {
+      if (!currentStaffAccessCode) {
+        return;
+      }
+
+      staffAccessCodeVisible =
+        !staffAccessCodeVisible;
+
+      renderStaffAccessCode();
+    }
+  );
+
+copyStaffAccessCodeButton
+  ?.addEventListener(
+    "click",
+    async () => {
+      if (!currentStaffAccessCode) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(
+          currentStaffAccessCode
+        );
+
+        showStaffAccessCodeMessage(
+          "Staff access code copied.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error(
+          "Copy staff code error:",
+          error
+        );
+
+        showStaffAccessCodeMessage(
+          "Unable to copy automatically. Show the code and copy it manually.",
+          "error"
+        );
+      }
+    }
+  );
+
+regenerateStaffAccessCodeButton
+  ?.addEventListener(
+    "click",
+    async () => {
+      const confirmed = window.confirm(
+        "Generate a new staff access code? The current code will stop working immediately."
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      regenerateStaffAccessCodeButton.disabled =
+        true;
+
+      regenerateStaffAccessCodeButton.textContent =
+        "Generating...";
+
+      showStaffAccessCodeMessage(
+        "Generating a secure staff access code...",
+        "info"
+      );
+
+      try {
+        const data = await fetchJSON(
+          `${OWNER_API_BASE}/manage_staff_access_code.php`,
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              action: "regenerate"
+            })
+          }
+        );
+
+        if (!data.success) {
+          throw new Error(
+            data.message ||
+            "Unable to generate a new staff access code."
+          );
+        }
+
+        currentStaffAccessCode =
+          String(
+            data.staff_access_code || ""
+          ).trim();
+
+        staffAccessCodeVisible = true;
+
+        renderStaffAccessCode();
+
+        showStaffAccessCodeMessage(
+          "A new staff access code was generated. Share it only with authorized staff.",
+          "success"
+        );
+
+        await loadActivityLogs();
+
+      } catch (error) {
+        console.error(
+          "Staff access code update error:",
+          error
+        );
+
+        showStaffAccessCodeMessage(
+          error.message ||
+          "Unable to generate a new staff access code.",
+          "error"
+        );
+
+      } finally {
+        regenerateStaffAccessCodeButton.disabled =
+          false;
+
+        regenerateStaffAccessCodeButton.textContent =
+          "Generate New Code";
+      }
+    }
+  );
 
 async function loadUsers() {
   const data = await fetchJSON(
@@ -2549,6 +2965,277 @@ function exportSalesReportExcel() {
 }
 
 /* =========================
+   PRODUCT PROMO STATUS
+========================= */
+
+function parseProductPromoDate(
+  dateValue
+) {
+  if (!dateValue) {
+    return null;
+  }
+
+  const normalizedValue =
+    String(dateValue)
+      .trim()
+      .replace(
+        " ",
+        "T"
+      );
+
+  const parsedDate =
+    new Date(normalizedValue);
+
+  if (
+    Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
+function formatProductPromoDate(
+  dateValue
+) {
+  const parsedDate =
+    parseProductPromoDate(
+      dateValue
+    );
+
+  if (!parsedDate) {
+    return "";
+  }
+
+  return parsedDate.toLocaleString(
+    "en-PH",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    }
+  );
+}
+
+function getProductPromoStatus(
+  product
+) {
+  const discountType =
+    String(
+      product.discountType ||
+      "none"
+    )
+      .trim()
+      .toLowerCase();
+
+  const discountValue =
+    Number(
+      product.discountValue
+    ) || 0;
+
+  const discountStatus =
+    String(
+      product.discountStatus ||
+      "Inactive"
+    )
+      .trim()
+      .toLowerCase();
+
+  const discountSchedule =
+    String(
+      product.discountSchedule ||
+      "permanent"
+    )
+      .trim()
+      .toLowerCase();
+
+  /*
+   * No valid promotion was created.
+   */
+  if (
+    discountType === "none" ||
+    discountValue <= 0
+  ) {
+    return {
+      key: "none",
+      label: "No Promo",
+      description:
+        "This product is using its regular price."
+    };
+  }
+
+  /*
+   * The owner saved a promotion but turned it off.
+   */
+  if (
+    discountStatus !== "active"
+  ) {
+    return {
+      key: "disabled",
+      label: "Promo Off",
+      description:
+        "The promotion is saved but currently disabled."
+    };
+  }
+
+  /*
+   * Permanent promotion that was turned on.
+   */
+  if (
+    discountSchedule !==
+    "scheduled"
+  ) {
+    return {
+      key: "active",
+      label: "Active Promo",
+      description:
+        "The promotion is currently active."
+    };
+  }
+
+  const startDate =
+    parseProductPromoDate(
+      product.discountStart
+    );
+
+  const endDate =
+    parseProductPromoDate(
+      product.discountEnd
+    );
+
+  /*
+   * Treat an incomplete scheduled promotion as disabled
+   * instead of incorrectly showing it as active.
+   */
+  if (
+    !startDate ||
+    !endDate
+  ) {
+    return {
+      key: "disabled",
+      label: "Promo Off",
+      description:
+        "The scheduled promotion has incomplete dates."
+    };
+  }
+
+  const currentTime =
+    new Date();
+
+  if (
+    currentTime < startDate
+  ) {
+    return {
+      key: "scheduled",
+      label: "Scheduled",
+      description:
+        "The promotion has not started yet."
+    };
+  }
+
+  if (
+    currentTime > endDate
+  ) {
+    return {
+      key: "expired",
+      label: "Expired",
+      description:
+        "The promotion has already ended."
+    };
+  }
+
+  if (
+  product.isDiscountActive
+) {
+  return {
+    key: "active",
+    label: "Active Promo",
+    description:
+      "The scheduled promotion is currently applied."
+  };
+}
+
+return {
+  key: "disabled",
+  label: "Not Applied",
+  description:
+    "The promotion dates are active, but the discounted price is not currently being applied."
+};
+}
+
+function getProductPromoScheduleText(
+  product,
+  promoStatus
+) {
+  const schedule =
+    String(
+      product.discountSchedule ||
+      "permanent"
+    )
+      .trim()
+      .toLowerCase();
+
+  if (
+    promoStatus.key === "none"
+  ) {
+    return "";
+  }
+
+  if (
+    promoStatus.key === "disabled"
+  ) {
+    return "Saved promotion — currently turned off";
+  }
+
+  if (schedule !== "scheduled") {
+    return promoStatus.key === "active"
+      ? "Permanent promotion — active until manually turned off"
+      : "Permanent promotion";
+  }
+
+  const startText =
+    formatProductPromoDate(
+      product.discountStart
+    );
+
+  const endText =
+    formatProductPromoDate(
+      product.discountEnd
+    );
+
+  if (
+    promoStatus.key === "scheduled"
+  ) {
+    return startText
+      ? `Starts ${startText}`
+      : "Scheduled promotion";
+  }
+
+  if (
+    promoStatus.key === "expired"
+  ) {
+    return endText
+      ? `Ended ${endText}`
+      : "Promotion has ended";
+  }
+
+  if (
+    promoStatus.key === "active"
+  ) {
+    return endText
+      ? `Ends ${endText}`
+      : "Promotion is currently active";
+  }
+
+  return "";
+}
+
+/* =========================
    PRODUCTS RENDER
 ========================= */
 function renderProducts(list = products) {
@@ -2571,9 +3258,34 @@ function renderProducts(list = products) {
       "productOverviewLow"
     );
 
-  const productOverviewOut =
+   const productOverviewOut =
     document.getElementById(
       "productOverviewOut"
+    );
+
+  const promotionOverviewActive =
+    document.getElementById(
+      "promotionOverviewActive"
+    );
+
+  const promotionOverviewScheduled =
+    document.getElementById(
+      "promotionOverviewScheduled"
+    );
+
+  const promotionOverviewExpired =
+    document.getElementById(
+      "promotionOverviewExpired"
+    );
+
+  const promotionOverviewDisabled =
+    document.getElementById(
+      "promotionOverviewDisabled"
+    );
+
+  const promotionOverviewNone =
+    document.getElementById(
+      "promotionOverviewNone"
     );
 
   const totalProducts = products.length;
@@ -2590,10 +3302,38 @@ function renderProducts(list = products) {
       return stock > 0 && stock <= 5;
     }).length;
 
-  const outOfStockProducts =
+    const outOfStockProducts =
     products.filter(
       product => Number(product.stock) <= 0
     ).length;
+
+  const promotionCounts = {
+    active: 0,
+    scheduled: 0,
+    expired: 0,
+    disabled: 0,
+    none: 0
+  };
+
+  products.forEach(product => {
+    const promoStatus =
+      getProductPromoStatus(
+        product
+      );
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        promotionCounts,
+        promoStatus.key
+      )
+    ) {
+      promotionCounts[
+        promoStatus.key
+      ] += 1;
+    } else {
+      promotionCounts.none += 1;
+    }
+  });
 
   if (productOverviewTotal) {
     productOverviewTotal.textContent =
@@ -2610,9 +3350,34 @@ function renderProducts(list = products) {
       lowStockProducts;
   }
 
-  if (productOverviewOut) {
+    if (productOverviewOut) {
     productOverviewOut.textContent =
       outOfStockProducts;
+  }
+
+  if (promotionOverviewActive) {
+    promotionOverviewActive.textContent =
+      promotionCounts.active;
+  }
+
+  if (promotionOverviewScheduled) {
+    promotionOverviewScheduled.textContent =
+      promotionCounts.scheduled;
+  }
+
+  if (promotionOverviewExpired) {
+    promotionOverviewExpired.textContent =
+      promotionCounts.expired;
+  }
+
+  if (promotionOverviewDisabled) {
+    promotionOverviewDisabled.textContent =
+      promotionCounts.disabled;
+  }
+
+  if (promotionOverviewNone) {
+    promotionOverviewNone.textContent =
+      promotionCounts.none;
   }
 
   if (!list.length) {
@@ -2684,21 +3449,94 @@ const discountLabel =
     product
   );
 
-      return `
-        <article class="product-card">
+const promoStatus =
+  getProductPromoStatus(
+    product
+  );
 
-        ${
-  hasActiveDiscount &&
-  discountLabel
-    ? `
-      <span class="product-discount-badge">
-        ${escapeHtml(
-          discountLabel
-        )}
-      </span>
-    `
-    : ""
+const hasSavedPromotion =
+  product.discountType !== "none" &&
+  Number(product.discountValue) > 0;
+
+const savedPromoPrice =
+  calculateDiscountPrice(
+    Number(
+      product.regularPrice
+    ) || 0,
+    String(
+      product.discountType ||
+      "none"
+    )
+      .trim()
+      .toLowerCase(),
+    Number(
+      product.discountValue
+    ) || 0
+  );
+
+const promoScheduleText =
+  getProductPromoScheduleText(
+    product,
+    promoStatus
+  );
+
+const currentCustomerPrice =
+  promoStatus.key === "active"
+    ? savedPromoPrice
+    : Number(
+        product.regularPrice
+      ) || 0;
+
+const compactPromoText =
+  promoStatus.key === "active"
+    ? `${discountLabel} • Active Promo`
+    : promoStatus.key === "scheduled"
+      ? `${discountLabel} • Scheduled`
+      : promoStatus.key === "expired"
+        ? `Previous promo: ${discountLabel}`
+        : promoStatus.key === "disabled"
+          ? `${discountLabel} • Promo Off`
+          : "";
+
+          let imageRibbon = "";
+
+if (promoStatus.key === "active") {
+
+    if (product.discountType === "percentage") {
+
+        imageRibbon =
+            `${Math.round(
+                product.discountValue
+            )}% OFF`;
+
+    } else if (
+        product.discountType === "fixed"
+    ) {
+
+        imageRibbon =
+            `₱${formatNumber(
+                product.discountValue
+            )} OFF`;
+
+    }
+
 }
+else if (
+    promoStatus.key === "scheduled"
+) {
+
+    imageRibbon =
+        "Starts Soon";
+
+}
+
+      return `
+        <article
+          class="product-card"
+          data-promo-status="${escapeHtml(
+            promoStatus.key
+          )}"
+        >
 
           ${
   product.image
@@ -2718,7 +3556,22 @@ const discountLabel =
       </div>
     `
 }
-
+${
+    imageRibbon
+        ? `
+        <div
+            class="
+            product-image-ribbon
+            is-${promoStatus.key}
+            "
+        >
+            ${escapeHtml(
+                imageRibbon
+            )}
+        </div>
+        `
+        : ""
+}
           <div class="product-card-header">
             <div class="product-title-group">
               <span class="product-card-category">
@@ -2738,26 +3591,57 @@ const discountLabel =
             </span>
           </div>
 
-          <div class="product-card-body">
-           <div
-  class="product-price-block ${
-    hasActiveDiscount
-      ? "has-discount"
+       <div class="product-card-body">
+<div
+  class="product-compact-price ${
+    hasSavedPromotion
+      ? `has-promo is-${escapeHtml(
+          promoStatus.key
+        )}`
       : ""
   }"
 >
-  <span>
+  <div class="product-current-price-row">
+    <div>
+      <span class="product-price-label">
+        Customer Price Now
+      </span>
+
+      <strong class="product-current-price">
+        ${formatPeso(
+          currentCustomerPrice
+        )}
+      </strong>
+    </div>
+
     ${
-      hasActiveDiscount
-        ? "Promo Price"
-        : "Price"
+      hasSavedPromotion
+        ? `
+          <span
+            class="product-promo-status-badge is-${escapeHtml(
+              promoStatus.key
+            )}"
+            title="${escapeHtml(
+              promoStatus.description
+            )}"
+          >
+            <span
+              class="product-promo-status-dot"
+            ></span>
+
+            ${escapeHtml(
+              promoStatus.label
+            )}
+          </span>
+        `
+        : ""
     }
-  </span>
+  </div>
 
   ${
-    hasActiveDiscount
+    promoStatus.key === "active"
       ? `
-        <div class="product-discount-prices">
+        <div class="product-active-price-details">
           <del>
             ${formatPeso(
               product.regularPrice
@@ -2765,26 +3649,42 @@ const discountLabel =
           </del>
 
           <strong>
-            ${formatPeso(
-              displayedPrice
+            ${escapeHtml(
+              discountLabel
             )}
           </strong>
         </div>
+      `
+      : hasSavedPromotion
+        ? `
+          <div class="product-inactive-promo-details">
+            <span>
+              ${escapeHtml(
+                compactPromoText
+              )}
+            </span>
 
-        <small class="product-discount-saving">
-          Save
-          ${formatPeso(
-            product.discountSavings
+            <strong>
+              Promo price:
+              ${formatPeso(
+                savedPromoPrice
+              )}
+            </strong>
+          </div>
+        `
+        : ""
+  }
+
+  ${
+    promoScheduleText
+      ? `
+        <p class="product-compact-schedule">
+          ${escapeHtml(
+            promoScheduleText
           )}
-        </small>
+        </p>
       `
-      : `
-        <strong>
-          ${formatPeso(
-            displayedPrice
-          )}
-        </strong>
-      `
+      : ""
   }
 </div>
 
@@ -3534,6 +4434,279 @@ document
 
 updateAddDiscountVisibility();
 
+/* =========================
+   EDIT PRODUCT DISCOUNT
+========================= */
+
+function formatDateTimeLocalValue(
+  dateValue
+) {
+  if (!dateValue) {
+    return "";
+  }
+
+  const normalizedValue =
+    String(dateValue)
+      .trim()
+      .replace(" ", "T");
+
+  const match =
+    normalizedValue.match(
+      /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/
+    );
+
+  if (!match) {
+    return "";
+  }
+
+  return `${match[1]}T${match[2]}`;
+}
+
+function updateEditDiscountPreview() {
+  const regularPrice =
+    Number(
+      document.getElementById(
+        "editProductPrice"
+      )?.value
+    ) || 0;
+
+  const discountType =
+    editProductDiscountType?.value ||
+    "none";
+
+  const discountValue =
+    Number(
+      editProductDiscountValue?.value
+    ) || 0;
+
+  const finalPrice =
+    calculateDiscountPrice(
+      regularPrice,
+      discountType,
+      discountValue
+    );
+
+  const savings =
+    Math.max(
+      0,
+      regularPrice - finalPrice
+    );
+
+  if (
+    editProductDiscountOriginalPrice
+  ) {
+    editProductDiscountOriginalPrice
+      .textContent =
+      `₱${regularPrice.toFixed(2)}`;
+  }
+
+  if (
+    editProductDiscountFinalPrice
+  ) {
+    editProductDiscountFinalPrice
+      .textContent =
+      `₱${finalPrice.toFixed(2)}`;
+  }
+
+  if (
+    editProductDiscountSavings
+  ) {
+    editProductDiscountSavings
+      .textContent =
+      `₱${savings.toFixed(2)}`;
+  }
+
+  if (
+    !editProductDiscountPreviewMessage
+  ) {
+    return;
+  }
+
+  if (regularPrice <= 0) {
+    editProductDiscountPreviewMessage
+      .textContent =
+      "Enter the regular product price to calculate the promotion.";
+
+    return;
+  }
+
+  if (
+    discountType === "percentage" &&
+    discountValue > 0
+  ) {
+    editProductDiscountPreviewMessage
+      .textContent =
+      `${discountValue}% will be deducted. ` +
+      `The customer pays ₱${finalPrice.toFixed(2)} ` +
+      `and saves ₱${savings.toFixed(2)}.`;
+
+    return;
+  }
+
+  if (
+    discountType === "fixed" &&
+    discountValue > 0
+  ) {
+    editProductDiscountPreviewMessage
+      .textContent =
+      `₱${discountValue.toFixed(2)} will be deducted. ` +
+      `The customer pays ₱${finalPrice.toFixed(2)} ` +
+      `and saves ₱${savings.toFixed(2)}.`;
+
+    return;
+  }
+
+  editProductDiscountPreviewMessage
+    .textContent =
+    "Enter a discount greater than zero to preview the promo price.";
+}
+
+function updateEditDiscountScheduleVisibility() {
+  const hasDiscount =
+    editProductDiscountType?.value !==
+    "none";
+
+  const isScheduled =
+    hasDiscount &&
+    editProductDiscountSchedule?.value ===
+    "scheduled";
+
+  if (
+    editProductDiscountScheduleFields
+  ) {
+    editProductDiscountScheduleFields
+      .hidden =
+      !isScheduled;
+  }
+
+  if (
+    editProductDiscountScheduleHelp
+  ) {
+    editProductDiscountScheduleHelp
+      .textContent =
+      isScheduled
+        ? "The promotion will automatically start and end using the dates below."
+        : "The discount remains available until you manually turn the promotion off.";
+  }
+}
+
+function updateEditDiscountVisibility() {
+  const discountType =
+    editProductDiscountType?.value ||
+    "none";
+
+  const hasDiscount =
+    discountType !== "none";
+
+  if (
+    editProductDiscountFields
+  ) {
+    editProductDiscountFields.hidden =
+      !hasDiscount;
+  }
+
+  if (
+    editProductDiscountValueLabel
+  ) {
+    editProductDiscountValueLabel
+      .textContent =
+      discountType === "percentage"
+        ? "Discount Percentage (%)"
+        : discountType === "fixed"
+          ? "Discount Amount (₱)"
+          : "Discount Amount";
+  }
+
+  if (
+    editProductDiscountValueHelp
+  ) {
+    editProductDiscountValueHelp
+      .textContent =
+      discountType === "percentage"
+        ? "Enter the percentage customers will save. Example: Enter 10 for 10% OFF."
+        : discountType === "fixed"
+          ? "Enter the exact peso amount to deduct. Example: Enter 50 for ₱50 OFF."
+          : "Select a discount type to continue.";
+  }
+
+  if (
+    editProductDiscountValue
+  ) {
+    const regularPrice =
+      Number(
+        document.getElementById(
+          "editProductPrice"
+        )?.value
+      ) || 0;
+
+    if (
+      discountType === "percentage"
+    ) {
+      editProductDiscountValue.max =
+        "100";
+
+      editProductDiscountValue.placeholder =
+        "Example: 10 for 10% OFF";
+    } else if (
+      discountType === "fixed"
+    ) {
+      if (regularPrice > 0) {
+        editProductDiscountValue.max =
+          String(regularPrice);
+      } else {
+        editProductDiscountValue
+          .removeAttribute(
+            "max"
+          );
+      }
+
+      editProductDiscountValue.placeholder =
+        "Example: 50 for ₱50 OFF";
+    } else {
+      editProductDiscountValue
+        .removeAttribute(
+          "max"
+        );
+
+      editProductDiscountValue.placeholder =
+        "Select a discount type first";
+    }
+  }
+
+  updateEditDiscountScheduleVisibility();
+  updateEditDiscountPreview();
+}
+
+editProductDiscountType
+  ?.addEventListener(
+    "change",
+    updateEditDiscountVisibility
+  );
+
+editProductDiscountSchedule
+  ?.addEventListener(
+    "change",
+    updateEditDiscountScheduleVisibility
+  );
+
+editProductDiscountValue
+  ?.addEventListener(
+    "input",
+    updateEditDiscountPreview
+  );
+
+document
+  .getElementById(
+    "editProductPrice"
+  )
+  ?.addEventListener(
+    "input",
+    () => {
+      updateEditDiscountVisibility();
+      updateEditDiscountPreview();
+    }
+  );
+
 const DEFAULT_PRODUCT_IMAGE = "";
 
 function validateProductImage(
@@ -3905,6 +5078,136 @@ const discountEnd =
       const imageFile =
         imageInput?.files?.[0];
 
+            if (
+        ![
+          "none",
+          "percentage",
+          "fixed"
+        ].includes(discountType)
+      ) {
+        alert(
+          "Please select a valid discount type."
+        );
+
+        return;
+      }
+
+      if (
+        discountType !== "none" &&
+        discountValue <= 0
+      ) {
+        alert(
+          "Discount value must be greater than zero."
+        );
+
+        editProductDiscountValue?.focus();
+
+        return;
+      }
+
+      if (
+        discountType === "percentage" &&
+        discountValue > 100
+      ) {
+        alert(
+          "Percentage discount cannot exceed 100%."
+        );
+
+        editProductDiscountValue?.focus();
+
+        return;
+      }
+
+      if (
+        discountType === "fixed" &&
+        discountValue > price
+      ) {
+        alert(
+          "Fixed discount cannot exceed the regular product price."
+        );
+
+        editProductDiscountValue?.focus();
+
+        return;
+      }
+
+      if (
+        discountType !== "none" &&
+        ![
+          "permanent",
+          "scheduled"
+        ].includes(discountSchedule)
+      ) {
+        alert(
+          "Please select a valid promotion schedule."
+        );
+
+        return;
+      }
+
+      if (
+        discountType !== "none" &&
+        ![
+          "Active",
+          "Inactive"
+        ].includes(discountStatus)
+      ) {
+        alert(
+          "Please select whether the promotion is active or inactive."
+        );
+
+        return;
+      }
+
+      if (
+        discountType !== "none" &&
+        discountSchedule === "scheduled"
+      ) {
+        if (
+          !discountStart ||
+          !discountEnd
+        ) {
+          alert(
+            "Scheduled promotions require both a start date and an end date."
+          );
+
+          return;
+        }
+
+        const startDate =
+          new Date(discountStart);
+
+        const endDate =
+          new Date(discountEnd);
+
+        if (
+          Number.isNaN(
+            startDate.getTime()
+          ) ||
+          Number.isNaN(
+            endDate.getTime()
+          )
+        ) {
+          alert(
+            "Please enter valid promotion dates."
+          );
+
+          return;
+        }
+
+        if (
+          endDate <= startDate
+        ) {
+          alert(
+            "Promotion end date must be later than the start date."
+          );
+
+          editProductDiscountEnd?.focus();
+
+          return;
+        }
+      }
+
       try {
         validateProductImage(
           imageFile
@@ -4115,11 +5418,36 @@ if (updateProductBtn) {
           )?.value
         );
 
-      const status =
+            const status =
         document.getElementById(
           "editProductStatus"
         )?.value ||
         "Available";
+
+      const discountType =
+        editProductDiscountType?.value ||
+        "none";
+
+      const discountValue =
+        Number(
+          editProductDiscountValue?.value
+        ) || 0;
+
+      const discountSchedule =
+        editProductDiscountSchedule?.value ||
+        "permanent";
+
+      const discountStatus =
+        editProductDiscountStatus?.value ||
+        "Inactive";
+
+      const discountStart =
+        editProductDiscountStart?.value ||
+        "";
+
+      const discountEnd =
+        editProductDiscountEnd?.value ||
+        "";
 
       const imageFile =
         editProductImageInput
@@ -4212,9 +5540,56 @@ if (updateProductBtn) {
         String(stock)
       );
 
-      formData.append(
+            formData.append(
         "status",
         status
+      );
+
+      formData.append(
+        "discount_type",
+        discountType
+      );
+
+      formData.append(
+        "discount_value",
+        discountType === "none"
+          ? "0"
+          : String(
+              discountValue
+            )
+      );
+
+      formData.append(
+        "discount_schedule",
+        discountType === "none"
+          ? "permanent"
+          : discountSchedule
+      );
+
+      const isScheduledDiscount =
+        discountType !== "none" &&
+        discountSchedule ===
+          "scheduled";
+
+      formData.append(
+        "discount_start",
+        isScheduledDiscount
+          ? discountStart
+          : ""
+      );
+
+      formData.append(
+        "discount_end",
+        isScheduledDiscount
+          ? discountEnd
+          : ""
+      );
+
+      formData.append(
+        "discount_status",
+        discountType === "none"
+          ? "Inactive"
+          : discountStatus
       );
 
       formData.append(
@@ -4538,7 +5913,204 @@ productSort?.addEventListener("change", applyProductFilters);
 userSearch?.addEventListener("input", applyUserFilters);
 userRoleFilter?.addEventListener("change", applyUserFilters);
 userStatusFilter?.addEventListener("change", applyUserFilters);
+/* =========================
+   ADD USER
+========================= */
 
+saveUserBtn?.addEventListener(
+  "click",
+  async () => {
+    const fullNameInput =
+      document.getElementById(
+        "userFullName"
+      );
+
+    const emailInput =
+      document.getElementById(
+        "userEmail"
+      );
+
+    const contactInput =
+      document.getElementById(
+        "userContactNumber"
+      );
+
+    const addressInput =
+      document.getElementById(
+        "userAddress"
+      );
+
+    const passwordInput =
+      document.getElementById(
+        "userPassword"
+      );
+
+    const roleInput =
+      document.getElementById(
+        "userRole"
+      );
+
+    const statusInput =
+      document.getElementById(
+        "userStatus"
+      );
+
+    const fullName =
+      fullNameInput?.value.trim() || "";
+
+    const email =
+      emailInput?.value.trim().toLowerCase() || "";
+
+    const contactNumber =
+      contactInput?.value.trim() || "";
+
+    const address =
+      addressInput?.value.trim() || "";
+
+    const password =
+      passwordInput?.value || "";
+
+    const role =
+      roleInput?.value || "";
+
+    const status =
+      Number(
+        statusInput?.value ?? 1
+      );
+
+    if (!fullName) {
+      alert("Full name is required.");
+      fullNameInput?.focus();
+      return;
+    }
+
+    if (!email) {
+      alert("Email is required.");
+      emailInput?.focus();
+      return;
+    }
+
+    if (!password) {
+      alert("Password is required.");
+      passwordInput?.focus();
+      return;
+    }
+
+    if (
+      contactNumber &&
+      !/^[0-9]{11}$/.test(
+        contactNumber
+      )
+    ) {
+      alert(
+        "Contact number must be exactly 11 digits."
+      );
+
+      contactInput?.focus();
+      return;
+    }
+
+    const originalText =
+      saveUserBtn.textContent;
+
+    try {
+      saveUserBtn.disabled = true;
+      saveUserBtn.textContent =
+        "Saving...";
+
+      const result = await fetchJSON(
+        `${OWNER_API_BASE}/add_user.php`,
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            full_name: fullName,
+            email,
+            contact_number:
+              contactNumber,
+            address,
+            password,
+            role,
+            status
+          })
+        }
+      );
+
+      if (!result.success) {
+        throw new Error(
+          result.message ||
+          "Unable to add the user."
+        );
+      }
+
+      addUserModal?.classList.remove(
+        "show"
+      );
+
+      if (fullNameInput) {
+        fullNameInput.value = "";
+      }
+
+      if (emailInput) {
+        emailInput.value = "";
+      }
+
+      if (contactInput) {
+        contactInput.value = "";
+      }
+
+      if (addressInput) {
+        addressInput.value = "";
+      }
+
+      if (passwordInput) {
+        passwordInput.value = "";
+      }
+
+      if (roleInput) {
+        roleInput.value = "cashier";
+      }
+
+      if (statusInput) {
+        statusInput.value = "1";
+      }
+
+      await Promise.all([
+        loadUsers(),
+        loadDashboardSummary()
+      ]);
+
+      await saveActivityLog(
+        "staff",
+        "Staff Account Created",
+        `${fullName} was added as ${role}.`
+      );
+
+      await loadActivityLogs();
+
+      alert(
+        result.message ||
+        "User added successfully."
+      );
+
+    } catch (error) {
+      console.error(
+        "Add user failed:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Unable to add the user."
+      );
+
+    } finally {
+      saveUserBtn.disabled = false;
+      saveUserBtn.textContent =
+        originalText;
+    }
+  }
+);
 openAddUserModal?.addEventListener("click", () => addUserModal.classList.add("show"));
 closeAddUserModal?.addEventListener("click", () => addUserModal.classList.remove("show"));
 closeEditUserModal?.addEventListener("click", () => editUserModal.classList.remove("show"));
@@ -4642,10 +6214,47 @@ window.openEditProductModal = function(id) {
       "editProductStock"
     );
 
-  const editStatusInput =
+   const editStatusInput =
     document.getElementById(
       "editProductStatus"
     );
+
+  const savedDiscountType =
+    ["percentage", "fixed"].includes(
+      String(
+        p.discountType || ""
+      )
+        .trim()
+        .toLowerCase()
+    )
+      ? String(
+          p.discountType
+        )
+          .trim()
+          .toLowerCase()
+      : "none";
+
+  const savedDiscountSchedule =
+    String(
+      p.discountSchedule ||
+      "permanent"
+    )
+      .trim()
+      .toLowerCase() ===
+    "scheduled"
+      ? "scheduled"
+      : "permanent";
+
+  const savedDiscountStatus =
+    String(
+      p.discountStatus ||
+      "Inactive"
+    )
+      .trim()
+      .toLowerCase() ===
+    "active"
+      ? "Active"
+      : "Inactive";
 
   if (editIdInput) {
     editIdInput.value = p.id;
@@ -4676,7 +6285,7 @@ window.openEditProductModal = function(id) {
       p.stock;
   }
 
-  if (editStatusInput) {
+   if (editStatusInput) {
     editStatusInput.value =
       String(p.status)
         .trim()
@@ -4685,6 +6294,69 @@ window.openEditProductModal = function(id) {
         ? "Unavailable"
         : "Available";
   }
+
+  if (
+    editProductDiscountType
+  ) {
+    editProductDiscountType.value =
+      savedDiscountType;
+  }
+
+  if (
+    editProductDiscountValue
+  ) {
+    editProductDiscountValue.value =
+      savedDiscountType === "none"
+        ? "0"
+        : String(
+            Number(
+              p.discountValue
+            ) || 0
+          );
+  }
+
+  if (
+    editProductDiscountSchedule
+  ) {
+    editProductDiscountSchedule.value =
+      savedDiscountSchedule;
+  }
+
+  if (
+    editProductDiscountStatus
+  ) {
+    editProductDiscountStatus.value =
+      savedDiscountType === "none"
+        ? "Inactive"
+        : savedDiscountStatus;
+  }
+
+  if (
+    editProductDiscountStart
+  ) {
+    editProductDiscountStart.value =
+      savedDiscountSchedule ===
+      "scheduled"
+        ? formatDateTimeLocalValue(
+            p.discountStart
+          )
+        : "";
+  }
+
+  if (
+    editProductDiscountEnd
+  ) {
+    editProductDiscountEnd.value =
+      savedDiscountSchedule ===
+      "scheduled"
+        ? formatDateTimeLocalValue(
+            p.discountEnd
+          )
+        : "";
+  }
+
+  updateEditDiscountVisibility();
+  updateEditDiscountPreview();
 
   if (editProductImageInput) {
     editProductImageInput.value =
@@ -5619,6 +7291,7 @@ async function initDashboard() {
   loadDashboardSummary(),
   loadProducts(),
   loadUsers(),
+  loadStaffAccessCode(),
   loadSalesChart("weekly"),
   loadSalesReport(),
   loadRestaurantSettings()

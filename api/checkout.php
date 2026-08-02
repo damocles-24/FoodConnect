@@ -490,26 +490,33 @@ try {
            LOAD AND LOCK BASE PRODUCT
         ================================================= */
 
-        $productStmt = $conn->prepare("
-            SELECT
-                product_id,
-                restaurant_id,
-                product_name,
-                category,
-                size,
-                price,
-                stock,
-                status
+       $productStmt = $conn->prepare("
+    SELECT
+        product_id,
+        restaurant_id,
+        product_name,
+        category,
+        size,
+        price,
+        stock,
+        status,
 
-            FROM tbl_products
+        discount_type,
+        discount_value,
+        discount_schedule,
+        discount_start,
+        discount_end,
+        discount_status
 
-            WHERE product_id = ?
-              AND restaurant_id = ?
+    FROM tbl_products
 
-            LIMIT 1
+    WHERE product_id = ?
+      AND restaurant_id = ?
 
-            FOR UPDATE
-        ");
+    LIMIT 1
+
+    FOR UPDATE
+");
 
         if (!$productStmt) {
             throw new RuntimeException(
@@ -558,16 +565,231 @@ try {
             )
         );
 
-        $basePrice = (float)(
+       /* =================================================
+   AUTHORITATIVE PRODUCT PROMOTION PRICE
+================================================= */
+
+$regularBasePrice = round(
+    max(
+        0,
+        (float)(
             $product["price"] ?? 0
-        );
+        )
+    ),
+    2
+);
 
-        $baseStock = (int)(
-            $product["stock"] ?? 0
-        );
+$discountType = strtolower(
+    trim(
+        (string)(
+            $product["discount_type"] ??
+            "none"
+        )
+    )
+);
 
-        $baseStatus =
-            $product["status"] ?? "";
+if (
+    !in_array(
+        $discountType,
+        [
+            "none",
+            "percentage",
+            "fixed"
+        ],
+        true
+    )
+) {
+    $discountType = "none";
+}
+
+$discountValue = round(
+    max(
+        0,
+        (float)(
+            $product["discount_value"] ??
+            0
+        )
+    ),
+    2
+);
+
+$discountSchedule = strtolower(
+    trim(
+        (string)(
+            $product["discount_schedule"] ??
+            "permanent"
+        )
+    )
+);
+
+if (
+    !in_array(
+        $discountSchedule,
+        [
+            "permanent",
+            "scheduled"
+        ],
+        true
+    )
+) {
+    $discountSchedule =
+        "permanent";
+}
+
+$discountStart =
+    $product["discount_start"] ??
+    null;
+
+$discountEnd =
+    $product["discount_end"] ??
+    null;
+
+if (
+    $discountStart === "" ||
+    $discountStart ===
+        "0000-00-00 00:00:00"
+) {
+    $discountStart = null;
+}
+
+if (
+    $discountEnd === "" ||
+    $discountEnd ===
+        "0000-00-00 00:00:00"
+) {
+    $discountEnd = null;
+}
+
+$discountStatus =
+    strtolower(
+        trim(
+            (string)(
+                $product["discount_status"] ??
+                "inactive"
+            )
+        )
+    ) === "active"
+        ? "Active"
+        : "Inactive";
+
+$isDiscountActive = false;
+
+$promotionTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
+
+$currentDateTime =
+    new DateTime(
+        "now",
+        $promotionTimezone
+    );
+
+if (
+    $discountType !== "none" &&
+    $discountValue > 0 &&
+    $discountStatus === "Active"
+) {
+    if (
+        $discountSchedule ===
+        "permanent"
+    ) {
+        $isDiscountActive = true;
+    } elseif (
+        $discountSchedule ===
+            "scheduled" &&
+        $discountStart !== null &&
+        $discountEnd !== null
+    ) {
+        try {
+            $discountStartObject =
+                new DateTime(
+                    $discountStart,
+                    $promotionTimezone
+                );
+
+            $discountEndObject =
+                new DateTime(
+                    $discountEnd,
+                    $promotionTimezone
+                );
+
+            $isDiscountActive =
+                $currentDateTime >=
+                    $discountStartObject &&
+                $currentDateTime <=
+                    $discountEndObject;
+
+        } catch (Throwable $error) {
+            $isDiscountActive = false;
+        }
+    }
+}
+
+$basePrice =
+    $regularBasePrice;
+
+if ($isDiscountActive) {
+    if (
+        $discountType ===
+        "percentage"
+    ) {
+        /*
+         * Defensive protection in case invalid data
+         * reaches checkout.
+         */
+        $safePercentage =
+            min(
+                100,
+                $discountValue
+            );
+
+        $basePrice =
+            $regularBasePrice -
+            (
+                $regularBasePrice *
+                $safePercentage /
+                100
+            );
+
+    } elseif (
+        $discountType === "fixed"
+    ) {
+        $safeFixedDiscount =
+            min(
+                $regularBasePrice,
+                $discountValue
+            );
+
+        $basePrice =
+            $regularBasePrice -
+            $safeFixedDiscount;
+    }
+
+    $basePrice = round(
+        max(
+            0,
+            $basePrice
+        ),
+        2
+    );
+}
+
+$discountSavings = round(
+    max(
+        0,
+        $regularBasePrice -
+        $basePrice
+    ),
+    2
+);
+
+$baseStock = (int)(
+    $product["stock"] ?? 0
+);
+
+$baseStatus =
+    $product["status"] ?? "";
 
         /* =================================================
            DETECT COMBO
@@ -1258,17 +1480,24 @@ try {
            AUTHORITATIVE BACKEND PRICE
         ================================================= */
 
-        $unitPrice =
-            $basePrice +
-            $comboChoicePriceAdjustment +
-            $addonUnitTotal;
+        $unitPrice = round(
+    max(
+        0,
+        $basePrice +
+        $comboChoicePriceAdjustment +
+        $addonUnitTotal
+    ),
+    2
+);
 
-        $lineSubtotal =
-            $unitPrice *
-            $quantity;
+$lineSubtotal = round(
+    $unitPrice *
+    $quantity,
+    2
+);
 
-        $total +=
-            $lineSubtotal;
+$total +=
+    $lineSubtotal;
 
         /* =================================================
            SAVE VALIDATED ITEM IN MEMORY
@@ -1327,11 +1556,29 @@ try {
                     )
                     : "No Add-on",
 
-            "unit_price" =>
-                $unitPrice,
+            "regular_base_price" =>
+    $regularBasePrice,
 
-            "subtotal" =>
-                $lineSubtotal
+"discounted_base_price" =>
+    $basePrice,
+
+"discount_type" =>
+    $discountType,
+
+"discount_value" =>
+    $discountValue,
+
+"discount_savings" =>
+    $discountSavings,
+
+"is_discount_active" =>
+    $isDiscountActive,
+
+"unit_price" =>
+    $unitPrice,
+
+"subtotal" =>
+    $lineSubtotal
         ];
     }
 
@@ -1768,33 +2015,43 @@ $insertOrderStmt->bind_param(
     ===================================================== */
 
     $insertItemStmt = $conn->prepare("
-        INSERT INTO tbl_order_items (
-            order_id,
-            product_id,
-            combo_id,
-            quantity,
-            price,
-            product_name,
-            base_text,
-            addon_text,
-            addon_ids_json,
-            combo_choice_text,
-            combo_choice_ids_json
-        )
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-        )
-    ");
+    INSERT INTO tbl_order_items (
+        order_id,
+        product_id,
+        combo_id,
+        quantity,
+        price,
+        regular_price,
+        discount_type,
+        discount_value,
+        discount_savings,
+        discount_applied,
+        product_name,
+        base_text,
+        addon_text,
+        addon_ids_json,
+        combo_choice_text,
+        combo_choice_ids_json
+    )
+    VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+    )
+");
 
     if (!$insertItemStmt) {
         $deductStockStmt->close();
@@ -2054,11 +2311,87 @@ $insertOrderStmt->bind_param(
             )
         );
 
-        $unitPrice = (float)(
+        $unitPrice = round(
+    max(
+        0,
+        (float)(
             $item["unit_price"] ?? 0
-        );
+        )
+    ),
+    2
+);
 
-        $addonIdsJson = encode_id_array(
+$regularPriceSnapshot = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "regular_base_price"
+            ] ?? $unitPrice
+        )
+    ),
+    2
+);
+
+$discountTypeSnapshot = strtolower(
+    trim(
+        (string)(
+            $item[
+                "discount_type"
+            ] ?? "none"
+        )
+    )
+);
+
+if (
+    !in_array(
+        $discountTypeSnapshot,
+        [
+            "none",
+            "percentage",
+            "fixed"
+        ],
+        true
+    )
+) {
+    $discountTypeSnapshot = "none";
+}
+
+$discountValueSnapshot = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "discount_value"
+            ] ?? 0
+        )
+    ),
+    2
+);
+
+$discountSavingsSnapshot = round(
+    max(
+        0,
+        (float)(
+            $item[
+                "discount_savings"
+            ] ?? 0
+        )
+    ),
+    2
+);
+
+$discountAppliedSnapshot =
+    !empty(
+        $item[
+            "is_discount_active"
+        ]
+    ) &&
+    $discountSavingsSnapshot > 0
+        ? 1
+        : 0;
+
+$addonIdsJson = encode_id_array(
             $item["addon_ids"] ?? []
         );
 
@@ -2074,19 +2407,24 @@ $insertOrderStmt->bind_param(
         ================================================= */
 
         $insertItemStmt->bind_param(
-            "iiiidssssss",
-            $order_id,
-            $product_id,
-            $comboIdValue,
-            $quantity,
-            $unitPrice,
-            $productName,
-            $baseText,
-            $addonText,
-            $addonIdsJson,
-            $comboChoiceText,
-            $comboChoiceIdsJson
-        );
+    "iiiiddsddissssss",
+    $order_id,
+    $product_id,
+    $comboIdValue,
+    $quantity,
+    $unitPrice,
+    $regularPriceSnapshot,
+    $discountTypeSnapshot,
+    $discountValueSnapshot,
+    $discountSavingsSnapshot,
+    $discountAppliedSnapshot,
+    $productName,
+    $baseText,
+    $addonText,
+    $addonIdsJson,
+    $comboChoiceText,
+    $comboChoiceIdsJson
+);
 
         if (!$insertItemStmt->execute()) {
             throw new RuntimeException(

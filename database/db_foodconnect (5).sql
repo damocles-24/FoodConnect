@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 30, 2026 at 03:05 PM
+-- Generation Time: Aug 02, 2026 at 04:44 PM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -57,7 +57,23 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (21, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burger was updated.', '2026-07-30 06:50:32'),
 (22, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burgers was updated.', '2026-07-30 06:50:37'),
 (23, 4, 22, 'owner', 'product', 'Product Updated', 'Cheese Burgers was updated.', '2026-07-30 06:50:45'),
-(24, 4, 22, 'owner', 'product', 'Product Updated', 'Masarap was updated.', '2026-07-30 06:51:18');
+(24, 4, 22, 'owner', 'product', 'Product Updated', 'Masarap was updated.', '2026-07-30 06:51:18'),
+(25, 4, 22, 'owner', 'product', 'Product Added', 'Tapsilog was added to the menu.', '2026-08-02 00:14:07'),
+(26, 2, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Ayaw ko na Restaurant from Closed to Open.', '2026-08-02 00:16:31'),
+(27, 2, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Ayaw ko na Restaurant from Open to Closed.', '2026-08-02 00:16:35'),
+(28, 4, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Test Environment from Closed to Open.', '2026-08-02 00:16:37'),
+(29, 4, 22, 'owner', 'product', 'Product Deleted', 'Tapsilog was removed from the menu.', '2026-08-02 00:18:19'),
+(30, 4, 22, 'owner', 'product', 'Product Added', 'tapsilog was added to the menu.', '2026-08-02 00:19:26'),
+(31, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 00:37:52'),
+(32, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 01:22:44'),
+(33, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 01:32:24'),
+(34, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 01:57:14'),
+(35, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 02:29:15'),
+(36, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 03:40:52'),
+(37, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 04:25:08'),
+(38, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-02 13:07:01'),
+(39, 4, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #1 / Queue #1.', '2026-08-02 13:41:45'),
+(40, 4, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #2 / Queue #2.', '2026-08-02 14:19:03');
 
 -- --------------------------------------------------------
 
@@ -98,6 +114,8 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (47, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-29 12:12:54'),
 (49, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-29 13:42:17'),
 (51, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-07-29 13:46:54'),
+(53, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-08-02 00:16:20'),
+(56, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '::1', 'credentials', 1, '2026-08-02 13:06:05'),
 (11, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:13:52'),
 (12, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:01'),
 (13, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-25 07:14:02'),
@@ -111,6 +129,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (41, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-29 02:12:04'),
 (42, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-29 02:12:05'),
 (45, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-07-29 12:12:25'),
+(54, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 0, '2026-08-02 13:05:54'),
 (1, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-23 07:15:44'),
 (3, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 01:45:26'),
 (5, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-24 12:10:55'),
@@ -129,7 +148,9 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (43, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-29 02:12:12'),
 (46, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-29 12:12:36'),
 (48, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-29 13:42:04'),
-(50, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-29 13:46:46');
+(50, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-07-29 13:46:46'),
+(52, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-08-02 00:16:07'),
+(55, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-08-02 13:06:00');
 
 -- --------------------------------------------------------
 
@@ -150,6 +171,13 @@ CREATE TABLE `tbl_cart` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `tbl_cart`
+--
+
+INSERT INTO `tbl_cart` (`cart_id`, `user_id`, `restaurant_id`, `product_id`, `addon_ids`, `combo_choice_ids_json`, `quantity`, `price_at_time`, `subtotal`, `created_at`, `updated_at`) VALUES
+(1, 17, 4, 3, '[]', '[]', 1, '100.00', '100.00', '2026-08-02 00:17:09', '2026-08-02 00:17:09');
 
 -- --------------------------------------------------------
 
@@ -335,6 +363,14 @@ CREATE TABLE `tbl_orders` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `tbl_orders`
+--
+
+INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `qr_verified_at`, `qr_expires_at`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
+(1, 'd0f69685dc9925746ded33b88065fdcc8ad8f58f8fac6a51990f40202a47409b', NULL, '2026-08-02 22:01:45', 1, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '100.00', '100.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 13:41:45'),
+(2, 'f77b860e228adcd811c02b1eb288f9a988209dbb1bddc7a70bae0f6bb59cc183', NULL, '2026-08-02 22:39:03', 2, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 14:19:03');
+
 -- --------------------------------------------------------
 
 --
@@ -348,6 +384,11 @@ CREATE TABLE `tbl_order_items` (
   `combo_id` int(11) DEFAULT NULL,
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL,
+  `regular_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_type` enum('none','percentage','fixed') NOT NULL DEFAULT 'none',
+  `discount_value` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_savings` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_applied` tinyint(1) NOT NULL DEFAULT '0',
   `product_name` varchar(150) DEFAULT NULL,
   `base_text` varchar(150) DEFAULT NULL,
   `combo_choice_text` varchar(500) DEFAULT NULL,
@@ -355,6 +396,14 @@ CREATE TABLE `tbl_order_items` (
   `addon_text` varchar(150) DEFAULT NULL,
   `addon_ids_json` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `tbl_order_items`
+--
+
+INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo_id`, `quantity`, `price`, `regular_price`, `discount_type`, `discount_value`, `discount_savings`, `discount_applied`, `product_name`, `base_text`, `combo_choice_text`, `combo_choice_ids_json`, `addon_text`, `addon_ids_json`) VALUES
+(1, 1, 4, NULL, 1, '100.00', '0.00', 'none', '0.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(2, 2, 4, NULL, 1, '30.00', '0.00', 'none', '0.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]');
 
 -- --------------------------------------------------------
 
@@ -378,8 +427,8 @@ CREATE TABLE `tbl_owner_trusted_devices` (
 
 INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selector`, `token_hash`, `expires_at`, `created_at`, `last_used_at`) VALUES
 (5, 19, '65778f3c9ccb58b8420414f048190e1b', '7f7c210a8d9f103fa60e9cc267e0b4b4c222641191d104f88da7cd6b7ddec484', '2026-08-24 15:49:51', '2026-07-25 21:49:51', '2026-07-26 12:38:34'),
-(6, 22, '62c8ed88b8a14e9d29affaf40754802d', 'f83f86701cadcf1a8844be0fd575b969aeb7f63b91b682529099cc1e53522622', '2026-08-28 15:45:29', '2026-07-29 21:45:29', '2026-07-29 21:55:59'),
-(7, 22, '21fc4047af34c4e99437b6394ba1ac65', 'e9c43c3ec9ecf57711ede7520e7413100b7207a37d22ffe932dba12d5527ed1a', '2026-08-29 06:28:39', '2026-07-30 12:28:39', '2026-07-30 21:00:19');
+(6, 22, '62c8ed88b8a14e9d29affaf40754802d', 'f83f86701cadcf1a8844be0fd575b969aeb7f63b91b682529099cc1e53522622', '2026-08-28 15:45:29', '2026-07-29 21:45:29', '2026-08-02 21:06:32'),
+(7, 22, '21fc4047af34c4e99437b6394ba1ac65', 'e9c43c3ec9ecf57711ede7520e7413100b7207a37d22ffe932dba12d5527ed1a', '2026-08-29 06:28:39', '2026-07-30 12:28:39', '2026-08-02 08:17:41');
 
 -- --------------------------------------------------------
 
@@ -477,7 +526,8 @@ CREATE TABLE `tbl_products` (
 
 INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
 (1, 4, 'Hotdog malaki', 'Burgir', 'Solo', '200.00', 20, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
-(2, 4, 'Masarap', 'Limited Edition', '', '99999999.99', 10, 'Available', '/FoodConnect/uploads/product_images/restaurant_4/product_2415e05751dd960d0282acb972ee152c.jpg', 'none', '0.00', 'permanent', NULL, NULL, 'Inactive');
+(2, 4, 'Masarap', 'Limited Edition', '', '99999999.99', 10, 'Available', '/FoodConnect/uploads/product_images/restaurant_4/product_2415e05751dd960d0282acb972ee152c.jpg', 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(4, 4, 'tapsilog', 'Silogmeals', '', '100.00', 8, 'Available', NULL, 'percentage', '70.00', 'scheduled', '2026-08-02 08:20:00', '2026-08-03 17:19:00', 'Active');
 
 -- --------------------------------------------------------
 
@@ -523,7 +573,7 @@ CREATE TABLE `tbl_restaurants` (
 INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `description`, `logo_path`, `banner_path`, `address`, `contact_number`, `opening_hours`, `delivery_fee`, `business_status`, `owner_id`, `staff_access_code`, `setup_completed`, `customer_visibility`) VALUES
 (2, 'Ayaw ko na Restaurant', NULL, NULL, NULL, 'Poblacion', '09457309228', 'Configured during partner application', '0.00', 'Closed', 18, '19EDF2E0A6C5', 1, 'Visible'),
 (3, 'Hotdog cafe', NULL, 'uploads/restaurant_logos/owner_19/restaurant_logo_20260725_154052_5fbe4653f64f8827.jpg', NULL, 'Poblacion', '09457309228', 'Configured during partner application', '1000.00', 'Closed', 19, '72606EC1F9C2', 1, 'Visible'),
-(4, 'Test Environment', '', 'uploads/restaurant_logos/owner_22/restaurant_logo_20260729_152152_2a2e89d6f0901449.jpg', NULL, 'Poblacion', '094573092298', 'Configured in restaurant setup', '0.00', 'Closed', 22, 'F2FC80DF9A21', 1, 'Visible');
+(4, 'Test Environment', '', 'uploads/restaurant_logos/owner_22/restaurant_logo_20260729_152152_2a2e89d6f0901449.jpg', NULL, 'Poblacion', '094573092298', 'Configured in restaurant setup', '0.00', 'Open', 22, 'F2FC80DF9A21', 1, 'Visible');
 
 -- --------------------------------------------------------
 
@@ -770,19 +820,19 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `tbl_categories`
@@ -848,13 +898,13 @@ ALTER TABLE `tbl_notification_reads`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
@@ -878,7 +928,7 @@ ALTER TABLE `tbl_partner_invitation_requests`
 -- AUTO_INCREMENT for table `tbl_products`
 --
 ALTER TABLE `tbl_products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `tbl_queue`

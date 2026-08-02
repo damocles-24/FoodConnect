@@ -10,6 +10,15 @@ header(
 
 require_once __DIR__ . "/db.php";
 
+/*
+ * Promotion dates are entered and stored
+ * using Philippine local time.
+ */
+$promotionTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
+
 /* =========================================================
    JSON RESPONSE
 ========================================================= */
@@ -146,7 +155,14 @@ $stmt = $conn->prepare("
         size,
         price,
         stock,
-        status
+        status,
+        image_path,
+        discount_type,
+        discount_value,
+        discount_schedule,
+        discount_start,
+        discount_end,
+        discount_status
     FROM tbl_products
     WHERE restaurant_id = ?
     ORDER BY product_id DESC
@@ -188,6 +204,10 @@ $result = $stmt->get_result();
 $products = [];
 
 while ($row = $result->fetch_assoc()) {
+    $productId = (int) (
+        $row["product_id"] ?? 0
+    );
+
     $stock = max(
         0,
         (int) (
@@ -195,18 +215,277 @@ while ($row = $result->fetch_assoc()) {
         )
     );
 
+    $regularPrice = round(
+        max(
+            0,
+            (float) (
+                $row["price"] ?? 0
+            )
+        ),
+        2
+    );
+
+    /* =====================================================
+       PRODUCT STATUS
+    ===================================================== */
+
+    $statusValue = strtolower(
+        trim(
+            (string) (
+                $row["status"] ??
+                "unavailable"
+            )
+        )
+    );
+
+    $status =
+        $statusValue === "available"
+            ? "Available"
+            : "Unavailable";
+
+    /* =====================================================
+       PRODUCT IMAGE
+    ===================================================== */
+
+    $imagePath = trim(
+        (string) (
+            $row["image_path"] ?? ""
+        )
+    );
+
+    if ($imagePath === "") {
+        $imagePath = null;
+    }
+
+    /* =====================================================
+       DISCOUNT TYPE
+    ===================================================== */
+
+    $discountType = strtolower(
+        trim(
+            (string) (
+                $row["discount_type"] ??
+                "none"
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $discountType,
+            [
+                "none",
+                "percentage",
+                "fixed"
+            ],
+            true
+        )
+    ) {
+        $discountType = "none";
+    }
+
+    $discountValue = round(
+        max(
+            0,
+            (float) (
+                $row["discount_value"] ??
+                0
+            )
+        ),
+        2
+    );
+
+    /* =====================================================
+       DISCOUNT SCHEDULE
+    ===================================================== */
+
+    $discountSchedule = strtolower(
+        trim(
+            (string) (
+                $row["discount_schedule"] ??
+                "permanent"
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $discountSchedule,
+            [
+                "permanent",
+                "scheduled"
+            ],
+            true
+        )
+    ) {
+        $discountSchedule =
+            "permanent";
+    }
+
+    $discountStart =
+        $row["discount_start"] ??
+        null;
+
+    $discountEnd =
+        $row["discount_end"] ??
+        null;
+
+    if (
+        $discountStart === "" ||
+        $discountStart ===
+            "0000-00-00 00:00:00"
+    ) {
+        $discountStart = null;
+    }
+
+    if (
+        $discountEnd === "" ||
+        $discountEnd ===
+            "0000-00-00 00:00:00"
+    ) {
+        $discountEnd = null;
+    }
+
+    /* =====================================================
+       DISCOUNT STATUS
+    ===================================================== */
+
+    $discountStatusValue =
+        strtolower(
+            trim(
+                (string) (
+                    $row["discount_status"] ??
+                    "inactive"
+                )
+            )
+        );
+
+    $discountStatus =
+        $discountStatusValue === "active"
+            ? "Active"
+            : "Inactive";
+
+    /* =====================================================
+       DETERMINE ACTIVE PROMOTION
+    ===================================================== */
+
+    $isDiscountActive = false;
+
+    $currentDateTime =
+        new DateTime(
+            "now",
+            $promotionTimezone
+        );
+
+    if (
+        $discountType !== "none" &&
+        $discountValue > 0 &&
+        $discountStatus === "Active"
+    ) {
+        if (
+            $discountSchedule ===
+            "permanent"
+        ) {
+            $isDiscountActive = true;
+        } elseif (
+            $discountSchedule ===
+                "scheduled" &&
+            $discountStart !== null &&
+            $discountEnd !== null
+        ) {
+            try {
+                $discountStartObject =
+                    new DateTime(
+                        $discountStart,
+                        $promotionTimezone
+                    );
+
+                $discountEndObject =
+                    new DateTime(
+                        $discountEnd,
+                        $promotionTimezone
+                    );
+
+                $isDiscountActive =
+                    $currentDateTime >=
+                        $discountStartObject &&
+                    $currentDateTime <=
+                        $discountEndObject;
+            } catch (Exception $error) {
+                $isDiscountActive = false;
+            }
+        }
+    }
+
+    /* =====================================================
+       CALCULATE FINAL CUSTOMER PRICE
+    ===================================================== */
+
+    $finalPrice = $regularPrice;
+
+    if ($isDiscountActive) {
+        if (
+            $discountType ===
+            "percentage"
+        ) {
+            $finalPrice =
+                $regularPrice -
+                (
+                    $regularPrice *
+                    $discountValue /
+                    100
+                );
+        } elseif (
+            $discountType === "fixed"
+        ) {
+            $finalPrice =
+                $regularPrice -
+                $discountValue;
+        }
+
+        $finalPrice = round(
+            max(
+                0,
+                $finalPrice
+            ),
+            2
+        );
+    }
+
+    $discountSavings =
+        $isDiscountActive
+            ? round(
+                max(
+                    0,
+                    $regularPrice -
+                    $finalPrice
+                ),
+                2
+            )
+            : 0.00;
+
+    /* =====================================================
+       PUBLIC RESPONSE
+    ===================================================== */
+
     $products[] = [
         "id" =>
-            (int) $row["product_id"],
+            $productId,
 
         "product_id" =>
-            (int) $row["product_id"],
+            $productId,
 
         "name" =>
-            (string) $row["product_name"],
+            (string) (
+                $row["product_name"] ??
+                "Unnamed Product"
+            ),
 
         "product_name" =>
-            (string) $row["product_name"],
+            (string) (
+                $row["product_name"] ??
+                "Unnamed Product"
+            ),
 
         "category" =>
             (string) (
@@ -220,25 +499,52 @@ while ($row = $result->fetch_assoc()) {
             ),
 
         "price" =>
-            round(
-                (float) (
-                    $row["price"] ?? 0
-                ),
-                2
-            ),
+            $regularPrice,
+
+        "regular_price" =>
+            $regularPrice,
+
+        "final_price" =>
+            $finalPrice,
+
+        "discounted_price" =>
+            $finalPrice,
+
+        "discount_savings" =>
+            $discountSavings,
+
+        "discount_type" =>
+            $discountType,
+
+        "discount_value" =>
+            $discountValue,
+
+        "discount_schedule" =>
+            $discountSchedule,
+
+        "discount_start" =>
+            $discountStart,
+
+        "discount_end" =>
+            $discountEnd,
+
+        "discount_status" =>
+            $discountStatus,
+
+        "is_discount_active" =>
+            $isDiscountActive,
 
         "stock" =>
             $stock,
 
         "status" =>
-            (string) (
-                $row["status"] ??
-                (
-                    $stock > 0
-                        ? "Available"
-                        : "Unavailable"
-                )
-            )
+            $status,
+
+        "image_path" =>
+            $imagePath,
+
+        "image" =>
+            $imagePath
     ];
 }
 

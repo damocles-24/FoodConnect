@@ -1518,12 +1518,83 @@ function groupProducts(products) {
       product.size
     );
 
-    const price = Number(product.price || 0);
-    const stock = Number(product.stock || 0);
+   const regularPrice =
+  Number(
+    product.regular_price ??
+    product.price ??
+    0
+  ) || 0;
 
-    const status = String(product.status || "")
-      .trim()
-      .toLowerCase();
+const finalPrice =
+  Number(
+    product.final_price ??
+    product.discounted_price ??
+    regularPrice
+  ) || regularPrice;
+
+const discountSavings =
+  Number(
+    product.discount_savings
+  ) || 0;
+
+const discountType =
+  String(
+    product.discount_type ||
+    "none"
+  )
+    .trim()
+    .toLowerCase();
+
+const discountValue =
+  Number(
+    product.discount_value
+  ) || 0;
+
+const discountSchedule =
+  String(
+    product.discount_schedule ||
+    "permanent"
+  )
+    .trim()
+    .toLowerCase();
+
+const discountStatus =
+  String(
+    product.discount_status ||
+    "Inactive"
+  ).trim();
+
+const discountStart =
+  String(
+    product.discount_start || ""
+  ).trim();
+
+const discountEnd =
+  String(
+    product.discount_end || ""
+  ).trim();
+
+const isDiscountActive =
+  product.is_discount_active === true ||
+  product.is_discount_active === 1 ||
+  String(
+    product.is_discount_active
+  ).trim() === "1";
+
+const image =
+  String(
+    product.image_path ||
+    product.image ||
+    ""
+  ).trim();
+
+const stock =
+  Number(product.stock || 0);
+
+const status =
+  String(product.status || "")
+    .trim()
+    .toLowerCase();
 
     if (!productId || !name) {
       return;
@@ -1557,20 +1628,56 @@ function groupProducts(products) {
     }
 
     grouped.get(groupKey).variants.push({
-      productId,
-      size,
-      price,
-      stock,
-      status,
+  productId,
+  size,
 
-      available:
-        stock > 0 &&
-        ![
-          "unavailable",
-          "inactive",
-          "disabled"
-        ].includes(status)
-    });
+  price:
+    regularPrice,
+
+  regularPrice:
+    regularPrice,
+
+  finalPrice:
+    finalPrice,
+
+  discountSavings:
+    discountSavings,
+
+  discountType:
+    discountType,
+
+  discountValue:
+    discountValue,
+
+  discountSchedule:
+    discountSchedule,
+
+  discountStatus:
+  discountStatus,
+
+discountStart:
+  discountStart,
+
+discountEnd:
+  discountEnd,
+
+isDiscountActive:
+  isDiscountActive,
+
+  image:
+    image,
+
+  stock,
+  status,
+
+  available:
+    stock > 0 &&
+    ![
+      "unavailable",
+      "inactive",
+      "disabled"
+    ].includes(status)
+});
   });
 
   return Array.from(grouped.values()).map(
@@ -1599,7 +1706,20 @@ function groupProducts(products) {
           return aOrder - bOrder;
         }
 
-        return a.price - b.price;
+        const aSellingPrice =
+  a.isDiscountActive
+    ? a.finalPrice
+    : a.regularPrice;
+
+const bSellingPrice =
+  b.isDiscountActive
+    ? b.finalPrice
+    : b.regularPrice;
+
+return (
+  aSellingPrice -
+  bSellingPrice
+);
       });
 
       return group;
@@ -1607,32 +1727,393 @@ function groupProducts(products) {
   );
 }
 
-function getProductPriceLabel(group) {
-  const availableVariants = group.variants.filter(
-    (variant) => variant.available
+function getVariantSellingPrice(
+  variant
+) {
+  if (!variant) {
+    return 0;
+  }
+
+  return variant.isDiscountActive
+    ? Number(
+        variant.finalPrice
+      ) || 0
+    : Number(
+        variant.regularPrice
+      ) || 0;
+}
+
+function getGroupActivePromoVariants(
+  group
+) {
+  return Array.isArray(group?.variants)
+    ? group.variants.filter(
+        variant =>
+          variant.available &&
+          variant.isDiscountActive &&
+          Number(
+            variant.finalPrice
+          ) <
+          Number(
+            variant.regularPrice
+          )
+      )
+    : [];
+}
+
+function getGroupPrimaryVariant(
+  group
+) {
+  const availableVariants =
+    Array.isArray(group?.variants)
+      ? group.variants.filter(
+          variant =>
+            variant.available
+        )
+      : [];
+
+  const variants =
+    availableVariants.length > 0
+      ? availableVariants
+      : (
+          Array.isArray(group?.variants)
+            ? group.variants
+            : []
+        );
+
+  if (!variants.length) {
+    return null;
+  }
+
+  return [...variants].sort(
+    (a, b) =>
+      getVariantSellingPrice(a) -
+      getVariantSellingPrice(b)
+  )[0];
+}
+
+function getGroupPromoLabel(
+  group
+) {
+  const promoVariants =
+    getGroupActivePromoVariants(
+      group
+    );
+
+  if (!promoVariants.length) {
+    return "";
+  }
+
+  const firstPromo =
+    promoVariants[0];
+
+  const samePromotion =
+    promoVariants.every(
+      variant =>
+        variant.discountType ===
+          firstPromo.discountType &&
+        Number(
+          variant.discountValue
+        ) ===
+          Number(
+            firstPromo.discountValue
+          )
+    );
+
+  if (!samePromotion) {
+    return "ON SALE";
+  }
+
+  if (
+    firstPromo.discountType ===
+    "percentage"
+  ) {
+    return `${
+      Number(
+        firstPromo.discountValue
+      ) || 0
+    }% OFF`;
+  }
+
+  if (
+    firstPromo.discountType ===
+    "fixed"
+  ) {
+    return `₱${
+      Number(
+        firstPromo.discountValue
+      ).toFixed(2)
+    } OFF`;
+  }
+
+  return "ON SALE";
+}
+
+function parseCustomerPromoDate(
+  value
+) {
+  const cleanedValue =
+    String(value || "")
+      .trim();
+
+  if (!cleanedValue) {
+    return null;
+  }
+
+  const parsedDate =
+    new Date(
+      cleanedValue.replace(
+        " ",
+        "T"
+      )
+    );
+
+  return Number.isNaN(
+    parsedDate.getTime()
+  )
+    ? null
+    : parsedDate;
+}
+
+function getCustomerPromoEndText(
+  variant
+) {
+  if (
+    !variant ||
+    !variant.isDiscountActive ||
+    variant.discountSchedule !==
+      "scheduled"
+  ) {
+    return "";
+  }
+
+  const endDate =
+    parseCustomerPromoDate(
+      variant.discountEnd
+    );
+
+  if (!endDate) {
+    return "";
+  }
+
+  const now = new Date();
+
+  const remainingMilliseconds =
+    endDate.getTime() -
+    now.getTime();
+
+  if (
+    remainingMilliseconds <= 0
+  ) {
+    return "";
+  }
+
+  const remainingMinutes =
+    Math.ceil(
+      remainingMilliseconds /
+      60000
+    );
+
+  if (remainingMinutes < 60) {
+    return `Promo ends in ${remainingMinutes} min`;
+  }
+
+  const remainingHours =
+    Math.floor(
+      remainingMinutes / 60
+    );
+
+  const extraMinutes =
+    remainingMinutes % 60;
+
+  if (remainingHours < 24) {
+    return extraMinutes > 0
+      ? `Promo ends in ${remainingHours}h ${extraMinutes}m`
+      : `Promo ends in ${remainingHours}h`;
+  }
+
+  const today =
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+  const endDay =
+    new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate()
+    );
+
+  const dayDifference =
+    Math.round(
+      (
+        endDay.getTime() -
+        today.getTime()
+      ) /
+      86400000
+    );
+
+  const timeText =
+    endDate.toLocaleTimeString(
+      "en-PH",
+      {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }
+    );
+
+  if (dayDifference === 0) {
+    return `Ends today • ${timeText}`;
+  }
+
+  if (dayDifference === 1) {
+    return `Ends tomorrow • ${timeText}`;
+  }
+
+  return `Ends ${endDate.toLocaleString(
+    "en-PH",
+    {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    }
+  )}`;
+}
+
+function getGroupPromoPriceMarkup(
+  group
+) {
+  const primaryVariant =
+    getGroupPrimaryVariant(
+      group
+    );
+
+  if (!primaryVariant) {
+    return `
+      <p class="price">
+        Price unavailable
+      </p>
+    `;
+  }
+
+  const sellingPrice =
+    getVariantSellingPrice(
+      primaryVariant
+    );
+
+  const hasActivePromo =
+    primaryVariant
+      .isDiscountActive &&
+    Number(
+      primaryVariant.finalPrice
+    ) <
+    Number(
+      primaryVariant.regularPrice
+    );
+
+    const promoEndText =
+  getCustomerPromoEndText(
+    primaryVariant
   );
+
+  if (!hasActivePromo) {
+    return `
+      <p class="price">
+        ₱${sellingPrice.toFixed(2)}
+      </p>
+    `;
+  }
+
+  return `
+    <div class="customer-promo-price">
+      <strong>
+        ₱${sellingPrice.toFixed(2)}
+      </strong>
+
+      <del>
+        ₱${Number(
+          primaryVariant.regularPrice
+        ).toFixed(2)}
+      </del>
+    </div>
+
+    <small class="customer-promo-saving">
+  Save ₱${Number(
+    primaryVariant.discountSavings
+  ).toFixed(2)}
+</small>
+
+${
+  promoEndText
+    ? `
+      <small class="customer-promo-ending">
+        ${escapeMenuText(
+          promoEndText
+        )}
+      </small>
+    `
+    : ""
+}
+  `;
+}
+
+function getProductPriceLabel(
+  group
+) {
+  const availableVariants =
+    group.variants.filter(
+      variant =>
+        variant.available
+    );
 
   const variants =
     availableVariants.length > 0
       ? availableVariants
       : group.variants;
 
-  const prices = variants
-    .map((variant) => Number(variant.price))
-    .filter((price) => Number.isFinite(price));
+  const sellingPrices =
+    variants
+      .map(
+        variant =>
+          getVariantSellingPrice(
+            variant
+          )
+      )
+      .filter(
+        price =>
+          Number.isFinite(
+            price
+          )
+      );
 
-  if (prices.length === 0) {
+  if (!sellingPrices.length) {
     return "Price unavailable";
   }
 
-  const minimum = Math.min(...prices);
-  const maximum = Math.max(...prices);
+  const minimum =
+    Math.min(
+      ...sellingPrices
+    );
+
+  const maximum =
+    Math.max(
+      ...sellingPrices
+    );
 
   if (minimum === maximum) {
     return `₱${minimum.toFixed(2)}`;
   }
 
-  return `₱${minimum.toFixed(2)} – ₱${maximum.toFixed(2)}`;
+  return (
+    `₱${minimum.toFixed(2)}` +
+    ` – ` +
+    `₱${maximum.toFixed(2)}`
+  );
 }
 
 function getVariantSummary(group) {
@@ -1660,28 +2141,63 @@ function buildProductCard(group) {
 const isUnavailable =
   !isBundle &&
   availableVariants.length === 0;
-  const variantSummary = getVariantSummary(group);
+  const variantSummary =
+  getVariantSummary(group);
 
-  return `
+const promoLabel =
+  getGroupPromoLabel(
+    group
+  );
+
+const primaryVariant =
+  getGroupPrimaryVariant(
+    group
+  );
+
+const productImage =
+  resolveRestaurantImageUrl(
+    primaryVariant?.image
+  ) ||
+  DEFAULT_PRODUCT_IMAGE;
+
+return `
     <article
       class="menu-item dynamic-menu-item"
       data-product-group="${escapeMenuText(group.key)}"
       data-category="${escapeMenuText(group.categorySlug)}"
       data-subcategory="${escapeMenuText(group.subcategorySlug)}"
     >
-      <img
-        src="${DEFAULT_PRODUCT_IMAGE}"
-        alt="${escapeMenuText(group.name)}"
-        loading="lazy"
-      >
+      
+    <div class="menu-item-image-wrap">
+  ${
+    promoLabel
+      ? `
+        <span class="customer-promo-ribbon">
+          ${escapeMenuText(
+            promoLabel
+          )}
+        </span>
+      `
+      : ""
+  }
+
+  <img
+    src="${escapeMenuText(
+      productImage
+    )}"
+    alt="${escapeMenuText(
+      group.name
+    )}"
+    loading="lazy"
+    onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
+  >
+</div>
 
       <div class="menu-item-info">
         <div class="menu-item-details">
           <h3>${escapeMenuText(group.name)}</h3>
 
-          <p class="price">
-            ${escapeMenuText(getProductPriceLabel(group))}
-          </p>
+          ${getGroupPromoPriceMarkup(group)}
 
           ${
             variantSummary
@@ -1749,9 +2265,26 @@ function buildPopularProductCard(
     availableVariants.length === 0;
 
   const variantSummary =
-    getVariantSummary(group);
+  getVariantSummary(group);
 
-  const totalSold = Math.max(
+const promoLabel =
+  getGroupPromoLabel(
+    group
+  );
+
+const primaryVariant =
+  getGroupPrimaryVariant(
+    group
+  );
+
+const productImage =
+  resolveRestaurantImageUrl(
+    primaryVariant?.image
+  ) ||
+  DEFAULT_PRODUCT_IMAGE;
+
+const totalSold = Math.max(
+
     0,
     Number(
       popularProduct.total_sold || 0
@@ -1816,13 +2349,32 @@ const isFallback =
         #${rank}
       </span>
 
-      <img
-        src="${DEFAULT_PRODUCT_IMAGE}"
-        alt="${
-          escapeMenuText(group.name)
-        }"
-        loading="lazy"
-      >
+      <div class="menu-item-image-wrap">
+  ${
+    promoLabel
+      ? `
+        <span class="customer-promo-ribbon">
+          ${escapeMenuText(
+            promoLabel
+          )}
+        </span>
+      `
+      : ""
+  }
+
+  <img
+    src="${escapeMenuText(
+      productImage
+    )}"
+    alt="${
+      escapeMenuText(
+        group.name
+      )
+    }"
+    loading="lazy"
+    onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
+  >
+</div>
 
       <div class="menu-item-info">
         <div class="menu-item-details">
@@ -1830,15 +2382,7 @@ const isFallback =
             ${escapeMenuText(group.name)}
           </h3>
 
-          <p class="price">
-            ${
-              escapeMenuText(
-                getProductPriceLabel(
-                  group
-                )
-              )
-            }
-          </p>
+          ${getGroupPromoPriceMarkup(group)}
 
           ${
             variantSummary
@@ -2323,6 +2867,35 @@ if (comboChoiceSection) {
   }
 }
 
+function getSelectedVariantCustomerPrice(
+  variant
+) {
+  if (!variant) {
+    return 0;
+  }
+
+  const regularPrice =
+    Number(
+      variant.regularPrice ??
+      variant.price ??
+      0
+    ) || 0;
+
+  const finalPrice =
+    Number(
+      variant.finalPrice ??
+      regularPrice
+    ) || regularPrice;
+
+  const hasActiveDiscount =
+    variant.isDiscountActive === true &&
+    finalPrice < regularPrice;
+
+  return hasActiveDiscount
+    ? finalPrice
+    : regularPrice;
+}
+
 function updateProductModalTotal() {
   if (
     !activeSelectedVariant ||
@@ -2363,10 +2936,15 @@ function updateProductModalTotal() {
     );
   });
 
-  const unitTotal =
-    Number(activeSelectedVariant.price || 0) +
-    addonTotal +
-    comboChoiceAdjustment;
+const productUnitPrice =
+  getSelectedVariantCustomerPrice(
+    activeSelectedVariant
+  );
+
+const unitTotal =
+  productUnitPrice +
+  addonTotal +
+  comboChoiceAdjustment;
 
   const finalTotal =
     unitTotal * quantity;
@@ -2449,11 +3027,18 @@ async function openProductOptionsModal(groupKey) {
   activeSelectedVariant =
     selectableVariants[0];
 
-  productOptionsTitle.textContent =
-    group.name;
+ productOptionsTitle.textContent =
+  group.name;
 
-  productOptionsCategory.textContent =
-    group.rawCategory || "Product";
+const selectedPromoLabel =
+  getGroupPromoLabel(
+    group
+  );
+
+productOptionsCategory.textContent =
+  selectedPromoLabel
+    ? `${group.rawCategory || "Product"} • ${selectedPromoLabel}`
+    : group.rawCategory || "Product";
 
   variantOptionsList.innerHTML =
     selectableVariants
@@ -2476,11 +3061,41 @@ async function openProductOptionsModal(groupKey) {
                 ${escapeMenuText(optionLabel)}
               </strong>
 
-              <small>
-                ₱${Number(
-                  variant.price || 0
-                ).toFixed(2)}
-              </small>
+              <small
+  class="${
+    variant.isDiscountActive
+      ? "variant-option-promo-price"
+      : ""
+  }"
+>
+  ${
+    variant.isDiscountActive &&
+    Number(
+      variant.finalPrice
+    ) <
+    Number(
+      variant.regularPrice
+    )
+      ? `
+        <strong>
+          ₱${getSelectedVariantCustomerPrice(
+            variant
+          ).toFixed(2)}
+        </strong>
+
+        <del>
+          ₱${Number(
+            variant.regularPrice
+          ).toFixed(2)}
+        </del>
+      `
+      : `
+        ₱${getSelectedVariantCustomerPrice(
+          variant
+        ).toFixed(2)}
+      `
+  }
+</small>
             </span>
           </label>
         `;

@@ -278,8 +278,20 @@ $discountStatus =
 
         $isDiscountActive = false;
 
+/*
+ * Product promotion dates are entered and stored
+ * using Philippine local time.
+ */
+$promotionTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
+
 $currentDateTime =
-    new DateTime();
+    new DateTime(
+        "now",
+        $promotionTimezone
+    );
 
 if (
     $discountType !== "none" &&
@@ -298,15 +310,17 @@ if (
         $discountEnd !== null
     ) {
         try {
-            $discountStartObject =
-                new DateTime(
-                    $discountStart
-                );
+           $discountStartObject =
+    new DateTime(
+        $discountStart,
+        $promotionTimezone
+    );
 
-            $discountEndObject =
-                new DateTime(
-                    $discountEnd
-                );
+$discountEndObject =
+    new DateTime(
+        $discountEnd,
+        $promotionTimezone
+    );
 
             $isDiscountActive =
                 $currentDateTime >=
