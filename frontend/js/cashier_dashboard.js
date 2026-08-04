@@ -8,6 +8,12 @@ let soundEnabled = true;
 let knownOrderIds = new Set();
 let knownOrderStatuses = new Map();
 
+let knownCashierNotificationIds =
+  new Set();
+
+let cashierNotificationsFirstLoadDone =
+  false;
+
 let firstLoadDone = false;
 let confirmCallback = null;
 let restoreAssignModalAfterConfirm = false;
@@ -1130,19 +1136,6 @@ async function loadOrders() {
 
     const fetchedOrders = Array.isArray(data.orders) ? data.orders : [];
 
-    const cancelledOrders = fetchedOrders.filter(order => {
-  const orderId = String(order.order_id);
-  const currentStatus = String(order.order_status || "").toLowerCase();
-  const previousStatus = knownOrderStatuses.get(orderId);
-
-  return (
-    firstLoadDone &&
-    currentStatus === "cancelled" &&
-    previousStatus &&
-    previousStatus !== "cancelled"
-  );
-});
-
     const newPendingOrders = fetchedOrders.filter(order => {
       const orderId = String(order.order_id);
 
@@ -1184,17 +1177,6 @@ showToast(
       });
     }
 
-    if (firstLoadDone && cancelledOrders.length > 0) {
-  playNotificationSound();
-
-  cancelledOrders.forEach(order => {
-    const message =
-      `Queue #${order.queue_number || "N/A"} • Order #${order.order_id} from ${order.customer_name || "Customer"} was cancelled.`;
-
-    addNotification("Order cancelled", message);
-    showToast("Order Cancelled", message);
-  });
-}
 
     firstLoadDone = true;
 
@@ -3401,20 +3383,98 @@ async function loadCashierNotifications() {
       );
     }
 
-    if (data.notifications.length === 0) {
-      list.innerHTML = `
-        <p class="empty-message">
-          No notifications yet.
-        </p>
-      `;
+  if (
+  data.notifications.length === 0
+) {
+  list.innerHTML = `
+    <p class="empty-message">
+      No notifications yet.
+    </p>
+  `;
 
-      if (badge) {
-        badge.textContent = "0";
-        badge.style.display = "none";
-      }
+  if (badge) {
+    badge.textContent = "0";
+    badge.style.display =
+      "none";
+  }
 
-      return;
+  cashierNotificationsFirstLoadDone =
+    true;
+
+  return;
+}
+
+    const newCustomerCancellationNotifications =
+  data.notifications.filter(
+    notification => {
+      const logId =
+        Number(
+          notification.log_id
+        );
+
+      const title =
+        String(
+          notification.action_title ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+      return (
+        cashierNotificationsFirstLoadDone &&
+        Number.isInteger(logId) &&
+        logId > 0 &&
+        !knownCashierNotificationIds.has(
+          logId
+        ) &&
+        title ===
+          "customer cancelled order"
+      );
     }
+  );
+
+data.notifications.forEach(
+  notification => {
+    const logId =
+      Number(
+        notification.log_id
+      );
+
+    if (
+      Number.isInteger(logId) &&
+      logId > 0
+    ) {
+      knownCashierNotificationIds.add(
+        logId
+      );
+    }
+  }
+);
+
+if (
+  newCustomerCancellationNotifications
+    .length > 0
+) {
+  playNotificationSound();
+
+  newCustomerCancellationNotifications
+    .forEach(notification => {
+      const message =
+        String(
+          notification
+            .action_description ||
+          "A customer cancelled an order."
+        ).trim();
+
+      showToast(
+        "Customer Cancelled Order",
+        message
+      );
+    });
+}
+
+cashierNotificationsFirstLoadDone =
+  true;
 
     const unreadCount = Number(data.unread_count || 0);
 

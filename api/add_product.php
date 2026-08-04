@@ -687,8 +687,13 @@ if ($duplicateProduct) {
 }
 
 /* =========================================================
-   INSERT PRODUCT
+   INSERT PRODUCT AND ACTIVITY LOG
+
+   Both records must succeed together. If activity logging
+   fails, the product insert is rolled back.
 ========================================================= */
+
+$conn->begin_transaction();
 
 $stmt = $conn->prepare("
     INSERT INTO tbl_products (
@@ -714,6 +719,12 @@ $stmt = $conn->prepare("
 ");
 
 if (!$stmt) {
+    $conn->rollback();
+
+    delete_product_image(
+        $image_path
+    );
+
     error_log(
         "add_product.php insert prepare error: " .
         $conn->error
@@ -751,6 +762,8 @@ if (!$stmt->execute()) {
 
     $stmt->close();
 
+    $conn->rollback();
+
     delete_product_image(
         $image_path
     );
@@ -765,6 +778,166 @@ if (!$stmt->execute()) {
 $product_id = (int) $stmt->insert_id;
 
 $stmt->close();
+
+/* =========================================================
+   PRODUCT ADDED ACTIVITY
+========================================================= */
+
+$productLabel =
+    '"' . $product_name . '"';
+
+if ($size !== "") {
+    $productLabel .=
+        " (" . $size . ")";
+}
+
+$categoryLabel =
+    $category !== ""
+        ? $category
+        : "Uncategorized";
+
+$promotionDescription =
+    "No promotion";
+
+if (
+    $discount_type === "percentage" &&
+    $discount_value > 0
+) {
+    $promotionDescription =
+        number_format(
+            $discount_value,
+            2
+        ) .
+        "% discount";
+} elseif (
+    $discount_type === "fixed" &&
+    $discount_value > 0
+) {
+    $promotionDescription =
+        "₱" .
+        number_format(
+            $discount_value,
+            2
+        ) .
+        " fixed discount";
+}
+
+$actionTitle =
+    "Product Added";
+
+$actionDescription =
+    "Product: " .
+    $product_name .
+    "\n" .
+
+    "Category: " .
+    $categoryLabel .
+    "\n" .
+
+    (
+        $size !== ""
+            ? "Variant: " .
+                $size .
+                "\n"
+            : ""
+    ) .
+
+    "Price: ₱" .
+    number_format(
+        $price,
+        2
+    ) .
+    "\n" .
+
+    "Initial Stock: " .
+    number_format(
+        $stock
+    ) .
+    "\n" .
+
+    "Status: " .
+    $status .
+    "\n" .
+
+    "Promotion: " .
+    (
+        $promotionDescription ===
+        "No promotion"
+            ? "None"
+            : $promotionDescription
+    );
+
+$logStmt = $conn->prepare("
+    INSERT INTO tbl_activity_logs (
+        restaurant_id,
+        user_id,
+        user_role,
+        action_type,
+        action_title,
+        action_description
+    )
+    VALUES (
+        ?,
+        ?,
+        ?,
+        'product',
+        ?,
+        ?
+    )
+");
+
+if (!$logStmt) {
+    $conn->rollback();
+
+    delete_product_image(
+        $image_path
+    );
+
+    error_log(
+        "add_product.php activity prepare error: " .
+        $conn->error
+    );
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The product could not be saved completely. Please try again."
+    ], 500);
+}
+
+$logStmt->bind_param(
+    "iisss",
+    $restaurant_id,
+    $user_id,
+    $role,
+    $actionTitle,
+    $actionDescription
+);
+
+if (!$logStmt->execute()) {
+    error_log(
+        "add_product.php activity execute error: " .
+        $logStmt->error
+    );
+
+    $logStmt->close();
+
+    $conn->rollback();
+
+    delete_product_image(
+        $image_path
+    );
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The product could not be saved completely. Please try again."
+    ], 500);
+}
+
+$logStmt->close();
+
+$conn->commit();
 
 respond_json([
     "success" => true,

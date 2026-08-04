@@ -1,17 +1,67 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Pragma: no-cache");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
+
+header(
+    "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
+);
+
+header(
+    "Pragma: no-cache"
+);
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 
-function respond_json($data, $statusCode = 200) {
-    http_response_code($statusCode);
-    echo json_encode($data);
+/* =========================================================
+   JSON RESPONSE
+========================================================= */
+
+function respond_json(
+    array $data,
+    int $statusCode = 200
+): void {
+    http_response_code(
+        $statusCode
+    );
+
+    echo json_encode(
+        $data,
+        JSON_UNESCAPED_UNICODE |
+        JSON_UNESCAPED_SLASHES
+    );
+
     exit;
 }
+
+/* =========================================================
+   REQUEST METHOD
+
+   This endpoint only reads activity logs,
+   so it must accept GET requests.
+========================================================= */
+
+if (
+    strtoupper(
+        (string) (
+            $_SERVER["REQUEST_METHOD"] ??
+            ""
+        )
+    ) !== "GET"
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Method not allowed.",
+        "logs" => []
+    ], 405);
+}
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
 
 if (
     empty($_SESSION["user_id"]) ||
@@ -19,13 +69,83 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access.",
+        "message" =>
+            "Unauthorized access.",
         "logs" => []
     ], 401);
 }
 
-$user_id = (int) $_SESSION["user_id"];
-$restaurant_id = (int) $_SESSION["restaurant_id"];
+$user_id =
+    (int) $_SESSION["user_id"];
+
+$restaurant_id =
+    (int) $_SESSION["restaurant_id"];
+
+$user_role =
+    strtolower(
+        trim(
+            (string) (
+                $_SESSION["role"] ??
+                ""
+            )
+        )
+    );
+
+if (
+    $user_id <= 0 ||
+    $restaurant_id <= 0 ||
+    $user_role === ""
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Invalid user session.",
+        "logs" => []
+    ], 401);
+}
+
+/* =========================================================
+   AUTHORIZED DASHBOARD ROLES
+
+   Owners are the primary users of this endpoint.
+   Admin support is preserved if needed later.
+========================================================= */
+
+$allowedRoles = [
+    "owner",
+    "admin"
+];
+
+if (
+    !in_array(
+        $user_role,
+        $allowedRoles,
+        true
+    )
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "You are not authorized to view activity logs.",
+        "logs" => []
+    ], 403);
+}
+
+/* =========================================================
+   LOAD RESTAURANT ACTIVITY LOGS
+
+   Restaurant isolation:
+   Only logs belonging to the restaurant stored
+   in the current authenticated session are returned.
+
+   Routine "New Customer Order" logs are excluded
+   because Activity Logs are intended for:
+   - accountability
+   - manual actions
+   - financial impact
+   - security
+   - exceptions
+========================================================= */
 
 $sql = "
     SELECT
@@ -39,7 +159,8 @@ $sql = "
         al.created_at,
 
         CASE
-            WHEN nr.notification_read_id IS NULL THEN 0
+            WHEN nr.notification_read_id IS NULL
+                THEN 0
             ELSE 1
         END AS is_read
 
@@ -52,11 +173,31 @@ $sql = "
 
     WHERE al.restaurant_id = ?
 
-    ORDER BY al.created_at DESC
+      AND NOT (
+          LOWER(
+              TRIM(
+                  al.action_type
+              )
+          ) = 'order'
+
+          AND LOWER(
+              TRIM(
+                  al.action_title
+              )
+          ) = 'new customer order'
+      )
+
+    ORDER BY
+        al.created_at DESC,
+        al.log_id DESC
+
     LIMIT 100
 ";
 
-$stmt = $conn->prepare($sql);
+$stmt =
+    $conn->prepare(
+        $sql
+    );
 
 if (!$stmt) {
     error_log(
@@ -64,9 +205,12 @@ if (!$stmt) {
         $conn->error
     );
 
+    $conn->close();
+
     respond_json([
         "success" => false,
-        "message" => "Unable to load activity logs.",
+        "message" =>
+            "Unable to prepare the activity log query.",
         "logs" => []
     ], 500);
 }
@@ -88,12 +232,14 @@ if (!$stmt->execute()) {
 
     respond_json([
         "success" => false,
-        "message" => "Unable to execute activity log query.",
+        "message" =>
+            "Unable to load activity logs.",
         "logs" => []
     ], 500);
 }
 
-$result = $stmt->get_result();
+$result =
+    $stmt->get_result();
 
 if (!$result) {
     error_log(
@@ -106,15 +252,25 @@ if (!$result) {
 
     respond_json([
         "success" => false,
-        "message" => "Unable to retrieve activity logs.",
+        "message" =>
+            "Unable to retrieve activity logs.",
         "logs" => []
     ], 500);
 }
 
+/* =========================================================
+   FORMAT RESULTS
+========================================================= */
+
 $logs = [];
 
-while ($row = $result->fetch_assoc()) {
-    $row["log_id"] = (int) $row["log_id"];
+while (
+    $row =
+        $result->fetch_assoc()
+) {
+    $row["log_id"] =
+        (int) $row["log_id"];
+
     $row["restaurant_id"] =
         (int) $row["restaurant_id"];
 
@@ -123,13 +279,43 @@ while ($row = $result->fetch_assoc()) {
             ? (int) $row["user_id"]
             : null;
 
-    $row["is_read"] = (int) $row["is_read"];
+    $row["user_role"] =
+        (string) (
+            $row["user_role"] ??
+            "system"
+        );
 
-    $logs[] = $row;
+    $row["action_type"] =
+        (string) (
+            $row["action_type"] ??
+            "system"
+        );
+
+    $row["action_title"] =
+        (string) (
+            $row["action_title"] ??
+            "Activity Recorded"
+        );
+
+    $row["action_description"] =
+        (string) (
+            $row["action_description"] ??
+            "No additional details."
+        );
+
+    $row["is_read"] =
+        (int) $row["is_read"];
+
+    $logs[] =
+        $row;
 }
 
 $stmt->close();
 $conn->close();
+
+/* =========================================================
+   RESPONSE
+========================================================= */
 
 respond_json([
     "success" => true,

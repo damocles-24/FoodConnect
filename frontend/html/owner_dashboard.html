@@ -687,79 +687,242 @@
     aria-live="polite"
   ></div>
 </section>
-<section id="inventorySection" class="content-section">
-  <div class="section-header">
+
+<!-- INVENTORY -->
+<section
+  id="inventorySection"
+  class="content-section"
+>
+  <!-- Inventory heading -->
+  <div class="inventory-page-heading">
+  <div>
+    <span class="section-overline">
+      Stock Management
+    </span>
+
     <h2>Inventory Management</h2>
 
-    <div class="section-actions inventory-actions">
-      <input type="text" id="inventorySearch" placeholder="Search product...">
-
-      <select id="inventoryFilter">
-        <option value="all">All Stock</option>
-        <option value="low">Low Stock</option>
-        <option value="out">Out of Stock</option>
-        <option value="available">Available</option>
-      </select>
-
-      <select id="inventoryCategoryFilter">
-        <option value="all">All Categories</option>
-      </select>
-    </div>
+    <p>
+      Monitor product quantities and restock menu items
+      before they become unavailable to customers.
+    </p>
   </div>
-
-    <div class="inventory-overview">
-
-    <div class="overview-item">
-        <span class="overview-icon">📦</span>
-        <div>
-            <h4 id="overviewTotalProducts">0</h4>
-            <p>Products</p>
-        </div>
-    </div>
-
-    <div class="overview-item">
-        <span class="overview-icon">🟢</span>
-        <div>
-            <h4 id="overviewAvailable">0</h4>
-            <p>In Stock</p>
-        </div>
-    </div>
-
-    <div class="overview-item">
-        <span class="overview-icon">🟡</span>
-        <div>
-            <h4 id="overviewLow">0</h4>
-            <p>Low Stock</p>
-        </div>
-    </div>
-
-    <div class="overview-item">
-        <span class="overview-icon">🔴</span>
-        <div>
-            <h4 id="overviewOut">0</h4>
-            <p>Out of Stock</p>
-        </div>
-    </div>
-
 </div>
 
-  <div class="panel">
-    <div class="table-wrapper">
-      <table>
+  <!-- Inventory overview cards -->
+  <div
+    class="inventory-overview"
+    aria-label="Inventory overview"
+  >
+    <article class="inventory-overview-card">
+      <div
+        class="inventory-overview-card-icon"
+        aria-hidden="true"
+      >
+        📦
+      </div>
+
+      <div class="inventory-overview-card-content">
+        <span>Total Products</span>
+
+        <strong id="overviewTotalProducts">
+          0
+        </strong>
+
+        <p>
+          Products currently listed in your restaurant menu.
+        </p>
+      </div>
+    </article>
+
+    <article class="inventory-overview-card">
+      <div
+        class="inventory-overview-card-icon inventory-icon-success"
+        aria-hidden="true"
+      >
+        ✓
+      </div>
+
+      <div class="inventory-overview-card-content">
+        <span>In Stock</span>
+
+        <strong id="overviewAvailable">
+          0
+        </strong>
+
+        <p>
+          Products currently available for customer orders.
+        </p>
+      </div>
+    </article>
+
+    <article class="inventory-overview-card inventory-card-warning">
+      <div
+        class="inventory-overview-card-icon inventory-icon-warning"
+        aria-hidden="true"
+      >
+        !
+      </div>
+
+      <div class="inventory-overview-card-content">
+        <span>Low Stock</span>
+
+        <strong id="overviewLow">
+          0
+        </strong>
+
+        <p>
+          Products that should be restocked soon.
+        </p>
+      </div>
+    </article>
+
+    <article class="inventory-overview-card inventory-card-danger">
+      <div
+        class="inventory-overview-card-icon inventory-icon-danger"
+        aria-hidden="true"
+      >
+        ×
+      </div>
+
+      <div class="inventory-overview-card-content">
+        <span>Out of Stock</span>
+
+        <strong id="overviewOut">
+          0
+        </strong>
+
+        <p>
+          Products currently unavailable to customers.
+        </p>
+      </div>
+    </article>
+  </div>
+
+  <!-- Search and filters -->
+  <div class="inventory-toolbar">
+    <div class="inventory-search-box">
+      <span
+        class="inventory-search-icon"
+        aria-hidden="true"
+      >
+        ⌕
+      </span>
+
+      <input
+        type="search"
+        id="inventorySearch"
+        placeholder="Search product or variant..."
+        autocomplete="off"
+        aria-label="Search inventory"
+      />
+    </div>
+
+    <div class="inventory-filter-group">
+      <label for="inventoryFilter">
+        Stock Status
+      </label>
+
+      <select
+        id="inventoryFilter"
+        aria-label="Filter inventory by stock status"
+      >
+        <option value="all">
+          All Stock
+        </option>
+
+        <option value="low">
+          Low Stock
+        </option>
+
+        <option value="out">
+          Out of Stock
+        </option>
+
+        <option value="available">
+          In Stock
+        </option>
+      </select>
+    </div>
+
+    <div class="inventory-filter-group">
+      <label for="inventoryCategoryFilter">
+        Category
+      </label>
+
+      <select
+        id="inventoryCategoryFilter"
+        aria-label="Filter inventory by category"
+      >
+        <option value="all">
+          All Categories
+        </option>
+      </select>
+    </div>
+
+    <button
+      type="button"
+      class="inventory-clear-button"
+      id="clearInventoryFilters"
+    >
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Inventory table -->
+  <section
+    class="inventory-table-panel"
+    aria-labelledby="inventoryTableTitle"
+  >
+    <div class="inventory-table-header">
+      <div>
+        <span class="section-overline">
+          Product Stock
+        </span>
+
+        <h3 id="inventoryTableTitle">
+          Current Inventory
+        </h3>
+
+        <p>
+          Products needing attention are displayed first.
+        </p>
+      </div>
+
+      <span
+        class="inventory-result-count"
+        id="inventoryResultCount"
+      >
+        0 products
+      </span>
+    </div>
+
+    <div class="table-wrapper inventory-table-wrapper">
+      <table class="inventory-table">
         <thead>
           <tr>
             <th>Category</th>
             <th>Product</th>
             <th>Variant</th>
-            <th>Stock</th>
-            <th>Status</th>
+            <th>Current Stock</th>
+            <th>Stock Status</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="inventoryTableBody"></tbody>
+
+        <tbody id="inventoryTableBody">
+          <tr>
+            <td
+              colspan="6"
+              class="inventory-loading-cell"
+            >
+              Loading inventory...
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
-  </div>
+  </section>
 </section>
 
 <section id="usersSection" class="content-section">
@@ -797,7 +960,7 @@
 
         <p>
           Give this code only to authorized staff. They must enter it
-          before using their cashier, kitchen, or delivery account.
+          before using their cashier or delivery account.
         </p>
       </div>
     </div>
@@ -873,7 +1036,6 @@
     <select id="userRoleFilter">
     <option value="all">All Roles</option>
 <option value="cashier">Cashier</option>
-<option value="kitchen_staff">Kitchen Staff</option>
 <option value="delivery_staff">Delivery Staff</option>
     </select>
 
@@ -905,118 +1067,646 @@
   </div>
 </section>
 
-<section id="logsSection" class="content-section">
-  <div class="section-header">
+<!-- ACTIVITY LOGS -->
+<section
+  id="logsSection"
+  class="content-section"
+>
+  <div class="activity-page-header">
     <div>
+      <span class="section-overline">
+        Business History
+      </span>
+
       <h2>Activity Logs</h2>
-      <p>Track staff actions, product changes, order updates, and system activities.</p>
+
+      <p>
+        Review important product, inventory, staff,
+        order, and system activities from your restaurant.
+      </p>
     </div>
 
-    <select id="logFilter">
-      <option value="all">All Activities</option>
-      <option value="order">Orders</option>
-      <option value="product">Products</option>
-      <option value="inventory">Inventory</option>
-      <option value="staff">Staff</option>
-      <option value="system">System</option>
-    </select>
+    <button
+      type="button"
+      class="activity-refresh-btn"
+      id="refreshActivityLogs"
+    >
+      <span aria-hidden="true">↻</span>
+      Refresh
+    </button>
   </div>
 
-  <div class="logs-timeline" id="logsList">
-    <div class="empty-logs">
-      <h3>No Activity Logs Yet</h3>
-      <p>System activities will appear here.</p>
-    </div>
+  <!-- Activity summary -->
+  <div
+    class="activity-overview"
+    aria-label="Activity log overview"
+  >
+    <article class="activity-overview-card">
+      <div class="activity-overview-icon activity-icon-all">
+        ≡
+      </div>
+
+      <div>
+        <span>Total Activities</span>
+
+        <strong id="activityOverviewTotal">
+          0
+        </strong>
+
+        <p>
+          Recent recorded actions
+        </p>
+      </div>
+    </article>
+
+    <article class="activity-overview-card">
+      <div class="activity-overview-icon activity-icon-order">
+        🧾
+      </div>
+
+      <div>
+        <span>Order Exceptions</span>
+
+        <strong id="activityOverviewOrders">
+          0
+        </strong>
+
+        <p>
+          Cancellations and manual interventions
+        </p>
+      </div>
+    </article>
+
+    <article class="activity-overview-card">
+      <div class="activity-overview-icon activity-icon-inventory">
+        📦
+      </div>
+
+      <div>
+        <span>Inventory Activities</span>
+
+        <strong id="activityOverviewInventory">
+          0
+        </strong>
+
+        <p>
+          Restocks and stock changes
+        </p>
+      </div>
+    </article>
+
+    <article class="activity-overview-card">
+      <div class="activity-overview-icon activity-icon-staff">
+        👤
+      </div>
+
+      <div>
+        <span>Staff Activities</span>
+
+        <strong id="activityOverviewStaff">
+          0
+        </strong>
+
+        <p>
+          Staff account changes
+        </p>
+      </div>
+    </article>
   </div>
+
+  <!-- Search and filters -->
+  <div class="activity-toolbar">
+    <div class="activity-search-box">
+      <span
+        class="activity-search-icon"
+        aria-hidden="true"
+      >
+        ⌕
+      </span>
+
+    <input
+  type="search"
+  id="activitySearch"
+  placeholder="Search title, description, or role..."
+  autocomplete="off"
+  enterkeyhint="search"
+  aria-label="Search activity logs"
+/>
+    </div>
+
+    <div class="activity-filter-group">
+      <label for="logFilter">
+        Activity Type
+      </label>
+
+      <select
+        id="logFilter"
+        aria-label="Filter activity logs by type"
+      >
+        <option value="all">
+          All Activities
+        </option>
+
+       <option value="order">
+          Order Exceptions
+        </option>
+
+        <option value="product">
+          Products
+        </option>
+
+        <option value="inventory">
+          Inventory
+        </option>
+
+        <option value="staff">
+          Staff
+        </option>
+
+        <option value="system">
+          System
+        </option>
+      </select>
+    </div>
+
+    <div class="activity-filter-group">
+      <label for="activityDateFilter">
+        Date
+      </label>
+
+      <select
+        id="activityDateFilter"
+        aria-label="Filter activity logs by date"
+      >
+        <option value="all">
+          All Dates
+        </option>
+
+        <option value="today">
+          Today
+        </option>
+
+        <option value="yesterday">
+          Yesterday
+        </option>
+
+        <option value="week">
+          Last 7 Days
+        </option>
+
+        <option value="month">
+          Last 30 Days
+        </option>
+      </select>
+    </div>
+
+    <button
+      type="button"
+      class="activity-clear-btn"
+      id="clearActivityFilters"
+    >
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Timeline panel -->
+  <section
+    class="activity-timeline-panel"
+    aria-labelledby="activityTimelineTitle"
+  >
+    <div class="activity-timeline-header">
+      <div>
+        <span class="section-overline">
+          Restaurant Timeline
+        </span>
+
+        <h3 id="activityTimelineTitle">
+          Recent Activities
+        </h3>
+
+        <p>
+          The most recent restaurant activity appears first.
+        </p>
+      </div>
+
+      <span
+        class="activity-result-count"
+        id="activityResultCount"
+      >
+        0 activities
+      </span>
+    </div>
+
+    <div
+      class="logs-timeline"
+      id="logsList"
+      aria-live="polite"
+    >
+      <div class="activity-loading-state">
+        Loading activity logs...
+      </div>
+    </div>
+  </section>
 </section>
 
       <!-- REPORTS -->
-    <section id="reportsSection" class="content-section">
-  <div class="section-header">
-    <div>
-      <h2>Sales Report</h2>
-      <p>Analyze revenue, completed orders, cancelled orders, and best-selling items.</p>
-    </div>
+<section
+  id="reportsSection"
+  class="content-section"
+>
+  <div class="analytics-page-header">
+  <div class="analytics-page-heading">
+    <span class="section-overline">
+      Business Intelligence
+    </span>
 
-    <div class="section-actions">
-      <button class="primary-btn" id="exportPdfBtn">Export PDF</button>
-      <button class="primary-btn" id="exportExcelBtn">Export Excel</button>
-    </div>
+    <h2>
+      Advanced Business Analytics
+    </h2>
+
+    <p>
+      Track revenue, orders, customer demand, cancellations,
+      and restaurant performance for the selected period.
+    </p>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3>Total Revenue</h3>
-      <p class="stat-value" id="reportTotalRevenue">₱0</p>
-      <span>From completed orders</span>
+  <div class="analytics-header-controls">
+    <div class="analytics-period-control">
+      <label for="reportSalesRange">
+        Report Period
+      </label>
+
+      <select
+        id="reportSalesRange"
+        aria-label="Select analytics report period"
+      >
+        <option value="daily">
+          Today
+        </option>
+
+        <option
+          value="weekly"
+          selected
+        >
+          Last 7 Days
+        </option>
+
+        <option value="monthly">
+          Last 30 Days
+        </option>
+      </select>
     </div>
 
-    <div class="stat-card">
-      <h3>Completed Orders</h3>
-      <p class="stat-value" id="completedOrders">0</p>
-      <span>Successfully finished</span>
-    </div>
+    <div class="analytics-export-actions">
+      <button
+        type="button"
+        class="analytics-secondary-btn"
+        id="exportPdfBtn"
+      >
+        Export PDF
+      </button>
 
-    <div class="stat-card">
-      <h3>Cancelled Orders</h3>
-      <p class="stat-value" id="cancelledOrders">0</p>
-      <span>Orders not finished</span>
-    </div>
-
-    <div class="stat-card">
-      <h3>Average Order Value</h3>
-      <p class="stat-value" id="averageOrderValue">₱0</p>
-      <span>Average customer spend</span>
-    </div>
-  </div>
-
-  <div class="report-grid">
-    <div class="panel report-panel">
-      <div class="panel-header">
-        <h2>Sales Trend</h2>
-        <select id="reportSalesRange">
-          <option value="weekly">This Week</option>
-          <option value="monthly">This Month</option>
-        </select>
-      </div>
-
-      <div class="fake-chart" id="reportSalesChart"></div>
-    </div>
-
-    <div class="panel report-panel">
-      <div class="panel-header">
-        <h2>Best Seller</h2>
-      </div>
-
-      <div class="best-seller-card">
-        <div class="best-seller-icon">🏆</div>
-        <h3 id="bestSeller">-</h3>
-        <p>Top product based on completed orders</p>
-      </div>
+      <button
+        type="button"
+        class="analytics-primary-btn"
+        id="exportExcelBtn"
+      >
+        Export Excel
+      </button>
     </div>
   </div>
+</div>
 
-  <div class="report-grid">
-    <div class="panel report-panel">
-      <div class="panel-header">
-        <h2>Best Selling Products</h2>
-      </div>
+<div class="analytics-period-summary">
+  <div>
+    <span>
+      Current report
+    </span>
 
-      <div class="report-list" id="bestProductsList">
-        <p>No product sales yet.</p>
-      </div>
-    </div>
-
-    <div class="panel report-panel">
-      <div class="panel-header">
-        <h2>Best Categories</h2>
-      </div>
-
-      <div class="report-list" id="bestCategoriesList">
-        <p>No category sales yet.</p>
-      </div>
-    </div>
+    <strong id="analyticsCurrentPeriod">
+      Last 7 Days
+    </strong>
   </div>
+
+  <p>
+    Compared with
+    <strong id="analyticsPreviousPeriod">
+      Previous 7 Days
+    </strong>
+  </p>
+</div>
+
+<div
+  class="analytics-kpi-grid"
+  aria-label="Business analytics summary"
+>
+  <article class="analytics-kpi-card analytics-kpi-primary">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Net Sales
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="reportTotalRevenue"
+        >
+          ₱0.00
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon"
+        aria-hidden="true"
+      >
+        ₱
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="revenueComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      Revenue from completed orders only.
+    </p>
+  </article>
+
+  <article class="analytics-kpi-card">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Orders Received
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="reportTotalOrders"
+        >
+          0
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon"
+        aria-hidden="true"
+      >
+        🧾
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="ordersComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      All customer orders created during the period.
+    </p>
+  </article>
+
+  <article class="analytics-kpi-card">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Completed Orders
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="completedOrders"
+        >
+          0
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon analytics-kpi-success"
+        aria-hidden="true"
+      >
+        ✓
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="completedOrdersComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      Orders successfully completed and counted as sales.
+    </p>
+  </article>
+
+  <article class="analytics-kpi-card">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Average Order Value
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="averageOrderValue"
+        >
+          ₱0.00
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon"
+        aria-hidden="true"
+      >
+        Ø
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="averageOrderComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      Average value of completed customer orders.
+    </p>
+  </article>
+
+  <article class="analytics-kpi-card">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Cancellation Rate
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="cancellationRate"
+        >
+          0%
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon analytics-kpi-danger"
+        aria-hidden="true"
+      >
+        ×
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="cancellationComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      <span id="cancelledOrders">0</span>
+      cancelled orders during the selected period.
+    </p>
+  </article>
+
+  <article class="analytics-kpi-card">
+    <div class="analytics-kpi-header">
+      <div>
+        <span class="analytics-kpi-label">
+          Items Sold
+        </span>
+
+        <strong
+          class="analytics-kpi-value"
+          id="itemsSold"
+        >
+          0
+        </strong>
+      </div>
+
+      <span
+        class="analytics-kpi-icon"
+        aria-hidden="true"
+      >
+        📦
+      </span>
+    </div>
+
+    <div
+      class="analytics-kpi-comparison"
+      id="itemsSoldComparison"
+    >
+      No change from previous period
+    </div>
+
+    <p>
+      Total product quantity from completed orders.
+    </p>
+  </article>
+</div>
+
+     <!-- SALES AND MENU PERFORMANCE -->
+  <div class="report-main-grid">
+
+    <!-- SALES TREND -->
+    <section class="panel analytics-sales-panel">
+      <div class="panel-header">
+        <div>
+          <span class="section-overline">
+            Revenue Performance
+          </span>
+
+          <h2>Sales Trend</h2>
+
+          <p class="analytics-panel-description">
+            Completed-order revenue across the selected report period.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="report-chart"
+        id="reportSalesChart"
+        aria-live="polite"
+      >
+        <p>Loading sales trend...</p>
+      </div>
+    </section>
+
+    <!-- BEST-SELLING PRODUCTS -->
+    <section class="panel report-panel">
+      <div class="panel-header">
+        <div>
+          <span class="section-overline">
+            Product Performance
+          </span>
+
+          <h2>Best-Selling Products</h2>
+
+          <p class="analytics-panel-description">
+            Products generating the highest completed-order sales.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="report-list analytics-ranking-list"
+        id="bestProductsList"
+        aria-live="polite"
+      >
+        <div class="analytics-empty-state">
+          <span aria-hidden="true">🏆</span>
+
+          <strong>No completed product sales</strong>
+
+          <p>
+            Product rankings will appear after orders are completed.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- CATEGORY PERFORMANCE -->
+  <section class="panel report-panel analytics-category-panel">
+    <div class="panel-header">
+      <div>
+        <span class="section-overline">
+          Category Performance
+        </span>
+
+        <h2>Best-Selling Categories</h2>
+
+        <p class="analytics-panel-description">
+          Menu categories generating the highest completed-order sales.
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="report-list analytics-ranking-list"
+      id="bestCategoriesList"
+      aria-live="polite"
+    >
+      <div class="analytics-empty-state">
+        <span aria-hidden="true">📊</span>
+
+        <strong>No completed category sales</strong>
+
+        <p>
+          Category rankings will appear after orders are completed.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- CASHIER PERFORMANCE -->
   <div class="performance-section">
@@ -1057,11 +1747,11 @@
           <thead>
             <tr>
               <th>Cashier</th>
-              <th>Handled Orders</th>
+              <th>Orders Processed</th>
               <th>Completed Orders</th>
-              <th>Total Sales Handled</th>
+              <th>Completed Sales</th>
               <th>Cancelled Orders</th>
-              <th>Average Order Value</th>
+              <th>Average Completed Order</th>
             </tr>
           </thead>
 
@@ -2358,28 +3048,184 @@
 </div>
 
 <!-- RESTOCK MODAL -->
-<div class="modal-overlay" id="restockModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Add Product Quantity</h3>
-      <button id="closeRestockModal">✕</button>
+<div
+  class="modal-overlay"
+  id="restockModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="restockModalTitle"
+>
+  <div class="modal restock-modal">
+    <div class="restock-modal-header">
+      <div class="restock-modal-heading">
+        <div
+          class="restock-modal-icon"
+          aria-hidden="true"
+        >
+          +
+        </div>
+
+        <div>
+          <span class="section-overline">
+            Inventory Update
+          </span>
+
+          <h3 id="restockModalTitle">
+            Restock Product
+          </h3>
+
+          <p>
+          Review the stock change before confirming.
+        </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="restock-close-btn"
+        id="closeRestockModal"
+        aria-label="Close restock modal"
+      >
+        ✕
+      </button>
     </div>
 
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Select Product</label>
+    <div class="restock-modal-body">
 
-        <select id="restockProduct"></select>
+      <div class="restock-form-group">
+
+    <label>
+        Selected Product
+    </label>
+
+    <!-- Keep this hidden because JavaScript still uses it -->
+    <select
+        id="restockProduct"
+        hidden
+    ></select>
+
+    <div class="restock-product-card">
+
+        <div class="restock-product-icon">
+            🍽️
+        </div>
+
+        <div class="restock-product-details">
+
+            <strong id="restockProductName">
+                —
+            </strong>
+
+            <span id="restockProductMeta">
+                Loading...
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+      <div class="restock-stock-summary">
+        <div class="restock-summary-item">
+          <span>Current Stock</span>
+
+          <strong id="restockCurrentStock">
+            0
+          </strong>
+
+          <small>items currently available</small>
+        </div>
+
+        <div
+          class="restock-summary-arrow"
+          aria-hidden="true"
+        >
+          →
+        </div>
+
+        <div class="restock-summary-item is-new-stock">
+          <span>New Stock</span>
+
+          <strong id="restockNewStock">
+            0
+          </strong>
+
+          <small>after this restock</small>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Quantity to Add</label>
+      <div class="restock-form-group">
+        <div class="restock-label-row">
+          <label for="restockQuantity">
+            Quantity to Add
+          </label>
 
-        <input type="number" id="restockQuantity">
+          <span>
+            Whole numbers only
+          </span>
+        </div>
+
+        <div class="restock-quantity-control">
+          <button
+            type="button"
+            class="restock-quantity-btn"
+            id="decreaseRestockQuantity"
+            aria-label="Decrease restock quantity"
+          >
+            −
+          </button>
+
+          <input
+            type="number"
+            id="restockQuantity"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="Enter quantity"
+            autocomplete="off"
+          />
+
+          <button
+            type="button"
+            class="restock-quantity-btn"
+            id="increaseRestockQuantity"
+            aria-label="Increase restock quantity"
+          >
+            +
+          </button>
+        </div>
+
+        <span class="restock-field-help">
+          The entered quantity will be added to the current stock.
+        </span>
       </div>
 
-      <button class="primary-btn" id="saveRestockBtn">
-        Update Stock
+      <p
+        class="restock-form-message"
+        id="restockFormMessage"
+        role="alert"
+        aria-live="polite"
+        hidden
+      ></p>
+    </div>
+
+    <div class="restock-modal-actions">
+      <button
+        type="button"
+        class="restock-cancel-btn"
+        id="cancelRestockBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="primary-btn restock-save-btn"
+        id="saveRestockBtn"
+      >
+        <span aria-hidden="true">+</span>
+        Confirm Restock
       </button>
     </div>
   </div>
@@ -2432,7 +3278,6 @@
   <select id="userRole">
     <option value="">Select Staff Role</option>
     <option value="cashier">Cashier</option>
-    <option value="kitchen_staff">Kitchen Staff</option>
     <option value="delivery_staff">Delivery Staff</option>
   </select>
 </div>
@@ -2455,7 +3300,13 @@
   <div class="modal">
     <div class="modal-header">
       <h3>Edit User</h3>
-      <button id="closeEditUserModal">✕</button>
+      <button
+          type="button"
+          id="closeEditUserModal"
+          aria-label="Close edit user modal"
+      >
+  ✕
+</button>
     </div>
 
     <div class="modal-body">
@@ -2494,7 +3345,6 @@
   <option value="">Select Staff Role</option>
   <option value="owner">Owner</option>
   <option value="cashier">Cashier</option>
-  <option value="kitchen_staff">Kitchen Staff</option>
   <option value="delivery_staff">Delivery Staff</option>
 </select>
       </div>
@@ -2507,7 +3357,13 @@
         </select>
       </div>
 
-      <button class="primary-btn" id="updateUserBtn">Update User</button>
+      <button
+          type="button"
+          class="primary-btn"
+          id="updateUserBtn"
+        >
+  Update User
+</button>
     </div>
   </div>
 </div>

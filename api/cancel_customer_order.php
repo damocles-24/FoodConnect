@@ -1,24 +1,30 @@
 <?php
 
-header("Content-Type: application/json; charset=utf-8");
+header(
+    "Content-Type: application/json; charset=utf-8"
+);
+
 header(
     "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
 );
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ini_set("display_errors", "0");
+header("Pragma: no-cache");
+header("Expires: 0");
 
-session_set_cookie_params(
-    0,
-    "/FoodConnect",
-    "",
-    false,
-    true
+error_reporting(
+    E_ALL &
+    ~E_NOTICE &
+    ~E_WARNING
+);
+
+ini_set(
+    "display_errors",
+    "0"
 );
 
 require_once __DIR__ . "/session_config.php";
-
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/order_stock_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -28,634 +34,641 @@ function respond_json(
     array $data,
     int $statusCode = 200
 ): void {
-    http_response_code($statusCode);
+    http_response_code(
+        $statusCode
+    );
 
     echo json_encode(
         $data,
-        JSON_UNESCAPED_UNICODE
+        JSON_UNESCAPED_UNICODE |
+        JSON_UNESCAPED_SLASHES
     );
 
     exit;
 }
 
 /* =========================================================
-   NORMALIZE ADD-ON TEXT
+   REQUEST METHOD
 ========================================================= */
 
-function normalize_addon_text($value): string
-{
-    $text = trim((string)$value);
-
-    if (
-        $text === "" ||
-        $text === "[]" ||
-        strtolower($text) === "null"
-    ) {
-        return "No Add-on";
-    }
-
-    return $text;
-}
-
-/* =========================================================
-   NORMALIZE COMBO CHOICE TEXT
-========================================================= */
-
-function normalize_combo_choice_text($value): string
-{
-    $text = trim((string)$value);
-
-    if (
-        $text === "" ||
-        $text === "[]" ||
-        strtolower($text) === "null"
-    ) {
-        return "";
-    }
-
-    return $text;
-}
-
-/* =========================================================
-   NORMALIZE SAVED ID JSON
-========================================================= */
-
-function normalize_ids_json($value): string
-{
-    $text = trim((string)$value);
-
-    if (
-        $text === "" ||
-        strtolower($text) === "null"
-    ) {
-        return "[]";
-    }
-
-    $decoded = json_decode(
-        $text,
-        true
+if (
+    strtoupper(
+        (string)(
+            $_SERVER["REQUEST_METHOD"] ??
+            ""
+        )
+    ) !== "POST"
+) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Only POST requests are allowed."
+        ],
+        405
     );
-
-    if (!is_array($decoded)) {
-        return "[]";
-    }
-
-    $ids = [];
-
-    foreach ($decoded as $id) {
-        $id = (int)$id;
-
-        if ($id > 0) {
-            $ids[] = $id;
-        }
-    }
-
-    $ids = array_values(
-        array_unique($ids)
-    );
-
-    sort(
-        $ids,
-        SORT_NUMERIC
-    );
-
-    $json = json_encode(
-        $ids,
-        JSON_UNESCAPED_UNICODE
-    );
-
-    return $json !== false
-        ? $json
-        : "[]";
 }
 
 /* =========================================================
    AUTHENTICATION
 ========================================================= */
 
-if (empty($_SESSION["user_id"])) {
-    respond_json([
-        "success" => false,
-        "message" => "Please login first.",
-        "orders" => []
-    ], 401);
-}
-
-$user_id = (int)$_SESSION["user_id"];
-
-if ($user_id <= 0) {
-    respond_json([
-        "success" => false,
-        "message" => "Invalid customer session.",
-        "orders" => []
-    ], 400);
-}
-
-/* =========================================================
-   CUSTOMER ORDERS QUERY
-========================================================= */
-
-$sql = "
-    SELECT
-        o.order_id,
-        o.queue_number,
-        o.restaurant_id,
-
-        r.name AS restaurant_name,
-
-        o.customer_name,
-        o.contact_number,
-        o.order_type,
-        o.order_status,
-        o.total_amount,
-        o.payment_method,
-        o.address,
-        o.landmark,
-        o.table_number,
-        o.pickup_time,
-        o.notes,
-        o.cancellation_reason,
-        o.cancelled_by,
-
-        o.cancelled_at
-            AS order_cancelled_at,
-
-        o.created_at,
-
-        da.assignment_id,
-        da.assignment_type,
-        da.delivery_status,
-        da.delivery_fee,
-        da.rider_payment,
-        da.assigned_at,
-        da.accepted_at,
-        da.picked_up_at,
-        da.out_for_delivery_at,
-        da.completed_at,
-
-        da.cancelled_at
-            AS delivery_cancelled_at,
-
-        rider.user_id
-            AS rider_id,
-
-        rider.full_name
-            AS rider_name,
-
-        rider.contact_number
-            AS rider_contact,
-
-        oi.order_item_id,
-        oi.product_id,
-        oi.combo_id,
-        oi.quantity,
-        oi.price,
-        oi.product_name,
-        oi.base_text,
-        oi.addon_text,
-        oi.addon_ids_json,
-        oi.combo_choice_text,
-        oi.combo_choice_ids_json
-
-    FROM tbl_orders o
-
-    LEFT JOIN tbl_restaurants r
-        ON r.restaurant_id =
-            o.restaurant_id
-
-    LEFT JOIN tbl_delivery_assignments da
-        ON da.order_id =
-            o.order_id
-       AND da.restaurant_id =
-            o.restaurant_id
-
-    LEFT JOIN tbl_users rider
-        ON rider.user_id =
-            da.rider_id
-
-    LEFT JOIN tbl_order_items oi
-        ON oi.order_id =
-            o.order_id
-
-    WHERE o.user_id = ?
-
-    ORDER BY
-        o.created_at DESC,
-        o.order_id DESC,
-        oi.order_item_id ASC
-
-    LIMIT 100
-";
-
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    error_log(
-        "FoodConnect customer orders prepare error: " .
-        $conn->error
+$customerId =
+    (int)(
+        $_SESSION["user_id"] ??
+        0
     );
 
-    $conn->close();
-
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unable to load customer orders.",
-        "orders" => []
-    ], 500);
-}
-
-$stmt->bind_param(
-    "i",
-    $user_id
-);
-
-if (!$stmt->execute()) {
-    error_log(
-        "FoodConnect customer orders execute error: " .
-        $stmt->error
-    );
-
-    $stmt->close();
-    $conn->close();
-
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unable to load customer orders.",
-        "orders" => []
-    ], 500);
-}
-
-$result = $stmt->get_result();
-
-$orders = [];
-
-/* =========================================================
-   GROUP ROWS INTO ORDERS
-========================================================= */
-
-while ($row = $result->fetch_assoc()) {
-    $order_id = (int)(
-        $row["order_id"] ?? 0
-    );
-
-    if ($order_id <= 0) {
-        continue;
-    }
-
-    if (!isset($orders[$order_id])) {
-        $hasDeliveryAssignment =
-            $row["assignment_id"] !== null;
-
-        $orders[$order_id] = [
-            "order_id" =>
-                $order_id,
-
-            "queue_number" =>
-                $row["queue_number"] !== null
-                    ? (int)$row["queue_number"]
-                    : null,
-
-            "restaurant_id" =>
-                (int)(
-                    $row["restaurant_id"] ?? 0
-                ),
-
-            "restaurant_name" =>
-                trim(
-                    (string)(
-                        $row["restaurant_name"] ??
-                        "Restaurant"
-                    )
-                ),
-
-            "customer_name" =>
-                trim(
-                    (string)(
-                        $row["customer_name"] ?? ""
-                    )
-                ),
-
-            "contact_number" =>
-                trim(
-                    (string)(
-                        $row["contact_number"] ?? ""
-                    )
-                ),
-
-            "order_type" =>
-                trim(
-                    (string)(
-                        $row["order_type"] ?? ""
-                    )
-                ),
-
-            "order_status" =>
-                strtolower(
-                    trim(
-                        (string)(
-                            $row["order_status"] ?? ""
-                        )
-                    )
-                ),
-
-            "total_amount" =>
-                round(
-                    (float)(
-                        $row["total_amount"] ?? 0
-                    ),
-                    2
-                ),
-
-            "payment_method" =>
-                trim(
-                    (string)(
-                        $row["payment_method"] ?? ""
-                    )
-                ),
-
-            "address" =>
-                trim(
-                    (string)(
-                        $row["address"] ?? ""
-                    )
-                ),
-
-            "landmark" =>
-                trim(
-                    (string)(
-                        $row["landmark"] ?? ""
-                    )
-                ),
-
-            "table_number" =>
-                trim(
-                    (string)(
-                        $row["table_number"] ?? ""
-                    )
-                ),
-
-            "pickup_time" =>
-                trim(
-                    (string)(
-                        $row["pickup_time"] ?? ""
-                    )
-                ),
-
-            "notes" =>
-                trim(
-                    (string)(
-                        $row["notes"] ?? ""
-                    )
-                ),
-
-            "cancellation_reason" =>
-                trim(
-                    (string)(
-                        $row["cancellation_reason"] ?? ""
-                    )
-                ),
-
-            "cancelled_by" =>
-                strtolower(
-                    trim(
-                        (string)(
-                            $row["cancelled_by"] ?? ""
-                        )
-                    )
-                ),
-
-            "cancelled_at" =>
-                $row["order_cancelled_at"] ??
-                null,
-
-            "created_at" =>
-                $row["created_at"] ?? null,
-
-            "delivery" =>
-                $hasDeliveryAssignment
-                    ? [
-                        "assignment_id" =>
-                            (int)(
-                                $row["assignment_id"] ?? 0
-                            ),
-
-                        "assignment_type" =>
-                            trim(
-                                (string)(
-                                    $row["assignment_type"] ??
-                                    ""
-                                )
-                            ),
-
-                        "delivery_status" =>
-                            trim(
-                                (string)(
-                                    $row["delivery_status"] ??
-                                    ""
-                                )
-                            ),
-
-                        "delivery_fee" =>
-                            round(
-                                (float)(
-                                    $row["delivery_fee"] ?? 0
-                                ),
-                                2
-                            ),
-
-                        "rider_payment" =>
-                            round(
-                                (float)(
-                                    $row["rider_payment"] ?? 0
-                                ),
-                                2
-                            ),
-
-                        "assigned_at" =>
-                            $row["assigned_at"] ?? null,
-
-                        "accepted_at" =>
-                            $row["accepted_at"] ?? null,
-
-                        "picked_up_at" =>
-                            $row["picked_up_at"] ?? null,
-
-                        "out_for_delivery_at" =>
-                            $row[
-                                "out_for_delivery_at"
-                            ] ?? null,
-
-                        "completed_at" =>
-                            $row["completed_at"] ?? null,
-
-                        "cancelled_at" =>
-                            $row[
-                                "delivery_cancelled_at"
-                            ] ?? null,
-
-                        "rider" =>
-                            $row["rider_id"] !== null
-                                ? [
-                                    "user_id" =>
-                                        (int)$row[
-                                            "rider_id"
-                                        ],
-
-                                    "full_name" =>
-                                        trim(
-                                            (string)(
-                                                $row[
-                                                    "rider_name"
-                                                ] ?? ""
-                                            )
-                                        ),
-
-                                    "contact_number" =>
-                                        trim(
-                                            (string)(
-                                                $row[
-                                                    "rider_contact"
-                                                ] ?? ""
-                                            )
-                                        )
-                                ]
-                                : null
-                    ]
-                    : null,
-
-            "items" => []
-        ];
-    }
-
-    $order_item_id = (int)(
-        $row["order_item_id"] ?? 0
-    );
-
-    if ($order_item_id <= 0) {
-        continue;
-    }
-
-    $quantity = max(
-        0,
-        (int)(
-            $row["quantity"] ?? 0
+$role =
+    strtolower(
+        trim(
+            (string)(
+                $_SESSION["role"] ??
+                ""
+            )
         )
     );
 
-    $unitPrice = max(
-        0,
-        (float)(
-            $row["price"] ?? 0
+if ($customerId <= 0) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Please log in before cancelling an order."
+        ],
+        401
+    );
+}
+
+if (
+    $role !== "" &&
+    $role !== "customer"
+) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Only customers may use this cancellation endpoint."
+        ],
+        403
+    );
+}
+
+/* =========================================================
+   REQUEST BODY
+========================================================= */
+
+$rawBody =
+    file_get_contents(
+        "php://input"
+    );
+
+$data =
+    json_decode(
+        $rawBody ?: "{}",
+        true
+    );
+
+if (!is_array($data)) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Invalid cancellation request."
+        ],
+        400
+    );
+}
+
+$orderId =
+    (int)(
+        $data["order_id"] ??
+        0
+    );
+
+$cancellationReason =
+    trim(
+        (string)(
+            $data["cancellation_reason"] ??
+            ""
         )
     );
 
-    $comboId =
-        $row["combo_id"] !== null
-            ? (int)$row["combo_id"]
-            : null;
+if ($orderId <= 0) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Invalid order."
+        ],
+        400
+    );
+}
 
-    $comboChoiceText =
-        normalize_combo_choice_text(
-            $row["combo_choice_text"] ?? ""
+$reasonLength =
+    mb_strlen(
+        $cancellationReason
+    );
+
+if ($reasonLength < 3) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Please provide a clear cancellation reason."
+        ],
+        422
+    );
+}
+
+if ($reasonLength > 250) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "The cancellation reason must not exceed 250 characters."
+        ],
+        422
+    );
+}
+
+/* =========================================================
+   TRANSACTION
+========================================================= */
+
+$conn->begin_transaction();
+
+try {
+
+    /* =====================================================
+       LOCK CUSTOMER ORDER
+    ===================================================== */
+
+    $orderStmt =
+        $conn->prepare("
+            SELECT
+                o.order_id,
+                o.queue_number,
+                o.restaurant_id,
+                o.user_id,
+                o.customer_name,
+                o.order_type,
+                o.order_status,
+                o.qr_verified_at,
+                o.total_amount,
+                o.created_at,
+
+                r.name
+                    AS restaurant_name
+
+            FROM tbl_orders o
+
+            INNER JOIN tbl_restaurants r
+                ON r.restaurant_id =
+                   o.restaurant_id
+
+            WHERE o.order_id = ?
+              AND o.user_id = ?
+
+            LIMIT 1
+
+            FOR UPDATE
+        ");
+
+    if (!$orderStmt) {
+        throw new RuntimeException(
+            "Unable to prepare the customer order."
+        );
+    }
+
+    $orderStmt->bind_param(
+        "ii",
+        $orderId,
+        $customerId
+    );
+
+    if (!$orderStmt->execute()) {
+        $orderStmt->close();
+
+        throw new RuntimeException(
+            "Unable to load the customer order."
+        );
+    }
+
+    $orderResult =
+        $orderStmt->get_result();
+
+    $order =
+        $orderResult->fetch_assoc();
+
+    $orderStmt->close();
+
+    if (!$order) {
+        $conn->rollback();
+
+        respond_json(
+            [
+                "success" => false,
+                "message" =>
+                    "The order was not found or does not belong to your account."
+            ],
+            404
+        );
+    }
+
+    $restaurantId =
+        (int)$order["restaurant_id"];
+
+    $currentStatus =
+        strtolower(
+            trim(
+                (string)$order[
+                    "order_status"
+                ]
+            )
         );
 
-    $orders[$order_id]["items"][] = [
-        "order_item_id" =>
-            $order_item_id,
+    /* =====================================================
+   FIVE-MINUTE CANCELLATION WINDOW
+===================================================== */
 
-        "product_id" =>
-            $row["product_id"] !== null
-                ? (int)$row["product_id"]
-                : null,
+$orderCreatedAt =
+    trim(
+        (string)(
+            $order["created_at"] ??
+            ""
+        )
+    );
 
-        "combo_id" =>
-            $comboId,
+$orderCreatedTimestamp =
+    strtotime(
+        $orderCreatedAt
+    );
 
-        "is_combo" =>
-            $comboId !== null &&
-            $comboId > 0,
+$currentTimestamp =
+    time();
 
-        "quantity" =>
-            $quantity,
+$cancellationDeadline =
+    $orderCreatedTimestamp !== false
+        ? $orderCreatedTimestamp + 300
+        : 0;
 
-        "price" =>
-            round(
-                $unitPrice,
-                2
-            ),
+$cancelWindowExpired =
+    $cancellationDeadline <= 0 ||
+    $currentTimestamp >=
+        $cancellationDeadline;
 
-        "unit_price" =>
-            round(
-                $unitPrice,
-                2
-            ),
+/*
+ * Customer cancellation is allowed only when:
+ *
+ * 1. The order is still pending.
+ * 2. The five-minute window has not expired.
+ *
+ * QR verification does not close the cancellation window.
+ * Preparing or any later order status closes it immediately.
+ */
+if (
+    $currentStatus !== "pending" ||
+    $cancelWindowExpired
+) {
+    $conn->rollback();
 
-        "subtotal" =>
-            round(
-                $unitPrice * $quantity,
-                2
-            ),
+    $message =
+        $currentStatus !== "pending"
+            ? "This order can no longer be cancelled because the restaurant has already started processing it."
+            : "The 5-minute cancellation period for this order has already expired.";
 
-        "product_name" =>
-            trim(
-                (string)(
-                    $row["product_name"] ??
-                    "Item"
-                )
-            ),
-
-        "base_text" =>
-            trim(
-                (string)(
-                    $row["base_text"] ?? ""
-                )
-            ),
-
-        "addon_text" =>
-            normalize_addon_text(
-                $row["addon_text"] ?? ""
-            ),
-
-        "addon_ids_json" =>
-            normalize_ids_json(
-                $row["addon_ids_json"] ?? "[]"
-            ),
-
-        "combo_choice_text" =>
-            $comboChoiceText,
-
-        "combo_choice_ids_json" =>
-            normalize_ids_json(
-                $row[
-                    "combo_choice_ids_json"
-                ] ?? "[]"
-            ),
-
-        "has_combo_choice" =>
-            $comboChoiceText !== ""
-    ];
+    respond_json(
+        [
+            "success" => false,
+            "message" => $message
+        ],
+        409
+    );
 }
 
-$stmt->close();
-$conn->close();
+    /* =====================================================
+       RESTORE RESERVED STOCK
+    ===================================================== */
 
-/* =========================================================
-   LATEST 10 DISTINCT ORDERS
-========================================================= */
+    $stockRestoreSummary =
+        restore_order_stock(
+            $conn,
+            $orderId,
+            $restaurantId
+        );
 
-$orders = array_slice(
-    array_values($orders),
-    0,
-    10
+    $restoredUnits = 0;
+
+    foreach (
+        $stockRestoreSummary
+        as $restoredQuantity
+    ) {
+        $restoredUnits +=
+            max(
+                0,
+                (int)$restoredQuantity
+            );
+    }
+
+    /* =====================================================
+       CANCEL ACTIVE DELIVERY ASSIGNMENT
+
+       Normally there should be no rider assignment while
+       the order is pending, but this protects data integrity.
+    ===================================================== */
+
+    $deliveryStmt =
+        $conn->prepare("
+            UPDATE tbl_delivery_assignments
+
+            SET
+                delivery_status =
+                    'cancelled',
+
+                cancelled_at =
+                    NOW()
+
+            WHERE order_id = ?
+              AND restaurant_id = ?
+              AND delivery_status NOT IN (
+                  'completed',
+                  'cancelled'
+              )
+        ");
+
+    if (!$deliveryStmt) {
+        throw new RuntimeException(
+            "Unable to prepare delivery cancellation."
+        );
+    }
+
+    $deliveryStmt->bind_param(
+        "ii",
+        $orderId,
+        $restaurantId
+    );
+
+    if (!$deliveryStmt->execute()) {
+        $deliveryStmt->close();
+
+        throw new RuntimeException(
+            "Unable to cancel the delivery assignment."
+        );
+    }
+
+    $deliveryStmt->close();
+
+    /* =====================================================
+       UPDATE ORDER
+
+       The pending condition prevents duplicate cancellation
+       and duplicate stock restoration.
+    ===================================================== */
+
+    $updateStmt =
+        $conn->prepare("
+            UPDATE tbl_orders
+
+            SET
+                order_status =
+                    'cancelled',
+
+                cancellation_reason = ?,
+
+                cancelled_by =
+                    'customer',
+
+                cancelled_at =
+                    NOW()
+
+            WHERE order_id = ?
+                AND user_id = ?
+                AND restaurant_id = ?
+                AND order_status =
+                        'pending'
+                AND created_at >
+                        DATE_SUB(
+                            NOW(),
+            INTERVAL 5 MINUTE
+        )
+        ");
+
+    if (!$updateStmt) {
+        throw new RuntimeException(
+            "Unable to prepare the order cancellation."
+        );
+    }
+
+    $updateStmt->bind_param(
+        "siii",
+        $cancellationReason,
+        $orderId,
+        $customerId,
+        $restaurantId
+    );
+
+    if (!$updateStmt->execute()) {
+        $updateStmt->close();
+
+        throw new RuntimeException(
+            "Unable to cancel the order."
+        );
+    }
+
+    if (
+        $updateStmt->affected_rows !== 1
+    ) {
+        $updateStmt->close();
+
+        throw new RuntimeException(
+    "The order is already being processed or its 5-minute cancellation period has expired."
 );
+    }
 
-/* =========================================================
-   RESPONSE
-========================================================= */
+    $updateStmt->close();
 
-respond_json([
-    "success" => true,
-    "orders" => $orders
-]);
+    /* =====================================================
+       ACTIVITY LOG AND CASHIER NOTIFICATION
+
+       get_cashier_notifications.php currently listens for
+       the exact title "Customer Cancelled Order".
+    ===================================================== */
+
+    $queueLabel =
+        $order["queue_number"] !== null
+            ? "Queue #" .
+                (int)$order[
+                    "queue_number"
+                ]
+            : "No queue number";
+
+    $customerName =
+        trim(
+            (string)(
+                $order[
+                    "customer_name"
+                ] ??
+                ""
+            )
+        );
+
+    if ($customerName === "") {
+        $customerName =
+            "Customer";
+    }
+
+    $orderType =
+        strtolower(
+            trim(
+                (string)$order[
+                    "order_type"
+                ]
+            )
+        );
+
+   if ($orderType === "dine_in") {
+    $orderTypeLabel = "Dine-in";
+
+} elseif ($orderType === "takeout") {
+    $orderTypeLabel = "Takeout";
+
+} elseif ($orderType === "delivery") {
+    $orderTypeLabel = "Delivery";
+
+} else {
+    $orderTypeLabel =
+        ucwords(
+            str_replace(
+                "_",
+                " ",
+                $orderType
+            )
+        );
+}
+
+    $formattedAmount =
+        number_format(
+            (float)$order[
+                "total_amount"
+            ],
+            2
+        );
+
+    $inventoryText =
+        $restoredUnits > 0
+            ? $restoredUnits .
+                " stock unit" .
+                (
+                    $restoredUnits === 1
+                        ? ""
+                        : "s"
+                ) .
+                " restored."
+            : "Reserved stock restored.";
+
+    $actionTitle =
+        "Customer Cancelled Order";
+
+    $actionDescription =
+        $customerName .
+        " cancelled " .
+        $queueLabel .
+        ", Order #" .
+        $orderId .
+        ". Order type: " .
+        $orderTypeLabel .
+        ". Amount affected: ₱" .
+        $formattedAmount .
+        ". Reason: " .
+        $cancellationReason .
+        ". Inventory: " .
+        $inventoryText;
+
+    $logStmt =
+        $conn->prepare("
+            INSERT INTO tbl_activity_logs (
+                restaurant_id,
+                user_id,
+                user_role,
+                action_type,
+                action_title,
+                action_description
+            )
+            VALUES (
+                ?,
+                ?,
+                'customer',
+                'order',
+                ?,
+                ?
+            )
+        ");
+
+    if (!$logStmt) {
+        throw new RuntimeException(
+            "Unable to prepare the cancellation activity."
+        );
+    }
+
+    $logStmt->bind_param(
+        "iiss",
+        $restaurantId,
+        $customerId,
+        $actionTitle,
+        $actionDescription
+    );
+
+    if (!$logStmt->execute()) {
+        $logStmt->close();
+
+        throw new RuntimeException(
+            "Unable to record the cancellation activity."
+        );
+    }
+
+    $logStmt->close();
+
+    $conn->commit();
+    $conn->close();
+
+    respond_json([
+        "success" => true,
+
+        "message" =>
+            "Your order was cancelled successfully.",
+
+        "order" => [
+            "order_id" =>
+                $orderId,
+
+            "order_status" =>
+                "cancelled",
+
+            "cancelled_by" =>
+                "customer",
+
+            "cancellation_reason" =>
+                $cancellationReason
+        ]
+    ]);
+
+} catch (Throwable $error) {
+    $conn->rollback();
+
+    error_log(
+        "FoodConnect customer cancellation error: " .
+        $error->getMessage()
+    );
+
+    $conn->close();
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to cancel the order. Please refresh your orders and try again."
+        ],
+        500
+    );
+}

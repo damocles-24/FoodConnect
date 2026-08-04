@@ -154,17 +154,53 @@ if (!$ownerExists) {
 }
 
 /* =========================================================
-   PERFORMANCE RANGE
+   PERCENTAGE CHANGE
 
-   daily   = today
-   weekly  = last 7 days
-   monthly = last 30 days
+   If the previous period had no value:
+   - 0 to 0 = 0%
+   - 0 to a positive value = 100%
+========================================================= */
+
+function calculate_percentage_change(
+    float $currentValue,
+    float $previousValue
+): float {
+    if ($previousValue == 0.0) {
+        return $currentValue > 0
+            ? 100.0
+            : 0.0;
+    }
+
+    return round(
+        (
+            (
+                $currentValue -
+                $previousValue
+            ) /
+            abs($previousValue)
+        ) * 100,
+        2
+    );
+}
+
+/* =========================================================
+   GLOBAL ANALYTICS RANGE
+
+   The selected range controls:
+   - summary
+   - products
+   - categories
+   - cashier performance
+   - rider performance
+
+   It also defines the equivalent previous period.
 ========================================================= */
 
 $range = strtolower(
     trim(
         (string) (
-            $_GET["range"] ?? "weekly"
+            $_GET["range"] ??
+            "weekly"
         )
     )
 );
@@ -196,6 +232,16 @@ switch ($range) {
                 )
         ";
 
+        $previousOrderDateCondition = "
+            o.created_at >=
+                DATE_SUB(
+                    CURDATE(),
+                    INTERVAL 1 DAY
+                )
+            AND o.created_at <
+                CURDATE()
+        ";
+
         $deliveryDateCondition = "
             da.assigned_at >= CURDATE()
             AND da.assigned_at <
@@ -205,48 +251,123 @@ switch ($range) {
                 )
         ";
 
-        $rangeLabel = "Today";
+        $rangeLabel =
+            "Today";
+
+        $previousRangeLabel =
+            "Yesterday";
+
         break;
 
     case "monthly":
+        /*
+         * Current period:
+         * Today and the previous 29 calendar days.
+         *
+         * Previous period:
+         * The 30 calendar days immediately before that.
+         */
         $orderDateCondition = "
             o.created_at >=
                 DATE_SUB(
-                    NOW(),
-                    INTERVAL 30 DAY
+                    CURDATE(),
+                    INTERVAL 29 DAY
+                )
+            AND o.created_at <
+                DATE_ADD(
+                    CURDATE(),
+                    INTERVAL 1 DAY
+                )
+        ";
+
+        $previousOrderDateCondition = "
+            o.created_at >=
+                DATE_SUB(
+                    CURDATE(),
+                    INTERVAL 59 DAY
+                )
+            AND o.created_at <
+                DATE_SUB(
+                    CURDATE(),
+                    INTERVAL 29 DAY
                 )
         ";
 
         $deliveryDateCondition = "
             da.assigned_at >=
                 DATE_SUB(
-                    NOW(),
-                    INTERVAL 30 DAY
+                    CURDATE(),
+                    INTERVAL 29 DAY
+                )
+            AND da.assigned_at <
+                DATE_ADD(
+                    CURDATE(),
+                    INTERVAL 1 DAY
                 )
         ";
 
-        $rangeLabel = "Last 30 Days";
+        $rangeLabel =
+            "Last 30 Days";
+
+        $previousRangeLabel =
+            "Previous 30 Days";
+
         break;
 
     case "weekly":
     default:
+        /*
+         * Current period:
+         * Today and the previous six calendar days.
+         *
+         * Previous period:
+         * The seven calendar days immediately before that.
+         */
         $orderDateCondition = "
             o.created_at >=
                 DATE_SUB(
-                    NOW(),
-                    INTERVAL 7 DAY
+                    CURDATE(),
+                    INTERVAL 6 DAY
+                )
+            AND o.created_at <
+                DATE_ADD(
+                    CURDATE(),
+                    INTERVAL 1 DAY
+                )
+        ";
+
+        $previousOrderDateCondition = "
+            o.created_at >=
+                DATE_SUB(
+                    CURDATE(),
+                    INTERVAL 13 DAY
+                )
+            AND o.created_at <
+                DATE_SUB(
+                    CURDATE(),
+                    INTERVAL 6 DAY
                 )
         ";
 
         $deliveryDateCondition = "
             da.assigned_at >=
                 DATE_SUB(
-                    NOW(),
-                    INTERVAL 7 DAY
+                    CURDATE(),
+                    INTERVAL 6 DAY
+                )
+            AND da.assigned_at <
+                DATE_ADD(
+                    CURDATE(),
+                    INTERVAL 1 DAY
                 )
         ";
 
-        $rangeLabel = "Last 7 Days";
+        $rangeLabel =
+            "Last 7 Days";
+
+        $previousRangeLabel =
+            "Previous 7 Days";
+
         break;
 }
 
@@ -257,73 +378,431 @@ switch ($range) {
 try {
 
     /* =====================================================
-       SALES SUMMARY
+   CURRENT-PERIOD SALES SUMMARY
 
-       The existing summary remains all-time.
-    ===================================================== */
+   Revenue includes completed orders only.
+   Orders received includes every order status.
+===================================================== */
 
-    $summaryStmt = prepare_or_fail(
+$summarySql = "
+    SELECT
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN o.total_amount
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS total_revenue,
+
+        COUNT(
+            o.order_id
+        ) AS total_orders,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN 1
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS completed_orders,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'cancelled'
+                    THEN 1
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS cancelled_orders,
+
+        COALESCE(
+            AVG(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN o.total_amount
+                    ELSE NULL
+                END
+            ),
+            0
+        ) AS average_order_value,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'cancelled'
+                    THEN o.total_amount
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS cancelled_revenue
+
+    FROM tbl_orders o
+
+    WHERE o.restaurant_id = ?
+      AND {$orderDateCondition}
+";
+
+$summaryStmt =
+    prepare_or_fail(
         $conn,
-        "
-            SELECT
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN order_status = 'completed'
-                            THEN total_amount
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS total_revenue,
-
-                COUNT(*) AS total_orders,
-
-                SUM(
-                    CASE
-                        WHEN order_status = 'completed'
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS completed_orders,
-
-                SUM(
-                    CASE
-                        WHEN order_status = 'cancelled'
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS cancelled_orders,
-
-                COALESCE(
-                    AVG(
-                        CASE
-                            WHEN order_status = 'completed'
-                            THEN total_amount
-                        END
-                    ),
-                    0
-                ) AS average_order_value
-
-            FROM tbl_orders
-
-            WHERE restaurant_id = ?
-        "
+        $summarySql
     );
 
-    $summaryStmt->bind_param(
-        "i",
-        $restaurant_id
+$summaryStmt->bind_param(
+    "i",
+    $restaurant_id
+);
+
+$summaryStmt->execute();
+
+$summary =
+    $summaryStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$summaryStmt->close();
+
+/* =====================================================
+   PREVIOUS-PERIOD SALES SUMMARY
+===================================================== */
+
+$previousSummarySql = "
+    SELECT
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN o.total_amount
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS total_revenue,
+
+        COUNT(
+            o.order_id
+        ) AS total_orders,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN 1
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS completed_orders,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'cancelled'
+                    THEN 1
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS cancelled_orders,
+
+        COALESCE(
+            AVG(
+                CASE
+                    WHEN o.order_status =
+                        'completed'
+                    THEN o.total_amount
+                    ELSE NULL
+                END
+            ),
+            0
+        ) AS average_order_value,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN o.order_status =
+                        'cancelled'
+                    THEN o.total_amount
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS cancelled_revenue
+
+    FROM tbl_orders o
+
+    WHERE o.restaurant_id = ?
+      AND {$previousOrderDateCondition}
+";
+
+$previousSummaryStmt =
+    prepare_or_fail(
+        $conn,
+        $previousSummarySql
     );
 
-    $summaryStmt->execute();
+$previousSummaryStmt->bind_param(
+    "i",
+    $restaurant_id
+);
 
-    $summary =
-        $summaryStmt
-            ->get_result()
-            ->fetch_assoc();
+$previousSummaryStmt->execute();
 
-    $summaryStmt->close();
+$previousSummary =
+    $previousSummaryStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$previousSummaryStmt->close();
+
+/* =====================================================
+   CURRENT-PERIOD ITEMS SOLD
+===================================================== */
+
+$itemsSoldSql = "
+    SELECT
+        COALESCE(
+            SUM(
+                oi.quantity
+            ),
+            0
+        ) AS items_sold
+
+    FROM tbl_order_items oi
+
+    INNER JOIN tbl_orders o
+        ON o.order_id =
+            oi.order_id
+
+    WHERE o.restaurant_id = ?
+      AND o.order_status =
+            'completed'
+      AND {$orderDateCondition}
+";
+
+$itemsSoldStmt =
+    prepare_or_fail(
+        $conn,
+        $itemsSoldSql
+    );
+
+$itemsSoldStmt->bind_param(
+    "i",
+    $restaurant_id
+);
+
+$itemsSoldStmt->execute();
+
+$itemsSoldRow =
+    $itemsSoldStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$itemsSoldStmt->close();
+
+/* =====================================================
+   PREVIOUS-PERIOD ITEMS SOLD
+===================================================== */
+
+$previousItemsSoldSql = "
+    SELECT
+        COALESCE(
+            SUM(
+                oi.quantity
+            ),
+            0
+        ) AS items_sold
+
+    FROM tbl_order_items oi
+
+    INNER JOIN tbl_orders o
+        ON o.order_id =
+            oi.order_id
+
+    WHERE o.restaurant_id = ?
+      AND o.order_status =
+            'completed'
+      AND {$previousOrderDateCondition}
+";
+
+$previousItemsSoldStmt =
+    prepare_or_fail(
+        $conn,
+        $previousItemsSoldSql
+    );
+
+$previousItemsSoldStmt->bind_param(
+    "i",
+    $restaurant_id
+);
+
+$previousItemsSoldStmt->execute();
+
+$previousItemsSoldRow =
+    $previousItemsSoldStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$previousItemsSoldStmt->close();
+
+/* =====================================================
+   NORMALIZE SUMMARY VALUES
+===================================================== */
+
+$currentRevenue =
+    round(
+        (float) (
+            $summary[
+                "total_revenue"
+            ] ?? 0
+        ),
+        2
+    );
+
+$currentOrders =
+    (int) (
+        $summary[
+            "total_orders"
+        ] ?? 0
+    );
+
+$currentCompleted =
+    (int) (
+        $summary[
+            "completed_orders"
+        ] ?? 0
+    );
+
+$currentCancelled =
+    (int) (
+        $summary[
+            "cancelled_orders"
+        ] ?? 0
+    );
+
+$currentAverageOrderValue =
+    round(
+        (float) (
+            $summary[
+                "average_order_value"
+            ] ?? 0
+        ),
+        2
+    );
+
+$currentCancelledRevenue =
+    round(
+        (float) (
+            $summary[
+                "cancelled_revenue"
+            ] ?? 0
+        ),
+        2
+    );
+
+$currentItemsSold =
+    (int) (
+        $itemsSoldRow[
+            "items_sold"
+        ] ?? 0
+    );
+
+$currentCancellationRate =
+    $currentOrders > 0
+        ? round(
+            (
+                $currentCancelled /
+                $currentOrders
+            ) * 100,
+            2
+        )
+        : 0.0;
+
+$previousRevenue =
+    round(
+        (float) (
+            $previousSummary[
+                "total_revenue"
+            ] ?? 0
+        ),
+        2
+    );
+
+$previousOrders =
+    (int) (
+        $previousSummary[
+            "total_orders"
+        ] ?? 0
+    );
+
+$previousCompleted =
+    (int) (
+        $previousSummary[
+            "completed_orders"
+        ] ?? 0
+    );
+
+$previousCancelled =
+    (int) (
+        $previousSummary[
+            "cancelled_orders"
+        ] ?? 0
+    );
+
+$previousAverageOrderValue =
+    round(
+        (float) (
+            $previousSummary[
+                "average_order_value"
+            ] ?? 0
+        ),
+        2
+    );
+
+$previousCancelledRevenue =
+    round(
+        (float) (
+            $previousSummary[
+                "cancelled_revenue"
+            ] ?? 0
+        ),
+        2
+    );
+
+$previousItemsSold =
+    (int) (
+        $previousItemsSoldRow[
+            "items_sold"
+        ] ?? 0
+    );
+
+$previousCancellationRate =
+    $previousOrders > 0
+        ? round(
+            (
+                $previousCancelled /
+                $previousOrders
+            ) * 100,
+            2
+        )
+        : 0.0;
 
     /* =====================================================
        BEST-SELLING PRODUCTS
@@ -361,7 +840,8 @@ try {
                 ON p.product_id = oi.product_id
 
             WHERE o.restaurant_id = ?
-              AND o.order_status = 'completed'
+                AND o.order_status = 'completed'
+                AND {$orderDateCondition}
 
             GROUP BY
                 p.product_id,
@@ -421,8 +901,9 @@ try {
             LEFT JOIN tbl_products p
                 ON p.product_id = oi.product_id
 
-            WHERE o.restaurant_id = ?
-              AND o.order_status = 'completed'
+          WHERE o.restaurant_id = ?
+            AND o.order_status = 'completed'
+            AND {$orderDateCondition}
 
             GROUP BY
                 category
@@ -769,53 +1250,107 @@ try {
        RESPONSE
     ===================================================== */
 
-    respond_json([
+      respond_json([
         "success" => true,
 
         "performanceRange" => [
-            "value" => $range,
-            "label" => $rangeLabel
+            "value" =>
+                $range,
+
+            "label" =>
+                $rangeLabel,
+
+            "previous_label" =>
+                $previousRangeLabel
         ],
 
         "summary" => [
             "total_revenue" =>
-                round(
-                    (float) (
-                        $summary[
-                            "total_revenue"
-                        ] ?? 0
-                    ),
-                    2
-                ),
+                $currentRevenue,
 
             "total_orders" =>
-                (int) (
-                    $summary[
-                        "total_orders"
-                    ] ?? 0
-                ),
+                $currentOrders,
 
             "completed_orders" =>
-                (int) (
-                    $summary[
-                        "completed_orders"
-                    ] ?? 0
-                ),
+                $currentCompleted,
 
             "cancelled_orders" =>
-                (int) (
-                    $summary[
-                        "cancelled_orders"
-                    ] ?? 0
-                ),
+                $currentCancelled,
 
             "average_order_value" =>
+                $currentAverageOrderValue,
+
+            "cancellation_rate" =>
+                $currentCancellationRate,
+
+            "cancelled_revenue" =>
+                $currentCancelledRevenue,
+
+            "items_sold" =>
+                $currentItemsSold
+        ],
+
+        "previousSummary" => [
+            "total_revenue" =>
+                $previousRevenue,
+
+            "total_orders" =>
+                $previousOrders,
+
+            "completed_orders" =>
+                $previousCompleted,
+
+            "cancelled_orders" =>
+                $previousCancelled,
+
+            "average_order_value" =>
+                $previousAverageOrderValue,
+
+            "cancellation_rate" =>
+                $previousCancellationRate,
+
+            "cancelled_revenue" =>
+                $previousCancelledRevenue,
+
+            "items_sold" =>
+                $previousItemsSold
+        ],
+
+        "comparisons" => [
+            "revenue_change" =>
+                calculate_percentage_change(
+                    $currentRevenue,
+                    $previousRevenue
+                ),
+
+            "orders_change" =>
+                calculate_percentage_change(
+                    (float) $currentOrders,
+                    (float) $previousOrders
+                ),
+
+            "completed_orders_change" =>
+                calculate_percentage_change(
+                    (float) $currentCompleted,
+                    (float) $previousCompleted
+                ),
+
+            "average_order_value_change" =>
+                calculate_percentage_change(
+                    $currentAverageOrderValue,
+                    $previousAverageOrderValue
+                ),
+
+            "items_sold_change" =>
+                calculate_percentage_change(
+                    (float) $currentItemsSold,
+                    (float) $previousItemsSold
+                ),
+
+            "cancellation_rate_change" =>
                 round(
-                    (float) (
-                        $summary[
-                            "average_order_value"
-                        ] ?? 0
-                    ),
+                    $currentCancellationRate -
+                    $previousCancellationRate,
                     2
                 )
         ],
@@ -832,6 +1367,7 @@ try {
         "deliveryPerformance" =>
             $deliveryPerformance
     ]);
+
 
 } catch (Throwable $error) {
     error_log(

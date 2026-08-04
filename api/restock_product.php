@@ -115,10 +115,12 @@ try {
      */
     $checkStmt = $conn->prepare("
         SELECT
-            product_id,
-            product_name,
-            stock
-        FROM tbl_products
+    product_id,
+    product_name,
+    category,
+    size,
+    stock
+FROM tbl_products
         WHERE product_id = ?
           AND restaurant_id = ?
         LIMIT 1
@@ -208,35 +210,168 @@ try {
     ");
 
     if ($logStmt) {
-        $description =
-            "Restocked " .
-            $product["product_name"] .
-            " by " .
-            $quantity .
-            " unit(s).";
+    $description =
+        "Restocked " .
+        $product["product_name"] .
+        " by " .
+        $quantity .
+        " unit(s).";
 
-        $logStmt->bind_param(
-            "iiiis",
-            $restaurant_id,
-            $product_id,
-            $user_id,
-            $quantity,
-            $description
+    $logStmt->bind_param(
+        "iiiis",
+        $restaurant_id,
+        $product_id,
+        $user_id,
+        $quantity,
+        $description
+    );
+
+    /*
+     * tbl_stock_logs remains the detailed inventory
+     * movement history. Failure is logged but does not
+     * cancel the actual restock.
+     */
+    if (!$logStmt->execute()) {
+        error_log(
+            "restock_product.php stock log error: " .
+            $logStmt->error
         );
-
-        $logStmt->execute();
-        $logStmt->close();
     }
 
-    $conn->commit();
+    $logStmt->close();
+}
+
+/* =========================================================
+   OWNER ACTIVITY LOG
+========================================================= */
+
+$previousStock =
+    (int) $product["stock"];
+
+$newStock =
+    $previousStock + $quantity;
+
+$productName =
+    trim(
+        (string) (
+            $product["product_name"] ??
+            "Unnamed Product"
+        )
+    );
+
+$categoryLabel =
+    trim(
+        (string) (
+            $product["category"] ??
+            ""
+        )
+    );
+
+if ($categoryLabel === "") {
+    $categoryLabel =
+        "Uncategorized";
+}
+
+$variantLabel =
+    trim(
+        (string) (
+            $product["size"] ??
+            ""
+        )
+    );
+
+$actionTitle =
+    "Inventory Restocked";
+
+$actionDescription =
+    "Product: " .
+    $productName .
+    "\n" .
+
+    "Category: " .
+    $categoryLabel .
+    "\n" .
+
+    (
+        $variantLabel !== ""
+            ? "Variant: " .
+                $variantLabel .
+                "\n"
+            : ""
+    ) .
+
+    "Quantity Added: " .
+    number_format(
+        $quantity
+    ) .
+    "\n" .
+
+    "Stock: " .
+    number_format(
+        $previousStock
+    ) .
+    " → " .
+    number_format(
+        $newStock
+    );
+
+$activityStmt =
+    $conn->prepare("
+        INSERT INTO tbl_activity_logs (
+            restaurant_id,
+            user_id,
+            user_role,
+            action_type,
+            action_title,
+            action_description
+        )
+        VALUES (
+            ?,
+            ?,
+            ?,
+            'inventory',
+            ?,
+            ?
+        )
+    ");
+
+if (!$activityStmt) {
+    throw new RuntimeException(
+        "Unable to prepare the inventory activity log."
+    );
+}
+
+$activityStmt->bind_param(
+    "iisss",
+    $restaurant_id,
+    $user_id,
+    $role,
+    $actionTitle,
+    $actionDescription
+);
+
+if (!$activityStmt->execute()) {
+    $activityStmt->close();
+
+    throw new RuntimeException(
+        "Unable to record the inventory activity."
+    );
+}
+
+$activityStmt->close();
+
+$conn->commit();
 
     respond_json([
         "success" => true,
         "message" => "Stock updated successfully.",
         "product_id" => $product_id,
         "quantity_added" => $quantity,
-        "new_stock" =>
-            (int) $product["stock"] + $quantity
+        "previous_stock" =>
+                $previousStock,
+
+            "new_stock" =>
+                $newStock
     ]);
 
 } catch (Exception $e) {

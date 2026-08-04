@@ -111,6 +111,11 @@ document.addEventListener(
         "staffLoginMsg"
       );
 
+      const staffCredentialMsg =
+      document.getElementById(
+        "staffCredentialMsg"
+      );
+
     const staffAccessCard =
       staffModal?.querySelector(
         ".staff-access-card"
@@ -290,6 +295,31 @@ const restaurantTrack =
           ? "#65d68a"
           : "#ff777b";
     }
+
+    function setStaffCredentialMessage(
+  message = "",
+  type = "error"
+) {
+  if (!staffCredentialMsg) {
+    return;
+  }
+
+  staffCredentialMsg.textContent =
+    message;
+
+  staffCredentialMsg.classList.remove(
+    "error",
+    "success"
+  );
+
+  if (message) {
+    staffCredentialMsg.classList.add(
+      type === "success"
+        ? "success"
+        : "error"
+    );
+  }
+}
 
         /* =========================
        PORTAL VIEWS
@@ -2316,20 +2346,20 @@ ownerVerificationCode?.addEventListener(
             0
           );
 
-        setStaffMessage("");
+        setStaffCredentialMessage("");
 
         if (!restaurantId) {
-          setStaffMessage(
-            "Select a restaurant."
+          setStaffCredentialMessage(
+            "Please select your restaurant."
           );
 
           return;
         }
 
         if (!email || !password) {
-          setStaffMessage(
-            "Enter email and password."
-          );
+          setStaffCredentialMessage(
+  "Please enter your staff email and password."
+);
 
           if (!email) {
             staffEmail?.focus();
@@ -2381,10 +2411,23 @@ ownerVerificationCode?.addEventListener(
             !response.ok ||
             !data.success
           ) {
-            setStaffMessage(
-              data.message ||
-              "Invalid login credentials."
-            );
+            let loginMessage =
+  data.message ||
+  "Unable to log in.";
+
+if (
+  response.status === 403 &&
+  String(data.message || "")
+    .toLowerCase()
+    .includes("disabled")
+) {
+  loginMessage =
+    "Your staff account is inactive. Please contact the restaurant owner to reactivate it.";
+}
+
+setStaffCredentialMessage(
+  loginMessage
+);
 
             return;
           }
@@ -2401,9 +2444,9 @@ ownerVerificationCode?.addEventListener(
               break;
 
             case "owner":
-              setStaffMessage(
-                "Restaurant owners must use the FoodConnect Partner Portal."
-              );
+              setStaffCredentialMessage(
+  "Restaurant owners must use the FoodConnect Partner Portal."
+);
               break;
 
             case "cashier":
@@ -2417,9 +2460,9 @@ ownerVerificationCode?.addEventListener(
               break;
 
             default:
-              setStaffMessage(
-                "This account does not have an available dashboard."
-              );
+              setStaffCredentialMessage(
+  "This staff account does not have an assigned dashboard."
+);
           }
         } catch (error) {
           console.error(
@@ -2427,10 +2470,10 @@ ownerVerificationCode?.addEventListener(
             error
           );
 
-          setStaffMessage(
-            error.message ||
-            "Cannot connect to server."
-          );
+          setStaffCredentialMessage(
+  error.message ||
+  "Cannot connect to the server."
+);
         } finally {
           staffLoginBtn.disabled =
             false;

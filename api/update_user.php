@@ -39,9 +39,8 @@ $role = trim($data["role"] ?? "");
 $status = isset($data["status"]) ? (int) $data["status"] : 1;
 
 $allowed_roles = [
-    "Owner",
+    "owner",
     "cashier",
-    "kitchen_staff",
     "delivery_staff"
 ];
 

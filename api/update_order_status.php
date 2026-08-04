@@ -179,6 +179,7 @@ try {
             user_id,
             customer_name,
             order_type,
+            total_amount,
             order_status
 
         FROM tbl_orders
@@ -272,7 +273,111 @@ $queue_number =
         ? (int)$order["queue_number"]
         : null;
 
-$customer_name = "Customer";
+$customer_name = trim(
+    (string)(
+        $order["customer_name"] ??
+        ""
+    )
+);
+
+if ($customer_name === "") {
+    $customer_name =
+        "Unknown Customer";
+}
+
+$total_amount =
+    (float)(
+        $order["total_amount"] ??
+        0
+    );
+
+switch ($order_type) {
+    case "dine_in":
+        $order_type_label = "Dine-in";
+        break;
+
+    case "takeout":
+        $order_type_label = "Takeout";
+        break;
+
+    case "delivery":
+        $order_type_label = "Delivery";
+        break;
+
+    default:
+        $order_type_label = ucwords(
+            str_replace(
+                "_",
+                " ",
+                $order_type
+            )
+        );
+        break;
+}
+
+/* =====================================================
+   AUTHENTICATED ACTOR
+===================================================== */
+
+$actorName =
+    $role === "owner"
+        ? "Restaurant Owner"
+        : "Cashier";
+
+$actorStmt = $conn->prepare("
+    SELECT
+        full_name
+
+    FROM tbl_users
+
+    WHERE user_id = ?
+
+    LIMIT 1
+");
+
+if (!$actorStmt) {
+    throw new RuntimeException(
+        "Unable to prepare actor information."
+    );
+}
+
+$actorStmt->bind_param(
+    "i",
+    $user_id
+);
+
+if (!$actorStmt->execute()) {
+    $actorStmt->close();
+
+    throw new RuntimeException(
+        "Unable to load actor information."
+    );
+}
+
+$actorResult =
+    $actorStmt->get_result();
+
+$actorRow =
+    $actorResult->fetch_assoc();
+
+$actorStmt->close();
+
+$loadedActorName = trim(
+    (string)(
+        $actorRow["full_name"] ??
+        ""
+    )
+);
+
+if ($loadedActorName !== "") {
+    $actorName =
+        $loadedActorName;
+}
+
+$actorRoleLabel =
+    $role === "owner"
+        ? "Restaurant Owner"
+        : "Cashier";
 
     /*
      * Avoid performing the same action twice.
@@ -579,37 +684,99 @@ $updateStmt->close();
         );
     }
 
-    $statusTitle =
-        $new_status === "cancelled"
-            ? "Order Cancelled"
-            : "Order Status Updated";
-
     if ($new_status === "cancelled") {
+    $statusTitle =
+        "Order #" .
+        $order_id .
+        " Cancelled";
+
     $queueLabel =
         $queue_number !== null
-            ? "Queue #" . $queue_number
+            ? "Queue #" .
+                $queue_number
             : "No queue number";
 
+    $formattedAmount =
+        number_format(
+            $total_amount,
+            2
+        );
+
+    $restoredStockUnits = 0;
+
+    if (
+        is_array(
+            $stockRestoreSummary
+        )
+    ) {
+        foreach (
+            $stockRestoreSummary
+            as $restoredQuantity
+        ) {
+            $restoredStockUnits +=
+                max(
+                    0,
+                    (int)$restoredQuantity
+                );
+        }
+    }
+
+    $stockRestorationText =
+        $restoredStockUnits > 0
+            ? $restoredStockUnits .
+                " stock unit" .
+                (
+                    $restoredStockUnits === 1
+                        ? ""
+                        : "s"
+                ) .
+                " restored."
+            : "Reserved stock restored.";
+
     $statusDescription =
-        ucfirst($role) .
-        " cancelled " .
+        $actorName .
+        " (" .
+        $actorRoleLabel .
+        ") cancelled " .
         $queueLabel .
-        " • Order #" .
+        ", Order #" .
         $order_id .
         " for " .
         $customer_name .
+        ". Order type: " .
+        $order_type_label .
+        ". Amount affected: ₱" .
+        $formattedAmount .
         ". Reason: " .
         $cancellation_reason .
-        ". Stock was restored.";
+        ". Inventory: " .
+        $stockRestorationText;
 } else {
+    $statusTitle =
+        "Order Status Updated";
+
     $statusDescription =
-        ucfirst($role) .
-        " changed Order #" .
+        $actorName .
+        " (" .
+        $actorRoleLabel .
+        ") changed Order #" .
         $order_id .
         " from " .
-        $current_status .
+        ucwords(
+            str_replace(
+                "_",
+                " ",
+                $current_status
+            )
+        ) .
         " to " .
-        $new_status .
+        ucwords(
+            str_replace(
+                "_",
+                " ",
+                $new_status
+            )
+        ) .
         ".";
 }
 

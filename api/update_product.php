@@ -531,62 +531,741 @@ if ($discount_type === "none") {
 }
 
 /* =========================================================
-   VERIFY PRODUCT OWNERSHIP
+   VERIFY PRODUCT, UPDATE, AND RECORD ACTIVITY
+
+   The product update and activity log are saved in one
+   transaction. If either operation fails, both are rolled
+   back.
 ========================================================= */
 
-$productStmt = $conn->prepare("
-    SELECT
-        product_id,
-        image_path
-    FROM tbl_products
-    WHERE product_id = ?
-      AND restaurant_id = ?
-    LIMIT 1
-");
+$conn->begin_transaction();
 
-if (!$productStmt) {
+$newImagePath = null;
+$oldImagePath = null;
+$uploadedNewImage = false;
+
+try {
+
+    /* =====================================================
+       LOCK AND LOAD CURRENT PRODUCT VALUES
+    ===================================================== */
+
+    $productStmt = $conn->prepare("
+        SELECT
+            product_id,
+            product_name,
+            category,
+            size,
+            price,
+            stock,
+            status,
+            image_path,
+            discount_type,
+            discount_value,
+            discount_schedule,
+            discount_start,
+            discount_end,
+            discount_status
+        FROM tbl_products
+        WHERE product_id = ?
+          AND restaurant_id = ?
+        LIMIT 1
+        FOR UPDATE
+    ");
+
+    if (!$productStmt) {
+        throw new RuntimeException(
+            "Unable to prepare product verification."
+        );
+    }
+
+    $productStmt->bind_param(
+        "ii",
+        $product_id,
+        $restaurant_id
+    );
+
+    if (!$productStmt->execute()) {
+        $productStmt->close();
+
+        throw new RuntimeException(
+            "Unable to load the current product."
+        );
+    }
+
+    $productExists = $productStmt
+        ->get_result()
+        ->fetch_assoc();
+
+    $productStmt->close();
+
+    if (!$productExists) {
+        $conn->rollback();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Product not found for this restaurant."
+        ], 404);
+    }
+
+    $oldImagePath =
+        $productExists["image_path"] ??
+        null;
+
+    $newImagePath =
+        $oldImagePath;
+
+    /* =====================================================
+       PROCESS IMAGE CHANGE
+    ===================================================== */
+
+    if (
+        isset($_FILES["product_image"]) &&
+        (
+            $_FILES["product_image"]["error"] ??
+            UPLOAD_ERR_NO_FILE
+        ) !== UPLOAD_ERR_NO_FILE
+    ) {
+        try {
+            $newImagePath =
+                save_product_image(
+                    $_FILES["product_image"],
+                    $restaurant_id
+                );
+
+            $uploadedNewImage = true;
+
+        } catch (RuntimeException $error) {
+            throw new RuntimeException(
+                $error->getMessage()
+            );
+        }
+
+    } elseif ($removeImage) {
+        $newImagePath = null;
+    }
+
+    /* =====================================================
+       CHECK DUPLICATE PRODUCT
+    ===================================================== */
+
+    $duplicateStmt = $conn->prepare("
+        SELECT
+            product_id
+        FROM tbl_products
+        WHERE restaurant_id = ?
+          AND product_id <> ?
+          AND LOWER(TRIM(product_name)) =
+              LOWER(TRIM(?))
+          AND LOWER(TRIM(category)) =
+              LOWER(TRIM(?))
+          AND LOWER(
+              TRIM(
+                  COALESCE(size, '')
+              )
+          ) = LOWER(TRIM(?))
+        LIMIT 1
+    ");
+
+    if (!$duplicateStmt) {
+        throw new RuntimeException(
+            "Unable to validate duplicate products."
+        );
+    }
+
+    $duplicateStmt->bind_param(
+        "iisss",
+        $restaurant_id,
+        $product_id,
+        $product_name,
+        $category,
+        $size
+    );
+
+    if (!$duplicateStmt->execute()) {
+        $duplicateStmt->close();
+
+        throw new RuntimeException(
+            "Unable to validate duplicate products."
+        );
+    }
+
+    $duplicateProduct =
+        $duplicateStmt
+            ->get_result()
+            ->fetch_assoc();
+
+    $duplicateStmt->close();
+
+    if ($duplicateProduct) {
+        if ($uploadedNewImage) {
+            delete_product_image(
+                $newImagePath
+            );
+        }
+
+        $conn->rollback();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "A product with the same name, category, and variant already exists."
+        ], 409);
+    }
+
+    /* =====================================================
+       BUILD CHANGE SUMMARY
+    ===================================================== */
+
+    $changes = [];
+
+    $oldProductName =
+        trim(
+            (string) (
+                $productExists["product_name"] ??
+                ""
+            )
+        );
+
+    $oldCategory =
+        trim(
+            (string) (
+                $productExists["category"] ??
+                ""
+            )
+        );
+
+    $oldSize =
+        trim(
+            (string) (
+                $productExists["size"] ??
+                ""
+            )
+        );
+
+    $oldPrice =
+        round(
+            (float) (
+                $productExists["price"] ??
+                0
+            ),
+            2
+        );
+
+    $oldStock =
+        (int) (
+            $productExists["stock"] ??
+            0
+        );
+
+    $oldStatus =
+        trim(
+            (string) (
+                $productExists["status"] ??
+                ""
+            )
+        );
+
+    $oldDiscountType =
+        strtolower(
+            trim(
+                (string) (
+                    $productExists["discount_type"] ??
+                    "none"
+                )
+            )
+        );
+
+    $oldDiscountValue =
+        round(
+            (float) (
+                $productExists["discount_value"] ??
+                0
+            ),
+            2
+        );
+
+    $oldDiscountSchedule =
+        strtolower(
+            trim(
+                (string) (
+                    $productExists["discount_schedule"] ??
+                    "permanent"
+                )
+            )
+        );
+
+    $oldDiscountStart =
+        $productExists["discount_start"] ??
+        null;
+
+    $oldDiscountEnd =
+        $productExists["discount_end"] ??
+        null;
+
+    $oldDiscountStatus =
+        trim(
+            (string) (
+                $productExists["discount_status"] ??
+                "Inactive"
+            )
+        );
+
+    if ($oldProductName !== $product_name) {
+        $changes[] =
+            'Name: "' .
+            $oldProductName .
+            '" → "' .
+            $product_name .
+            '"';
+    }
+
+    if ($oldCategory !== $category) {
+        $changes[] =
+            "Category: " .
+            (
+                $oldCategory !== ""
+                    ? $oldCategory
+                    : "Uncategorized"
+            ) .
+            " → " .
+            $category;
+    }
+
+    if ($oldSize !== $size) {
+        $changes[] =
+            "Variant: " .
+            (
+                $oldSize !== ""
+                    ? $oldSize
+                    : "None"
+            ) .
+            " → " .
+            (
+                $size !== ""
+                    ? $size
+                    : "None"
+            );
+    }
+
+    if (abs($oldPrice - $price) >= 0.01) {
+        $changes[] =
+            "Price: ₱" .
+            number_format(
+                $oldPrice,
+                2
+            ) .
+            " → ₱" .
+            number_format(
+                $price,
+                2
+            );
+    }
+
+    if ($oldStock !== $stock) {
+        $changes[] =
+            "Stock: " .
+            number_format(
+                $oldStock
+            ) .
+            " → " .
+            number_format(
+                $stock
+            );
+    }
+
+    if (
+        strtolower($oldStatus) !==
+        strtolower($status)
+    ) {
+        $changes[] =
+            "Status: " .
+            (
+                $oldStatus !== ""
+                    ? $oldStatus
+                    : "Unknown"
+            ) .
+            " → " .
+            $status;
+    }
+
+    $formatPromotion = static function (
+        string $type,
+        float $value,
+        string $schedule,
+        ?string $start,
+        ?string $end,
+        string $promoStatus
+    ): string {
+        if (
+            $type === "none" ||
+            $value <= 0
+        ) {
+            return "None";
+        }
+
+        if ($type === "percentage") {
+            $label =
+                number_format(
+                    $value,
+                    2
+                ) .
+                "% discount";
+        } else {
+            $label =
+                "₱" .
+                number_format(
+                    $value,
+                    2
+                ) .
+                " fixed discount";
+        }
+
+        $label .=
+            " (" .
+            $promoStatus;
+
+        if (
+            $schedule === "scheduled" &&
+            $start &&
+            $end
+        ) {
+            $label .=
+                ", scheduled " .
+                $start .
+                " to " .
+                $end;
+        } else {
+            $label .=
+                ", permanent";
+        }
+
+        return $label . ")";
+    };
+
+    $oldPromotion =
+        $formatPromotion(
+            $oldDiscountType,
+            $oldDiscountValue,
+            $oldDiscountSchedule,
+            $oldDiscountStart,
+            $oldDiscountEnd,
+            $oldDiscountStatus
+        );
+
+    $newPromotion =
+        $formatPromotion(
+            $discount_type,
+            $discount_value,
+            $discount_schedule,
+            $discount_start,
+            $discount_end,
+            $discount_status
+        );
+
+    if ($oldPromotion !== $newPromotion) {
+        $changes[] =
+            "Promotion: " .
+            $oldPromotion .
+            " → " .
+            $newPromotion;
+    }
+
+    $oldImageValue =
+        trim(
+            (string) (
+                $oldImagePath ??
+                ""
+            )
+        );
+
+    $newImageValue =
+        trim(
+            (string) (
+                $newImagePath ??
+                ""
+            )
+        );
+
+    if ($oldImageValue !== $newImageValue) {
+        if (
+            $oldImageValue === "" &&
+            $newImageValue !== ""
+        ) {
+            $changes[] =
+                "Product image added.";
+        } elseif (
+            $oldImageValue !== "" &&
+            $newImageValue === ""
+        ) {
+            $changes[] =
+                "Product image removed.";
+        } else {
+            $changes[] =
+                "Product image replaced.";
+        }
+    }
+
+    /* =====================================================
+       NO CHANGES
+    ===================================================== */
+
+    if (!$changes) {
+        if ($uploadedNewImage) {
+            delete_product_image(
+                $newImagePath
+            );
+        }
+
+        $conn->rollback();
+
+        respond_json([
+            "success" => true,
+            "message" =>
+                "No product changes were detected.",
+            "no_changes" => true,
+            "product" => [
+                "product_id" =>
+                    $product_id
+            ]
+        ]);
+    }
+
+    /* =====================================================
+       UPDATE PRODUCT
+    ===================================================== */
+
+    $stmt = $conn->prepare("
+        UPDATE tbl_products
+        SET
+            product_name = ?,
+            category = ?,
+            size = ?,
+            price = ?,
+            stock = ?,
+            status = ?,
+            image_path = ?,
+            discount_type = ?,
+            discount_value = ?,
+            discount_schedule = ?,
+            discount_start = ?,
+            discount_end = ?,
+            discount_status = ?
+        WHERE product_id = ?
+          AND restaurant_id = ?
+    ");
+
+    if (!$stmt) {
+        throw new RuntimeException(
+            "Unable to prepare the product update."
+        );
+    }
+
+    $stmt->bind_param(
+        "sssdisssdssssii",
+        $product_name,
+        $category,
+        $size,
+        $price,
+        $stock,
+        $status,
+        $newImagePath,
+        $discount_type,
+        $discount_value,
+        $discount_schedule,
+        $discount_start,
+        $discount_end,
+        $discount_status,
+        $product_id,
+        $restaurant_id
+    );
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+
+        throw new RuntimeException(
+            "Failed to update product."
+        );
+    }
+
+    if ($stmt->affected_rows !== 1) {
+        $stmt->close();
+
+        throw new RuntimeException(
+            "The product was not updated."
+        );
+    }
+
+    $stmt->close();
+
+    /* =====================================================
+       PRODUCT UPDATED ACTIVITY
+    ===================================================== */
+
+    $actionTitle =
+        "Product Updated";
+
+    $actionDescription =
+        "Product: " .
+        $product_name .
+        "\nChanges:\n" .
+        implode(
+            "\n",
+            $changes
+        );
+
+    $logStmt = $conn->prepare("
+        INSERT INTO tbl_activity_logs (
+            restaurant_id,
+            user_id,
+            user_role,
+            action_type,
+            action_title,
+            action_description
+        )
+        VALUES (
+            ?,
+            ?,
+            ?,
+            'product',
+            ?,
+            ?
+        )
+    ");
+
+    if (!$logStmt) {
+        throw new RuntimeException(
+            "Unable to prepare the product activity log."
+        );
+    }
+
+    $logStmt->bind_param(
+        "iisss",
+        $restaurant_id,
+        $user_id,
+        $role,
+        $actionTitle,
+        $actionDescription
+    );
+
+    if (!$logStmt->execute()) {
+        $logStmt->close();
+
+        throw new RuntimeException(
+            "Unable to record the product update."
+        );
+    }
+
+    $logStmt->close();
+
+    $conn->commit();
+
+    /* =====================================================
+       DELETE REPLACED IMAGE AFTER COMMIT
+    ===================================================== */
+
+    if (
+        (
+            $uploadedNewImage ||
+            $removeImage
+        ) &&
+        !empty($oldImagePath) &&
+        $oldImagePath !== $newImagePath
+    ) {
+        delete_product_image(
+            $oldImagePath
+        );
+    }
+
+    respond_json([
+        "success" => true,
+        "message" =>
+            "Product updated successfully.",
+        "no_changes" => false,
+        "changes" => $changes,
+        "product" => [
+            "product_id" =>
+                $product_id,
+
+            "id" =>
+                $product_id,
+
+            "product_name" =>
+                $product_name,
+
+            "name" =>
+                $product_name,
+
+            "category" =>
+                $category,
+
+            "size" =>
+                $size,
+
+            "price" =>
+                $price,
+
+            "stock" =>
+                $stock,
+
+            "status" =>
+                $status,
+
+            "image_path" =>
+                $newImagePath,
+
+            "image" =>
+                $newImagePath,
+
+            "discount_type" =>
+                $discount_type,
+
+            "discount_value" =>
+                $discount_value,
+
+            "discount_schedule" =>
+                $discount_schedule,
+
+            "discount_start" =>
+                $discount_start,
+
+            "discount_end" =>
+                $discount_end,
+
+            "discount_status" =>
+                $discount_status
+        ]
+    ]);
+
+} catch (Throwable $error) {
+
+    try {
+        $conn->rollback();
+    } catch (Throwable $rollbackError) {
+        error_log(
+            "update_product.php rollback error: " .
+            $rollbackError->getMessage()
+        );
+    }
+
+    if ($uploadedNewImage) {
+        delete_product_image(
+            $newImagePath
+        );
+    }
+
     error_log(
-        "update_product.php product prepare error: " .
-        $conn->error
+        "update_product.php error: " .
+        $error->getMessage()
     );
 
     respond_json([
         "success" => false,
         "message" =>
-            "Unable to verify the product."
+            "Unable to update the product completely. Please try again."
     ], 500);
 }
-
-$productStmt->bind_param(
-    "ii",
-    $product_id,
-    $restaurant_id
-);
-
-$productStmt->execute();
-
-$productExists = $productStmt
-    ->get_result()
-    ->fetch_assoc();
-
-$productStmt->close();
-
-if (!$productExists) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Product not found for this restaurant."
-    ], 404);
-}
-
-$oldImagePath =
-    $productExists["image_path"] ??
-    null;
-
-$newImagePath =
-    $oldImagePath;
-
-$uploadedNewImage = false;
 
 /* =========================================================
    PROCESS IMAGE CHANGE

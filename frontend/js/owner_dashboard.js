@@ -1,17 +1,30 @@
 let products = [];
-let salesData = [];
+
+/*
+ * The main Dashboard and Advanced Analytics
+ * must not share the same chart state.
+ */
+let dashboardSalesData = [];
+let reportSalesData = [];
+
 let users = [];
 let activityLogs = [];
 let currentLogFilter = "all";
 let salesReport = {
   summary: {},
+  previousSummary: {},
+  comparisons: {},
+
   bestProducts: [],
   bestCategories: [],
+
   cashierPerformance: [],
   deliveryPerformance: [],
+
   performanceRange: {
     value: "weekly",
-    label: "Last 7 Days"
+    label: "Last 7 Days",
+    previous_label: "Previous 7 Days"
   }
 };
 
@@ -404,12 +417,69 @@ const editProductDiscountPreviewMessage =
 const saveProductBtn = document.getElementById("saveProductBtn");
 const updateProductBtn = document.getElementById("updateProductBtn");
 const saveRestockBtn = document.getElementById("saveRestockBtn");
+const restockProduct =
+  document.getElementById(
+    "restockProduct"
+  );
 
+const restockQuantity =
+  document.getElementById(
+    "restockQuantity"
+  );
+
+const restockCurrentStock =
+  document.getElementById(
+    "restockCurrentStock"
+  );
+
+  const restockProductName =
+    document.getElementById(
+        "restockProductName"
+    );
+
+const restockProductMeta =
+    document.getElementById(
+        "restockProductMeta"
+    );
+
+const restockNewStock =
+  document.getElementById(
+    "restockNewStock"
+  );
+
+const restockFormMessage =
+  document.getElementById(
+    "restockFormMessage"
+  );
+
+const decreaseRestockQuantity =
+  document.getElementById(
+    "decreaseRestockQuantity"
+  );
+
+const increaseRestockQuantity =
+  document.getElementById(
+    "increaseRestockQuantity"
+  );
+
+const cancelRestockBtn =
+  document.getElementById(
+    "cancelRestockBtn"
+  );
 const inventoryTableBody = document.getElementById("inventoryTableBody");
 const inventorySearch = document.getElementById("inventorySearch");
 const inventoryFilter = document.getElementById("inventoryFilter");
 const inventoryCategoryFilter = document.getElementById("inventoryCategoryFilter");
 
+const clearInventoryFilters =
+  document.getElementById(
+    "clearInventoryFilters"
+  );
+
+const inventoryResultCount =
+  document.getElementById(
+    "inventoryResultCount"
+  );
 const usersTableBody = document.getElementById("usersTableBody");
 const userSearch = document.getElementById("userSearch");
 const userRoleFilter = document.getElementById("userRoleFilter");
@@ -425,12 +495,130 @@ const closeEditUserModal = document.getElementById("closeEditUserModal");
 const saveUserBtn = document.getElementById("saveUserBtn");
 const updateUserBtn = document.getElementById("updateUserBtn"); 
 
-const logsList = document.getElementById("logsList");
-const logFilter = document.getElementById("logFilter");
+const logsList =
+  document.getElementById(
+    "logsList"
+  );
 
-const reportTotalRevenue = document.getElementById("reportTotalRevenue");
-const reportSalesRange = document.getElementById("reportSalesRange");
-const reportSalesChart = document.getElementById("reportSalesChart");
+const logFilter =
+  document.getElementById(
+    "logFilter"
+  );
+
+const activitySearch =
+  document.getElementById(
+    "activitySearch"
+  );
+
+const activityDateFilter =
+  document.getElementById(
+    "activityDateFilter"
+  );
+
+const clearActivityFilters =
+  document.getElementById(
+    "clearActivityFilters"
+  );
+
+const refreshActivityLogs =
+  document.getElementById(
+    "refreshActivityLogs"
+  );
+
+const activityResultCount =
+  document.getElementById(
+    "activityResultCount"
+  );
+
+const activityOverviewTotal =
+  document.getElementById(
+    "activityOverviewTotal"
+  );
+
+const activityOverviewOrders =
+  document.getElementById(
+    "activityOverviewOrders"
+  );
+
+const activityOverviewInventory =
+  document.getElementById(
+    "activityOverviewInventory"
+  );
+
+const activityOverviewStaff =
+  document.getElementById(
+    "activityOverviewStaff"
+  );
+
+const reportTotalRevenue =
+  document.getElementById(
+    "reportTotalRevenue"
+  );
+
+const reportTotalOrders =
+  document.getElementById(
+    "reportTotalOrders"
+  );
+
+const reportSalesRange =
+  document.getElementById(
+    "reportSalesRange"
+  );
+
+const reportSalesChart =
+  document.getElementById(
+    "reportSalesChart"
+  );
+
+const cancellationRate =
+  document.getElementById(
+    "cancellationRate"
+  );
+
+const itemsSold =
+  document.getElementById(
+    "itemsSold"
+  );
+
+const analyticsCurrentPeriod =
+  document.getElementById(
+    "analyticsCurrentPeriod"
+  );
+
+const analyticsPreviousPeriod =
+  document.getElementById(
+    "analyticsPreviousPeriod"
+  );
+
+const revenueComparison =
+  document.getElementById(
+    "revenueComparison"
+  );
+
+const ordersComparison =
+  document.getElementById(
+    "ordersComparison"
+  );
+
+const completedOrdersComparison =
+  document.getElementById(
+    "completedOrdersComparison"
+  );
+
+const averageOrderComparison =
+  document.getElementById(
+    "averageOrderComparison"
+  );
+
+const cancellationComparison =
+  document.getElementById(
+    "cancellationComparison"
+  );
+
+const itemsSoldComparison =
+  document.getElementById(
+    "itemsSoldComparison"
+  );
 const bestProductsList = document.getElementById("bestProductsList");
 const bestCategoriesList = document.getElementById("bestCategoriesList");
 
@@ -671,9 +859,21 @@ function getProductDiscountLabel(
 }
 
 function getStockLabel(stock) {
-  if (stock <= 0) return "🔴 Out of Stock";
-  if (stock <= 5) return "🟡 Low Stock";
-  return "🟢 In Stock";
+  const quantity =
+    Math.max(
+      0,
+      Number(stock) || 0
+    );
+
+  if (quantity <= 0) {
+    return "Out of Stock";
+  }
+
+  if (quantity <= 5) {
+    return "Restock Soon";
+  }
+
+  return "In Stock";
 }
 
 function sortInventoryList(list) {
@@ -691,68 +891,352 @@ function sortInventoryList(list) {
   });
 }
 
-async function loadActivityLogs() {
-  try {
-    const data = await fetchJSON("http://localhost/FoodConnect/api/get_activity_logs.php");
+function updateInventoryResultCount(
+  count
+) {
+  if (!inventoryResultCount) {
+    return;
+  }
 
-    if (!data.success || !Array.isArray(data.logs)) {
+  const safeCount =
+    Math.max(
+      0,
+      Number(count) || 0
+    );
+
+  inventoryResultCount.textContent =
+    `${safeCount} ${
+      safeCount === 1
+        ? "product"
+        : "products"
+    }`;
+}
+
+clearInventoryFilters?.addEventListener(
+  "click",
+  () => {
+    if (inventorySearch) {
+      inventorySearch.value = "";
+    }
+
+    if (inventoryFilter) {
+      inventoryFilter.value = "all";
+    }
+
+    if (inventoryCategoryFilter) {
+      inventoryCategoryFilter.value =
+        "all";
+    }
+
+  applyInventoryFilters();
+  }
+);
+
+async function loadActivityLogs() {
+  if (logsList) {
+    logsList.innerHTML = `
+      <div class="activity-loading-state">
+        Loading activity logs...
+      </div>
+    `;
+  }
+
+  try {
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_activity_logs.php`
+    );
+
+    if (
+      !data.success ||
+      !Array.isArray(data.logs)
+    ) {
       activityLogs = [];
       renderActivityLogs();
       return;
     }
 
-    activityLogs = data.logs.map(log => ({
-      type: log.action_type,
-      icon: getActivityIcon(log.action_type),
-      title: log.action_title,
-      message: log.action_description,
-      time: formatLogTime(log.created_at)
-    }));
+    activityLogs =
+      data.logs.map(log => ({
+        id:
+          Number(log.log_id) || 0,
+
+        type:
+          String(
+            log.action_type ||
+            "system"
+          )
+            .trim()
+            .toLowerCase(),
+
+        icon:
+          getActivityIcon(
+            log.action_type
+          ),
+
+        title:
+          String(
+            log.action_title ||
+            "Activity Recorded"
+          ).trim(),
+
+        message:
+          String(
+            log.action_description ||
+            "No additional details."
+          ).trim(),
+
+        role:
+          String(
+            log.user_role ||
+            "System"
+          ).trim(),
+
+        userId:
+          log.user_id !== null
+            ? Number(log.user_id)
+            : null,
+
+        isRead:
+          Number(log.is_read) === 1,
+
+        createdAt:
+          log.created_at || null,
+
+        time:
+          formatLogTime(
+            log.created_at
+          )
+      }));
 
     renderActivityLogs();
 
   } catch (error) {
-    console.error("Load activity logs failed:", error);
+    console.error(
+      "Load activity logs failed:",
+      error
+    );
+
+    activityLogs = [];
+
+    if (logsList) {
+      logsList.innerHTML = `
+        <div class="empty-logs">
+          <div class="empty-logs-icon">
+            !
+          </div>
+
+          <h3>
+            Unable to load activities
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              error.message ||
+              "Please refresh the page and try again."
+            )}
+          </p>
+        </div>
+      `;
+    }
   }
 }
 
 function getActivityIcon(type) {
-  if (type === "order") return "🧾";
-  if (type === "product") return "🍔";
-  if (type === "inventory") return "📦";
-  if (type === "staff") return "👤";
+  const normalizedType =
+    String(type || "")
+      .trim()
+      .toLowerCase();
+
+if (normalizedType === "order") {
+  return "✕";
+}
+
+  if (normalizedType === "product") {
+    return "🍽️";
+  }
+
+  if (normalizedType === "inventory") {
+    return "📦";
+  }
+
+  if (normalizedType === "staff") {
+    return "👤";
+  }
+
+  if (normalizedType === "payment") {
+    return "₱";
+  }
+
+  if (normalizedType === "settings") {
+    return "⚙";
+  }
+
   return "⚙️";
 }
 
-function formatLogTime(dateValue) {
-  if (!dateValue) return "Recently";
-
-  const date = new Date(dateValue);
-
-  if (isNaN(date.getTime())) {
-    return dateValue;
+function parseActivityDate(
+  dateValue
+) {
+  if (!dateValue) {
+    return null;
   }
 
-  return date.toLocaleString("en-PH", {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  const normalizedValue =
+    String(dateValue)
+      .trim()
+      .replace(" ", "T");
+
+  const date =
+    new Date(normalizedValue);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  return date;
 }
 
-async function saveActivityLog(type, title, description) {
+function formatLogTime(
+  dateValue
+) {
+  const date =
+    parseActivityDate(
+      dateValue
+    );
+
+  if (!date) {
+    return "Recently";
+  }
+
+  return date.toLocaleTimeString(
+    "en-PH",
+    {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    }
+  );
+}
+
+function getActivityDateKey(
+  dateValue
+) {
+  const date =
+    parseActivityDate(
+      dateValue
+    );
+
+  if (!date) {
+    return "unknown";
+  }
+
+  return [
+    date.getFullYear(),
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0"),
+    String(
+      date.getDate()
+    ).padStart(2, "0")
+  ].join("-");
+}
+
+function getActivityDateLabel(
+  dateValue
+) {
+  const date =
+    parseActivityDate(
+      dateValue
+    );
+
+  if (!date) {
+    return "Earlier";
+  }
+
+  const today =
+    new Date();
+
+  const todayStart =
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+  const activityStart =
+    new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+  const difference =
+    Math.round(
+      (
+        todayStart -
+        activityStart
+      ) /
+      86400000
+    );
+
+  if (difference === 0) {
+    return "Today";
+  }
+
+  if (difference === 1) {
+    return "Yesterday";
+  }
+
+  return date.toLocaleDateString(
+    "en-PH",
+    {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    }
+  );
+}
+
+async function saveActivityLog(
+  type,
+  title,
+  description
+) {
   try {
-    await fetchJSON("http://localhost/FoodConnect/api/add_activity_log.php", {
-      method: "POST",
-      body: JSON.stringify({
-        action_type: type,
-        action_title: title,
-        action_description: description
-      })
-    });
+    const result =
+      await fetchJSON(
+        `${OWNER_API_BASE}/add_activity_log.php`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            action_type: type,
+            action_title: title,
+            action_description:
+              description
+          })
+        }
+      );
+
+    if (!result.success) {
+      throw new Error(
+        result.message ||
+        "The activity log was not saved."
+      );
+    }
+
+    return true;
+
   } catch (error) {
-    console.error("Save activity log failed:", error);
+    console.error(
+      "Save activity log failed:",
+      error
+    );
+
+    return false;
   }
 }
 
@@ -1535,6 +2019,10 @@ function renderGoLiveStatus(
     !readyToApply;
 }
 
+/* =========================
+   DASHBOARD SUMMARY
+========================= */
+
 async function loadDashboardSummary() {
   const salesToday =
     document.getElementById(
@@ -1574,26 +2062,6 @@ async function loadDashboardSummary() {
   const activeStaff =
     document.getElementById(
       "activeStaff"
-    );
-
-  const completedOrders =
-    document.getElementById(
-      "completedOrders"
-    );
-
-  const cancelledOrders =
-    document.getElementById(
-      "cancelledOrders"
-    );
-
-  const averageOrderValue =
-    document.getElementById(
-      "averageOrderValue"
-    );
-
-  const bestSeller =
-    document.getElementById(
-      "bestSeller"
     );
 
   try {
@@ -1674,31 +2142,6 @@ async function loadDashboardSummary() {
       data.readiness || {}
     );
 
-    if (completedOrders) {
-      completedOrders.textContent =
-        Number(
-          data.completedOrders
-        ) || 0;
-    }
-
-    if (cancelledOrders) {
-      cancelledOrders.textContent =
-        Number(
-          data.cancelledOrders
-        ) || 0;
-    }
-
-    if (averageOrderValue) {
-      averageOrderValue.textContent =
-        formatPeso(
-          data.averageOrderValue || 0
-        );
-    }
-
-    if (bestSeller) {
-      bestSeller.textContent =
-        data.bestSeller || "-";
-    }
   } catch (error) {
     console.error(
       "Dashboard summary error:",
@@ -1708,7 +2151,8 @@ async function loadDashboardSummary() {
     if (readinessChecklist) {
       readinessChecklist.innerHTML = `
         <div class="readiness-loading">
-          Unable to load the restaurant readiness checklist.
+          Unable to load the restaurant
+          readiness checklist.
         </div>
       `;
     }
@@ -2244,26 +2688,64 @@ async function loadUsers() {
 /* =========================
    SALES CHART
 ========================= */
-async function loadSalesChart(range = "weekly") {
-  const data = await fetchJSON(`http://localhost/FoodConnect/api/get_sales_chart.php?range=${range}`);
-  salesData = Array.isArray(data) ? data : [];
+async function loadDashboardSalesChart(
+  range = "weekly"
+) {
+  const data =
+    await fetchJSON(
+      `${OWNER_API_BASE}/get_sales_chart.php?range=${encodeURIComponent(
+        range
+      )}`
+    );
+
+  dashboardSalesData =
+    Array.isArray(data)
+      ? data
+      : [];
+
   renderChart();
+}
+
+async function loadReportSalesChart(
+  range = "weekly"
+) {
+  const data =
+    await fetchJSON(
+      `${OWNER_API_BASE}/get_sales_chart.php?range=${encodeURIComponent(
+        range
+      )}`
+    );
+
+  reportSalesData =
+    Array.isArray(data)
+      ? data
+      : [];
+
   renderReportSalesChart();
 }
 
 function renderChart() {
   if (!salesChart) return;
 
-  if (!salesData.length) {
-    salesChart.innerHTML = "<p>No sales data yet</p>";
-    return;
-  }
+  if (!dashboardSalesData.length) {
+  salesChart.innerHTML =
+    "<p>No completed sales for this period.</p>";
 
-  const maxValue = Math.max(...salesData.map(item => Number(item.total) || 0), 1);
+  return;
+}
+
+const maxValue =
+  Math.max(
+    ...dashboardSalesData.map(
+      item =>
+        Number(item.total) || 0
+    ),
+    1
+  );
 
   salesChart.innerHTML = `
     <div class="chart-bars">
-      ${salesData.map(item => {
+      ${dashboardSalesData.map(item => {
         const total = Number(item.total) || 0;
         const height = Math.max((total / maxValue) * 100, 5);
 
@@ -2281,89 +2763,359 @@ function renderChart() {
   `;
 }
 
-function renderSalesReport() {
-  const completedOrders = document.getElementById("completedOrders");
-  const cancelledOrders = document.getElementById("cancelledOrders");
-  const averageOrderValue = document.getElementById("averageOrderValue");
-  const bestSeller = document.getElementById("bestSeller");
+function renderAnalyticsComparison(
+  element,
+  value,
+  options = {}
+) {
+  if (!element) {
+    return;
+  }
 
-  const summary = salesReport.summary || {};
-  const bestProducts = salesReport.bestProducts || [];
-  const bestCategories = salesReport.bestCategories || [];
+  const numericValue =
+    Number(value) || 0;
+
+  const {
+    lowerIsBetter = false,
+    suffix = "%"
+  } = options;
+
+  element.classList.remove(
+    "is-positive",
+    "is-negative",
+    "is-neutral"
+  );
+
+  if (numericValue === 0) {
+    element.textContent =
+      "No change from previous period";
+
+    element.classList.add(
+      "is-neutral"
+    );
+
+    return;
+  }
+
+  const businessIsPositive =
+    lowerIsBetter
+      ? numericValue < 0
+      : numericValue > 0;
+
+  const arrow =
+    numericValue > 0
+      ? "↑"
+      : "↓";
+
+  const formattedValue =
+    Math.abs(
+      numericValue
+    ).toLocaleString(
+      "en-PH",
+      {
+        maximumFractionDigits: 2
+      }
+    );
+
+  element.textContent =
+    `${arrow} ${formattedValue}${suffix} vs previous period`;
+
+  element.classList.add(
+    businessIsPositive
+      ? "is-positive"
+      : "is-negative"
+  );
+}
+
+function renderSalesReport() {
+  const completedOrders =
+    document.getElementById(
+      "completedOrders"
+    );
+
+  const cancelledOrders =
+    document.getElementById(
+      "cancelledOrders"
+    );
+
+  const averageOrderValue =
+    document.getElementById(
+      "averageOrderValue"
+    );
+
+  const bestSeller =
+    document.getElementById(
+      "bestSeller"
+    );
+
+  const summary =
+    salesReport.summary || {};
+
+  const comparisons =
+    salesReport.comparisons || {};
+
+  const performanceRange =
+    salesReport.performanceRange || {};
+
+  const bestProducts =
+    salesReport.bestProducts || [];
+
+  const bestCategories =
+    salesReport.bestCategories || [];
 
   if (reportTotalRevenue) {
-    reportTotalRevenue.textContent = formatPeso(summary.total_revenue || 0);
+    reportTotalRevenue.textContent =
+      formatPeso(
+        summary.total_revenue || 0
+      );
+  }
+
+  if (reportTotalOrders) {
+    reportTotalOrders.textContent =
+      Number(
+        summary.total_orders
+      ) || 0;
   }
 
   if (completedOrders) {
-    completedOrders.textContent = summary.completed_orders || 0;
+    completedOrders.textContent =
+      Number(
+        summary.completed_orders
+      ) || 0;
   }
 
   if (cancelledOrders) {
-    cancelledOrders.textContent = summary.cancelled_orders || 0;
+    cancelledOrders.textContent =
+      Number(
+        summary.cancelled_orders
+      ) || 0;
   }
 
   if (averageOrderValue) {
-    averageOrderValue.textContent = formatPeso(summary.average_order_value || 0);
+    averageOrderValue.textContent =
+      formatPeso(
+        summary.average_order_value || 0
+      );
   }
+
+  if (cancellationRate) {
+    const rate =
+      Number(
+        summary.cancellation_rate
+      ) || 0;
+
+    cancellationRate.textContent =
+      `${rate.toLocaleString(
+        "en-PH",
+        {
+          maximumFractionDigits: 2
+        }
+      )}%`;
+  }
+
+  if (itemsSold) {
+    itemsSold.textContent =
+      Number(
+        summary.items_sold
+      ) || 0;
+  }
+
+  if (analyticsCurrentPeriod) {
+    analyticsCurrentPeriod.textContent =
+      performanceRange.label ||
+      "Last 7 Days";
+  }
+
+  if (analyticsPreviousPeriod) {
+    analyticsPreviousPeriod.textContent =
+      performanceRange.previous_label ||
+      "Previous 7 Days";
+  }
+
+  renderAnalyticsComparison(
+    revenueComparison,
+    comparisons.revenue_change
+  );
+
+  renderAnalyticsComparison(
+    ordersComparison,
+    comparisons.orders_change
+  );
+
+  renderAnalyticsComparison(
+    completedOrdersComparison,
+    comparisons.completed_orders_change
+  );
+
+  renderAnalyticsComparison(
+    averageOrderComparison,
+    comparisons.average_order_value_change
+  );
+
+  renderAnalyticsComparison(
+    itemsSoldComparison,
+    comparisons.items_sold_change
+  );
+
+  renderAnalyticsComparison(
+    cancellationComparison,
+    comparisons.cancellation_rate_change,
+    {
+      lowerIsBetter: true,
+      suffix: " pts"
+    }
+  );
 
   if (bestSeller) {
     if (bestProducts.length) {
-      const top = bestProducts[0];
-      bestSeller.textContent = `${top.product_name}${top.size ? " - " + top.size : ""}`;
+      const top =
+        bestProducts[0];
+
+      bestSeller.textContent =
+        `${top.product_name}${
+          top.size
+            ? ` - ${top.size}`
+            : ""
+        }`;
+
     } else {
-      bestSeller.textContent = "-";
+      bestSeller.textContent =
+        "-";
     }
   }
 
   if (bestProductsList) {
-    bestProductsList.innerHTML = bestProducts.length
-      ? bestProducts.map(item => `
-        <div class="report-list-item">
-          <div>
-            <strong>${item.product_name}${item.size ? " - " + item.size : ""}</strong>
-            <span>${item.total_sold} sold</span>
-          </div>
+    bestProductsList.innerHTML =
+      bestProducts.length
+        ? bestProducts
+            .map(
+              item => `
+                <div class="report-list-item">
+                  <div>
+                    <strong>
+                      ${escapeHtml(
+                        item.product_name ||
+                        "Unknown Product"
+                      )}
+                      ${
+                        item.size
+                          ? ` - ${escapeHtml(
+                              item.size
+                            )}`
+                          : ""
+                      }
+                    </strong>
 
-          <div class="report-list-value">
-            ${formatPeso(item.total_sales)}
-          </div>
-        </div>
-      `).join("")
-      : `<p>No product sales yet.</p>`;
+                    <span>
+                      ${
+                        Number(
+                          item.total_sold
+                        ) || 0
+                      } sold
+                    </span>
+                  </div>
+
+                  <div class="report-list-value">
+                    ${formatPeso(
+                      item.total_sales
+                    )}
+                  </div>
+                </div>
+              `
+            )
+            .join("")
+        : `
+    <div class="analytics-empty-state">
+      <span aria-hidden="true">
+        🏆
+      </span>
+
+      <strong>
+        No completed product sales
+      </strong>
+
+      <p>
+        Product rankings will appear
+        after orders are completed.
+      </p>
+    </div>
+  `;
   }
 
   if (bestCategoriesList) {
-    bestCategoriesList.innerHTML = bestCategories.length
-      ? bestCategories.map(item => `
-        <div class="report-list-item">
-          <div>
-            <strong>${item.category || "Uncategorized"}</strong>
-            <span>${item.total_sold} sold</span>
-          </div>
+    bestCategoriesList.innerHTML =
+      bestCategories.length
+        ? bestCategories
+            .map(
+              item => `
+                <div class="report-list-item">
+                  <div>
+                    <strong>
+                      ${escapeHtml(
+                        item.category ||
+                        "Uncategorized"
+                      )}
+                    </strong>
 
-          <div class="report-list-value">
-            ${formatPeso(item.total_sales)}
-          </div>
-        </div>
-      `).join("")
-      : `<p>No category sales yet.</p>`;
+                    <span>
+                      ${
+                        Number(
+                          item.total_sold
+                        ) || 0
+                      } sold
+                    </span>
+                  </div>
+
+                  <div class="report-list-value">
+                    ${formatPeso(
+                      item.total_sales
+                    )}
+                  </div>
+                </div>
+              `
+            )
+            .join("")
+       : `
+    <div class="analytics-empty-state">
+      <span aria-hidden="true">
+        📊
+      </span>
+
+      <strong>
+        No completed category sales
+      </strong>
+
+      <p>
+        Category rankings will appear
+        after orders are completed.
+      </p>
+    </div>
+  `;
   }
 }
 
 function renderReportSalesChart() {
   if (!reportSalesChart) return;
 
-  if (!salesData.length) {
-    reportSalesChart.innerHTML = "<p>No sales data yet</p>";
-    return;
-  }
+if (!reportSalesData.length) {
+  reportSalesChart.innerHTML =
+    "<p>No completed sales for this period.</p>";
 
-  const maxValue = Math.max(...salesData.map(item => Number(item.total) || 0), 1);
+  return;
+}
+
+const maxValue =
+  Math.max(
+    ...reportSalesData.map(
+      item =>
+        Number(item.total) || 0
+    ),
+    1
+  );
 
   reportSalesChart.innerHTML = `
     <div class="chart-bars">
-      ${salesData.map(item => {
+      ${reportSalesData.map(item => {
         const total = Number(item.total) || 0;
         const height = Math.max((total / maxValue) * 100, 5);
 
@@ -2745,28 +3497,36 @@ async function loadSalesReport(
       );
     }
 
-    salesReport = {
-      summary:
-        data.summary || {},
+   salesReport = {
+  summary:
+    data.summary || {},
 
-      bestProducts:
-        data.bestProducts || [],
+  previousSummary:
+    data.previousSummary || {},
 
-      bestCategories:
-        data.bestCategories || [],
+  comparisons:
+    data.comparisons || {},
 
-      cashierPerformance:
-        data.cashierPerformance || [],
+  bestProducts:
+    data.bestProducts || [],
 
-      deliveryPerformance:
-        data.deliveryPerformance || [],
+  bestCategories:
+    data.bestCategories || [],
 
-      performanceRange:
-        data.performanceRange || {
-          value: range,
-          label: "Last 7 Days"
-        }
-    };
+  cashierPerformance:
+    data.cashierPerformance || [],
+
+  deliveryPerformance:
+    data.deliveryPerformance || [],
+
+  performanceRange:
+    data.performanceRange || {
+      value: range,
+      label: "Last 7 Days",
+      previous_label:
+        "Previous 7 Days"
+    }
+};
 
     renderSalesReport();
     renderCashierPerformance();
@@ -3745,24 +4505,97 @@ ${
     .join("");
 }
 
-function populateProductCategories() {
-  if (!productCategoryFilter) return;
-
-  const currentValue = productCategoryFilter.value || "all";
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
-
-  productCategoryFilter.innerHTML = `
-    <option value="all">All Categories</option>
-    ${categories.map(category => `
-      <option value="${category}">${category}</option>
-    `).join("")}
-  `;
-
-  if (categories.includes(currentValue)) {
-    productCategoryFilter.value = currentValue;
-  }
+function normalizeCategoryKey(
+  value
+) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }
 
+function populateProductCategories() {
+  if (!productCategoryFilter) {
+    return;
+  }
+
+  const currentValue =
+    productCategoryFilter.value ||
+    "all";
+
+  const categoryMap =
+    new Map();
+
+  products.forEach(product => {
+    const displayName =
+      String(
+        product.category || ""
+      )
+        .trim()
+        .replace(/\s+/g, " ");
+
+    if (!displayName) {
+      return;
+    }
+
+    const categoryKey =
+      normalizeCategoryKey(
+        displayName
+      );
+
+    if (!categoryMap.has(categoryKey)) {
+      categoryMap.set(
+        categoryKey,
+        displayName
+      );
+    }
+  });
+
+  const categories =
+    [...categoryMap.entries()]
+      .sort((a, b) =>
+        a[1].localeCompare(
+          b[1],
+          undefined,
+          {
+            sensitivity: "base"
+          }
+        )
+      );
+
+  productCategoryFilter.innerHTML = `
+    <option value="all">
+      All Categories
+    </option>
+
+    ${categories
+      .map(
+        ([categoryKey, displayName]) => `
+          <option
+            value="${escapeHtml(
+              categoryKey
+            )}"
+          >
+            ${escapeHtml(
+              displayName
+            )}
+          </option>
+        `
+      )
+      .join("")}
+  `;
+
+  if (
+    currentValue !== "all" &&
+    categoryMap.has(currentValue)
+  ) {
+    productCategoryFilter.value =
+      currentValue;
+  } else {
+    productCategoryFilter.value =
+      "all";
+  }
+}
 function applyProductFilters() {
   let list = [...products];
 
@@ -3778,9 +4611,15 @@ function applyProductFilters() {
     );
   }
 
-  if (category !== "all") {
-    list = list.filter(p => p.category === category);
-  }
+if (category !== "all") {
+  list = list.filter(
+    product =>
+      normalizeCategoryKey(
+        product.category
+      ) === category
+  );
+}
+  
 
   if (sort === "oldest") list.sort((a, b) => a.id - b.id);
   if (sort === "newest") list.sort((a, b) => b.id - a.id);
@@ -3842,67 +4681,189 @@ function renderLowStock() {
 /* =========================
    INVENTORY
 ========================= */
-function renderInventory(list = products) {
-  if (!inventoryTableBody) return;
+function renderInventory(
+  list = products
+) {
+  if (!inventoryTableBody) {
+    return;
+  }
 
-  const total = products.length;
-  const available = products.filter(p => p.stock > 0).length;
-  const low = products.filter(p => p.stock > 0 && p.stock <= 5).length;
-  const out = products.filter(p => p.stock <= 0).length;
+  const total =
+    products.length;
 
-  const overviewTotalProducts = document.getElementById("overviewTotalProducts");
-const overviewAvailable = document.getElementById("overviewAvailable");
-const overviewLow = document.getElementById("overviewLow");
-const overviewOut = document.getElementById("overviewOut");
+  const available =
+    products.filter(
+      product =>
+        Number(product.stock) > 0
+    ).length;
 
-if (overviewTotalProducts) overviewTotalProducts.textContent = total;
-if (overviewAvailable) overviewAvailable.textContent = available;
-if (overviewLow) overviewLow.textContent = low;
-if (overviewOut) overviewOut.textContent = out;
+  const low =
+    products.filter(
+      product => {
+        const stock =
+          Number(product.stock) || 0;
 
+        return (
+          stock > 0 &&
+          stock <= 5
+        );
+      }
+    ).length;
 
+  const out =
+    products.filter(
+      product =>
+        Number(product.stock) <= 0
+    ).length;
 
-  const sortedList = sortInventoryList(list);
+  const overviewTotalProducts =
+    document.getElementById(
+      "overviewTotalProducts"
+    );
 
+  const overviewAvailable =
+    document.getElementById(
+      "overviewAvailable"
+    );
 
-  inventoryTableBody.innerHTML = sortedList.length
-    ? sortedList.map(p => {
-        const stockLevel = getStockLevel(p.stock);
-        const stockLabel = getStockLabel(p.stock);
+  const overviewLow =
+    document.getElementById(
+      "overviewLow"
+    );
+
+  const overviewOut =
+    document.getElementById(
+      "overviewOut"
+    );
+
+  if (overviewTotalProducts) {
+    overviewTotalProducts.textContent =
+      total;
+  }
+
+  if (overviewAvailable) {
+    overviewAvailable.textContent =
+      available;
+  }
+
+  if (overviewLow) {
+    overviewLow.textContent =
+      low;
+  }
+
+  if (overviewOut) {
+    overviewOut.textContent =
+      out;
+  }
+
+  const sortedList =
+    sortInventoryList(list);
+
+  updateInventoryResultCount(
+    sortedList.length
+  );
+
+  if (!sortedList.length) {
+    inventoryTableBody.innerHTML = `
+      <tr>
+        <td
+          colspan="6"
+          class="inventory-loading-cell"
+        >
+          No inventory products match your filters.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  inventoryTableBody.innerHTML =
+    sortedList
+      .map(product => {
+        const stock =
+          Math.max(
+            0,
+            Number(product.stock) || 0
+          );
+
+        const stockLevel =
+          getStockLevel(stock);
+
+        const stockLabel =
+          getStockLabel(stock);
+
+        const category =
+          escapeHtml(
+            product.category ||
+            "Uncategorized"
+          );
+
+        const productName =
+          escapeHtml(
+            product.name ||
+            "Unnamed Product"
+          );
+
+        const size =
+          escapeHtml(
+            product.size || "-"
+          );
 
         return `
           <tr class="inventory-table-row">
-            <td>${p.category}</td>
-            <td>${p.name}</td>
-            <td>${p.size || "-"}</td>
             <td>
-              <span class="inventory-stock-badge stock-${stockLevel}">
-                ${stockLabel} (${p.stock})
+              ${category}
+            </td>
+
+            <td>
+              <strong>
+                ${productName}
+              </strong>
+            </td>
+
+            <td>
+              ${size}
+            </td>
+
+           <td>
+  <div class="inventory-quantity">
+    <strong>
+      ${stock}
+    </strong>
+
+    <span>
+      ${
+        stock === 1
+          ? "item remaining"
+          : "items remaining"
+      }
+    </span>
+  </div>
+</td>
+
+           <td>
+              <span
+                class="inventory-stock-badge stock-${stockLevel}"
+              >
+                ${stockLabel}
               </span>
             </td>
+
             <td>
-              <span class="status-badge ${p.stock > 0 ? "status-Completed" : "status-Cancelled"}">
-                ${
-  p.status.toLowerCase() === "available" &&
-  p.stock > 0
-    ? "product-status-available"
-    : "product-status-unavailable"
-}
-              </span>
-            </td>
-            <td>
-              <button class="action-btn" onclick="openRestockFromInventory(${p.id})">
-                Restock
-              </button>
+              <button
+              type="button"
+              class="inventory-restock-btn"
+              onclick="openRestockFromInventory(${Number(product.id)})"
+            >
+              <span aria-hidden="true">+</span>
+              Restock
+            </button>
             </td>
           </tr>
         `;
-      }).join("")
-    : `
-      <tr>
-        <td colspan="6">No inventory items found.</td>
-      </tr>
-    `;
+      })
+      .join("");
 }
 
 function populateInventoryCategories() {
@@ -3989,62 +4950,447 @@ function renderUsers(list = users) {
     : `<tr><td colspan="8">No users found.</td></tr>`;
 }
 
-function renderActivityLogs() {
+function formatActivityRole(
+  role
+) {
+  const normalizedRole =
+    String(role || "System")
+      .trim()
+      .toLowerCase();
 
-  if (!logsList) return;
-
-  let list = [...activityLogs];
-
-  if (currentLogFilter !== "all") {
-    list = list.filter(log => log.type === currentLogFilter);
+  if (normalizedRole === "owner") {
+    return "Restaurant Owner";
   }
+
+  if (normalizedRole === "cashier") {
+    return "Cashier";
+  }
+
+  if (
+    normalizedRole ===
+    "delivery_staff"
+  ) {
+    return "Delivery Staff";
+  }
+
+  if (
+    normalizedRole ===
+    "kitchen_staff"
+  ) {
+    return "Kitchen Staff";
+  }
+
+  if (normalizedRole === "admin") {
+    return "Administrator";
+  }
+
+  return normalizedRole
+    ? normalizedRole
+        .replace(/_/g, " ")
+        .replace(
+          /\b\w/g,
+          character =>
+            character.toUpperCase()
+        )
+    : "System";
+}
+
+function isActivityWithinDateFilter(
+  dateValue,
+  filter
+) {
+  if (filter === "all") {
+    return true;
+  }
+
+  const date =
+    parseActivityDate(
+      dateValue
+    );
+
+  if (!date) {
+    return false;
+  }
+
+  const now =
+    new Date();
+
+  const todayStart =
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+  const activityStart =
+    new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+  const differenceDays =
+    Math.floor(
+      (
+        todayStart -
+        activityStart
+      ) /
+      86400000
+    );
+
+  if (filter === "today") {
+    return differenceDays === 0;
+  }
+
+  if (filter === "yesterday") {
+    return differenceDays === 1;
+  }
+
+  if (filter === "week") {
+    return (
+      differenceDays >= 0 &&
+      differenceDays <= 6
+    );
+  }
+
+  if (filter === "month") {
+    return (
+      differenceDays >= 0 &&
+      differenceDays <= 29
+    );
+  }
+
+  return true;
+}
+
+function updateActivityOverview() {
+  const total =
+    activityLogs.length;
+
+  const orders =
+    activityLogs.filter(
+      log => log.type === "order"
+    ).length;
+
+  const inventory =
+    activityLogs.filter(
+      log =>
+        log.type === "inventory"
+    ).length;
+
+  const staff =
+    activityLogs.filter(
+      log => log.type === "staff"
+    ).length;
+
+  if (activityOverviewTotal) {
+    activityOverviewTotal.textContent =
+      total;
+  }
+
+  if (activityOverviewOrders) {
+    activityOverviewOrders.textContent =
+      orders;
+  }
+
+  if (activityOverviewInventory) {
+    activityOverviewInventory.textContent =
+      inventory;
+  }
+
+  if (activityOverviewStaff) {
+    activityOverviewStaff.textContent =
+      staff;
+  }
+}
+
+function updateActivityResultCount(
+  count
+) {
+  if (!activityResultCount) {
+    return;
+  }
+
+  const safeCount =
+    Math.max(
+      0,
+      Number(count) || 0
+    );
+
+  activityResultCount.textContent =
+    `${safeCount} ${
+      safeCount === 1
+        ? "activity"
+        : "activities"
+    }`;
+}
+
+function renderActivityLogs() {
+  if (!logsList) {
+    return;
+  }
+
+  updateActivityOverview();
+
+  const searchQuery =
+    String(
+      activitySearch?.value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const dateFilter =
+    String(
+      activityDateFilter?.value ||
+      "all"
+    );
+
+  let list =
+    [...activityLogs];
+
+  if (
+    currentLogFilter !== "all"
+  ) {
+    list =
+      list.filter(
+        log =>
+          log.type ===
+          currentLogFilter
+      );
+  }
+
+  if (searchQuery) {
+    list =
+      list.filter(log => {
+        const searchableText = [
+          log.title,
+          log.message,
+          log.role,
+          log.type
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(
+          searchQuery
+        );
+      });
+  }
+
+  if (dateFilter !== "all") {
+    list =
+      list.filter(log =>
+        isActivityWithinDateFilter(
+          log.createdAt,
+          dateFilter
+        )
+      );
+  }
+
+  updateActivityResultCount(
+    list.length
+  );
 
   if (!list.length) {
     logsList.innerHTML = `
       <div class="empty-logs">
-        <h3>No Activity Logs</h3>
-        <p>No activities available.</p>
+        <div class="empty-logs-icon">
+          📋
+        </div>
+
+        <h3>
+          No activities found
+        </h3>
+
+        <p>
+          ${
+            activityLogs.length
+              ? "Try changing your search or filter options."
+              : "Restaurant activities will automatically appear here as FoodConnect is used."
+          }
+        </p>
       </div>
     `;
+
     return;
   }
 
-  logsList.innerHTML = list.map(log => `
-    <div class="log-item">
+  const groupedLogs =
+    new Map();
 
-      <div class="log-time">
-        ${log.time}
-      </div>
+  list.forEach(log => {
+    const dateKey =
+      getActivityDateKey(
+        log.createdAt
+      );
 
-      <div class="log-icon ${log.type}">
-        ${log.icon}
-      </div>
+    if (!groupedLogs.has(dateKey)) {
+      groupedLogs.set(
+        dateKey,
+        []
+      );
+    }
 
-      <div class="log-content">
-        <h3>${log.title}</h3>
-        <p>${log.message}</p>
-      </div>
-
-    </div>
-  `).join("");
-
-}
-
-async function addActivityLog(type, icon, title, message) {
-  activityLogs.unshift({
-    type,
-    icon,
-    title,
-    message,
-    time: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
+    groupedLogs
+      .get(dateKey)
+      .push(log);
   });
 
-  renderActivityLogs();
+  logsList.innerHTML =
+    [...groupedLogs.entries()]
+      .map(
+        ([dateKey, logs]) => {
+          const firstLog =
+            logs[0];
 
-  await saveActivityLog(type, title, message);
+          const dateLabel =
+            getActivityDateLabel(
+              firstLog.createdAt
+            );
+
+          const activityItems =
+            logs
+              .map(log => {
+                const safeType =
+                  escapeHtml(
+                    log.type ||
+                    "system"
+                  );
+
+                const safeTitle =
+                  escapeHtml(
+                    log.title
+                  );
+
+                const safeMessage =
+                  escapeHtml(
+                    log.message
+                  ).replace(
+                    /\r?\n/g,
+                    "<br>"
+                  );
+
+                const safeRole =
+                  escapeHtml(
+                    formatActivityRole(
+                      log.role
+                    )
+                  );
+
+                const safeTime =
+                  escapeHtml(
+                    log.time
+                  );
+
+                const safeIcon =
+                  escapeHtml(
+                    log.icon
+                  );
+
+                return `
+                  <article
+                    class="
+                      log-item
+                      log-${safeType}
+                      ${
+                        log.isRead
+                          ? ""
+                          : "is-unread"
+                      }
+                    "
+                  >
+                    <div
+                      class="log-icon ${safeType}"
+                      aria-hidden="true"
+                    >
+                      ${safeIcon}
+                    </div>
+
+                    <div class="log-content">
+                      <div class="log-content-header">
+                        <h3>
+                          ${safeTitle}
+                        </h3>
+
+                        <span class="log-type-badge">
+                          ${safeType}
+                        </span>
+                      </div>
+
+                      <p>
+                        ${safeMessage}
+                      </p>
+
+                      <div class="log-meta">
+                        <span class="log-role">
+                          ${safeRole}
+                        </span>
+
+                        ${
+                          !log.isRead
+                            ? `
+                              <span class="log-role">
+                                New
+                              </span>
+                            `
+                            : ""
+                        }
+                      </div>
+                    </div>
+
+                    <time class="log-time">
+                      ${safeTime}
+                    </time>
+                  </article>
+                `;
+              })
+              .join("");
+
+          return `
+            <section
+              class="activity-date-group"
+              data-activity-date="${escapeHtml(
+                dateKey
+              )}"
+            >
+              <div class="activity-date-label">
+                ${escapeHtml(
+                  dateLabel
+                )}
+              </div>
+
+              ${activityItems}
+            </section>
+          `;
+        }
+      )
+      .join("");
+}
+
+async function addActivityLog(
+  type,
+  icon,
+  title,
+  message
+) {
+  const saved =
+    await saveActivityLog(
+      type,
+      title,
+      message
+    );
+
+  if (!saved) {
+    console.warn(
+      `Business action succeeded, but activity logging failed: ${title}`
+    );
+
+    return false;
+  }
+
+  await loadActivityLogs();
+
+  return true;
 }
 
 function generateActivityLogs() {
@@ -5340,21 +6686,12 @@ formData.append(
           loadDashboardSummary()
         ]);
 
-        await addActivityLog(
-          "product",
-          "🍔",
-          "Product Added",
-          `${productName}${
-            size
-              ? ` - ${size}`
-              : ""
-          } was added to the menu.`
-        );
+  await loadActivityLogs();
 
-        alert(
-          result.message ||
-          "Product added successfully."
-        );
+alert(
+  result.message ||
+  "Product added successfully."
+);
       } catch (error) {
         console.error(
           "Add product failed:",
@@ -5632,16 +6969,7 @@ if (updateProductBtn) {
           loadDashboardSummary()
         ]);
 
-        await addActivityLog(
-          "product",
-          "✏️",
-          "Product Updated",
-          `${productName}${
-            size
-              ? ` - ${size}`
-              : ""
-          } was updated.`
-        );
+        await loadActivityLogs();
 
         alert(
           result.message ||
@@ -5671,6 +6999,114 @@ if (updateProductBtn) {
 /* =========================
    RESTOCK
 ========================= */
+
+function getSelectedRestockProduct() {
+  if (!restockProduct) {
+    return null;
+  }
+
+  return products.find(
+    product =>
+      String(product.id) ===
+      String(restockProduct.value)
+  ) || null;
+}
+
+function getValidRestockQuantity() {
+  const quantity =
+    Number(restockQuantity?.value);
+
+  if (
+    !Number.isInteger(quantity) ||
+    quantity <= 0
+  ) {
+    return 0;
+  }
+
+  return quantity;
+}
+
+function updateRestockPreview() {
+  const selectedProduct =
+    getSelectedRestockProduct();
+
+    if(selectedProduct){
+
+    restockProductName.textContent =
+        selectedProduct.name;
+
+    const category =
+        selectedProduct.category ||
+        "Uncategorized";
+
+    const variant =
+        selectedProduct.size ||
+        "Standard";
+
+    restockProductMeta.textContent =
+        `${category} • ${variant}`;
+
+}
+
+  const currentStock =
+    Math.max(
+      0,
+      Number(
+        selectedProduct?.stock
+      ) || 0
+    );
+
+  const quantity =
+    getValidRestockQuantity();
+
+  if (restockCurrentStock) {
+    restockCurrentStock.textContent =
+      currentStock;
+  }
+
+  if (restockNewStock) {
+    restockNewStock.textContent =
+      currentStock + quantity;
+  }
+}
+
+function showRestockMessage(
+  message = "",
+  type = "error"
+) {
+  if (!restockFormMessage) {
+    return;
+  }
+
+  restockFormMessage.textContent =
+    message;
+
+  restockFormMessage.hidden =
+    message === "";
+
+  restockFormMessage.classList.toggle(
+    "success",
+    type === "success"
+  );
+}
+
+function resetRestockModal() {
+  if (restockQuantity) {
+    restockQuantity.value = "";
+  }
+
+  showRestockMessage();
+  updateRestockPreview();
+}
+
+function closeRestockDialog() {
+  restockModal?.classList.remove(
+    "show"
+  );
+
+  resetRestockModal();
+}
+
 function populateRestockProducts() {
   const select = document.getElementById("restockProduct");
   if (!select) return;
@@ -5682,45 +7118,187 @@ function populateRestockProducts() {
     : `<option value="">No products available</option>`;
 }
 
-if (saveRestockBtn) {
-  saveRestockBtn.addEventListener("click", async () => {
-    const payload = {
-      product_id: document.getElementById("restockProduct").value,
-      quantity: document.getElementById("restockQuantity").value
-    };
-
-    if (!payload.product_id || Number(payload.quantity) <= 0) {
-      alert("Please select product and enter valid quantity.");
-      return;
-    }
-
-    const result = await fetchJSON("http://localhost/FoodConnect/api/restock_product.php", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    if (!result.success) {
-      alert(result.message || "Failed to update stock.");
-      return;
-    }
-
-    restockModal.classList.remove("show");
-    document.getElementById("restockQuantity").value = "";
-
-   await loadProducts();
-await loadDashboardSummary();
-
-const selectedProduct = products.find(p => String(p.id) === String(payload.product_id));
-
-addActivityLog(
-  "inventory",
-  "📦",
-  "Inventory Restocked",
-  `${selectedProduct ? selectedProduct.name : "Product"} was restocked by ${payload.quantity}.`
+restockProduct?.addEventListener(
+  "change",
+  () => {
+    showRestockMessage();
+    updateRestockPreview();
+  }
 );
 
-alert("Stock updated successfully.");
-  });
+restockQuantity?.addEventListener(
+  "input",
+  () => {
+    const cleanedValue =
+      String(
+        restockQuantity.value || ""
+      )
+        .replace(/[^\d]/g, "")
+        .replace(/^0+(?=\d)/, "");
+
+    restockQuantity.value =
+      cleanedValue;
+
+    showRestockMessage();
+    updateRestockPreview();
+  }
+);
+
+decreaseRestockQuantity
+  ?.addEventListener(
+    "click",
+    () => {
+      if (!restockQuantity) {
+        return;
+      }
+
+      const currentValue =
+        getValidRestockQuantity();
+
+      restockQuantity.value =
+        Math.max(
+          1,
+          currentValue - 1
+        );
+
+      showRestockMessage();
+      updateRestockPreview();
+    }
+  );
+
+increaseRestockQuantity
+  ?.addEventListener(
+    "click",
+    () => {
+      if (!restockQuantity) {
+        return;
+      }
+
+      const currentValue =
+        getValidRestockQuantity();
+
+      restockQuantity.value =
+        currentValue > 0
+          ? currentValue + 1
+          : 1;
+
+      showRestockMessage();
+      updateRestockPreview();
+    }
+  );
+
+cancelRestockBtn?.addEventListener(
+  "click",
+  closeRestockDialog
+);
+
+if (saveRestockBtn) {
+  saveRestockBtn.addEventListener(
+    "click",
+    async () => {
+      const selectedProduct =
+        getSelectedRestockProduct();
+
+      const quantity =
+        getValidRestockQuantity();
+
+      if (!selectedProduct) {
+        showRestockMessage(
+          "Please select a valid product."
+        );
+
+        restockProduct?.focus();
+        return;
+      }
+
+      if (quantity <= 0) {
+        showRestockMessage(
+          "Enter a quantity greater than zero."
+        );
+
+        restockQuantity?.focus();
+        return;
+      }
+
+      const payload = {
+        product_id:
+          selectedProduct.id,
+
+        quantity
+      };
+
+      const originalHTML =
+        saveRestockBtn.innerHTML;
+
+      try {
+        saveRestockBtn.disabled =
+          true;
+
+        saveRestockBtn.innerHTML = `
+          Updating Inventory...
+        `;
+
+        showRestockMessage();
+
+        const result =
+          await fetchJSON(
+            `${OWNER_API_BASE}/restock_product.php`,
+            {
+              method: "POST",
+
+              body: JSON.stringify(
+                payload
+              )
+            }
+          );
+
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+            "Failed to update stock."
+          );
+        }
+
+        const productLabel =
+          `${selectedProduct.name}${
+            selectedProduct.size
+              ? ` - ${selectedProduct.size}`
+              : ""
+          }`;
+
+        await Promise.all([
+          loadProducts(),
+          loadDashboardSummary()
+        ]);
+
+        await loadActivityLogs();
+
+        closeRestockDialog();
+
+        alert(
+          `${productLabel} stock was updated successfully.`
+        );
+
+      } catch (error) {
+        console.error(
+          "Restock failed:",
+          error
+        );
+
+        showRestockMessage(
+          error.message ||
+          "Unable to update inventory."
+        );
+
+      } finally {
+        saveRestockBtn.disabled =
+          false;
+
+        saveRestockBtn.innerHTML =
+          originalHTML;
+      }
+    }
+  );
 }
 
 /* =========================
@@ -5869,21 +7447,161 @@ document.querySelectorAll(".view-all-btn").forEach(btn => {
   });
 });
 
-logFilter?.addEventListener("change", () => {
-  currentLogFilter = logFilter.value;
-  renderActivityLogs();
-});
+logFilter?.addEventListener(
+  "change",
+  () => {
+    currentLogFilter =
+      logFilter.value;
 
-reportSalesRange?.addEventListener("change", () => {
-  loadSalesChart(reportSalesRange.value);
-});
+    renderActivityLogs();
+  }
+);
+
+activitySearch?.addEventListener(
+  "input",
+  renderActivityLogs
+);
+
+activitySearch?.addEventListener(
+  "keydown",
+  event => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+
+    renderActivityLogs();
+
+    activitySearch.blur();
+
+    document
+      .querySelector(
+        ".activity-timeline-panel"
+      )
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+  }
+);
+
+activityDateFilter?.addEventListener(
+  "change",
+  renderActivityLogs
+);
+
+clearActivityFilters
+  ?.addEventListener(
+    "click",
+    () => {
+      if (activitySearch) {
+        activitySearch.value = "";
+      }
+
+      if (logFilter) {
+        logFilter.value = "all";
+      }
+
+      if (activityDateFilter) {
+        activityDateFilter.value =
+          "all";
+      }
+
+      currentLogFilter = "all";
+
+      renderActivityLogs();
+    }
+  );
+
+refreshActivityLogs
+  ?.addEventListener(
+    "click",
+    async () => {
+      const originalHTML =
+        refreshActivityLogs.innerHTML;
+
+      try {
+        refreshActivityLogs.disabled =
+          true;
+
+        refreshActivityLogs.innerHTML = `
+          <span aria-hidden="true">
+            ↻
+          </span>
+          Refreshing...
+        `;
+
+        await loadActivityLogs();
+
+      } finally {
+        refreshActivityLogs.disabled =
+          false;
+
+        refreshActivityLogs.innerHTML =
+          originalHTML;
+      }
+    }
+  );
+
+reportSalesRange?.addEventListener(
+  "change",
+  async () => {
+    const range =
+      reportSalesRange.value;
+
+    /*
+     * Keep the staff performance selectors synchronized
+     * until they are removed during the analytics redesign.
+     */
+    if (cashierPerformanceRange) {
+      cashierPerformanceRange.value =
+        range;
+    }
+
+    if (deliveryPerformanceRange) {
+      deliveryPerformanceRange.value =
+        range;
+    }
+
+    reportSalesRange.disabled =
+      true;
+
+    try {
+      await Promise.all([
+        loadSalesReport(range),
+        loadReportSalesChart(range)
+      ]);
+
+    } catch (error) {
+      console.error(
+        "Analytics range update failed:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Unable to update the analytics period."
+      );
+
+    } finally {
+      reportSalesRange.disabled =
+        false;
+    }
+  }
+);
 
 exportExcelBtn?.addEventListener("click", exportSalesReportExcel);
 exportPdfBtn?.addEventListener("click", exportSalesReportPDF);
 
-salesRange?.addEventListener("change", () => {
-  loadSalesChart(salesRange.value);
-});
+salesRange?.addEventListener(
+  "change",
+  () => {
+    loadDashboardSalesChart(
+      salesRange.value
+    );
+  }
+);
 
 globalSearch?.addEventListener(
   "input",
@@ -6111,6 +7829,192 @@ saveUserBtn?.addEventListener(
     }
   }
 );
+
+updateUserBtn?.addEventListener(
+  "click",
+  async () => {
+    const userIdInput =
+      document.getElementById(
+        "editUserId"
+      );
+
+    const fullNameInput =
+      document.getElementById(
+        "editUserFullName"
+      );
+
+    const emailInput =
+      document.getElementById(
+        "editUserEmail"
+      );
+
+    const contactInput =
+      document.getElementById(
+        "editUserContactNumber"
+      );
+
+    const addressInput =
+      document.getElementById(
+        "editUserAddress"
+      );
+
+    const roleInput =
+      document.getElementById(
+        "editUserRole"
+      );
+
+    const statusInput =
+      document.getElementById(
+        "editUserStatus"
+      );
+
+    const userId =
+      Number(userIdInput?.value || 0);
+
+    const fullName =
+      fullNameInput?.value.trim() || "";
+
+    const email =
+      emailInput?.value
+        .trim()
+        .toLowerCase() || "";
+
+    const contactNumber =
+      contactInput?.value.trim() || "";
+
+    const address =
+      addressInput?.value.trim() || "";
+
+    const role =
+      roleInput?.value || "";
+
+    const status =
+      Number(statusInput?.value ?? 1);
+
+    if (!userId) {
+      alert("Invalid user account.");
+      return;
+    }
+
+    if (!fullName) {
+      alert("Full name is required.");
+      fullNameInput?.focus();
+      return;
+    }
+
+    if (!email) {
+      alert("Email is required.");
+      emailInput?.focus();
+      return;
+    }
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email
+      )
+    ) {
+      alert(
+        "Please enter a valid email address."
+      );
+
+      emailInput?.focus();
+      return;
+    }
+
+    if (
+      contactNumber &&
+      !/^[0-9]{11}$/.test(
+        contactNumber
+      )
+    ) {
+      alert(
+        "Contact number must be exactly 11 digits."
+      );
+
+      contactInput?.focus();
+      return;
+    }
+
+    if (!role) {
+      alert("Please select a staff role.");
+      roleInput?.focus();
+      return;
+    }
+
+    const originalText =
+      updateUserBtn.textContent;
+
+    try {
+      updateUserBtn.disabled = true;
+      updateUserBtn.textContent =
+        "Updating...";
+
+      const result = await fetchJSON(
+        `${OWNER_API_BASE}/update_user.php`,
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            user_id: userId,
+            full_name: fullName,
+            email,
+            contact_number:
+              contactNumber,
+            address,
+            role,
+            status
+          })
+        }
+      );
+
+      if (!result.success) {
+        throw new Error(
+          result.message ||
+          "Unable to update the user."
+        );
+      }
+
+      editUserModal?.classList.remove(
+        "show"
+      );
+
+      await Promise.all([
+        loadUsers(),
+        loadDashboardSummary()
+      ]);
+
+      await saveActivityLog(
+        "staff",
+        "Staff Account Updated",
+        `${fullName}'s staff account was updated.`
+      );
+
+      await loadActivityLogs();
+
+      alert(
+        result.message ||
+        "User updated successfully."
+      );
+
+    } catch (error) {
+      console.error(
+        "Update user failed:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Unable to update the user."
+      );
+
+    } finally {
+      updateUserBtn.disabled = false;
+      updateUserBtn.textContent =
+        originalText;
+    }
+  }
+);
+
 openAddUserModal?.addEventListener("click", () => addUserModal.classList.add("show"));
 closeAddUserModal?.addEventListener("click", () => addUserModal.classList.remove("show"));
 closeEditUserModal?.addEventListener("click", () => editUserModal.classList.remove("show"));
@@ -6125,7 +8029,10 @@ closeEditProductModal?.addEventListener("click", () => {
   editProductModal.classList.remove("show");
 });
 
-closeRestockModal?.addEventListener("click", () => restockModal.classList.remove("show"));
+closeRestockModal?.addEventListener(
+  "click",
+  closeRestockDialog
+);
 logoutBtn?.addEventListener("click", () => {
   window.location.href = "/FoodConnect/api/logout.php";
 });
@@ -6453,17 +8360,38 @@ window.deleteProduct = async function(id) {
   }
 };
 
-window.openRestockFromInventory = function(id) {
-  populateRestockProducts();
+window.openRestockFromInventory =
+  function(id) {
+    populateRestockProducts();
 
-  const restockProduct = document.getElementById("restockProduct");
+    if (restockProduct) {
+      restockProduct.value =
+        String(id);
+    }
 
-  if (restockProduct) {
-    restockProduct.value = id;
-  }
+    if (restockProduct) {
+  restockProduct.disabled = true;
+}
 
-  restockModal.classList.add("show");
-};
+    if (restockQuantity) {
+      restockQuantity.value =
+        "";
+    }
+
+    showRestockMessage();
+    updateRestockPreview();
+
+    restockModal?.classList.add(
+      "show"
+    );
+
+    window.setTimeout(
+      () => {
+        restockQuantity?.focus();
+      },
+      100
+    );
+  };
 
 function exportSalesReportPDF() {
   const summary = salesReport.summary || {};
@@ -7287,13 +9215,24 @@ async function initDashboard() {
       return false;
     }
 
-   await Promise.all([
+await Promise.all([
   loadDashboardSummary(),
   loadProducts(),
   loadUsers(),
   loadStaffAccessCode(),
-  loadSalesChart("weekly"),
-  loadSalesReport(),
+
+  loadDashboardSalesChart(
+    "weekly"
+  ),
+
+  loadReportSalesChart(
+    "weekly"
+  ),
+
+  loadSalesReport(
+    "weekly"
+  ),
+
   loadRestaurantSettings()
 ]);
 

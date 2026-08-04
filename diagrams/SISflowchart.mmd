@@ -1,0 +1,33 @@
+flowchart TD
+
+    A([Start]) --> B[Open Student Information System]
+    B --> C[/Enter Username and Password/]
+    C --> D{Login Successful?}
+
+    D -- No --> E[Display Error Message]
+    E --> C
+
+    D -- Yes --> F[Display Dashboard]
+    F --> G[/Select a Function/]
+
+    G --> H{Choose Task}
+
+    H --> I[Manage Student Records]
+    H --> J[Record Attendance]
+    H --> K[Enter Grades]
+    H --> L[Generate Reports]
+
+    I --> M[Save Changes]
+    J --> M
+    K --> M
+    L --> N[Display Report]
+
+    M --> O[Display Success Message]
+    N --> O
+
+    O --> P{Perform Another Task?}
+
+    P -- Yes --> G
+    P -- No --> Q[Logout]
+
+    Q --> R([End])

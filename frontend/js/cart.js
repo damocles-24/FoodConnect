@@ -19,9 +19,17 @@ let cartPricing = {
 ========================================================= */
 
 let customerOrders = [];
+
+let selectedCustomerCancelOrderId =
+    null;
+
+let customerCancellationSubmitting =
+    false;
 let currentOrderFilter = "active";
 let customerOrdersLoading = false;
 let customerOrdersInterval = null;
+let customerCancelCountdownInterval =
+    null;
 
 let expandedCustomerOrderIds =
     new Set();
@@ -35,6 +43,41 @@ const CLEARED_COMPLETED_ORDERS_KEY =
 /* =========================================================
    HELPERS
    ========================================================= */
+
+   function startCustomerCancelCountdown() {
+    if (
+        customerCancelCountdownInterval
+    ) {
+        clearInterval(
+            customerCancelCountdownInterval
+        );
+    }
+
+    customerCancelCountdownInterval =
+        window.setInterval(
+            () => {
+                const hasCancellableOrder =
+                    customerOrders.some(
+                        canCustomerCancelOrder
+                    );
+
+                if (!hasCancellableOrder) {
+                    clearInterval(
+                        customerCancelCountdownInterval
+                    );
+
+                    customerCancelCountdownInterval =
+                        null;
+
+                    renderFilteredCustomerOrders();
+                    return;
+                }
+
+                renderFilteredCustomerOrders();
+            },
+            1000
+        );
+}
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -2849,6 +2892,121 @@ window.setTimeout(() => {
    CUSTOMER ORDERS HELPERS
 ========================================================= */
 
+const CUSTOMER_CANCEL_WINDOW_MS =
+    5 * 60 * 1000;
+
+function parseCustomerOrderDate(
+    dateValue
+) {
+    const value =
+        String(
+            dateValue || ""
+        ).trim();
+
+    if (!value) {
+        return null;
+    }
+
+    /*
+     * MySQL returns:
+     * YYYY-MM-DD HH:MM:SS
+     *
+     * FoodConnect currently uses Philippine time.
+     */
+    const mysqlDatePattern =
+        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+    const normalizedValue =
+        mysqlDatePattern.test(value)
+            ? (
+                value.replace(
+                    " ",
+                    "T"
+                ) +
+                "+08:00"
+            )
+            : value;
+
+    const timestamp =
+        new Date(
+            normalizedValue
+        ).getTime();
+
+    return Number.isFinite(timestamp)
+        ? timestamp
+        : null;
+}
+
+function getCustomerCancelRemainingMs(
+    order
+) {
+    const createdTimestamp =
+        parseCustomerOrderDate(
+            order?.created_at
+        );
+
+    if (!createdTimestamp) {
+        return 0;
+    }
+
+    const deadline =
+        createdTimestamp +
+        CUSTOMER_CANCEL_WINDOW_MS;
+
+    return Math.max(
+        0,
+        deadline - Date.now()
+    );
+}
+
+function canCustomerCancelOrder(
+    order
+) {
+    const rawStatus =
+        normalizeOrderStatus(
+            order?.order_status
+        );
+
+    return (
+        rawStatus === "pending" &&
+        getCustomerCancelRemainingMs(
+            order
+        ) > 0
+    );
+}
+
+function formatCustomerCancelCountdown(
+    milliseconds
+) {
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.ceil(
+                milliseconds / 1000
+            )
+        );
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+    const seconds =
+        totalSeconds % 60;
+
+    return (
+        String(minutes).padStart(
+            2,
+            "0"
+        ) +
+        ":" +
+        String(seconds).padStart(
+            2,
+            "0"
+        )
+    );
+}
+
 function normalizeOrderStatus(value) {
     return String(value || "")
         .trim()
@@ -3506,12 +3664,22 @@ function buildCustomerOrderCard(order) {
             order.total_amount || 0
         );
 
-        const canShowQr =
+    const canShowQr =
     status === "waiting_for_qr" &&
     Boolean(
         String(
             order.order_qr_token || ""
         ).trim()
+    );
+
+const cancelRemainingMs =
+    getCustomerCancelRemainingMs(
+        order
+    );
+
+const canCustomerCancel =
+    canCustomerCancelOrder(
+        order
     );
 
     return `
@@ -3623,23 +3791,155 @@ function buildCustomerOrderCard(order) {
 
                 </div>
 
-                ${
-    canShowQr
+               ${
+    canShowQr ||
+    canCustomerCancel
         ? `
-            <div class="customer-order-qr-action">
-                <button
-                    type="button"
-                    class="customer-order-show-qr-button"
-                    data-show-order-qr="${orderId}"
-                >
-                    <i class="fa-solid fa-qrcode"></i>
-                    Show Order QR
-                </button>
+            <section class="customer-order-actions-card">
 
-                <p class="customer-order-item-meta">
-                    Present this QR code to the cashier.
-                </p>
-            </div>
+                <div class="customer-order-actions-header">
+
+                    <div class="customer-order-actions-icon">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+
+                    <div>
+                        <h4>
+                            Order Actions
+                        </h4>
+
+                        <p>
+                            Complete the available actions for this order.
+                        </p>
+                    </div>
+
+                </div>
+
+                ${
+                    canShowQr
+                        ? `
+                            <div class="customer-order-action-section qr-action">
+
+                                <div class="customer-order-action-copy">
+
+                                    <span class="customer-order-action-label">
+                                        QR Verification
+                                    </span>
+
+                                    <strong>
+                                        Present your order QR
+                                    </strong>
+
+                                    <p>
+                                        Show the QR code to the cashier
+                                        so your order can enter the
+                                        processing queue.
+                                    </p>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="customer-order-show-qr-button"
+                                    data-show-order-qr="${orderId}"
+                                >
+                                    <i class="fa-solid fa-qrcode"></i>
+
+                                    <span>
+                                        Show Order QR
+                                    </span>
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+                ${
+                    canShowQr &&
+                    canCustomerCancel
+                        ? `
+                            <div
+                                class="customer-order-actions-divider"
+                                aria-hidden="true"
+                            ></div>
+                        `
+                        : ""
+                }
+
+                ${
+                    canCustomerCancel
+                        ? `
+                            <div class="customer-order-action-section cancel-action">
+
+                                <div class="customer-order-cancel-heading">
+
+                                    <div class="customer-order-cancel-icon">
+                                        <i class="fa-solid fa-clock"></i>
+                                    </div>
+
+                                    <div>
+                                        <span class="customer-order-action-label">
+                                            Cancellation Available
+                                        </span>
+
+                                        <strong>
+                                            You may still cancel this order
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                                <div class="customer-order-cancel-timer">
+
+                                    <span>
+                                        Time Remaining
+                                    </span>
+
+                                    <strong
+                                        class="
+                                            customer-cancel-countdown
+                                            ${
+                                                cancelRemainingMs <=
+                                                60000
+                                                    ? "danger"
+                                                    : cancelRemainingMs <=
+                                                      180000
+                                                        ? "warning"
+                                                        : ""
+                                            }
+                                        "
+                                    >
+                                        ${formatCustomerCancelCountdown(
+                                            cancelRemainingMs
+                                        )}
+                                    </strong>
+
+                                    <small>
+                                        Cancellation also closes immediately
+                                        once preparation starts.
+                                    </small>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="customer-order-cancel-button"
+                                    data-cancel-customer-order="${orderId}"
+                                >
+                                    <i class="fa-solid fa-ban"></i>
+
+                                    <span>
+                                        Cancel Order
+                                    </span>
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+            </section>
         `
         : ""
 }
@@ -3653,6 +3953,377 @@ function buildCustomerOrderCard(order) {
 
         </article>
     `;
+}
+
+/* =========================================================
+   CUSTOMER ORDER CANCELLATION
+========================================================= */
+
+function getCustomerCancelElements() {
+    return {
+        modal:
+            document.getElementById(
+                "customerCancelModal"
+            ),
+
+        closeButton:
+            document.getElementById(
+                "closeCustomerCancelModal"
+            ),
+
+        backButton:
+            document.getElementById(
+                "backCustomerCancelModal"
+            ),
+
+        confirmButton:
+            document.getElementById(
+                "confirmCustomerCancelBtn"
+            ),
+
+        reasons:
+            document.querySelectorAll(
+                'input[name="customerCancelReason"]'
+            ),
+
+        otherGroup:
+            document.getElementById(
+                "customerOtherReasonGroup"
+            ),
+
+        otherInput:
+            document.getElementById(
+                "customerOtherCancelReason"
+            ),
+
+        message:
+            document.getElementById(
+                "customerCancelMessage"
+            )
+    };
+}
+
+function showCustomerCancelMessage(
+    message = "",
+    type = "error"
+) {
+    const { message: messageElement } =
+        getCustomerCancelElements();
+
+    if (!messageElement) {
+        return;
+    }
+
+    messageElement.textContent =
+        message;
+
+    messageElement.classList.remove(
+        "success",
+        "error"
+    );
+
+    if (message) {
+        messageElement.classList.add(
+            type === "success"
+                ? "success"
+                : "error"
+        );
+    }
+}
+
+function resetCustomerCancelForm() {
+    const {
+        reasons,
+        otherGroup,
+        otherInput
+    } = getCustomerCancelElements();
+
+    reasons.forEach(
+        (radio) => {
+            radio.checked = false;
+        }
+    );
+
+    if (otherGroup) {
+        otherGroup.hidden = true;
+    }
+
+    if (otherInput) {
+        otherInput.value = "";
+    }
+
+    showCustomerCancelMessage();
+}
+
+function openCustomerCancelModal(
+    orderId
+) {
+    const { modal } =
+        getCustomerCancelElements();
+
+    const order =
+        customerOrders.find(
+            (customerOrder) =>
+                Number(
+                    customerOrder.order_id
+                ) === Number(orderId)
+        );
+
+    if (!order) {
+        window.alert(
+            "The order could not be found. Please refresh your orders."
+        );
+
+        return;
+    }
+
+    const canCancel =
+    canCustomerCancelOrder(
+        order
+    );
+
+    if (!canCancel) {
+    const rawStatus =
+        normalizeOrderStatus(
+            order.order_status
+        );
+
+    const message =
+        rawStatus !== "pending"
+            ? "This order can no longer be cancelled because the restaurant has already started processing it."
+            : "The 5-minute cancellation period for this order has already expired.";
+
+    window.alert(message);
+
+    loadCustomerOrders(true);
+    return;
+}
+
+    selectedCustomerCancelOrderId =
+        Number(orderId);
+
+    resetCustomerCancelForm();
+
+    modal?.classList.add(
+        "show"
+    );
+
+    modal?.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
+
+function closeCustomerCancelModal() {
+    const { modal } =
+        getCustomerCancelElements();
+
+    modal?.classList.remove(
+        "show"
+    );
+
+    modal?.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+
+    selectedCustomerCancelOrderId =
+        null;
+
+    resetCustomerCancelForm();
+}
+
+function getSelectedCustomerCancelReason() {
+    const {
+        reasons,
+        otherInput
+    } = getCustomerCancelElements();
+
+    const selectedReason =
+    [...reasons].find(
+        (radio) =>
+            radio.checked
+    );
+
+    if (!selectedReason) {
+        return "";
+    }
+
+    if (
+        selectedReason.value ===
+        "other"
+    ) {
+        return String(
+            otherInput?.value || ""
+        ).trim();
+    }
+
+    return String(
+        selectedReason.value || ""
+    ).trim();
+}
+
+async function submitCustomerCancellation() {
+    if (
+        customerCancellationSubmitting
+    ) {
+        return;
+    }
+
+    const {
+        confirmButton,
+        otherInput
+    } = getCustomerCancelElements();
+
+    const orderId =
+        Number(
+            selectedCustomerCancelOrderId
+        );
+
+    const cancellationReason =
+        getSelectedCustomerCancelReason();
+
+    if (
+        !Number.isInteger(orderId) ||
+        orderId <= 0
+    ) {
+        showCustomerCancelMessage(
+            "Invalid order. Please close the dialog and try again."
+        );
+
+        return;
+    }
+
+    if (
+        cancellationReason.length < 3
+    ) {
+        showCustomerCancelMessage(
+            "Please select or enter a clear cancellation reason."
+        );
+
+        otherInput?.focus();
+        return;
+    }
+
+    if (
+        cancellationReason.length > 250
+    ) {
+        showCustomerCancelMessage(
+            "The cancellation reason must not exceed 250 characters."
+        );
+
+        otherInput?.focus();
+        return;
+    }
+
+    const originalHtml =
+        confirmButton?.innerHTML || "";
+
+    try {
+        customerCancellationSubmitting =
+            true;
+
+        if (confirmButton) {
+            confirmButton.disabled =
+                true;
+
+            confirmButton.innerHTML = `
+                <span>
+                    Cancelling...
+                </span>
+
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            `;
+        }
+
+        showCustomerCancelMessage();
+
+        const response = await fetch(
+            `${API}/cancel_customer_order.php`,
+            {
+                method: "POST",
+
+                credentials:
+                    "include",
+
+                cache:
+                    "no-store",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    Accept:
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    order_id:
+                        orderId,
+
+                    cancellation_reason:
+                        cancellationReason
+                })
+            }
+        );
+
+        const data =
+            await readJsonResponse(
+                response
+            );
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to cancel the order."
+            );
+        }
+
+        closeCustomerCancelModal();
+
+        await loadCustomerOrders(
+            true
+        );
+
+        window.alert(
+            data.message ||
+            "Your order was cancelled successfully."
+        );
+
+    } catch (error) {
+        console.error(
+            "Customer cancellation error:",
+            error
+        );
+
+        showCustomerCancelMessage(
+            error.message ||
+            "Unable to cancel the order."
+        );
+
+    } finally {
+        customerCancellationSubmitting =
+            false;
+
+        if (confirmButton) {
+            confirmButton.disabled =
+                false;
+
+            confirmButton.innerHTML =
+                originalHtml;
+        }
+    }
 }
 
 /* =========================================================
@@ -3840,8 +4511,9 @@ async function loadCustomerOrders(
 syncOpenOrderQrModal();
 
 renderFilteredCustomerOrders();
+startCustomerCancelCountdown();
 
-        return true;
+return true;
 
     } catch (error) {
         console.error(
@@ -3957,6 +4629,111 @@ function switchCustomerTab(tabName) {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
+        const customerCancelModal =
+    document.getElementById(
+        "customerCancelModal"
+    );
+
+const closeCustomerCancelButton =
+    document.getElementById(
+        "closeCustomerCancelModal"
+    );
+
+const backCustomerCancelButton =
+    document.getElementById(
+        "backCustomerCancelModal"
+    );
+
+const confirmCustomerCancelButton =
+    document.getElementById(
+        "confirmCustomerCancelBtn"
+    );
+
+const customerCancelBackdrop =
+    document.querySelector(
+        "[data-close-customer-cancel-modal]"
+    );
+
+const customerCancelReasonInputs =
+    document.querySelectorAll(
+        'input[name="customerCancelReason"]'
+    );
+
+const customerOtherReasonGroup =
+    document.getElementById(
+        "customerOtherReasonGroup"
+    );
+
+const customerOtherReasonInput =
+    document.getElementById(
+        "customerOtherCancelReason"
+    );
+
+    closeCustomerCancelButton
+    ?.addEventListener(
+        "click",
+        closeCustomerCancelModal
+    );
+
+backCustomerCancelButton
+    ?.addEventListener(
+        "click",
+        closeCustomerCancelModal
+    );
+
+customerCancelBackdrop
+    ?.addEventListener(
+        "click",
+        closeCustomerCancelModal
+    );
+
+confirmCustomerCancelButton
+    ?.addEventListener(
+        "click",
+        submitCustomerCancellation
+    );
+
+customerCancelReasonInputs.forEach(
+    (radio) => {
+        radio.addEventListener(
+            "change",
+            () => {
+                const isOther =
+                    radio.checked &&
+                    radio.value ===
+                        "other";
+
+                if (
+                    customerOtherReasonGroup
+                ) {
+                    customerOtherReasonGroup.hidden =
+                        !isOther;
+                }
+
+                if (
+                    !isOther &&
+                    customerOtherReasonInput
+                ) {
+                    customerOtherReasonInput.value =
+                        "";
+                }
+
+                showCustomerCancelMessage();
+
+                if (isOther) {
+                    window.setTimeout(
+                        () => {
+                            customerOtherReasonInput
+                                ?.focus();
+                        },
+                        50
+                    );
+                }
+            }
+        );
+    }
+);
 
 const showCartTabButton =
     document.getElementById(
@@ -4203,6 +4980,31 @@ clearCompletedOrdersButton
 ordersContent?.addEventListener(
     "click",
     (event) => {
+
+const cancelOrderButton =
+    event.target.closest(
+        "[data-cancel-customer-order]"
+    );
+
+if (cancelOrderButton) {
+    const orderId =
+        Number(
+            cancelOrderButton.dataset
+                .cancelCustomerOrder
+        );
+
+    if (
+        Number.isInteger(orderId) &&
+        orderId > 0
+    ) {
+        openCustomerCancelModal(
+            orderId
+        );
+    }
+
+    return;
+}
+
         const showQrButton =
             event.target.closest(
                 "[data-show-order-qr]"

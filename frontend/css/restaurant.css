@@ -1087,12 +1087,15 @@ header{
 }
 
 .menu-item-info {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  border-top: 1px solid rgba(255,255,255,.06);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;          /* Fill the remaining height */
+    gap: 10px;
+}
+
+.add-to-cart {
+    margin-top: auto; /* Push button to the bottom */
 }
 
 @media (max-width: 520px) {

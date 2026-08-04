@@ -37,10 +37,20 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link
-        rel="stylesheet"
-        href="../css/cart.css"
-    >
+   <link
+    rel="stylesheet"
+    href="../css/cart.css?v=6"
+>
+
+<link
+    rel="stylesheet"
+    href="../css/orders.css?v=3"
+>
+
+<link
+    rel="stylesheet"
+    href="../css/customer-actions.css?v=1"
+>
 </head>
 
 <body>
@@ -456,10 +466,10 @@
                             Contact Number
                         </label>
 
-                        <div class="input-wrapper">
-                             <i class="fa-solid fa-phone"></i>
+                        <div class="input-wrapper phone-input-wrapper">
+                            <i class="fa-solid fa-phone"></i>
 
-                                 <span class="country-code">+63</span>
+                            <span class="country-code">+63</span>
 
                                 <input
                                     type="tel"
@@ -474,8 +484,6 @@
                         </div>
 
                     </div>
-
-                </div>
 
                 <div
                     id="dynamicFields"
@@ -772,18 +780,6 @@
 
                 <span>
                     Incorrect order details
-                </span>
-            </label>
-
-            <label>
-                <input
-                    type="radio"
-                    name="customerCancelReason"
-                    value="Delivery is taking too long"
-                >
-
-                <span>
-                    Delivery is taking too long
                 </span>
             </label>
 
@@ -1123,7 +1119,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
 ></script>
 
-<script src="../js/cart.js?v=17"></script>
+<script src="../js/cart.js?v=19"></script>
 
 </body>
 </html>
