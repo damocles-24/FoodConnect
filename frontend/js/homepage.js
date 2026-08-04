@@ -191,6 +191,11 @@ const backToOwnerLoginBtn =
         "ownerPassword"
       );
 
+    const toggleOwnerPassword = 
+      document.getElementById(
+        "toggleOwnerPassword"
+      );
+
     const ownerLoginBtn =
       document.getElementById(
         "ownerLoginBtn"
@@ -2573,3 +2578,22 @@ window.setInterval(
 );
   }
 );
+
+    // ===== Owner Password Toggle (Partner Portal) =====
+if (ownerPassword && toggleOwnerPassword) {
+  toggleOwnerPassword.addEventListener("click", function (e) {
+    e.preventDefault();
+    const icon = this.querySelector("i");
+    if (ownerPassword.type === "password") {
+      ownerPassword.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+      this.setAttribute("aria-label", "Hide password");
+    } else {
+      ownerPassword.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+      this.setAttribute("aria-label", "Show password");
+    }
+  });
+}
