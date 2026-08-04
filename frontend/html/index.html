@@ -1042,12 +1042,23 @@
           Password
         </label>
 
+        <div class="password-input-wrapper">
         <input
           type="password"
           id="ownerPassword"
           placeholder="Enter password"
           autocomplete="current-password"
         >
+
+        <button
+        type="button"
+        class="password-toggle"
+        id="toggleOwnerPassword"
+        aria-label="Show Password"
+        >
+        <i class="fa-regular fa-eye"></i>
+      </button>
+      </div>
       </div>
 
       <button
@@ -1109,7 +1120,10 @@
     type="checkbox"
     id="trustOwnerDevice"
   >
+
+  <span>
     Trust this device for 30 days
+  </span>
 </label>
 
   <button

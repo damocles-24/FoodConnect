@@ -3181,3 +3181,47 @@ body {
     outline: none;
     box-shadow: 0 0 0 3px rgba(247,128,33,.2);
 }
+
+/* === Partner Portal - Password Toggle Visibility === */
+.staff-access-card input[type="password"]::-webkit-credentials-auto-fill-button,
+.staff-access-card input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+}
+
+.staff-access-card input[type="password"]::-ms-reveal {
+    display: none !important;
+}
+/* Fix positioning of custom password toggle inside Partner Portal */
+.staff-access-card .password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.staff-access-card .password-input-wrapper input {
+    padding-right: 45px !important; /* Para may space sa kanan */
+    box-sizing: border-box;
+}
+
+.staff-access-card .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    color: #cdcfd2;
+    font-size: 12px;
+    z-index: 2;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.staff-access-card .password-toggle:hover {
+    color: var(--primary);
+}
