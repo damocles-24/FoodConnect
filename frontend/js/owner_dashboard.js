@@ -28,6 +28,7 @@ let salesReport = {
   }
 };
 
+
 /* =========================
    ELEMENTS
 ========================= */
@@ -45,6 +46,17 @@ const sidebar = document.getElementById("sidebar");
 const menuToggle = document.getElementById("menuToggle");
 const closeSidebar = document.getElementById("closeSidebar");
 const logoutBtn = document.getElementById("logoutBtn");
+
+const sidebarRestaurantLogo =
+  document.getElementById(
+    "sidebarRestaurantLogo"
+  );
+
+const profileRestaurantLogo =
+  document.getElementById(
+    "profileRestaurantLogo"
+  );
+
 const sidebarRestaurantName =
   document.getElementById(
     "sidebarRestaurantName"
@@ -655,13 +667,69 @@ const deliveryPerformanceBody =
     "deliveryPerformanceBody"
   );
 
+  const settingsLogoPath =
+  document.getElementById(
+    "settingsLogoPath"
+  );
+
+const settingsLogoInput =
+  document.getElementById(
+    "settingsLogoInput"
+  );
+
+const selectSettingsLogoBtn =
+  document.getElementById(
+    "selectSettingsLogoBtn"
+  );
+
+const removeSettingsLogoBtn =
+  document.getElementById(
+    "removeSettingsLogoBtn"
+  );
+
+const settingsLogoPreviewImage =
+  document.getElementById(
+    "settingsLogoPreviewImage"
+  );
+
+const settingsLogoPlaceholder =
+  document.getElementById(
+    "settingsLogoPlaceholder"
+  );
+
+const settingsLogoMessage =
+  document.getElementById(
+    "settingsLogoMessage"
+  );
+
+const settingsPreviewLogoImage =
+  document.getElementById(
+    "settingsPreviewLogoImage"
+  );
+
+const settingsPreviewLogoInitials =
+  document.getElementById(
+    "settingsPreviewLogoInitials"
+  );
 const settingsRestaurantName = document.getElementById("settingsRestaurantName");
 const settingsContactNumber = document.getElementById("settingsContactNumber");
 const settingsAddress = document.getElementById("settingsAddress");
 const settingsOpeningHours = document.getElementById("settingsOpeningHours");
 const settingsDeliveryFee = document.getElementById("settingsDeliveryFee");
-const settingsBusinessStatus = document.getElementById("settingsBusinessStatus");
-const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+const settingsBusinessStatus =
+  document.getElementById(
+    "settingsBusinessStatus"
+  );
+
+const settingsAddressCount =
+  document.getElementById(
+    "settingsAddressCount"
+  );
+
+const saveSettingsBtn =
+  document.getElementById(
+    "saveSettingsBtn"
+  );
 const settingsStatusRadios =
   document.querySelectorAll(
     'input[name="restaurantBusinessStatus"]'
@@ -720,15 +788,122 @@ let restaurantSettingsLoading = false;
 
 let readinessChecklistExpanded = false;
 
+selectSettingsLogoBtn?.addEventListener(
+  "click",
+  () => {
+    settingsLogoInput?.click();
+  }
+);
+
+settingsLogoInput?.addEventListener(
+  "change",
+  event => {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    uploadSettingsLogo(file);
+  }
+);
+
+removeSettingsLogoBtn?.addEventListener(
+  "click",
+  removeSettingsLogo
+);
+
+settingsPreviewLogoImage?.addEventListener(
+  "error",
+  () => {
+    settingsPreviewLogoImage.hidden =
+      true;
+
+    if (
+      settingsPreviewLogoInitials
+    ) {
+      settingsPreviewLogoInitials.hidden =
+        false;
+    }
+  }
+);
+
 settingsFormControls.forEach(control => {
   control.addEventListener(
     "input",
-    handleSettingsChange
+    () => {
+      control.classList.remove(
+        "is-invalid"
+      );
+
+      control.removeAttribute(
+        "aria-invalid"
+      );
+
+      if (
+        control ===
+        settingsContactNumber
+      ) {
+        const normalizedContact =
+          normalizePhilippineContactNumber(
+            control.value
+          );
+
+        if (
+          control.value !==
+          normalizedContact
+        ) {
+          control.value =
+            normalizedContact;
+        }
+      }
+
+      if (
+        control ===
+        settingsAddress
+      ) {
+        updateSettingsAddressCounter();
+      }
+
+      handleSettingsChange();
+    }
   );
 
   control.addEventListener(
     "change",
     handleSettingsChange
+  );
+
+  control.addEventListener(
+    "blur",
+    () => {
+      if (
+        control ===
+        settingsRestaurantName ||
+        control ===
+        settingsOpeningHours
+      ) {
+        control.value =
+          normalizeSettingsText(
+            control.value
+          );
+      }
+
+      if (
+        control ===
+        settingsAddress
+      ) {
+        control.value =
+          normalizeSettingsAddress(
+            control.value
+          );
+
+        updateSettingsAddressCounter();
+      }
+
+      handleSettingsChange();
+    }
   );
 });
 
@@ -8623,23 +8798,111 @@ function setSelectedBusinessStatus(status) {
   });
 }
 
+function normalizeSettingsText(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeSettingsAddress(value) {
+  return String(value || "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function normalizePhilippineContactNumber(
+  value
+) {
+  let normalized = String(value || "")
+    .replace(/[^\d+]/g, "");
+
+  if (normalized.startsWith("+63")) {
+    normalized =
+      `0${normalized.slice(3)}`;
+  } else if (
+    normalized.startsWith("63") &&
+    normalized.length === 12
+  ) {
+    normalized =
+      `0${normalized.slice(2)}`;
+  }
+
+  return normalized.slice(0, 11);
+}
+
+function clearSettingsFieldErrors() {
+  settingsFormControls.forEach(control => {
+    control.classList.remove(
+      "is-invalid"
+    );
+
+    control.removeAttribute(
+      "aria-invalid"
+    );
+  });
+}
+
+function markSettingsFieldInvalid(
+  control
+) {
+  if (!control) {
+    return;
+  }
+
+  control.classList.add(
+    "is-invalid"
+  );
+
+  control.setAttribute(
+    "aria-invalid",
+    "true"
+  );
+
+  control.focus();
+}
+
+function updateSettingsAddressCounter() {
+  if (
+    !settingsAddress ||
+    !settingsAddressCount
+  ) {
+    return;
+  }
+
+  const currentLength =
+    settingsAddress.value.length;
+
+  settingsAddressCount.textContent =
+    `${currentLength} / 255`;
+}
+
 function getCurrentRestaurantSettings() {
   return {
+
+    logo_path:
+  String(
+    settingsLogoPath?.value || ""
+  ).trim(),
     name:
-      settingsRestaurantName?.value.trim() ||
-      "",
+      normalizeSettingsText(
+        settingsRestaurantName?.value
+      ),
 
     contact_number:
-      settingsContactNumber?.value.trim() ||
-      "",
+      normalizePhilippineContactNumber(
+        settingsContactNumber?.value
+      ),
 
     address:
-      settingsAddress?.value.trim() ||
-      "",
+      normalizeSettingsAddress(
+        settingsAddress?.value
+      ),
 
     opening_hours:
-      settingsOpeningHours?.value.trim() ||
-      "",
+      normalizeSettingsText(
+        settingsOpeningHours?.value
+      ),
 
     delivery_fee:
       Number(
@@ -8661,7 +8924,399 @@ function formatSettingsDeliveryFee(value) {
   );
 }
 
+function resolveSettingsLogoUrl(
+  logoPath
+) {
+  const normalizedPath =
+    String(logoPath || "").trim();
+
+  if (!normalizedPath) {
+    return "";
+  }
+
+  if (
+    normalizedPath.startsWith(
+      "http://"
+    ) ||
+    normalizedPath.startsWith(
+      "https://"
+    ) ||
+    normalizedPath.startsWith(
+      "/FoodConnect/"
+    )
+  ) {
+    return normalizedPath;
+  }
+
+  return (
+    "/FoodConnect/" +
+    normalizedPath.replace(
+      /^\/+/,
+      ""
+    )
+  );
+}
+
+function getRestaurantInitials(
+  restaurantName
+) {
+  const words =
+    String(
+      restaurantName || "FC"
+    )
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+  if (!words.length) {
+    return "FC";
+  }
+
+  return words
+    .slice(0, 2)
+    .map(word =>
+      word.charAt(0).toUpperCase()
+    )
+    .join("");
+}
+
+function updateOwnerDashboardLogos(
+  logoPath
+) {
+  const logoUrl =
+    resolveSettingsLogoUrl(
+      logoPath
+    );
+
+  if (
+    !logoUrl
+  ) {
+    return;
+  }
+
+  if (sidebarRestaurantLogo) {
+    sidebarRestaurantLogo.src =
+      logoUrl;
+  }
+
+  if (profileRestaurantLogo) {
+    profileRestaurantLogo.src =
+      logoUrl;
+  }
+}
+
+function renderSettingsLogo(
+  logoPath
+) {
+  const logoUrl =
+    resolveSettingsLogoUrl(
+      logoPath
+    );
+
+  const hasLogo =
+    Boolean(logoUrl);
+
+  if (
+    settingsLogoPreviewImage
+  ) {
+    settingsLogoPreviewImage.src =
+      hasLogo ? logoUrl : "";
+
+    settingsLogoPreviewImage.hidden =
+      !hasLogo;
+  }
+
+  if (
+    settingsLogoPlaceholder
+  ) {
+    settingsLogoPlaceholder.hidden =
+      hasLogo;
+  }
+
+  if (
+    removeSettingsLogoBtn
+  ) {
+    removeSettingsLogoBtn.hidden =
+      !hasLogo;
+  }
+
+  if (
+    settingsPreviewLogoImage
+  ) {
+    settingsPreviewLogoImage.src =
+      hasLogo ? logoUrl : "";
+
+    settingsPreviewLogoImage.hidden =
+      !hasLogo;
+  }
+
+  if (
+    settingsPreviewLogoInitials
+  ) {
+    settingsPreviewLogoInitials.hidden =
+      hasLogo;
+
+    settingsPreviewLogoInitials.textContent =
+      getRestaurantInitials(
+        settingsRestaurantName?.value
+      );
+  }
+}
+
+function setSettingsLogoMessage(
+  message = "",
+  type = ""
+) {
+  if (!settingsLogoMessage) {
+    return;
+  }
+
+  settingsLogoMessage.textContent =
+    message;
+
+  settingsLogoMessage.className =
+    "settings-logo-message";
+
+  if (type) {
+    settingsLogoMessage.classList.add(
+      `is-${type}`
+    );
+  }
+}
+
+function validateSettingsLogoFile(
+  file
+) {
+  if (!file) {
+    return "Select a restaurant logo.";
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (
+    !allowedTypes.includes(
+      file.type
+    )
+  ) {
+    return "Only JPG, PNG, and WEBP logo files are allowed.";
+  }
+
+  const maximumSize =
+    2 * 1024 * 1024;
+
+  if (
+    file.size <= 0 ||
+    file.size > maximumSize
+  ) {
+    return "The restaurant logo must not exceed 2 MB.";
+  }
+
+  return "";
+}
+
+async function uploadSettingsLogo(
+  file
+) {
+  const validationMessage =
+    validateSettingsLogoFile(
+      file
+    );
+
+  if (validationMessage) {
+    setSettingsLogoMessage(
+      validationMessage,
+      "error"
+    );
+
+    return;
+  }
+
+  const previousLogoPath =
+    settingsLogoPath?.value || "";
+
+  const previewUrl =
+    URL.createObjectURL(file);
+
+  if (
+    settingsLogoPreviewImage
+  ) {
+    settingsLogoPreviewImage.src =
+      previewUrl;
+
+    settingsLogoPreviewImage.hidden =
+      false;
+  }
+
+  if (
+    settingsLogoPlaceholder
+  ) {
+    settingsLogoPlaceholder.hidden =
+      true;
+  }
+
+  setSettingsLogoMessage(
+    "Uploading logo...",
+    "uploading"
+  );
+
+  if (settingsLogoInput) {
+    settingsLogoInput.disabled =
+      true;
+  }
+
+  if (selectSettingsLogoBtn) {
+    selectSettingsLogoBtn.disabled =
+      true;
+  }
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "restaurant_logo",
+    file
+  );
+
+  try {
+    const response =
+  await fetch(
+    `${OWNER_API_BASE}/upload_restaurant_logo.php`,
+    {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+      cache: "no-store"
+    }
+  );
+
+   const responseText =
+  await response.text();
+
+let result;
+
+try {
+  result =
+    JSON.parse(responseText);
+} catch (parseError) {
+  console.error(
+    "Logo upload response:",
+    responseText
+  );
+
+  throw new Error(
+    "The logo upload API returned an invalid response."
+  );
+}
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        "Unable to upload the restaurant logo."
+      );
+    }
+
+    if (settingsLogoPath) {
+      settingsLogoPath.value =
+        result.logo_path || "";
+    }
+
+    renderSettingsLogo(
+      result.logo_path || ""
+    );
+
+    setSettingsLogoMessage(
+      "Logo uploaded. Click Save Changes to apply it to your restaurant.",
+      "success"
+    );
+
+    handleSettingsChange();
+  } catch (error) {
+    if (settingsLogoPath) {
+      settingsLogoPath.value =
+        previousLogoPath;
+    }
+
+    renderSettingsLogo(
+      previousLogoPath
+    );
+
+    setSettingsLogoMessage(
+      error.message ||
+      "Unable to upload the restaurant logo.",
+      "error"
+    );
+  } finally {
+    URL.revokeObjectURL(
+      previewUrl
+    );
+
+    if (settingsLogoInput) {
+      settingsLogoInput.disabled =
+        false;
+
+      settingsLogoInput.value =
+        "";
+    }
+
+    if (selectSettingsLogoBtn) {
+      selectSettingsLogoBtn.disabled =
+        false;
+    }
+  }
+}
+
+function removeSettingsLogo() {
+  const hasLogo =
+    Boolean(
+      settingsLogoPath?.value
+    );
+
+  if (!hasLogo) {
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      "Remove the restaurant logo? The change will only become permanent after you click Save Changes."
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  if (settingsLogoPath) {
+    settingsLogoPath.value =
+      "";
+  }
+
+  renderSettingsLogo("");
+
+  setSettingsLogoMessage(
+    "Logo marked for removal. Click Save Changes to confirm.",
+    "warning"
+  );
+
+  handleSettingsChange();
+}
+
 function updateSettingsPreview() {
+
+  if (
+  settingsPreviewLogoInitials &&
+  settingsPreviewLogoImage?.hidden
+) {
+  settingsPreviewLogoInitials.textContent =
+    getRestaurantInitials(
+      settingsRestaurantName?.value
+    );
+}
   const settings =
     getCurrentRestaurantSettings();
 
@@ -8814,52 +9469,119 @@ function handleSettingsChange() {
 function validateRestaurantSettings(
   settings
 ) {
+  clearSettingsFieldErrors();
+
   if (!settings.name) {
-    settingsRestaurantName?.focus();
+    markSettingsFieldInvalid(
+      settingsRestaurantName
+    );
 
     return "Restaurant name is required.";
   }
 
+  if (settings.name.length < 2) {
+    markSettingsFieldInvalid(
+      settingsRestaurantName
+    );
+
+    return "Restaurant name must contain at least 2 characters.";
+  }
+
+  if (
+    !/[A-Za-z0-9]/.test(
+      settings.name
+    )
+  ) {
+    markSettingsFieldInvalid(
+      settingsRestaurantName
+    );
+
+    return "Restaurant name must contain letters or numbers.";
+  }
+
   if (!settings.contact_number) {
-    settingsContactNumber?.focus();
+    markSettingsFieldInvalid(
+      settingsContactNumber
+    );
 
     return "Contact number is required.";
   }
 
-  const phonePattern =
-    /^[0-9+\-\s()]{7,20}$/;
+  const philippineMobilePattern =
+    /^09\d{9}$/;
 
   if (
-    !phonePattern.test(
+    !philippineMobilePattern.test(
       settings.contact_number
     )
   ) {
-    settingsContactNumber?.focus();
+    markSettingsFieldInvalid(
+      settingsContactNumber
+    );
 
-    return "Enter a valid contact number.";
+    return "Enter a valid 11-digit Philippine mobile number starting with 09.";
   }
 
   if (!settings.address) {
-    settingsAddress?.focus();
+    markSettingsFieldInvalid(
+      settingsAddress
+    );
 
     return "Restaurant address is required.";
   }
 
+  if (settings.address.length < 10) {
+    markSettingsFieldInvalid(
+      settingsAddress
+    );
+
+    return "Enter a more complete restaurant address.";
+  }
+
   if (!settings.opening_hours) {
-    settingsOpeningHours?.focus();
+    markSettingsFieldInvalid(
+      settingsOpeningHours
+    );
 
     return "Opening hours are required.";
   }
 
   if (
+    settings.opening_hours.length < 5
+  ) {
+    markSettingsFieldInvalid(
+      settingsOpeningHours
+    );
+
+    return "Enter clear and understandable opening hours.";
+  }
+
+  if (
     !Number.isFinite(
       settings.delivery_fee
-    ) ||
-    settings.delivery_fee < 0
+    )
   ) {
-    settingsDeliveryFee?.focus();
+    markSettingsFieldInvalid(
+      settingsDeliveryFee
+    );
+
+    return "Enter a valid delivery fee.";
+  }
+
+  if (settings.delivery_fee < 0) {
+    markSettingsFieldInvalid(
+      settingsDeliveryFee
+    );
 
     return "Delivery fee cannot be negative.";
+  }
+
+  if (settings.delivery_fee > 999) {
+    markSettingsFieldInvalid(
+      settingsDeliveryFee
+    );
+
+    return "Delivery fee cannot exceed ₱999.00.";
   }
 
   return "";
@@ -8888,34 +9610,53 @@ async function loadRestaurantSettings() {
     const restaurant =
       data.restaurant || {};
 
-    const loadedSettings = {
-      name: String(
-        restaurant.name || ""
-      ).trim(),
+   if (settingsLogoPath) {
+  settingsLogoPath.value =
+    String(
+      restaurant.logo_path || ""
+    ).trim();
+}
 
-      contact_number: String(
-        restaurant.contact_number || ""
-      ).trim(),
+renderSettingsLogo(
+  String(
+    restaurant.logo_path || ""
+  ).trim()
+);
 
-      address: String(
-        restaurant.address || ""
-      ).trim(),
+setSettingsLogoMessage("");   
 
-      opening_hours: String(
-        restaurant.opening_hours || ""
-      ).trim(),
+const loadedSettings = {
+  logo_path: String(
+    restaurant.logo_path || ""
+  ).trim(),
 
-      delivery_fee:
-        Number(
-          restaurant.delivery_fee || 0
-        ),
+  name: String(
+    restaurant.name || ""
+  ).trim(),
 
-      business_status:
-        normalizeBusinessStatus(
-          restaurant.business_status
-        )
-    };
+  contact_number: String(
+    restaurant.contact_number || ""
+  ).trim(),
 
+  address: String(
+    restaurant.address || ""
+  ).trim(),
+
+  opening_hours: String(
+    restaurant.opening_hours || ""
+  ).trim(),
+
+  delivery_fee:
+    Number(
+      restaurant.delivery_fee || 0
+    ),
+
+  business_status:
+    normalizeBusinessStatus(
+      restaurant.business_status
+    )
+};
+   
     if (settingsRestaurantName) {
       settingsRestaurantName.value =
         loadedSettings.name;
@@ -8927,9 +9668,11 @@ async function loadRestaurantSettings() {
     }
 
     if (settingsAddress) {
-      settingsAddress.value =
-        loadedSettings.address;
-    }
+  settingsAddress.value =
+    loadedSettings.address;
+
+  updateSettingsAddressCounter();
+}
 
     if (settingsOpeningHours) {
       settingsOpeningHours.value =
@@ -8983,6 +9726,28 @@ async function saveRestaurantSettings() {
 
   const payload =
     getCurrentRestaurantSettings();
+
+    if (settingsRestaurantName) {
+  settingsRestaurantName.value =
+    payload.name;
+}
+
+if (settingsContactNumber) {
+  settingsContactNumber.value =
+    payload.contact_number;
+}
+
+if (settingsAddress) {
+  settingsAddress.value =
+    payload.address;
+}
+
+if (settingsOpeningHours) {
+  settingsOpeningHours.value =
+    payload.opening_hours;
+}
+
+updateSettingsAddressCounter();
 
   const validationMessage =
     validateRestaurantSettings(payload);
@@ -9045,6 +9810,10 @@ setSelectedBusinessStatus(
 );
 
 updateSettingsPreview();
+
+updateOwnerDashboardLogos(
+  payload.logo_path
+);
 
 if (sidebarRestaurantName) {
   sidebarRestaurantName.textContent =

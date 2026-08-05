@@ -1871,88 +1871,197 @@
     <!-- LEFT SIDE: SETTINGS FORM -->
     <div class="settings-main-column">
 
-      <!-- RESTAURANT PROFILE -->
-      <section class="settings-panel">
-        <div class="settings-panel-header">
-          <div class="settings-panel-icon">
+   <!-- RESTAURANT PROFILE -->
+<section class="settings-panel">
+  <div class="settings-panel-header">
+    <div class="settings-panel-icon">
+      🏪
+    </div>
+
+    <div>
+      <span class="settings-step-label">
+        Section 1
+      </span>
+
+      <h3>Restaurant Profile</h3>
+
+      <p>
+        Manage the restaurant identity and information
+        customers will see.
+      </p>
+    </div>
+  </div>
+
+  <div class="settings-profile-layout">
+
+    <!-- LEFT SIDE: PROFILE FIELDS -->
+    <div class="settings-profile-fields">
+      <div class="settings-form-grid">
+
+        <div class="settings-field">
+          <label for="settingsRestaurantName">
+            Restaurant Name
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="settingsRestaurantName"
+            minlength="2"
+            maxlength="150"
+            autocomplete="organization"
+            placeholder="Example: CJ's Food House"
+            aria-describedby="settingsRestaurantNameHelp"
+            required
+          />
+
+          <small id="settingsRestaurantNameHelp">
+            Use the official restaurant name shown to customers.
+          </small>
+        </div>
+
+        <div class="settings-field">
+          <label for="settingsContactNumber">
+            Contact Number
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <input
+            type="tel"
+            id="settingsContactNumber"
+            minlength="11"
+            maxlength="13"
+            autocomplete="tel"
+            inputmode="numeric"
+            placeholder="Example: 09123456789"
+            aria-describedby="settingsContactNumberHelp"
+            required
+          />
+
+          <small id="settingsContactNumberHelp">
+            Enter an 11-digit Philippine mobile number such as
+            09123456789.
+          </small>
+        </div>
+
+        <div class="settings-field settings-field-full">
+          <label for="settingsAddress">
+            Restaurant Address
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <textarea
+            id="settingsAddress"
+            rows="3"
+            minlength="10"
+            maxlength="255"
+            autocomplete="street-address"
+            placeholder="Example: 123 Quezon Avenue, Alaminos City, Pangasinan"
+            aria-describedby="settingsAddressHelp"
+            required
+          ></textarea>
+
+          <div class="settings-field-help-row">
+            <small id="settingsAddressHelp">
+              Include the street, barangay, city or municipality,
+              and province.
+            </small>
+
+            <small
+              class="settings-character-count"
+              id="settingsAddressCount"
+            >
+              0 / 255
+            </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: RESTAURANT LOGO -->
+    <aside class="settings-profile-branding">
+      <div class="settings-profile-logo-heading">
+  <span>Restaurant Logo</span>
+
+  <small>
+    Public
+  </small>
+</div>
+      <div
+        class="settings-logo-preview"
+        id="settingsLogoPreview"
+      >
+        <img
+          id="settingsLogoPreviewImage"
+          src=""
+          alt="Restaurant logo preview"
+          hidden
+        />
+
+        <div
+          class="settings-logo-placeholder"
+          id="settingsLogoPlaceholder"
+        >
+          <span aria-hidden="true">
             🏪
-          </div>
+          </span>
 
-          <div>
-            <span class="settings-step-label">
-              Section 1
-            </span>
+          <strong>
+            No logo uploaded
+          </strong>
 
-            <h3>Restaurant Profile</h3>
-
-            <p>
-              Information customers will see when viewing
-              your restaurant.
-            </p>
-          </div>
+          <small>
+            Upload a logo to personalize your restaurant.
+          </small>
         </div>
+      </div>
 
-        <div class="settings-form-grid">
-          <div class="settings-field">
-            <label for="settingsRestaurantName">
-              Restaurant Name
-              <span aria-hidden="true">*</span>
-            </label>
+      <input
+        type="hidden"
+        id="settingsLogoPath"
+        value=""
+      />
 
-            <input
-              type="text"
-              id="settingsRestaurantName"
-              maxlength="150"
-              autocomplete="organization"
-              placeholder="Enter restaurant name"
-            />
+      <input
+        type="file"
+        id="settingsLogoInput"
+        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+        hidden
+      />
 
-            <small>
-              This appears on the restaurant listing,
-              menu, and customer orders.
-            </small>
-          </div>
+      <div class="settings-logo-actions">
+        <button
+          type="button"
+          class="settings-logo-upload-btn"
+          id="selectSettingsLogoBtn"
+        >
+          Change Logo
+        </button>
 
-          <div class="settings-field">
-            <label for="settingsContactNumber">
-              Contact Number
-              <span aria-hidden="true">*</span>
-            </label>
+        <button
+          type="button"
+          class="settings-logo-remove-btn"
+          id="removeSettingsLogoBtn"
+          hidden
+        >
+          Remove
+        </button>
+      </div>
 
-            <input
-              type="tel"
-              id="settingsContactNumber"
-              maxlength="20"
-              autocomplete="tel"
-              inputmode="tel"
-              placeholder="Example: 09123456789"
-            />
+      <small class="settings-logo-requirements">
+        JPG, PNG or WEBP · Max 2 MB
+      </small>
 
-            <small>
-              Customers may use this number for restaurant inquiries.
-            </small>
-          </div>
+      <p
+        class="settings-logo-message"
+        id="settingsLogoMessage"
+        aria-live="polite"
+      ></p>
+    </aside>
 
-          <div class="settings-field settings-field-full">
-            <label for="settingsAddress">
-              Restaurant Address
-              <span aria-hidden="true">*</span>
-            </label>
-
-            <textarea
-              id="settingsAddress"
-              rows="3"
-              maxlength="255"
-              autocomplete="street-address"
-              placeholder="Enter the complete restaurant address"
-            ></textarea>
-
-            <small>
-              Use a complete and recognizable address.
-            </small>
-          </div>
-        </div>
-      </section>
+  </div>
+</section>
 
       <!-- OPERATING DETAILS -->
       <section class="settings-panel">
@@ -1981,16 +2090,19 @@
               <span aria-hidden="true">*</span>
             </label>
 
-            <input
+           <input
               type="text"
               id="settingsOpeningHours"
+              minlength="5"
               maxlength="100"
-              placeholder="Example: 8:00 AM - 10:00 PM"
+              placeholder="Example: Monday–Sunday, 8:00 AM–10:00 PM"
+              aria-describedby="settingsOpeningHoursHelp"
+              required
             />
 
-            <small>
-              Enter the normal daily operating schedule.
-            </small>
+            <small id="settingsOpeningHoursHelp">
+              Enter a clear schedule that customers can easily understand.
+            </small> 
           </div>
         </div>
       </section>
@@ -2030,15 +2142,13 @@
                 type="number"
                 id="settingsDeliveryFee"
                 min="0"
+                max="999"
                 step="0.01"
                 inputmode="decimal"
                 placeholder="0.00"
+                aria-describedby="settingsDeliveryFeeHelp"
+                required
               />
-            </div>
-
-            <small>
-              This fixed amount is added to eligible delivery orders.
-            </small>
           </div>
 
           <div class="settings-info-card">
@@ -2153,93 +2263,34 @@
         </select>
       </section>
 
+      <!-- SETTINGS SAVE ACTION -->
+<section class="settings-bottom-save">
+  <div class="settings-bottom-save-copy">
+    <h3>Save Restaurant Settings</h3>
+
+    <p>
+      Review your restaurant information before applying
+      your changes.
+    </p>
+
+    <p
+      class="settings-form-message"
+      id="settingsFormMessage"
+      hidden
+    ></p>
+  </div>
+
+  <button
+    type="button"
+    class="primary-btn settings-save-btn"
+    id="saveSettingsBtn"
+    disabled
+  >
+    <span>Save Changes</span>
+  </button>
+</section>
     </div>
 
-    <!-- RIGHT SIDE: PREVIEW AND SAVE -->
-    <aside class="settings-side-column">
-
-      <section class="settings-preview-card">
-        <span class="settings-preview-overline">
-          Customer Preview
-        </span>
-
-        <div class="settings-preview-heading">
-          <div class="settings-preview-logo">
-            BH
-          </div>
-
-          <div>
-            <h3 id="settingsPreviewName">
-              Restaurant Name
-            </h3>
-
-            <span
-              class="settings-preview-status"
-              id="settingsPreviewStatus"
-            >
-              Open
-            </span>
-          </div>
-        </div>
-
-        <div class="settings-preview-list">
-          <div>
-            <span>Contact</span>
-            <strong id="settingsPreviewContact">
-              Not provided
-            </strong>
-          </div>
-
-          <div>
-            <span>Address</span>
-            <strong id="settingsPreviewAddress">
-              Not provided
-            </strong>
-          </div>
-
-          <div>
-            <span>Opening Hours</span>
-            <strong id="settingsPreviewHours">
-              Not provided
-            </strong>
-          </div>
-
-          <div>
-            <span>Delivery Fee</span>
-            <strong id="settingsPreviewFee">
-              ₱0.00
-            </strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="settings-save-card">
-        <div>
-          <h3>Save Restaurant Settings</h3>
-
-          <p>
-            Review your information before applying changes
-            to the restaurant.
-          </p>
-        </div>
-
-        <p
-          class="settings-form-message"
-          id="settingsFormMessage"
-          hidden
-        ></p>
-
-        <button
-          type="button"
-          class="primary-btn settings-save-btn"
-          id="saveSettingsBtn"
-          disabled
-        >
-          <span>Save Changes</span>
-        </button>
-      </section>
-
-    </aside>
   </div>
 </section>
 

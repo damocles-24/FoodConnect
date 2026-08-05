@@ -43,19 +43,20 @@ if ($restaurant_id <= 0) {
 }
 
 try {
-    $sql = "
-        SELECT
-            restaurant_id,
-            name,
-            address,
-            contact_number,
-            opening_hours,
-            delivery_fee,
-            business_status
-        FROM tbl_restaurants
-        WHERE restaurant_id = ?
-        LIMIT 1
-    ";
+   $sql = "
+    SELECT
+        restaurant_id,
+        name,
+        logo_path,
+        address,
+        contact_number,
+        opening_hours,
+        delivery_fee,
+        business_status
+    FROM tbl_restaurants
+    WHERE restaurant_id = ?
+    LIMIT 1
+";
 
     $stmt = $conn->prepare($sql);
 
