@@ -5,6 +5,454 @@ let selectedDelivery = null;
 let currentDeliveryFilter = "active";
 let confirmCallback = null;
 
+/* =========================================================
+   LIVE DELIVERY TRACKING
+========================================================= */
+
+let riderLocationWatchId = null;
+
+let activeTrackingAssignmentId = null;
+let activeTrackingOrderId = null;
+
+let firebaseTrackingModule = null;
+let firebaseDatabaseTools = null;
+
+let firebaseRiderAuth = null;
+
+let lastFirebaseLocationWrite = 0;
+
+const RIDER_LOCATION_WRITE_INTERVAL = 3000;
+
+/* =========================================================
+   RIDER DELIVERY MAP
+========================================================= */
+
+let deliveryMap = null;
+let riderMapMarker = null;
+let customerMapMarker = null;
+
+let deliveryRouteLayer = null;
+
+let latestRiderCoordinates = null;
+
+let lastRouteRequestAt = 0;
+let lastRouteCoordinates = null;
+let routeRequestInProgress = false;
+let latestRouteDistanceMeters = 0;
+let latestRouteDurationSeconds = 0;
+
+const ROUTE_REFRESH_INTERVAL = 15000;
+const ROUTE_REFRESH_DISTANCE_METERS = 20;
+
+async function loadFirebaseTrackingModules() {
+  if (
+    firebaseTrackingModule &&
+    firebaseDatabaseTools
+  ) {
+    return;
+  }
+
+  firebaseTrackingModule =
+    await import(
+      "./firebase-config.js"
+    );
+
+  firebaseDatabaseTools =
+    await import(
+      "https://www.gstatic.com/firebasejs/12.17.0/firebase-database.js"
+    );
+}
+
+async function authorizeLiveDeliveryTracking(
+  assignmentId
+) {
+  const response = await fetch(
+    `${API_BASE}/authorize_delivery_tracking.php`,
+    {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        assignment_id:
+          Number(assignmentId)
+      })
+    }
+  );
+
+  const data =
+    await readJsonResponse(response);
+
+  if (
+    !response.ok ||
+    !data.success
+  ) {
+    throw new Error(
+      data.message ||
+      "Unable to authorize live delivery tracking."
+    );
+  }
+
+  if (
+    !data.authorized ||
+    !data.tracking_allowed
+  ) {
+    throw new Error(
+      data.message ||
+      "Live tracking is not available for this delivery."
+    );
+  }
+
+  return data;
+}
+
+async function ensureFirebaseRiderAuthentication() {
+  await loadFirebaseTrackingModules();
+
+  if (
+    firebaseRiderAuth?.user &&
+    !firebaseRiderAuth.user.isAnonymous
+  ) {
+    return firebaseRiderAuth;
+  }
+
+  firebaseRiderAuth =
+    await firebaseTrackingModule
+      .authenticateFirebaseRider();
+
+  return firebaseRiderAuth;
+}
+
+async function writeRiderLocationToFirebase(
+  delivery,
+  position
+) {
+  await loadFirebaseTrackingModules();
+
+  const coords =
+    position.coords;
+
+  const restaurantId =
+    Number(
+      firebaseRiderAuth?.rider?.restaurant_id
+    );
+
+  const riderId =
+    Number(
+      firebaseRiderAuth?.rider?.user_id
+    );
+
+  const assignmentId =
+    Number(
+      delivery.assignment_id
+    );
+
+  const orderId =
+    Number(
+      delivery.order_id
+    );
+
+  if (
+    restaurantId <= 0 ||
+    riderId <= 0 ||
+    assignmentId <= 0 ||
+    orderId <= 0
+  ) {
+    throw new Error(
+      "Invalid rider tracking information."
+    );
+  }
+
+  const riderUid =
+    `rider_${riderId}`;
+
+  const locationRef =
+    firebaseDatabaseTools.ref(
+      firebaseTrackingModule.realtimeDatabase,
+      `rider_locations/${restaurantId}/${riderUid}`
+    );
+
+  const heading =
+    Number.isFinite(coords.heading)
+      ? coords.heading
+      : 0;
+
+  const speed =
+    Number.isFinite(coords.speed)
+      ? coords.speed
+      : 0;
+
+  await firebaseDatabaseTools.set(
+    locationRef,
+    {
+      latitude:
+        Number(coords.latitude),
+
+      longitude:
+        Number(coords.longitude),
+
+      accuracy:
+        Number(coords.accuracy || 0),
+
+      heading:
+        heading,
+
+      speed:
+        speed,
+
+      updated_at:
+        Date.now(),
+
+      assignment_id:
+        assignmentId,
+
+      order_id:
+        orderId
+    }
+  );
+}
+
+async function startLiveRiderTracking(
+  delivery
+) {
+  const assignmentId =
+    Number(delivery.assignment_id);
+
+  const orderId =
+    Number(delivery.order_id);
+
+  if (
+    assignmentId <= 0 ||
+    orderId <= 0
+  ) {
+    throw new Error(
+      "Invalid delivery assignment."
+    );
+  }
+
+  /*
+   * Do not create a second GPS watcher for
+   * the same delivery.
+   */
+  if (
+    riderLocationWatchId !== null &&
+    activeTrackingAssignmentId ===
+      assignmentId
+  ) {
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    throw new Error(
+      "This device does not support GPS location."
+    );
+  }
+
+  /*
+   * Server-side authorization FIRST.
+   */
+  await authorizeLiveDeliveryTracking(
+    assignmentId
+  );
+
+  /*
+   * Firebase authentication SECOND.
+   */
+  await ensureFirebaseRiderAuthentication();
+
+  /*
+   * Stop an old watcher before starting
+   * another assignment.
+   */
+  stopLiveRiderTracking(false);
+
+  activeTrackingAssignmentId =
+    assignmentId;
+
+  activeTrackingOrderId =
+    orderId;
+
+  lastFirebaseLocationWrite = 0;
+
+  riderLocationWatchId =
+    navigator.geolocation.watchPosition(
+      async position => {
+latestRiderCoordinates = {
+  latitude:
+    Number(position.coords.latitude),
+
+  longitude:
+    Number(position.coords.longitude),
+
+  accuracy:
+    Number(position.coords.accuracy || 0),
+
+  heading:
+    Number.isFinite(position.coords.heading)
+      ? position.coords.heading
+      : 0
+};
+
+updateRiderMapPosition(
+  latestRiderCoordinates
+);
+
+        const now =
+          Date.now();
+
+        /*
+         * Browser GPS can fire very frequently.
+         * Limit Firebase writes to roughly once
+         * every 3 seconds.
+         */
+        if (
+          now -
+            lastFirebaseLocationWrite <
+          RIDER_LOCATION_WRITE_INTERVAL
+        ) {
+          return;
+        }
+
+        lastFirebaseLocationWrite =
+          now;
+
+        try {
+          await writeRiderLocationToFirebase(
+            delivery,
+            position
+          );
+
+          console.log(
+            "Live rider GPS updated:",
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        } catch (error) {
+          console.error(
+            "Firebase rider location write error:",
+            error
+          );
+        }
+      },
+
+      error => {
+        console.error(
+          "Rider GPS error:",
+          error
+        );
+
+        let message =
+          "Unable to access your current location.";
+
+        if (
+          error.code ===
+          error.PERMISSION_DENIED
+        ) {
+          message =
+            "Location permission was denied. Please allow location access to continue delivery tracking.";
+        } else if (
+          error.code ===
+          error.POSITION_UNAVAILABLE
+        ) {
+          message =
+            "Your GPS location is currently unavailable.";
+        } else if (
+          error.code ===
+          error.TIMEOUT
+        ) {
+          message =
+            "GPS location detection timed out. Please try again.";
+        }
+
+        showToast(
+          "Live Tracking",
+          message
+        );
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 5000
+      }
+    );
+
+  showToast(
+    "Live Tracking Started",
+    "Your location is now being shared for this delivery."
+  );
+}
+
+async function stopLiveRiderTracking(
+  removeFirebaseLocation = true
+) {
+  if (
+    riderLocationWatchId !== null
+  ) {
+    navigator.geolocation.clearWatch(
+      riderLocationWatchId
+    );
+
+    riderLocationWatchId =
+      null;
+  }
+
+  if (
+    removeFirebaseLocation &&
+    firebaseRiderAuth?.rider
+  ) {
+    try {
+      await loadFirebaseTrackingModules();
+
+      const restaurantId =
+        Number(
+          firebaseRiderAuth.rider
+            .restaurant_id
+        );
+
+      const riderId =
+        Number(
+          firebaseRiderAuth.rider
+            .user_id
+        );
+
+      if (
+        restaurantId > 0 &&
+        riderId > 0
+      ) {
+        const locationRef =
+          firebaseDatabaseTools.ref(
+            firebaseTrackingModule
+              .realtimeDatabase,
+            `rider_locations/${restaurantId}/rider_${riderId}`
+          );
+
+        await firebaseDatabaseTools.remove(
+          locationRef
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Unable to clear Firebase rider location:",
+        error
+      );
+    }
+  }
+
+  activeTrackingAssignmentId =
+    null;
+
+  activeTrackingOrderId =
+    null;
+
+  lastFirebaseLocationWrite =
+    0;
+}
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Initialize dashboard
@@ -154,6 +602,30 @@ async function loadDeliveries(showLoading = true) {
     deliveries = Array.isArray(data.deliveries)
       ? data.deliveries
       : [];
+
+      const activeOutForDelivery =
+  deliveries.find(delivery => {
+    return String(
+      delivery.delivery_status || ""
+    )
+      .toLowerCase()
+      .trim() ===
+      "out_for_delivery";
+  });
+
+if (
+  activeOutForDelivery &&
+  riderLocationWatchId === null
+) {
+  startLiveRiderTracking(
+    activeOutForDelivery
+  ).catch(error => {
+    console.error(
+      "Unable to resume live delivery tracking:",
+      error
+    );
+  });
+}
 
     const riderName =
       data.rider?.full_name || "Delivery Staff";
@@ -545,9 +1017,21 @@ function openDeliveryModal(assignmentId) {
 
   renderDeliveryActions(selectedDelivery);
 
-  document
-    .getElementById("deliveryModal")
-    ?.classList.add("active");
+ document
+  .getElementById("deliveryModal")
+  ?.classList.add("active");
+
+/*
+ * Initialize Leaflet only AFTER the modal
+ * becomes visible.
+ */
+window.setTimeout(() => {
+  if (selectedDelivery) {
+    initializeDeliveryMap(
+      selectedDelivery
+    );
+  }
+}, 150);
 }
 
 function closeDeliveryModal() {
@@ -555,7 +1039,9 @@ function closeDeliveryModal() {
     .getElementById("deliveryModal")
     ?.classList.remove("active");
 
-  selectedDelivery = null;
+  destroyDeliveryMap();
+
+selectedDelivery = null;
 }
 
 function buildDeliveryDetails(delivery) {
@@ -567,6 +1053,20 @@ function buildDeliveryDetails(delivery) {
 
   const amountToCollect =
     getAmountToCollect(delivery);
+
+    const customerLatitude =
+  Number(delivery.customer_latitude);
+
+const customerLongitude =
+  Number(delivery.customer_longitude);
+
+const hasDeliveryCoordinates =
+  Number.isFinite(customerLatitude) &&
+  Number.isFinite(customerLongitude) &&
+  customerLatitude >= -90 &&
+  customerLatitude <= 90 &&
+  customerLongitude >= -180 &&
+  customerLongitude <= 180;
 
   const itemRows =
     items.length > 0
@@ -898,9 +1398,102 @@ function buildDeliveryDetails(delivery) {
           </strong>
         </div>
 
-      </div>
+            </div>
 
     </section>
+
+    ${
+      hasDeliveryCoordinates
+        ? `
+          <section class="delivery-map-section">
+
+            <div class="delivery-map-header">
+
+              <div>
+                <span class="delivery-section-label">
+                  DELIVERY MAP
+                </span>
+
+                <h3>
+                  Customer Destination
+                </h3>
+
+                <p>
+                  Your live position and the customer's pinned delivery location.
+                </p>
+              </div>
+
+              <div class="live-tracking-badge">
+                <span></span>
+                Live GPS
+              </div>
+
+            </div>
+
+           <div
+  id="riderDeliveryMap"
+  class="rider-delivery-map"
+></div>
+
+<div
+  class="delivery-route-summary"
+  id="deliveryRouteSummary"
+>
+  <div class="route-summary-item">
+    <i class="fa-solid fa-route"></i>
+
+    <div>
+      <span>Distance</span>
+      <strong id="deliveryRouteDistance">
+        Calculating...
+      </strong>
+    </div>
+  </div>
+
+  <div class="route-summary-item">
+    <i class="fa-solid fa-clock"></i>
+
+    <div>
+      <span>Estimated Time</span>
+      <strong id="deliveryRouteEta">
+        Calculating...
+      </strong>
+    </div>
+  </div>
+</div>
+
+<div class="delivery-map-legend">
+
+              <div>
+                <i class="fa-solid fa-motorcycle"></i>
+                Your Location
+              </div>
+
+              <div>
+                <i class="fa-solid fa-location-dot"></i>
+                Customer
+              </div>
+
+            </div>
+
+          </section>
+        `
+        : `
+          <section class="delivery-map-unavailable">
+            <i class="fa-solid fa-map-location-dot"></i>
+
+            <div>
+              <strong>
+                Map location unavailable
+              </strong>
+
+              <p>
+                This delivery does not have saved destination coordinates.
+              </p>
+            </div>
+          </section>
+        `
+    }
 
     <section class="delivery-items-section">
 
@@ -949,6 +1542,644 @@ function buildDeliveryDetails(delivery) {
 | Dynamic status buttons
 |--------------------------------------------------------------------------
 */
+
+/* =========================================================
+   RIDER DELIVERY MAP
+========================================================= */
+
+function destroyDeliveryMap() {
+  if (deliveryMap) {
+    deliveryMap.remove();
+    deliveryMap = null;
+  }
+
+  riderMapMarker = null;
+  customerMapMarker = null;
+  deliveryRouteLayer = null;
+
+  lastRouteRequestAt = 0;
+  lastRouteCoordinates = null;
+  routeRequestInProgress = false;
+  latestRouteDistanceMeters = 0;
+latestRouteDurationSeconds = 0;
+}
+
+function createRiderMapIcon() {
+  return L.divIcon({
+    className: "foodconnect-map-icon",
+    html: `
+      <div class="rider-map-marker">
+        <i class="fa-solid fa-motorcycle"></i>
+      </div>
+    `,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+  });
+}
+
+function createCustomerMapIcon() {
+  return L.divIcon({
+    className: "foodconnect-map-icon",
+    html: `
+      <div class="customer-map-marker">
+        <i class="fa-solid fa-location-dot"></i>
+      </div>
+    `,
+    iconSize: [42, 42],
+    iconAnchor: [21, 40]
+  });
+}
+
+function formatRouteDistance(
+  distanceMeters
+) {
+  const distance =
+    Number(distanceMeters || 0);
+
+  if (
+    !Number.isFinite(distance) ||
+    distance <= 0
+  ) {
+    return "Unavailable";
+  }
+
+  if (distance < 1000) {
+    return `${Math.round(distance)} m`;
+  }
+
+  return `${(
+    distance / 1000
+  ).toFixed(1)} km`;
+}
+
+function formatRouteDuration(
+  durationSeconds
+) {
+  const seconds =
+    Number(durationSeconds || 0);
+
+  if (
+    !Number.isFinite(seconds) ||
+    seconds <= 0
+  ) {
+    return "Unavailable";
+  }
+
+  const minutes =
+    Math.max(
+      1,
+      Math.round(
+        seconds / 60
+      )
+    );
+
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+
+  const hours =
+    Math.floor(
+      minutes / 60
+    );
+
+  const remainingMinutes =
+    minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr ${remainingMinutes} min`;
+}
+
+function updateDeliveryRouteSummary(
+  distanceMeters,
+  durationSeconds
+) {
+  latestRouteDistanceMeters =
+    Number(distanceMeters || 0);
+
+  latestRouteDurationSeconds =
+    Number(durationSeconds || 0);
+
+  const distanceElement =
+    document.getElementById(
+      "deliveryRouteDistance"
+    );
+
+  const etaElement =
+    document.getElementById(
+      "deliveryRouteEta"
+    );
+
+  if (distanceElement) {
+    distanceElement.textContent =
+      formatRouteDistance(
+        latestRouteDistanceMeters
+      );
+  }
+
+  if (etaElement) {
+    etaElement.textContent =
+      formatRouteDuration(
+        latestRouteDurationSeconds
+      );
+  }
+}
+
+function getCoordinateDistanceMeters(
+  latitude1,
+  longitude1,
+  latitude2,
+  longitude2
+) {
+  const earthRadius = 6371000;
+
+  const toRadians = value =>
+    value * Math.PI / 180;
+
+  const lat1 =
+    toRadians(latitude1);
+
+  const lat2 =
+    toRadians(latitude2);
+
+  const latitudeDifference =
+    toRadians(
+      latitude2 - latitude1
+    );
+
+  const longitudeDifference =
+    toRadians(
+      longitude2 - longitude1
+    );
+
+  const a =
+    Math.sin(
+      latitudeDifference / 2
+    ) ** 2 +
+    Math.cos(lat1) *
+    Math.cos(lat2) *
+    Math.sin(
+      longitudeDifference / 2
+    ) ** 2;
+
+  const c =
+    2 *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
+
+  return earthRadius * c;
+}
+
+async function loadDeliveryRoute(
+  delivery,
+  riderCoordinates
+) {
+  if (
+    !deliveryMap ||
+    !delivery ||
+    !riderCoordinates ||
+    routeRequestInProgress
+  ) {
+    return;
+  }
+
+  const assignmentId =
+    Number(delivery.assignment_id);
+
+  const riderLatitude =
+    Number(riderCoordinates.latitude);
+
+  const riderLongitude =
+    Number(riderCoordinates.longitude);
+
+  if (
+    assignmentId <= 0 ||
+    !Number.isFinite(riderLatitude) ||
+    !Number.isFinite(riderLongitude)
+  ) {
+    return;
+  }
+
+  routeRequestInProgress = true;
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/get_delivery_route.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          assignment_id:
+            assignmentId,
+
+          rider_latitude:
+            riderLatitude,
+
+          rider_longitude:
+            riderLongitude
+        })
+      }
+    );
+
+    const data =
+      await readJsonResponse(
+        response
+      );
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to calculate the delivery route."
+      );
+    }
+
+    const geometry =
+      data.route?.geometry;
+
+    if (!geometry) {
+      throw new Error(
+        "The route does not contain map geometry."
+      );
+    }
+
+    /*
+     * Remove the previous road route
+     * before displaying the refreshed one.
+     */
+    if (deliveryRouteLayer) {
+      deliveryMap.removeLayer(
+        deliveryRouteLayer
+      );
+
+      deliveryRouteLayer = null;
+    }
+
+    deliveryRouteLayer =
+      L.geoJSON(
+        geometry,
+        {
+          style: {
+            color: "#2563eb",
+            weight: 6,
+            opacity: 0.9,
+            lineCap: "round",
+            lineJoin: "round"
+          }
+        }
+      )
+        .addTo(deliveryMap);
+
+  lastRouteRequestAt =
+  Date.now();
+
+    lastRouteCoordinates = {
+      latitude:
+        riderLatitude,
+
+      longitude:
+        riderLongitude
+    };
+
+    updateDeliveryRouteSummary(
+  data.route?.distance_meters,
+  data.route?.duration_seconds
+);
+
+    console.log(
+      "Delivery road route updated:",
+      {
+        distance_meters:
+          data.route?.distance_meters,
+
+        duration_seconds:
+          data.route?.duration_seconds
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Delivery route error:",
+      error
+    );
+  } finally {
+    routeRequestInProgress =
+      false;
+  }
+}
+
+function maybeRefreshDeliveryRoute(
+  delivery,
+  coordinates
+) {
+  if (
+    !deliveryMap ||
+    !delivery ||
+    !coordinates
+  ) {
+    return;
+  }
+
+  const status =
+    String(
+      delivery.delivery_status || ""
+    )
+      .toLowerCase()
+      .trim();
+
+  if (
+    status !==
+    "out_for_delivery"
+  ) {
+    return;
+  }
+
+  const latitude =
+    Number(coordinates.latitude);
+
+  const longitude =
+    Number(coordinates.longitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
+  ) {
+    return;
+  }
+
+  /*
+   * First route:
+   * calculate immediately.
+   */
+  if (!lastRouteCoordinates) {
+    loadDeliveryRoute(
+      delivery,
+      coordinates
+    );
+
+    return;
+  }
+
+  const timeSinceLastRoute =
+    Date.now() -
+    lastRouteRequestAt;
+
+  if (
+    timeSinceLastRoute <
+    ROUTE_REFRESH_INTERVAL
+  ) {
+    return;
+  }
+
+  const distanceMoved =
+    getCoordinateDistanceMeters(
+      lastRouteCoordinates.latitude,
+      lastRouteCoordinates.longitude,
+      latitude,
+      longitude
+    );
+
+  /*
+   * Rider must have moved approximately
+   * 20 meters before asking Geoapify
+   * for another road route.
+   */
+  if (
+    distanceMoved <
+    ROUTE_REFRESH_DISTANCE_METERS
+  ) {
+    return;
+  }
+
+  loadDeliveryRoute(
+    delivery,
+    coordinates
+  );
+}
+
+function initializeDeliveryMap(delivery) {
+  const mapElement =
+    document.getElementById(
+      "riderDeliveryMap"
+    );
+
+  if (!mapElement) {
+    return;
+  }
+
+  if (typeof L === "undefined") {
+    console.error(
+      "Leaflet is not available."
+    );
+
+    return;
+  }
+
+  const customerLatitude =
+    Number(delivery.customer_latitude);
+
+  const customerLongitude =
+    Number(delivery.customer_longitude);
+
+  if (
+    !Number.isFinite(customerLatitude) ||
+    !Number.isFinite(customerLongitude)
+  ) {
+    return;
+  }
+
+  destroyDeliveryMap();
+
+  deliveryMap =
+    L.map(
+      mapElement,
+      {
+        zoomControl: true
+      }
+    );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+      attribution:
+        "&copy; OpenStreetMap contributors"
+    }
+  ).addTo(deliveryMap);
+
+  customerMapMarker =
+    L.marker(
+      [
+        customerLatitude,
+        customerLongitude
+      ],
+      {
+        icon:
+          createCustomerMapIcon()
+      }
+    )
+      .addTo(deliveryMap)
+      .bindPopup(
+        `
+          <strong>Customer Destination</strong>
+          <br>
+          ${escapeHTML(
+            buildFullAddress(delivery)
+          )}
+        `
+      );
+
+  /*
+   * If we already have rider GPS,
+   * display both points.
+   */
+  if (
+    latestRiderCoordinates &&
+    Number.isFinite(
+      latestRiderCoordinates.latitude
+    ) &&
+    Number.isFinite(
+      latestRiderCoordinates.longitude
+    )
+  ) {
+    riderMapMarker =
+      L.marker(
+        [
+          latestRiderCoordinates.latitude,
+          latestRiderCoordinates.longitude
+        ],
+        {
+          icon:
+            createRiderMapIcon()
+        }
+      )
+        .addTo(deliveryMap)
+        .bindPopup(
+          "<strong>Your Current Location</strong>"
+        );
+
+    const bounds =
+      L.latLngBounds([
+        [
+          customerLatitude,
+          customerLongitude
+        ],
+        [
+          latestRiderCoordinates.latitude,
+          latestRiderCoordinates.longitude
+        ]
+      ]);
+
+    deliveryMap.fitBounds(
+      bounds,
+      {
+        padding: [50, 50],
+        maxZoom: 17
+      }
+      
+    );
+
+    maybeRefreshDeliveryRoute(
+  delivery,
+  latestRiderCoordinates
+);
+  } else {
+    deliveryMap.setView(
+      [
+        customerLatitude,
+        customerLongitude
+      ],
+      16
+    );
+  }
+
+  /*
+   * Leaflet needs this because the
+   * map is inside a modal.
+   */
+  window.setTimeout(() => {
+    deliveryMap?.invalidateSize();
+  }, 150);
+}
+
+function updateRiderMapPosition(
+  coordinates
+) {
+  if (
+    !deliveryMap ||
+    !coordinates
+  ) {
+    return;
+  }
+
+  const latitude =
+    Number(coordinates.latitude);
+
+  const longitude =
+    Number(coordinates.longitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
+  ) {
+    return;
+  }
+
+  if (!riderMapMarker) {
+  riderMapMarker =
+  L.marker(
+    [
+      latitude,
+      longitude
+    ],
+    {
+      icon:
+        createRiderMapIcon()
+    }
+  )
+    .addTo(deliveryMap)
+    .bindPopup(
+      "<strong>Your Current Location</strong>"
+    );
+
+if (selectedDelivery) {
+  maybeRefreshDeliveryRoute(
+    selectedDelivery,
+    coordinates
+  );
+}
+
+return;
+  }
+
+  /*
+   * Move existing marker instead of
+   * creating new markers repeatedly.
+   */
+  riderMapMarker.setLatLng([
+  latitude,
+  longitude
+]);
+
+if (selectedDelivery) {
+  maybeRefreshDeliveryRoute(
+    selectedDelivery,
+    coordinates
+  );
+}
+}
 
 function renderDeliveryActions(delivery) {
   const container = document.getElementById(
@@ -1061,8 +2292,83 @@ async function updateDeliveryStatus(newStatus) {
     return;
   }
 
-  const assignmentId =
-    Number(selectedDelivery.assignment_id);
+const assignmentId =
+  Number(selectedDelivery.assignment_id);
+
+const deliverySnapshot = {
+  ...selectedDelivery
+};
+
+/*
+ * Delivery completion proximity check.
+ *
+ * The rider must be physically near the customer's
+ * pinned delivery location before completing the order.
+ *
+ * Full anti-spoofing can be added later when the
+ * system is deployed and tested on real rider devices.
+ */
+if (newStatus === "completed") {
+  const riderLatitude =
+    Number(latestRiderCoordinates?.latitude);
+
+  const riderLongitude =
+    Number(latestRiderCoordinates?.longitude);
+
+  const customerLatitude =
+    Number(selectedDelivery.customer_latitude);
+
+  const customerLongitude =
+    Number(selectedDelivery.customer_longitude);
+
+  if (
+    !Number.isFinite(riderLatitude) ||
+    !Number.isFinite(riderLongitude)
+  ) {
+    showToast(
+      "GPS Location Required",
+      "Your current location could not be verified. Please enable location access and try again."
+    );
+
+    return;
+  }
+
+  if (
+    !Number.isFinite(customerLatitude) ||
+    !Number.isFinite(customerLongitude)
+  ) {
+    showToast(
+      "Customer Location Unavailable",
+      "The customer's delivery location could not be verified."
+    );
+
+    return;
+  }
+
+  const distanceFromCustomer =
+    getCoordinateDistanceMeters(
+      riderLatitude,
+      riderLongitude,
+      customerLatitude,
+      customerLongitude
+    );
+
+  const COMPLETION_RADIUS_METERS = 100;
+
+  if (
+    distanceFromCustomer >
+    COMPLETION_RADIUS_METERS
+  ) {
+    showToast(
+      "Too Far From Customer",
+      `You are approximately ${Math.round(
+        distanceFromCustomer
+      )} meters away. Move within ${COMPLETION_RADIUS_METERS} meters of the customer before completing the delivery.`
+    );
+
+    return;
+  }
+}
 
   const statusButton = document.querySelector(
     ".delivery-status-btn"
@@ -1086,9 +2392,19 @@ async function updateDeliveryStatus(newStatus) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          assignment_id: assignmentId,
-          delivery_status: newStatus
-        })
+  assignment_id: assignmentId,
+  delivery_status: newStatus,
+
+  rider_latitude:
+    newStatus === "completed"
+      ? Number(latestRiderCoordinates?.latitude)
+      : null,
+
+  rider_longitude:
+    newStatus === "completed"
+      ? Number(latestRiderCoordinates?.longitude)
+      : null
+})
       }
     );
 
@@ -1102,15 +2418,57 @@ async function updateDeliveryStatus(newStatus) {
     }
 
     showToast(
-      "Delivery Updated",
-      `Delivery status changed to ${getDeliveryStatusLabel(
-        newStatus
-      )}.`
+  "Delivery Updated",
+  `Delivery status changed to ${getDeliveryStatusLabel(
+    newStatus
+  )}.`
+);
+
+/*
+ * Start Firebase GPS only AFTER PHP
+ * successfully changes the delivery to
+ * Out for Delivery.
+ */
+if (
+  newStatus ===
+  "out_for_delivery"
+) {
+  deliverySnapshot.delivery_status =
+    "out_for_delivery";
+
+  try {
+    await startLiveRiderTracking(
+      deliverySnapshot
+    );
+  } catch (trackingError) {
+    console.error(
+      "Unable to start live tracking:",
+      trackingError
     );
 
-    closeDeliveryModal();
+    showToast(
+      "Tracking Not Started",
+      trackingError.message ||
+        "The delivery is Out for Delivery, but GPS tracking could not start."
+    );
+  }
+}
 
-    await loadDeliveries(false);
+/*
+ * Remove live GPS when delivery is completed.
+ */
+if (
+  newStatus ===
+  "completed"
+) {
+  await stopLiveRiderTracking(
+    true
+  );
+}
+
+closeDeliveryModal();
+
+await loadDeliveries(false);
 
   } catch (error) {
     console.error("Update delivery status error:", error);

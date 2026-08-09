@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 03, 2026 at 12:07 PM
+-- Generation Time: Aug 06, 2026 at 04:33 PM
 -- Server version: 10.1.36-MariaDB
 -- PHP Version: 7.2.10
 
@@ -79,7 +79,41 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (43, 4, 12, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #4 / Queue #4.', '2026-08-02 15:14:33'),
 (44, 4, 22, 'owner', 'staff', 'Staff Account Created', 'Test Cashier was added as cashier.', '2026-08-02 15:36:20'),
 (45, 4, 22, 'owner', 'staff', 'Staff Account Created', 'Test Cashier was added as cashier.', '2026-08-02 15:36:20'),
-(46, 4, 12, 'customer', 'order', 'New Customer Order', 'Test customer v1 placed Order #5 / Queue #5.', '2026-08-02 15:39:00');
+(46, 4, 12, 'customer', 'order', 'New Customer Order', 'Test customer v1 placed Order #5 / Queue #5.', '2026-08-02 15:39:00'),
+(47, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Cj Tamayo Porto\'s staff account was updated.', '2026-08-03 10:15:47'),
+(48, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Cj Tamayo Porto\'s staff account was updated.', '2026-08-03 10:15:53'),
+(49, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Test Cashier\'s staff account was updated.', '2026-08-03 10:16:00'),
+(50, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Test Cashier\'s staff account was updated.', '2026-08-03 10:32:08'),
+(51, 4, 22, 'owner', 'inventory', 'Inventory Restocked', 'tapsilog was restocked by 5.', '2026-08-03 11:50:28'),
+(52, 4, 12, 'customer', 'order', 'New Customer Order', 'test act logs cancel cashier placed Order #6 / Queue #1.', '2026-08-03 13:06:18'),
+(53, 4, 23, 'cashier', 'order', 'Order #6 Cancelled', 'Test Cashier (Cashier) cancelled Queue #1, Order #6 for test act logs cancel cashier. Order type: Dine-in. Amount affected: ₱99,999,999.99. Reason: Item is unavailable. Inventory: 2 stock units restored.', '2026-08-03 13:06:38'),
+(54, 4, 12, 'customer', 'order', 'New Customer Order', 'injel placed Order #7 / Queue #2.', '2026-08-03 13:25:34'),
+(55, 4, 23, 'cashier', 'order', 'Order #7 Cancelled', 'Test Cashier (Cashier) cancelled Queue #2, Order #7 for injel. Order type: Dine-in. Amount affected: ₱100.00. Reason: Insufficient stock. Inventory: 1 stock unit restored.', '2026-08-03 13:27:52'),
+(56, 4, 12, 'customer', 'order', 'New Customer Order', 'hahahah inamo placed Order #8 / Queue #3.', '2026-08-03 13:41:53'),
+(57, 4, 12, 'customer', 'order', 'Customer Cancelled Order', 'hahahah inamo cancelled Queue #3, Order #8. Order type: Dine-in. Amount affected: ₱100.00. Reason: Duplicate order. Inventory: 1 stock unit restored.', '2026-08-03 13:42:14'),
+(58, 4, 12, 'customer', 'order', 'New Customer Order', 'hshwhshhw placed Order #9 / Queue #4.', '2026-08-03 13:43:19'),
+(59, 4, 12, 'customer', 'order', 'Customer Cancelled Order', 'hshwhshhw cancelled Queue #4, Order #9. Order type: Dine-in. Amount affected: ₱100.00. Reason: Changed my mind. Inventory: 1 stock unit restored.', '2026-08-03 13:44:01'),
+(60, 4, 12, 'customer', 'order', 'New Customer Order', 'Ian Dela cruz placed Order #10 / Queue #5.', '2026-08-03 14:04:32'),
+(61, 4, 12, 'customer', 'order', 'Customer Cancelled Order', 'Ian Dela cruz cancelled Queue #5, Order #10. Order type: Dine-in. Amount affected: ₱200.00. Reason: Changed my mind. Inventory: 1 stock unit restored.', '2026-08-03 14:04:50'),
+(62, 4, 12, 'customer', 'order', 'New Customer Order', 'Cegee placed Order #11 / Queue #6.', '2026-08-03 14:33:18'),
+(63, 4, 12, 'customer', 'order', 'Customer Cancelled Order', 'Cegee cancelled Queue #6, Order #11. Order type: Dine-in. Amount affected: ₱200.00. Reason: Duplicate order. Inventory: 1 stock unit restored.', '2026-08-03 14:35:30'),
+(64, 4, 12, 'customer', 'order', 'New Customer Order', 'Unmam placed Order #12 / Queue #7.', '2026-08-03 15:21:37'),
+(65, 4, 12, 'customer', 'order', 'Customer Cancelled Order', 'Unmam cancelled Queue #7, Order #12. Order type: Dine-in. Amount affected: ₱99,999,999.99. Reason: Changed my mind. Inventory: 1 stock unit restored.', '2026-08-03 15:22:01'),
+(66, 4, 22, 'owner', 'product', 'Product Added', 'Chicksilog was added to the menu.', '2026-08-04 04:42:21'),
+(67, 4, 22, 'owner', 'product', 'Product Added', 'Hamsilog was added to the menu.', '2026-08-04 05:48:31'),
+(68, 4, 22, 'owner', 'product', 'Product Added', 'Added product \"Burerss\" under Burgir. Price: ₱20.00. Initial stock: 10. Status: Available. Promotion: No promotion.', '2026-08-04 06:19:45'),
+(69, 4, 22, 'owner', 'product', 'Product Added', 'Product: Vanilla\nCategory: Iced Coffee\nVariant: Regular * Large\nPrice: ₱38.00\nInitial Stock: 10\nStatus: Available\nPromotion: None', '2026-08-04 06:23:51'),
+(70, 4, 22, 'owner', 'product', 'Product Updated', 'tapsilog was updated.', '2026-08-04 06:37:05'),
+(71, 4, 22, 'owner', 'product', 'Product Updated', 'Product: Vanilla\nChanges:\nPrice: ₱38.00 → ₱39.00', '2026-08-04 06:52:36'),
+(72, 4, 22, 'owner', 'inventory', 'Inventory Restocked', 'Product: Vanilla\nCategory: Iced Coffee\nVariant: Regular * Large\nQuantity Added: 5\nStock: 10 → 15', '2026-08-04 07:13:51'),
+(73, 4, 22, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-08-04 14:44:30'),
+(74, 4, 22, 'owner', 'staff', 'Staff Access Code Updated', 'The restaurant owner generated a new staff access code.', '2026-08-04 15:47:44'),
+(75, 4, 22, 'owner', 'staff', 'Staff Access Code Updated', 'The restaurant owner generated a new staff access code.', '2026-08-04 15:47:52'),
+(76, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Test Cashier\'s staff account was updated.', '2026-08-04 15:48:22'),
+(77, 4, 22, 'owner', 'staff', 'Staff Account Updated', 'Test Cashier\'s staff account was updated.', '2026-08-04 15:48:40'),
+(78, 4, 22, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-08-04 15:51:58'),
+(79, 4, 22, 'owner', 'staff', 'Staff Account Created', 'Test Driver was added as delivery staff.', '2026-08-05 13:18:26'),
+(80, 4, 22, 'owner', 'staff', 'Staff Account Created', 'Test Driver was added as delivery_staff.', '2026-08-05 13:18:26');
 
 -- --------------------------------------------------------
 
@@ -183,7 +217,8 @@ CREATE TABLE `tbl_cart` (
 --
 
 INSERT INTO `tbl_cart` (`cart_id`, `user_id`, `restaurant_id`, `product_id`, `addon_ids`, `combo_choice_ids_json`, `quantity`, `price_at_time`, `subtotal`, `created_at`, `updated_at`) VALUES
-(1, 17, 4, 3, '[]', '[]', 1, '100.00', '100.00', '2026-08-02 00:17:09', '2026-08-02 00:17:09');
+(1, 17, 4, 3, '[]', '[]', 1, '100.00', '100.00', '2026-08-02 00:17:09', '2026-08-02 00:17:09'),
+(3, 12, 4, 2, '[]', '[]', 1, '99999999.99', '99999999.99', '2026-08-06 06:29:52', '2026-08-06 06:29:52');
 
 -- --------------------------------------------------------
 
@@ -363,6 +398,8 @@ CREATE TABLE `tbl_orders` (
   `payment_method` varchar(50) DEFAULT NULL,
   `address` text,
   `landmark` varchar(255) DEFAULT NULL,
+  `customer_latitude` decimal(10,8) DEFAULT NULL,
+  `customer_longitude` decimal(11,8) DEFAULT NULL,
   `table_number` varchar(50) DEFAULT NULL,
   `pickup_time` varchar(20) DEFAULT NULL,
   `notes` text,
@@ -373,12 +410,19 @@ CREATE TABLE `tbl_orders` (
 -- Dumping data for table `tbl_orders`
 --
 
-INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `qr_verified_at`, `qr_expires_at`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
-(1, 'd0f69685dc9925746ded33b88065fdcc8ad8f58f8fac6a51990f40202a47409b', NULL, '2026-08-02 22:01:45', 1, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '100.00', '100.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 13:41:45'),
-(2, 'f77b860e228adcd811c02b1eb288f9a988209dbb1bddc7a70bae0f6bb59cc183', NULL, '2026-08-02 22:39:03', 2, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 14:19:03'),
-(3, '94a89303c4a6239eea56242f7d3fd2342360744430abfc99556e1c90183f2225', NULL, '2026-08-02 23:09:01', 3, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 14:49:01'),
-(4, 'c8170de54612b552d32f7c49714993749e1a487438e901c382d8bf6c4ce323ed', NULL, '2026-08-02 23:34:33', 4, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 15:14:33'),
-(5, 'e9c2eefbf279472d0cc9c224c0728e3b674e64e7cb3831944f95f3d54c81bcf9', '2026-08-02 23:39:22', '2026-08-02 23:59:00', 5, 4, NULL, 12, 'Test customer v1', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', '', '', '', '2026-08-02 15:39:00');
+INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `qr_verified_at`, `qr_expires_at`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `address`, `landmark`, `customer_latitude`, `customer_longitude`, `table_number`, `pickup_time`, `notes`, `created_at`) VALUES
+(1, 'd0f69685dc9925746ded33b88065fdcc8ad8f58f8fac6a51990f40202a47409b', NULL, '2026-08-02 22:01:45', 1, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '100.00', '100.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-02 13:41:45'),
+(2, 'f77b860e228adcd811c02b1eb288f9a988209dbb1bddc7a70bae0f6bb59cc183', NULL, '2026-08-02 22:39:03', 2, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-02 14:19:03'),
+(3, '94a89303c4a6239eea56242f7d3fd2342360744430abfc99556e1c90183f2225', NULL, '2026-08-02 23:09:01', 3, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-02 14:49:01'),
+(4, 'c8170de54612b552d32f7c49714993749e1a487438e901c382d8bf6c4ce323ed', NULL, '2026-08-02 23:34:33', 4, 4, NULL, 12, 'Cj Tamayo Porto', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-02 15:14:33'),
+(5, 'e9c2eefbf279472d0cc9c224c0728e3b674e64e7cb3831944f95f3d54c81bcf9', '2026-08-02 23:39:22', '2026-08-02 23:59:00', 5, 4, NULL, 12, 'Test customer v1', '9457309228', 'dine-in', 'pending', NULL, NULL, NULL, '30.00', '30.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-02 15:39:00'),
+(6, '00a8b8eec0e029b6030843c7a07f7d2dccd161dd29f757dddb198978e77ab738', '2026-08-03 21:06:30', '2026-08-03 21:26:18', 1, 4, 23, 12, 'test act logs cancel cashier', '9457306288', 'dine-in', 'cancelled', 'Item is unavailable', 'cashier', '2026-08-03 21:06:38', '99999999.99', '99999999.99', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 13:06:18'),
+(7, '55ef1f63919d9e6b68f8b336ba3d67f55fe4fe655b1ae38e9af2b2c2f7bac01f', '2026-08-03 21:27:24', '2026-08-03 21:45:34', 2, 4, 23, 12, 'injel', '9860646184', 'dine-in', 'cancelled', 'Insufficient stock', 'cashier', '2026-08-03 21:27:52', '100.00', '100.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 13:25:34'),
+(8, '8477cdf4286d694eff57332902288762924edebf324fc4a2c9fb0863719eea37', NULL, '2026-08-03 22:01:53', 3, 4, NULL, 12, 'hahahah inamo', '9546757246', 'dine-in', 'cancelled', 'Duplicate order', 'customer', '2026-08-03 21:42:14', '100.00', '100.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 13:41:53'),
+(9, '9ff6421f0e42c448d48c31adfd4d505d8cd6f0d877bf28fbbb129e2d0f1ae836', '2026-08-03 21:43:32', '2026-08-03 22:03:19', 4, 4, NULL, 12, 'hshwhshhw', '9494849949', 'dine-in', 'cancelled', 'Changed my mind', 'customer', '2026-08-03 21:44:01', '100.00', '100.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 13:43:19'),
+(10, '1bee3f6ef902d4347977bda75752065eee4bc7de7b3e53aaac065518808020f7', NULL, '2026-08-03 22:24:32', 5, 4, NULL, 12, 'Ian Dela cruz', '9457309228', 'dine-in', 'cancelled', 'Changed my mind', 'customer', '2026-08-03 22:04:50', '200.00', '200.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 14:04:32'),
+(11, '7e84fd5f5b1d155d139ef811ddaa8ddf0510606864e3862051879bf503b6dcff', NULL, '2026-08-03 22:53:18', 6, 4, NULL, 12, 'Cegee', '9457309228', 'dine-in', 'cancelled', 'Duplicate order', 'customer', '2026-08-03 22:35:30', '200.00', '200.00', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 14:33:18'),
+(12, '33dcbb993086052dd80e0bc9d510faef64b6b20f0084cfd665547e6eb7bda197', NULL, '2026-08-03 23:41:37', 7, 4, NULL, 12, 'Unmam', '9457309282', 'dine-in', 'cancelled', 'Changed my mind', 'customer', '2026-08-03 23:22:01', '99999999.99', '99999999.99', '0.00', 'Cash', '', '', NULL, NULL, '', '', '', '2026-08-03 15:21:37');
 
 -- --------------------------------------------------------
 
@@ -415,7 +459,15 @@ INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo
 (2, 2, 4, NULL, 1, '30.00', '0.00', 'none', '0.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
 (3, 3, 4, NULL, 1, '30.00', '100.00', 'percentage', '70.00', '70.00', 1, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
 (4, 4, 4, NULL, 1, '30.00', '100.00', 'percentage', '70.00', '70.00', 1, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
-(5, 5, 4, NULL, 1, '30.00', '100.00', 'percentage', '70.00', '70.00', 1, 'tapsilog', '', '', '[]', 'No Add-on', '[]');
+(5, 5, 4, NULL, 1, '30.00', '100.00', 'percentage', '70.00', '70.00', 1, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(6, 6, 2, NULL, 1, '99999999.99', '99999999.99', 'none', '0.00', '0.00', 0, 'Masarap', '', '', '[]', 'No Add-on', '[]'),
+(7, 6, 4, NULL, 1, '100.00', '100.00', 'percentage', '70.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(8, 7, 4, NULL, 1, '100.00', '100.00', 'percentage', '70.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(9, 8, 4, NULL, 1, '100.00', '100.00', 'percentage', '70.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(10, 9, 4, NULL, 1, '100.00', '100.00', 'percentage', '70.00', '0.00', 0, 'tapsilog', '', '', '[]', 'No Add-on', '[]'),
+(11, 10, 1, NULL, 1, '200.00', '200.00', 'none', '0.00', '0.00', 0, 'Hotdog malaki', 'Solo', '', '[]', 'No Add-on', '[]'),
+(12, 11, 1, NULL, 1, '200.00', '200.00', 'none', '0.00', '0.00', 0, 'Hotdog malaki', 'Solo', '', '[]', 'No Add-on', '[]'),
+(13, 12, 2, NULL, 1, '99999999.99', '99999999.99', 'none', '0.00', '0.00', 0, 'Masarap', '', '', '[]', 'No Add-on', '[]');
 
 -- --------------------------------------------------------
 
@@ -440,7 +492,7 @@ CREATE TABLE `tbl_owner_trusted_devices` (
 INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selector`, `token_hash`, `expires_at`, `created_at`, `last_used_at`) VALUES
 (5, 19, '65778f3c9ccb58b8420414f048190e1b', '7f7c210a8d9f103fa60e9cc267e0b4b4c222641191d104f88da7cd6b7ddec484', '2026-08-24 15:49:51', '2026-07-25 21:49:51', '2026-07-26 12:38:34'),
 (6, 22, '62c8ed88b8a14e9d29affaf40754802d', 'f83f86701cadcf1a8844be0fd575b969aeb7f63b91b682529099cc1e53522622', '2026-08-28 15:45:29', '2026-07-29 21:45:29', '2026-08-02 21:06:32'),
-(7, 22, '21fc4047af34c4e99437b6394ba1ac65', 'e9c43c3ec9ecf57711ede7520e7413100b7207a37d22ffe932dba12d5527ed1a', '2026-08-29 06:28:39', '2026-07-30 12:28:39', '2026-08-03 11:45:30');
+(7, 22, '21fc4047af34c4e99437b6394ba1ac65', 'e9c43c3ec9ecf57711ede7520e7413100b7207a37d22ffe932dba12d5527ed1a', '2026-08-29 06:28:39', '2026-07-30 12:28:39', '2026-08-06 12:41:32');
 
 -- --------------------------------------------------------
 
@@ -539,7 +591,12 @@ CREATE TABLE `tbl_products` (
 INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
 (1, 4, 'Hotdog malaki', 'Burgir', 'Solo', '200.00', 20, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
 (2, 4, 'Masarap', 'Limited Edition', '', '99999999.99', 10, 'Available', '/FoodConnect/uploads/product_images/restaurant_4/product_2415e05751dd960d0282acb972ee152c.jpg', 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
-(4, 4, 'tapsilog', 'Silogmeals', '', '100.00', 5, 'Available', NULL, 'percentage', '70.00', 'scheduled', '2026-08-02 08:20:00', '2026-08-03 17:19:00', 'Active');
+(4, 4, 'tapsilog', 'Silog meals', '', '100.00', 10, 'Available', NULL, 'percentage', '70.00', 'scheduled', '2026-08-02 08:20:00', '2026-08-03 17:19:00', 'Active'),
+(7, 4, 'Hotsilog', 'Silog meals', '', '100.00', 200, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(8, 4, 'Chicksilog', 'Silog Meals', '', '100.00', 200, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(9, 4, 'Hamsilog', 'Silog Meals', '', '120.00', 10, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(10, 4, 'Burerss', 'Burgir', '', '20.00', 10, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive'),
+(11, 4, 'Vanilla', 'Iced Coffee', 'Regular * Large', '39.00', 15, 'Available', NULL, 'none', '0.00', 'permanent', NULL, NULL, 'Inactive');
 
 -- --------------------------------------------------------
 
@@ -585,7 +642,7 @@ CREATE TABLE `tbl_restaurants` (
 INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `description`, `logo_path`, `banner_path`, `address`, `contact_number`, `opening_hours`, `delivery_fee`, `business_status`, `owner_id`, `staff_access_code`, `setup_completed`, `customer_visibility`) VALUES
 (2, 'Ayaw ko na Restaurant', NULL, NULL, NULL, 'Poblacion', '09457309228', 'Configured during partner application', '0.00', 'Closed', 18, '19EDF2E0A6C5', 1, 'Visible'),
 (3, 'Hotdog cafe', NULL, 'uploads/restaurant_logos/owner_19/restaurant_logo_20260725_154052_5fbe4653f64f8827.jpg', NULL, 'Poblacion', '09457309228', 'Configured during partner application', '1000.00', 'Closed', 19, '72606EC1F9C2', 1, 'Visible'),
-(4, 'Test Environment', '', 'uploads/restaurant_logos/owner_22/restaurant_logo_20260729_152152_2a2e89d6f0901449.jpg', NULL, 'Poblacion', '094573092298', 'Configured in restaurant setup', '0.00', 'Open', 22, 'FC-ED4D-C917', 1, 'Visible');
+(4, 'Test Environment', '', 'uploads/restaurant_logos/owner_22/restaurant_logo_20260729_152152_2a2e89d6f0901449.jpg', NULL, 'Poblacions', '094573092298', 'Configured in restaurant setup', '60.00', 'Open', 22, 'FC-DD4C-2A1D', 1, 'Visible');
 
 -- --------------------------------------------------------
 
@@ -638,8 +695,9 @@ INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `full_name`, `email
 (19, 3, 'owner', 'Angel Recepcion', 'eeegggihtloh@gmail.com', '09457309228', NULL, '$2y$10$Go4eCJ0zKM7OFhP1vvsM3uk9P/RmNgguLZEJHj1s/k91UX1AazDuK', 1, '2026-07-25 13:37:21', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (20, NULL, 'owner', 'Injel the wundaful', 'gelracho07@gmail.com', '09457309228', NULL, '$2y$10$1iQqdbhvX9RtCIMCY1g2CeLAfia4IUhEXqrp2xRCB8TSgNWYsNRty', 0, '2026-07-26 12:10:07', NULL, NULL, NULL, NULL, 0, 'c7e55aae7800b03d16d40b48bcbac37abefa2d601e7ef332e3f54935deda6bbb', '2026-07-27 14:10:07'),
 (21, NULL, 'owner', 'ian the nigg', 'acadsonly67@gmail.com', '09457309228', NULL, '$2y$10$abOOCeZjO83FfR0QaM.DxuEf6JGx5asoV92lX5IqQbtScckebkzPe', 1, '2026-07-26 12:55:35', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(22, 4, 'owner', 'Cj Tamayo Porto', 'cjmt42@gmail.com', '09457309228', NULL, '$2y$10$oowy4BuGDmi8SIREiIdNq.lYjRYc9zF99dIkXlG51iYkOelRSBxKa', 1, '2026-07-29 12:45:29', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(23, 4, 'cashier', 'Test Cashier', 'itlog@gmail.com', '09457309228', 'Tanaytay, Alaminos City Pangasinan', '$2y$10$.tkvKvaZrFE/BLKy.4vy7ehv9KYgZMJkBJ1pWQ21DnsYGnXzltWGa', 1, '2026-08-02 15:36:20', NULL, NULL, NULL, NULL, 1, NULL, NULL);
+(22, 4, 'owner', 'Cj Tamayo Porto', 'cjmt42@gmail.com', '09457309228', '', '$2y$10$oowy4BuGDmi8SIREiIdNq.lYjRYc9zF99dIkXlG51iYkOelRSBxKa', 1, '2026-07-29 12:45:29', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(23, 4, 'cashier', 'Test Cashier', 'itlog@gmail.com', '09457309228', 'Tanaytay, Alaminos City Pangasinan', '$2y$10$.tkvKvaZrFE/BLKy.4vy7ehv9KYgZMJkBJ1pWQ21DnsYGnXzltWGa', 1, '2026-08-02 15:36:20', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(24, 4, 'delivery_staff', 'Test Driver', 'james@gmail.com', '09437853435', 'Popantay, Alaminos City Pangasinan', '$2y$10$GGGfqceNnXkP.mJmArwWp.lBF0.gfZuuGnUkJgQN8MKIwP6clJxO.', 1, '2026-08-05 13:18:26', NULL, NULL, NULL, NULL, 1, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -833,7 +891,7 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
@@ -845,7 +903,7 @@ ALTER TABLE `tbl_admin_login_attempts`
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tbl_categories`
@@ -911,13 +969,13 @@ ALTER TABLE `tbl_notification_reads`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
@@ -941,7 +999,7 @@ ALTER TABLE `tbl_partner_invitation_requests`
 -- AUTO_INCREMENT for table `tbl_products`
 --
 ALTER TABLE `tbl_products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `tbl_queue`
@@ -965,7 +1023,7 @@ ALTER TABLE `tbl_stock_logs`
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- Constraints for dumped tables

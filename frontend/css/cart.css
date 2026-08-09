@@ -857,6 +857,470 @@ img {
     outline: none;
 }
 
+/* =========================================================
+   DELIVERY ADDRESS SEARCH
+========================================================= */
+
+.delivery-address-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.delivery-address-search textarea {
+    margin-bottom: 0;
+}
+
+.search-delivery-address-button {
+    min-width: 142px;
+    min-height: 46px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    align-self: stretch;
+
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+
+    background: var(--fc-orange);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.search-delivery-address-button:hover:not(:disabled) {
+    background: var(--fc-orange-dark);
+}
+
+.search-delivery-address-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.delivery-address-search-message {
+    margin: 9px 0 0;
+    padding: 9px 11px;
+
+    font-size: 10px;
+    line-height: 1.5;
+
+    border-radius: 9px;
+}
+
+.delivery-address-search-message.info {
+    color: var(--fc-info);
+    background: var(--fc-info-soft);
+    border: 1px solid var(--fc-info-border);
+}
+
+.delivery-address-search-message.success {
+    color: var(--fc-success);
+    background: var(--fc-success-soft);
+    border: 1px solid var(--fc-success-border);
+}
+
+.delivery-address-search-message.error {
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    border: 1px solid var(--fc-danger-border);
+}
+
+.delivery-address-results {
+    margin-top: 9px;
+
+    overflow: hidden;
+
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-border);
+    border-radius: 11px;
+    box-shadow: var(--shadow-small);
+}
+
+.delivery-address-result {
+    width: 100%;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--fc-text);
+    text-align: left;
+
+    background: transparent;
+    border-bottom: 1px solid var(--fc-border);
+    cursor: pointer;
+}
+
+.delivery-address-result:last-child {
+    border-bottom: 0;
+}
+
+.delivery-address-result:hover {
+    background: var(--fc-orange-soft);
+}
+
+.delivery-address-result-icon {
+    width: 30px;
+    height: 30px;
+
+
+    display: grid;
+    place-items: center;
+
+    color: var(--fc-orange);
+    background: var(--fc-orange-soft);
+    border-radius: 9px;
+}
+
+.delivery-address-result-content {
+    min-width: 0;
+}
+
+.delivery-address-result-content strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    color: var(--fc-heading);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.delivery-address-result-content small {
+    display: block;
+    margin-top: 3px;
+
+    overflow-wrap: anywhere;
+
+    color: var(--fc-muted);
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+.delivery-address-result > i {
+    color: var(--fc-muted);
+    font-size: 9px;
+}
+
+@media (max-width: 640px) {
+    .delivery-address-search {
+        grid-template-columns: 1fr;
+    }
+
+    .search-delivery-address-button {
+        width: 100%;
+        min-height: 42px;
+    }
+}
+
+/* =========================================================
+   DELIVERY ADDRESS SEARCH
+========================================================= */
+
+.delivery-address-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.delivery-address-search textarea {
+    margin-bottom: 0;
+}
+
+.search-delivery-address-button {
+    min-width: 142px;
+    min-height: 46px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    align-self: stretch;
+
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+
+    background: var(--fc-orange);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.search-delivery-address-button:hover:not(:disabled) {
+    background: var(--fc-orange-dark);
+}
+
+.search-delivery-address-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.delivery-address-search-message {
+    margin: 9px 0 0;
+    padding: 9px 11px;
+
+    font-size: 10px;
+    line-height: 1.5;
+
+    border-radius: 9px;
+}
+
+.delivery-address-search-message.info {
+    color: var(--fc-info);
+    background: var(--fc-info-soft);
+    border: 1px solid var(--fc-info-border);
+}
+
+.delivery-address-search-message.success {
+    color: var(--fc-success);
+    background: var(--fc-success-soft);
+    border: 1px solid var(--fc-success-border);
+}
+
+.delivery-address-search-message.error {
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    border: 1px solid var(--fc-danger-border);
+}
+
+.delivery-address-results {
+    margin-top: 9px;
+
+    overflow: hidden;
+
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-border);
+    border-radius: 11px;
+    box-shadow: var(--shadow-small);
+}
+
+.delivery-address-result {
+    width: 100%;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--fc-text);
+    text-align: left;
+
+    background: transparent;
+    border-bottom: 1px solid var(--fc-border);
+    cursor: pointer;
+}
+
+.delivery-address-result:last-child {
+    border-bottom: 0;
+}
+
+.delivery-address-result:hover {
+    background: var(--fc-orange-soft);
+}
+
+.delivery-address-result-icon {
+    width: 30px;
+    height: 30px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--fc-orange);
+    background: var(--fc-orange-soft);
+    border-radius: 9px;
+}
+
+.delivery-address-result-content {
+    min-width: 0;
+}
+
+.delivery-address-result-content strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    color: var(--fc-heading);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.delivery-address-result-content small {
+    display: block;
+    margin-top: 3px;
+
+    overflow-wrap: anywhere;
+
+    color: var(--fc-muted);
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+.delivery-address-result > i {
+    color: var(--fc-muted);
+    font-size: 9px;
+}
+
+@media (max-width: 640px) {
+    .delivery-address-search {
+        grid-template-columns: 1fr;
+    }
+
+    .search-delivery-address-button {
+        width: 100%;
+        min-height: 42px;
+    }
+}
+
+/* =========================================================
+   DELIVERY LOCATION PICKER
+========================================================= */
+
+.delivery-location-picker {
+    margin-bottom: 18px;
+    padding: 15px;
+
+    background: var(--fc-input);
+    border: 1px solid var(--fc-border);
+    border-radius: 12px;
+}
+
+.delivery-location-heading {
+    margin-bottom: 13px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.delivery-location-heading strong {
+    display: block;
+
+    color: var(--fc-heading);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.delivery-location-heading p {
+    margin: 4px 0 0;
+
+    color: var(--fc-muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.use-current-location-button {
+    min-height: 38px;
+    padding: 8px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    flex-shrink: 0;
+
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+
+    background: var(--fc-orange);
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.use-current-location-button:hover:not(:disabled) {
+    filter: brightness(0.95);
+}
+
+.use-current-location-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.delivery-location-map {
+    width: 100%;
+    height: 320px;
+
+    overflow: hidden;
+
+    background: #e5e7eb;
+    border: 1px solid var(--fc-border);
+    border-radius: 10px;
+}
+
+/* Prevent the global img rule from resizing Leaflet assets */
+.delivery-location-map .leaflet-tile,
+.delivery-location-map .leaflet-marker-icon,
+.delivery-location-map .leaflet-marker-shadow {
+    max-width: none !important;
+    max-height: none !important;
+}
+
+.delivery-location-status {
+    margin-top: 11px;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+    color: var(--fc-muted);
+    font-size: 10px;
+    line-height: 1.5;
+
+    background: var(--fc-card);
+    border: 1px solid var(--fc-border);
+    border-radius: 9px;
+}
+
+.delivery-location-status > i {
+    margin-top: 2px;
+
+    color: var(--fc-orange);
+}
+
+.delivery-location-status.location-selected {
+    color: #166534;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.delivery-location-status.location-selected > i {
+    color: #16a34a;
+}
+
+.delivery-location-status strong {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .delivery-location-heading {
+        flex-direction: column;
+    }
+
+    .use-current-location-button {
+        width: 100%;
+    }
+
+    .delivery-location-map {
+        height: 280px;
+    }
+}
+
 .checkout-actions {
     margin-top: 22px;
 
@@ -934,6 +1398,204 @@ img {
 
 .checkout-reminder-list i {
     color: var(--fc-orange);
+}
+
+.customer-live-tracking-card {
+    margin-top: 18px;
+    padding: 16px;
+
+    background: #ffffff;
+    border: 1px solid #e4e7ec;
+    border-radius: 16px;
+}
+
+.customer-live-tracking-header {
+    margin-bottom: 12px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.customer-live-tracking-label {
+    color: #2563eb;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.customer-live-tracking-header h4 {
+    margin-top: 3px;
+
+    color: #1c2434;
+
+    font-size: 15px;
+}
+
+.customer-live-tracking-header p {
+    margin-top: 4px;
+
+    color: #667085;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.customer-live-tracking-status {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 6px 9px;
+
+    color: #15803d;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+}
+
+.customer-live-tracking-status i {
+    font-size: 6px;
+}
+
+.customer-live-tracking-map {
+    width: 100%;
+    height: 280px;
+
+    overflow: hidden;
+
+    background: #f7f8fa;
+
+    border: 1px solid #e4e7ec;
+    border-radius: 13px;
+}
+
+.customer-live-tracking-footer {
+    margin-top: 10px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+
+    color: #667085;
+
+    font-size: 9px;
+}
+
+.customer-live-tracking-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.customer-live-tracking-footer i {
+    color: #f78021;
+}
+
+.customer-rider-marker-inner {
+    width: 44px;
+    height: 44px;
+
+    display: grid;
+    place-items: center;
+
+    color: #111827;
+    font-size: 17px;
+
+    background: #f4c430;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow:
+        0 4px 12px rgba(
+            0,
+            0,
+            0,
+            0.25
+        );
+}
+
+.customer-destination-map-marker {
+    background: transparent !important;
+    border: 0 !important;
+}
+
+.customer-destination-pin {
+    position: relative;
+
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ef4444;
+    border: 4px solid #ffffff;
+    border-radius:
+        50% 50% 50% 0;
+
+    box-shadow:
+        0 4px 12px
+        rgba(0, 0, 0, 0.3);
+
+    transform:
+        rotate(-45deg);
+}
+
+.customer-destination-pin-center {
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    font-size: 12px;
+
+    transform:
+        rotate(45deg);
+}
+
+.customer-tracking-error {
+    min-height: 180px;
+
+    display: grid;
+    place-items: center;
+
+    padding: 20px;
+
+    color: #667085;
+    font-size: 10px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .customer-live-tracking-map {
+        height: 230px;
+    }
+
+    .customer-live-tracking-header {
+        flex-direction: column;
+    }
+
+    .customer-live-tracking-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
 /* FOOTER */
@@ -2287,4 +2949,55 @@ body.order-qr-modal-open {
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
+}
+
+.customer-route-summary {
+    margin-top: 10px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+.customer-route-summary-item {
+    padding: 11px 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    background: #ffffff;
+
+    border: 1px solid #e4e7ec;
+    border-radius: 12px;
+}
+
+.customer-route-summary-item i {
+    color: #2563eb;
+}
+
+.customer-route-summary-item span {
+    display: block;
+
+    color: #667085;
+
+    font-size: 9px;
+}
+
+.customer-route-summary-item strong {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #1c2434;
+
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .customer-route-summary {
+        grid-template-columns: 1fr 1fr;
+    }
 }

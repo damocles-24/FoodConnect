@@ -1,10 +1,38 @@
+import {
+  realtimeDatabase,
+  authenticateFirebaseCustomerTracking
+} from "./firebase-config.js";
+
+import {
+  ref,
+  onValue,
+  off
+} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-database.js";
+
 const API = "/FoodConnect/api";
+
+let customerTrackingMaps =
+  new Map();
+
+let customerTrackingListeners =
+  new Map();
+
+let customerTrackingAuth =
+  new Map();
 
 let deliveryAvailability = {
     checked: false,
     available: false,
     checking: false,
     availableRiderCount: 0
+};
+
+let deliveryLocationMap = null;
+let deliveryLocationMarker = null;
+
+let selectedDeliveryLocation = {
+    latitude: null,
+    longitude: null
 };
 
 let cartPricing = {
@@ -19,6 +47,7 @@ let cartPricing = {
 ========================================================= */
 
 let customerOrders = [];
+let customerOrdersRenderSignature = "";
 
 let selectedCustomerCancelOrderId =
     null;
@@ -44,40 +73,102 @@ const CLEARED_COMPLETED_ORDERS_KEY =
    HELPERS
    ========================================================= */
 
-   function startCustomerCancelCountdown() {
+function updateCustomerCancelCountdowns() {
+    let hasCancellableOrder = false;
+
+    customerOrders.forEach((order) => {
+        const orderId =
+            Number(order?.order_id || 0);
+
+        if (orderId <= 0) {
+            return;
+        }
+
+        const remainingMs =
+            getCustomerCancelRemainingMs(
+                order
+            );
+
+        const countdownElement =
+            document.querySelector(
+                `[data-customer-cancel-countdown="${orderId}"]`
+            );
+
+        const cancelButton =
+            document.querySelector(
+                `[data-cancel-customer-order="${orderId}"]`
+            );
+
+        if (
+            canCustomerCancelOrder(order) &&
+            remainingMs > 0
+        ) {
+            hasCancellableOrder = true;
+
+            if (countdownElement) {
+                countdownElement.textContent =
+                    formatCustomerCancelCountdown(
+                        remainingMs
+                    );
+            }
+
+            return;
+        }
+
+        if (countdownElement) {
+            countdownElement.textContent =
+                "00:00";
+        }
+
+        if (cancelButton) {
+            cancelButton.disabled = true;
+            cancelButton.hidden = true;
+        }
+    });
+
+    return hasCancellableOrder;
+}
+
+
+function startCustomerCancelCountdown() {
     if (
         customerCancelCountdownInterval
     ) {
         clearInterval(
             customerCancelCountdownInterval
         );
+
+        customerCancelCountdownInterval =
+            null;
+    }
+
+    const hasCancellableOrder =
+        updateCustomerCancelCountdowns();
+
+    if (!hasCancellableOrder) {
+        return;
     }
 
     customerCancelCountdownInterval =
         window.setInterval(
             () => {
-                const hasCancellableOrder =
-                    customerOrders.some(
-                        canCustomerCancelOrder
-                    );
+                const stillHasCancellableOrder =
+                    updateCustomerCancelCountdowns();
 
-                if (!hasCancellableOrder) {
+                if (
+                    !stillHasCancellableOrder
+                ) {
                     clearInterval(
                         customerCancelCountdownInterval
                     );
 
                     customerCancelCountdownInterval =
                         null;
-
-                    renderFilteredCustomerOrders();
-                    return;
                 }
-
-                renderFilteredCustomerOrders();
             },
             1000
         );
-}
+} 
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -1261,6 +1352,847 @@ async function checkDeliveryAvailability() {
 }
 
 /* =========================================================
+   CUSTOMER DELIVERY LOCATION PICKER
+   ========================================================= */
+
+function resetSelectedDeliveryLocation() {
+    selectedDeliveryLocation = {
+        latitude: null,
+        longitude: null
+    };
+
+    if (deliveryLocationMap) {
+        deliveryLocationMap.remove();
+        deliveryLocationMap = null;
+    }
+
+    deliveryLocationMarker = null;
+}
+
+function updateDeliveryCoordinateDisplay(
+    latitude,
+    longitude
+) {
+    const locationStatus =
+        document.getElementById(
+            "deliveryLocationStatus"
+        );
+
+    if (!locationStatus) {
+        return;
+    }
+
+    locationStatus.innerHTML = `
+        <i class="fa-solid fa-circle-check"></i>
+
+        <span>
+            Delivery location selected:
+            <strong>
+                ${latitude.toFixed(6)},
+                ${longitude.toFixed(6)}
+            </strong>
+        </span>
+    `;
+
+    locationStatus.classList.add(
+        "location-selected"
+    );
+}
+
+function setDeliveryLocation(
+    latitude,
+    longitude
+) {
+    const parsedLatitude =
+        Number(latitude);
+
+    const parsedLongitude =
+        Number(longitude);
+
+    if (
+        !Number.isFinite(parsedLatitude) ||
+        !Number.isFinite(parsedLongitude)
+    ) {
+        return;
+    }
+
+    selectedDeliveryLocation = {
+        latitude: parsedLatitude,
+        longitude: parsedLongitude
+    };
+
+    const markerPosition = [
+        parsedLatitude,
+        parsedLongitude
+    ];
+
+  if (!deliveryLocationMarker) {
+    deliveryLocationMarker =
+        L.marker(
+            markerPosition,
+            {
+                draggable: true,
+                title: "Drag to adjust delivery location"
+            }
+        )
+            .addTo(deliveryLocationMap);
+
+    deliveryLocationMarker.on(
+        "dragend",
+        (event) => {
+            const newPosition =
+                event.target.getLatLng();
+
+            selectedDeliveryLocation = {
+                latitude: newPosition.lat,
+                longitude: newPosition.lng
+            };
+
+            updateDeliveryCoordinateDisplay(
+                newPosition.lat,
+                newPosition.lng
+            );
+        }
+    );
+} else {
+    deliveryLocationMarker.setLatLng(
+        markerPosition
+    );
+}
+
+    deliveryLocationMap.setView(
+        markerPosition,
+        17
+    );
+
+    updateDeliveryCoordinateDisplay(
+        parsedLatitude,
+        parsedLongitude
+    );
+}
+
+async function reverseGeocodeDeliveryLocation(
+    latitude,
+    longitude
+) {
+    const response = await fetch(
+        `${API}/reverse_geocode_delivery_location.php`,
+        {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+            body: JSON.stringify({
+                latitude,
+                longitude
+            })
+        }
+    );
+
+    const data =
+        await readJsonResponse(
+            response
+        );
+
+    if (
+        !response.ok ||
+        !data.success
+    ) {
+        throw new Error(
+            data.message ||
+            "Unable to identify your current address."
+        );
+    }
+
+    return data;
+}
+
+function useCustomerCurrentLocation() {
+    if (!navigator.geolocation) {
+        showCheckoutMessage(
+            "Your browser does not support location services.",
+            "error"
+        );
+
+        return;
+    }
+
+    const locationButton =
+        document.getElementById(
+            "useCurrentLocationButton"
+        );
+
+    const addressInput =
+        document.getElementById(
+            "address"
+        );
+
+    const originalButtonContent =
+        locationButton?.innerHTML || "";
+
+    const restoreLocationButton = () => {
+        if (!locationButton) {
+            return;
+        }
+
+        locationButton.disabled = false;
+        locationButton.innerHTML =
+            originalButtonContent;
+    };
+
+    if (locationButton) {
+        locationButton.disabled = true;
+
+        locationButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Detecting your location...
+        `;
+    }
+
+    setDeliveryAddressSearchMessage(
+        "Detecting your current location...",
+        "info"
+    );
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const latitude =
+                Number(
+                    position.coords.latitude
+                );
+
+            const longitude =
+                Number(
+                    position.coords.longitude
+                );
+
+            /*
+             * Place the marker immediately using the
+             * phone's actual GPS coordinates.
+             */
+            setDeliveryLocation(
+                latitude,
+                longitude
+            );
+
+            if (locationButton) {
+                locationButton.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Finding your address...
+                `;
+            }
+
+            setDeliveryAddressSearchMessage(
+                "Your location was found. Identifying the written address...",
+                "info"
+            );
+
+            try {
+                const data =
+                    await reverseGeocodeDeliveryLocation(
+                        latitude,
+                        longitude
+                    );
+
+                const location =
+                    data.location &&
+                    typeof data.location ===
+                        "object"
+                        ? data.location
+                        : {};
+
+                const formattedAddress =
+                    String(
+                        location.display_name ||
+                        ""
+                    ).trim();
+
+                if (
+                    data.address_found &&
+                    formattedAddress !== ""
+                ) {
+                    if (addressInput) {
+                        addressInput.value =
+                            formattedAddress;
+
+                        /*
+                         * Notify the checkout validation
+                         * that the address value changed.
+                         */
+                        addressInput.dispatchEvent(
+                            new Event(
+                                "input",
+                                {
+                                    bubbles: true
+                                }
+                            )
+                        );
+
+                        addressInput.dispatchEvent(
+                            new Event(
+                                "change",
+                                {
+                                    bubbles: true
+                                }
+                            )
+                        );
+                    }
+
+                    clearDeliveryAddressResults();
+
+                    setDeliveryAddressSearchMessage(
+                        "Your current address was filled automatically. Add a house number or landmark if needed.",
+                        "success"
+                    );
+
+                    showCheckoutMessage(
+                        "Your current location and address were selected successfully.",
+                        "success"
+                    );
+                } else {
+                    setDeliveryAddressSearchMessage(
+                        "Your location was selected, but no written address was found. Please enter your address or landmark manually.",
+                        "info"
+                    );
+
+                    showCheckoutMessage(
+                        "Your current location was placed on the map. Please enter the written address manually.",
+                        "success"
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "Reverse geocoding error:",
+                    error
+                );
+
+                /*
+                 * Do not remove the GPS marker.
+                 * The exact coordinates are still valid.
+                 */
+                setDeliveryAddressSearchMessage(
+                    "Your location was selected, but the written address could not be loaded. Please type the address manually.",
+                    "error"
+                );
+
+                showCheckoutMessage(
+                    "Your current location was placed on the map. Please type the written address manually.",
+                    "success"
+                );
+            } finally {
+                restoreLocationButton();
+            }
+        },
+
+        (error) => {
+            console.error(
+                "Unable to get customer location:",
+                error
+            );
+
+            let message =
+                "Unable to detect your location. Please tap the correct destination on the map.";
+
+            if (
+                error.code ===
+                error.PERMISSION_DENIED
+            ) {
+                message =
+                    "Location permission was denied. Please allow location access or tap the destination manually on the map.";
+            } else if (
+                error.code ===
+                error.POSITION_UNAVAILABLE
+            ) {
+                message =
+                    "Your location is currently unavailable. Turn on GPS or select the destination manually.";
+            } else if (
+                error.code ===
+                error.TIMEOUT
+            ) {
+                message =
+                    "Location detection took too long. Try again outdoors or select the destination manually.";
+            }
+
+            setDeliveryAddressSearchMessage(
+                message,
+                "error"
+            );
+
+            showCheckoutMessage(
+                message,
+                "error"
+            );
+
+            restoreLocationButton();
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 30000
+        }
+    );
+}
+
+/* =========================================================
+   DELIVERY ADDRESS SEARCH
+========================================================= */
+
+let deliveryAddressSearchRunning = false;
+
+function setDeliveryAddressSearchMessage(
+    message = "",
+    type = ""
+) {
+    const messageElement =
+        document.getElementById(
+            "deliveryAddressSearchMessage"
+        );
+
+    if (!messageElement) {
+        return;
+    }
+
+    messageElement.textContent = message;
+
+    messageElement.classList.remove(
+        "error",
+        "success",
+        "info"
+    );
+
+    messageElement.hidden = !message;
+
+    if (message && type) {
+        messageElement.classList.add(type);
+    }
+}
+
+function clearDeliveryAddressResults() {
+    const resultsElement =
+        document.getElementById(
+            "deliveryAddressResults"
+        );
+
+    if (!resultsElement) {
+        return;
+    }
+
+    resultsElement.innerHTML = "";
+    resultsElement.hidden = true;
+}
+
+function buildDeliveryAddressResultSubtitle(
+    location
+) {
+    const parts = [
+        location.road,
+        location.barangay,
+        location.city,
+        location.province
+    ]
+        .map((part) =>
+            String(part || "").trim()
+        )
+        .filter(Boolean);
+
+    return [...new Set(parts)].join(", ");
+}
+
+function selectDeliveryAddressResult(
+    location
+) {
+    const addressInput =
+        document.getElementById("address");
+
+    const latitude =
+        Number(location.latitude);
+
+    const longitude =
+        Number(location.longitude);
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+        setDeliveryAddressSearchMessage(
+            "The selected address has invalid map coordinates.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (addressInput) {
+        addressInput.value =
+            String(
+                location.display_name || ""
+            ).trim();
+
+        addressInput.dispatchEvent(
+            new Event(
+                "input",
+                {
+                    bubbles: true
+                }
+            )
+        );
+    }
+
+    setDeliveryLocation(
+        latitude,
+        longitude
+    );
+
+    clearDeliveryAddressResults();
+
+    setDeliveryAddressSearchMessage(
+        "Address selected. Drag the map marker if you need to adjust the exact delivery point.",
+        "success"
+    );
+
+    document
+        .getElementById(
+            "deliveryLocationMap"
+        )
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+}
+
+function renderDeliveryAddressResults(
+    locations
+) {
+    const resultsElement =
+        document.getElementById(
+            "deliveryAddressResults"
+        );
+
+    if (!resultsElement) {
+        return;
+    }
+
+    if (
+        !Array.isArray(locations) ||
+        locations.length === 0
+    ) {
+        clearDeliveryAddressResults();
+
+        setDeliveryAddressSearchMessage(
+            "No matching address was found. Try a nearby landmark, barangay, street, or a more complete location.",
+            "info"
+        );
+
+        return;
+    }
+
+    resultsElement.innerHTML =
+        locations
+            .map((location, index) => {
+                const displayName =
+                    escapeHtml(
+                        location.display_name ||
+                        "Unnamed location"
+                    );
+
+                const subtitle =
+                    escapeHtml(
+                        buildDeliveryAddressResultSubtitle(
+                            location
+                        )
+                    );
+
+                return `
+                    <button
+                        type="button"
+                        class="delivery-address-result"
+                        data-address-result-index="${index}"
+                    >
+                        <span class="delivery-address-result-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </span>
+
+                        <span class="delivery-address-result-content">
+                            <strong>
+                                ${displayName}
+                            </strong>
+
+                            ${
+                                subtitle
+                                    ? `
+                                        <small>
+                                            ${subtitle}
+                                        </small>
+                                    `
+                                    : ""
+                            }
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                `;
+            })
+            .join("");
+
+    resultsElement.hidden = false;
+
+    resultsElement
+        .querySelectorAll(
+            "[data-address-result-index]"
+        )
+        .forEach((button) => {
+            button.addEventListener(
+                "click",
+                () => {
+                    const index =
+                        Number(
+                            button.dataset
+                                .addressResultIndex
+                        );
+
+                    const selectedLocation =
+                        locations[index];
+
+                    if (!selectedLocation) {
+                        return;
+                    }
+
+                    selectDeliveryAddressResult(
+                        selectedLocation
+                    );
+                }
+            );
+        });
+}
+
+async function searchDeliveryAddress() {
+    if (deliveryAddressSearchRunning) {
+        return;
+    }
+
+    const addressInput =
+        document.getElementById("address");
+
+    const searchButton =
+        document.getElementById(
+            "searchDeliveryAddressButton"
+        );
+
+    const query =
+        String(
+            addressInput?.value || ""
+        ).trim();
+
+    if (query.length < 3) {
+        setDeliveryAddressSearchMessage(
+            "Enter at least 3 characters before searching.",
+            "error"
+        );
+
+        addressInput?.focus();
+        return;
+    }
+
+    deliveryAddressSearchRunning = true;
+
+    const originalButtonContent =
+        searchButton?.innerHTML || "";
+
+    if (searchButton) {
+        searchButton.disabled = true;
+
+        searchButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Searching...
+        `;
+    }
+
+    clearDeliveryAddressResults();
+
+    setDeliveryAddressSearchMessage(
+        "Searching for matching addresses...",
+        "info"
+    );
+
+    try {
+        const response = await fetch(
+            `${API}/search_delivery_address.php`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    query
+                })
+            }
+        );
+
+        const data =
+            await readJsonResponse(response);
+
+        if (
+            !response.ok ||
+            data.success !== true
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to search for the address."
+            );
+        }
+
+        renderDeliveryAddressResults(
+            data.locations
+        );
+    } catch (error) {
+        console.error(
+            "Delivery address search error:",
+            error
+        );
+
+        clearDeliveryAddressResults();
+
+        setDeliveryAddressSearchMessage(
+            error.message ||
+            "Unable to search for the address.",
+            "error"
+        );
+    } finally {
+        deliveryAddressSearchRunning = false;
+
+        if (searchButton) {
+            searchButton.disabled = false;
+            searchButton.innerHTML =
+                originalButtonContent;
+        }
+    }
+}
+
+function initializeDeliveryLocationMap() {
+    const mapElement =
+        document.getElementById(
+            "deliveryLocationMap"
+        );
+
+    const currentLocationButton =
+        document.getElementById(
+            "useCurrentLocationButton"
+        );
+
+      const addressSearchButton =
+    document.getElementById(
+        "searchDeliveryAddressButton"
+    );
+
+const addressInput =
+    document.getElementById(
+        "address"
+    );  
+
+    if (
+        !mapElement ||
+        typeof L === "undefined"
+    ) {
+        return;
+    }
+
+    resetSelectedDeliveryLocation();
+
+    /*
+     * Default map center:
+     * Alaminos City, Pangasinan.
+     * The customer can use their current location
+     * or tap another destination.
+     */
+    const defaultLocation = [
+        16.1552,
+        119.9801
+    ];
+
+    deliveryLocationMap =
+        L.map(mapElement, {
+            zoomControl: true
+        }).setView(
+            defaultLocation,
+            14
+        );
+
+    L.tileLayer(
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(deliveryLocationMap);
+
+    deliveryLocationMap.on(
+        "click",
+        (event) => {
+            setDeliveryLocation(
+                event.latlng.lat,
+                event.latlng.lng
+            );
+        }
+    );
+
+    currentLocationButton?.addEventListener(
+        "click",
+        useCustomerCurrentLocation
+    );
+
+    addressSearchButton?.addEventListener(
+    "click",
+    searchDeliveryAddress
+);
+
+addressInput?.addEventListener(
+    "keydown",
+    (event) => {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+            event.preventDefault();
+
+            searchDeliveryAddress();
+        }
+    }
+);
+
+    const refreshMapSize = () => {
+    if (!deliveryLocationMap) {
+        return;
+    }
+
+    deliveryLocationMap.invalidateSize({
+        pan: false,
+        debounceMoveend: true
+    });
+};
+
+window.requestAnimationFrame(() => {
+    refreshMapSize();
+
+    window.setTimeout(
+        refreshMapSize,
+        250
+    );
+
+    window.setTimeout(
+        refreshMapSize,
+        700
+    );
+});
+}
+
+/* =========================================================
    CHECKOUT DYNAMIC FIELDS
    ========================================================= */
 
@@ -1345,44 +2277,110 @@ paymentMethod.value = "";
         `;
     }
 
-    if (type === "delivery") {
-        paymentMethod.value =
-            "Cash on Delivery";
+  if (type === "delivery") {
+    paymentMethod.value =
+        "Cash on Delivery";
 
-        dynamicFields.innerHTML = `
-            <label for="address">
-                Complete Address
-            </label>
+    dynamicFields.innerHTML = `
+       <label for="address">
+    Complete Address
+</label>
 
-            <textarea
-                id="address"
-                rows="3"
-                placeholder="House number, street, barangay, and city"
-            ></textarea>
+<div class="delivery-address-search">
+    <textarea
+        id="address"
+        rows="3"
+        placeholder="Example: Lucap, Pag-asa Street, Nepo Mall, or your complete address"
+    ></textarea>
 
-            <label for="landmark">
-                Landmark
-            </label>
+    <button
+        type="button"
+        id="searchDeliveryAddressButton"
+        class="search-delivery-address-button"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Search Address
+    </button>
+</div>
 
-            <input
-                type="text"
-                id="landmark"
-                placeholder="Nearby landmark"
+<p
+    id="deliveryAddressSearchMessage"
+    class="delivery-address-search-message"
+    hidden
+></p>
+
+<div
+    id="deliveryAddressResults"
+    class="delivery-address-results"
+    hidden
+></div>
+
+        <label for="landmark">
+            Landmark
+        </label>
+
+        <input
+            type="text"
+            id="landmark"
+            placeholder="Nearby landmark"
+        >
+
+        <section class="delivery-location-picker">
+            <div class="delivery-location-heading">
+                <div>
+                    <strong>
+                        Pin the Delivery Location
+                    </strong>
+
+                    <p>
+                        Use your current location or tap the
+                        exact delivery destination on the map.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="useCurrentLocationButton"
+                    class="use-current-location-button"
+                >
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    Use My Current Location
+                </button>
+            </div>
+
+            <div
+                id="deliveryLocationMap"
+                class="delivery-location-map"
+                aria-label="Select delivery location"
+            ></div>
+
+            <div
+                id="deliveryLocationStatus"
+                class="delivery-location-status"
             >
+                <i class="fa-solid fa-location-dot"></i>
 
-            <label for="notes">
-                Delivery Instructions
-            </label>
+                <span>
+                    No delivery location selected yet.
+                </span>
+            </div>
+        </section>
 
-            <textarea
-                id="notes"
-                rows="3"
-                placeholder="Optional delivery instructions"
-            ></textarea>
-        `;
+        <label for="notes">
+            Delivery Instructions
+        </label>
 
-        await checkDeliveryAvailability();
-    }
+        <textarea
+            id="notes"
+            rows="3"
+            placeholder="Optional delivery instructions"
+        ></textarea>
+    `;
+
+    initializeDeliveryLocationMap();
+
+    await checkDeliveryAvailability();
+}
 
     setPlaceOrderAvailability();
 }
@@ -2711,21 +3709,52 @@ async function placeOrder() {
                 ?.value
                 .trim() || "";
 
-        if (!address) {
-            showCheckoutMessage(
-                "Enter your complete delivery address.",
-                "error"
-            );
+       if (!address) {
+    showCheckoutMessage(
+        "Enter your complete delivery address.",
+        "error"
+    );
 
-            document
-                .getElementById("address")
-                ?.focus();
+    document
+        .getElementById("address")
+        ?.focus();
 
-            return;
-        }
+    return;
+}
 
-        payload.address =
-            address;
+if (
+    !Number.isFinite(
+        selectedDeliveryLocation.latitude
+    ) ||
+    !Number.isFinite(
+        selectedDeliveryLocation.longitude
+    )
+) {
+    showCheckoutMessage(
+        "Please pin the exact delivery location on the map.",
+        "error"
+    );
+
+    document
+        .getElementById(
+            "deliveryLocationMap"
+        )
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+    return;
+}
+
+payload.address =
+    address;
+
+payload.customer_latitude =
+    selectedDeliveryLocation.latitude;
+
+payload.customer_longitude =
+    selectedDeliveryLocation.longitude;
 
         payload.landmark =
             document
@@ -3637,6 +4666,15 @@ function buildCustomerOrderCard(order) {
             order
         );
 
+    const canTrackDelivery =
+    status === "out_for_delivery" &&
+    Number(
+        order?.delivery?.assignment_id || 0
+    ) > 0 &&
+    Number(
+        order?.delivery?.rider_id || 0
+    ) > 0;
+
     const expanded =
         expandedCustomerOrderIds
             .has(orderId);
@@ -3945,14 +4983,448 @@ const canCustomerCancel =
 }
 
                 ${buildCustomerOrderTimeline(
-                    order,
-                    status
-                )}
+    order,
+    status
+)}
+
+${
+    canTrackDelivery
+        ? `
+            <section
+                class="customer-live-tracking-card"
+                data-live-tracking-order="${orderId}"
+            >
+                <div class="customer-live-tracking-header">
+
+                    <div>
+                        <span class="customer-live-tracking-label">
+                            Live Delivery
+                        </span>
+
+                        <h4>
+                            Track Your Rider
+                        </h4>
+
+                        <p>
+                            Rider location updates automatically while
+                            your order is out for delivery.
+                        </p>
+                    </div>
+
+                    <span class="customer-live-tracking-status">
+                        <i class="fa-solid fa-circle"></i>
+                        Live GPS
+                    </span>
+
+                </div>
+
+                <div
+                    id="customerTrackingMap-${orderId}"
+                    class="customer-live-tracking-map"
+                ></div>
+
+                <div class="customer-route-summary">
+
+    <div class="customer-route-summary-item">
+        <i class="fa-solid fa-route"></i>
+
+        <div>
+            <span>Distance</span>
+
+            <strong
+                id="customerRouteDistance-${orderId}"
+            >
+                Calculating...
+            </strong>
+        </div>
+    </div>
+
+    <div class="customer-route-summary-item">
+        <i class="fa-solid fa-clock"></i>
+
+        <div>
+            <span>Estimated Time</span>
+
+            <strong
+                id="customerRouteEta-${orderId}"
+            >
+                Calculating...
+            </strong>
+        </div>
+    </div>
+
+</div>
+
+                <div
+                    class="customer-live-tracking-footer"
+                >
+                    <span>
+                        <i class="fa-solid fa-motorcycle"></i>
+                        ${
+                            escapeHtml(
+                                order?.delivery?.rider_name ||
+                                "Delivery Rider"
+                            )
+                        }
+                    </span>
+
+                    <span
+                        id="customerTrackingUpdated-${orderId}"
+                    >
+                        Waiting for rider location...
+                    </span>
+                </div>
+            </section>
+        `
+        : ""
+}
 
             </div>
 
         </article>
     `;
+}
+
+function formatCustomerRouteDistance(
+    distanceMeters
+) {
+    const distance =
+        Number(distanceMeters || 0);
+
+    if (
+        !Number.isFinite(distance) ||
+        distance <= 0
+    ) {
+        return "Unavailable";
+    }
+
+    if (distance < 1000) {
+        return `${Math.round(distance)} m`;
+    }
+
+    return `${(
+        distance / 1000
+    ).toFixed(1)} km`;
+}
+
+
+function formatCustomerRouteDuration(
+    durationSeconds
+) {
+    const seconds =
+        Number(durationSeconds || 0);
+
+    if (
+        !Number.isFinite(seconds) ||
+        seconds <= 0
+    ) {
+        return "Unavailable";
+    }
+
+    const minutes =
+        Math.max(
+            1,
+            Math.round(
+                seconds / 60
+            )
+        );
+
+    if (minutes < 60) {
+        return `${minutes} min`;
+    }
+
+    const hours =
+        Math.floor(
+            minutes / 60
+        );
+
+    const remainingMinutes =
+        minutes % 60;
+
+    return remainingMinutes > 0
+        ? `${hours} hr ${remainingMinutes} min`
+        : `${hours} hr`;
+}
+
+function calculateCustomerTrackingDistanceMeters(
+    latitude1,
+    longitude1,
+    latitude2,
+    longitude2
+) {
+    const earthRadius =
+        6371000;
+
+    const toRadians =
+        (degrees) =>
+            degrees *
+            Math.PI /
+            180;
+
+    const lat1 =
+        toRadians(latitude1);
+
+    const lat2 =
+        toRadians(latitude2);
+
+    const deltaLatitude =
+        toRadians(
+            latitude2 -
+            latitude1
+        );
+
+    const deltaLongitude =
+        toRadians(
+            longitude2 -
+            longitude1
+        );
+
+    const a =
+        Math.sin(
+            deltaLatitude / 2
+        ) ** 2 +
+        Math.cos(lat1) *
+        Math.cos(lat2) *
+        Math.sin(
+            deltaLongitude / 2
+        ) ** 2;
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+    return earthRadius * c;
+}
+
+
+function shouldRefreshCustomerDeliveryRoute(
+    orderId,
+    riderLatitude,
+    riderLongitude
+) {
+    const mapData =
+        customerTrackingMaps.get(
+            Number(orderId)
+        );
+
+    if (!mapData) {
+        return false;
+    }
+
+    if (
+        mapData.routeRequestInProgress
+    ) {
+        return false;
+    }
+
+    const now =
+        Date.now();
+
+    /*
+     * Always request the first route.
+     */
+    if (
+        !mapData.lastRouteCoordinates
+    ) {
+        return true;
+    }
+
+    const elapsedMilliseconds =
+        now -
+        Number(
+            mapData.lastRouteRequestAt || 0
+        );
+
+    /*
+     * Don't ask Geoapify again sooner
+     * than 15 seconds.
+     */
+    if (
+        elapsedMilliseconds < 15000
+    ) {
+        return false;
+    }
+
+    const previous =
+        mapData.lastRouteCoordinates;
+
+    const movedMeters =
+        calculateCustomerTrackingDistanceMeters(
+            Number(previous.latitude),
+            Number(previous.longitude),
+            riderLatitude,
+            riderLongitude
+        );
+
+    /*
+     * Recalculate after the rider moved
+     * roughly 20 meters.
+     */
+    return movedMeters >= 20;
+}
+
+async function loadCustomerDeliveryRoute(
+    order,
+    riderLatitude,
+    riderLongitude
+) {
+    const orderId =
+        Number(
+            order?.order_id || 0
+        );
+
+    const mapData =
+        customerTrackingMaps.get(
+            orderId
+        );
+
+    if (
+        !mapData ||
+        mapData.routeRequestInProgress
+    ) {
+        return;
+    }
+
+    const assignmentId =
+        Number(
+            order?.delivery?.assignment_id || 0
+        );
+
+    if (
+        assignmentId <= 0 ||
+        !Number.isFinite(riderLatitude) ||
+        !Number.isFinite(riderLongitude)
+    ) {
+        return;
+    }
+
+    mapData.routeRequestInProgress =
+    true;
+
+/*
+ * Record this attempt immediately.
+ *
+ * Even if Geoapify temporarily fails,
+ * Firebase GPS updates must not spam
+ * the routing API repeatedly.
+ */
+
+try {
+        const response =
+            await fetch(
+                `${API}/get_customer_delivery_route.php`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    cache: "no-store",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        assignment_id:
+                            assignmentId,
+
+                        rider_latitude:
+                            riderLatitude,
+
+                        rider_longitude:
+                            riderLongitude
+                    })
+                }
+            );
+
+        const data =
+            await readJsonResponse(
+                response
+            );
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to calculate delivery route."
+            );
+        }
+
+        if (mapData.routeLayer) {
+            mapData.map.removeLayer(
+                mapData.routeLayer
+            );
+
+            mapData.routeLayer =
+                null;
+        }
+
+        mapData.routeLayer =
+            L.geoJSON(
+                data.route?.geometry,
+                {
+                    style: {
+                        color: "#2563eb",
+                        weight: 6,
+                        opacity: 0.9,
+                        lineCap: "round",
+                        lineJoin: "round"
+                    }
+                }
+            ).addTo(
+                mapData.map
+            );
+
+        const distanceElement =
+            document.getElementById(
+                `customerRouteDistance-${orderId}`
+            );
+
+        const etaElement =
+            document.getElementById(
+                `customerRouteEta-${orderId}`
+            );
+
+        if (distanceElement) {
+            distanceElement.textContent =
+                formatCustomerRouteDistance(
+                    data.route
+                        ?.distance_meters
+                );
+        }
+
+        if (etaElement) {
+            etaElement.textContent =
+                formatCustomerRouteDuration(
+                    data.route
+                        ?.duration_seconds
+                );
+        }
+
+        mapData.lastRouteRequestAt =
+            Date.now();
+
+        mapData.lastRouteCoordinates = {
+            latitude:
+                riderLatitude,
+
+            longitude:
+                riderLongitude
+        };
+
+    } catch (error) {
+        console.error(
+            "Customer delivery route error:",
+            error
+        );
+    } finally {
+        mapData.routeRequestInProgress =
+            false;
+    }
 }
 
 /* =========================================================
@@ -4330,6 +5802,403 @@ async function submitCustomerCancellation() {
    RENDER CUSTOMER ORDERS
 ========================================================= */
 
+function createCustomerDestinationIcon() {
+    return L.divIcon({
+        className:
+            "customer-destination-map-marker",
+
+        html: `
+            <div class="customer-destination-pin">
+                <div class="customer-destination-pin-center">
+                    <i class="fa-solid fa-house"></i>
+                </div>
+            </div>
+        `,
+
+        iconSize:
+            [48, 56],
+
+        iconAnchor:
+            [24, 54],
+
+        popupAnchor:
+            [0, -48]
+    });
+}
+
+function createCustomerRiderIcon() {
+    return L.divIcon({
+        className:
+            "customer-rider-map-marker",
+
+        html: `
+            <div class="customer-rider-marker-inner">
+                <i class="fa-solid fa-motorcycle"></i>
+            </div>
+        `,
+
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+    });
+}
+
+function destroyCustomerTrackingMap(
+    orderId
+) {
+    const numericOrderId =
+        Number(orderId);
+
+    const listenerData =
+        customerTrackingListeners.get(
+            numericOrderId
+        );
+
+    if (listenerData) {
+        off(
+            listenerData.reference,
+            "value",
+            listenerData.callback
+        );
+
+        customerTrackingListeners.delete(
+            numericOrderId
+        );
+    }
+
+    const mapData =
+        customerTrackingMaps.get(
+            numericOrderId
+        );
+
+    if (mapData?.map) {
+        mapData.map.remove();
+    }
+
+    customerTrackingMaps.delete(
+        numericOrderId
+    );
+}
+
+async function startCustomerLiveTracking(
+    order
+) {
+    const orderId =
+        Number(
+            order?.order_id || 0
+        );
+
+    if (
+        orderId <= 0 ||
+        getCustomerTrackingStatus(order) !==
+            "out_for_delivery"
+    ) {
+        return;
+    }
+
+    const mapElement =
+        document.getElementById(
+            `customerTrackingMap-${orderId}`
+        );
+
+    if (!mapElement) {
+        return;
+    }
+
+    destroyCustomerTrackingMap(
+        orderId
+    );
+
+    try {
+        const authResult =
+            await authenticateFirebaseCustomerTracking(
+                orderId
+            );
+
+        const tracking =
+            authResult?.tracking;
+
+        if (!tracking) {
+            throw new Error(
+                "Tracking information is unavailable."
+            );
+        }
+
+        customerTrackingAuth.set(
+            orderId,
+            tracking
+        );
+
+        const map =
+            L.map(
+                mapElement,
+                {
+                    zoomControl: true,
+                    attributionControl: true
+                }
+            );
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+      const rawCustomerLatitude =
+    order?.customer_latitude;
+
+const rawCustomerLongitude =
+    order?.customer_longitude;
+
+const customerLatitude =
+    rawCustomerLatitude !== null &&
+    rawCustomerLatitude !== undefined &&
+    String(rawCustomerLatitude).trim() !== ""
+        ? Number(rawCustomerLatitude)
+        : null;
+
+const customerLongitude =
+    rawCustomerLongitude !== null &&
+    rawCustomerLongitude !== undefined &&
+    String(rawCustomerLongitude).trim() !== ""
+        ? Number(rawCustomerLongitude)
+        : null;
+
+let customerMarker = null;
+
+if (
+    Number.isFinite(customerLatitude) &&
+    Number.isFinite(customerLongitude)
+) {
+  customerMarker =
+    L.marker(
+        [
+            customerLatitude,
+            customerLongitude
+        ],
+     {
+    icon:
+        createCustomerDestinationIcon(),
+
+    title:
+        "Your Delivery Location",
+
+    zIndexOffset:
+        2000
+}
+    )
+        .addTo(map)
+        .bindPopup(`
+            <strong>
+                Your Delivery Location
+            </strong>
+        `);
+} 
+
+        const riderMarker =
+    L.marker(
+        [0, 0],
+        {
+            icon:
+                createCustomerRiderIcon(),
+
+            zIndexOffset:
+                500
+        }
+    );
+
+        let riderMarkerAdded =
+            false;
+
+    customerTrackingMaps.set(
+    orderId,
+    {
+        map,
+        riderMarker,
+        customerMarker,
+        routeLayer: null,
+        lastRouteRequestAt: 0,
+        lastRouteCoordinates: null,
+        routeRequestInProgress: false
+    }
+);
+
+        const riderPath =
+            `rider_locations/${tracking.restaurant_id}/${tracking.rider_uid}`;
+
+        const riderReference =
+            ref(
+                realtimeDatabase,
+                riderPath
+            );
+
+        const callback =
+            onValue(
+                riderReference,
+                (snapshot) => {
+                    if (!snapshot.exists()) {
+                        return;
+                    }
+
+                    const data =
+                        snapshot.val();
+
+                    const latitude =
+                        Number(
+                            data?.latitude
+                        );
+
+                    const longitude =
+                        Number(
+                            data?.longitude
+                        );
+
+                    if (
+                        !Number.isFinite(latitude) ||
+                        !Number.isFinite(longitude)
+                    ) {
+                        return;
+                    }
+
+                   if (!riderMarkerAdded) {
+    riderMarker
+        .setLatLng([
+            latitude,
+            longitude
+        ])
+        .addTo(map);
+
+    riderMarkerAdded =
+        true;
+
+    /*
+     * On FIRST load only:
+     * show both rider and customer.
+     *
+     * We intentionally do NOT fitBounds()
+     * on later GPS updates because that
+     * would keep resetting the customer's
+     * manual zoom.
+     */
+    if (
+        customerMarker &&
+        Number.isFinite(
+            customerLatitude
+        ) &&
+        Number.isFinite(
+            customerLongitude
+        )
+    ) {
+        const bounds =
+            L.latLngBounds([
+                [
+                    latitude,
+                    longitude
+                ],
+                [
+                    customerLatitude,
+                    customerLongitude
+                ]
+            ]);
+
+        map.fitBounds(
+            bounds,
+            {
+                padding:
+                    [35, 35],
+
+                maxZoom:
+                    17
+            }
+        );
+    } else {
+        map.setView(
+            [
+                latitude,
+                longitude
+            ],
+            16
+        );
+    }
+} else {
+    riderMarker.setLatLng([
+        latitude,
+        longitude
+    ]);
+}
+
+
+/*
+ * Firebase may update GPS frequently.
+ *
+ * Route calculation is intentionally
+ * slower and controlled separately.
+ */
+if (
+    shouldRefreshCustomerDeliveryRoute(
+        orderId,
+        latitude,
+        longitude
+    )
+) {
+    loadCustomerDeliveryRoute(
+        order,
+        latitude,
+        longitude
+    );
+}
+
+                    const updatedElement =
+                        document.getElementById(
+                            `customerTrackingUpdated-${orderId}`
+                        );
+
+                    if (updatedElement) {
+                        updatedElement.textContent =
+                            "Rider location updated just now";
+                    }
+                },
+                (error) => {
+                    console.error(
+                        "Customer live tracking error:",
+                        error
+                    );
+                }
+            );
+
+        customerTrackingListeners.set(
+            orderId,
+            {
+                reference:
+                    riderReference,
+
+                callback
+            }
+        );
+
+        window.setTimeout(
+            () => {
+                map.invalidateSize();
+            },
+            100
+        );
+
+    } catch (error) {
+        console.error(
+            "Unable to start customer tracking:",
+            error
+        );
+
+        mapElement.innerHTML = `
+            <div class="customer-tracking-error">
+                Live rider tracking is currently unavailable.
+            </div>
+        `;
+    }
+}
+
 function renderFilteredCustomerOrders() {
     const ordersContent =
         document.getElementById(
@@ -4338,6 +6207,25 @@ function renderFilteredCustomerOrders() {
 
     if (!ordersContent) {
         return;
+    }
+
+    /*
+     * IMPORTANT:
+     * The order list is about to be rebuilt.
+     *
+     * Properly destroy existing Leaflet maps
+     * and Firebase listeners first so they
+     * never remain attached to removed DOM.
+     */
+    for (
+        const orderId
+        of Array.from(
+            customerTrackingMaps.keys()
+        )
+    ) {
+        destroyCustomerTrackingMap(
+            orderId
+        );
     }
 
     const filteredOrders =
@@ -4437,6 +6325,20 @@ function renderFilteredCustomerOrders() {
                 buildCustomerOrderCard
             )
             .join("");
+
+    filteredOrders.forEach(
+    (order) => {
+        if (
+            getCustomerTrackingStatus(
+                order
+            ) === "out_for_delivery"
+        ) {
+            startCustomerLiveTracking(
+                order
+            );
+        }
+    }
+);
 }
 
 /* =========================================================
@@ -4501,16 +6403,46 @@ async function loadCustomerOrders(
             );
         }
 
-        customerOrders =
+    const nextCustomerOrders =
     Array.isArray(
         data.orders
     )
         ? data.orders
         : [];
 
+const nextRenderSignature =
+    JSON.stringify(
+        nextCustomerOrders
+    );
+
+const ordersChanged =
+    nextRenderSignature !==
+    customerOrdersRenderSignature;
+
+customerOrders =
+    nextCustomerOrders;
+
+customerOrdersRenderSignature =
+    nextRenderSignature;
+
 syncOpenOrderQrModal();
 
-renderFilteredCustomerOrders();
+/*
+ * Do NOT rebuild the entire order list
+ * every 5 seconds when nothing changed.
+ *
+ * Rebuilding destroys Leaflet's DOM,
+ * causing the gray flash and zoom reset.
+ */
+if (
+    ordersChanged ||
+    showLoading
+) {
+    renderFilteredCustomerOrders();
+} else {
+    updateCustomerOrderCounters();
+}
+
 startCustomerCancelCountdown();
 
 return true;

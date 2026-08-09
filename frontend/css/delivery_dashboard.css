@@ -1015,6 +1015,198 @@ button {
 }
 
 /* =====================================
+   RIDER DELIVERY MAP
+===================================== */
+
+.delivery-map-section {
+  margin-top: 24px;
+}
+
+.delivery-map-header {
+  margin-bottom: 12px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.delivery-map-header h3 {
+  margin-top: 2px;
+  font-size: 16px;
+}
+
+.delivery-map-header p {
+  margin-top: 5px;
+
+  max-width: 460px;
+
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.live-tracking-badge {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border:
+    1px solid rgba(
+      46,
+      204,
+      113,
+      0.35
+    );
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      46,
+      204,
+      113,
+      0.1
+    );
+
+  color: var(--completed);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.live-tracking-badge span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--completed);
+}
+
+.rider-delivery-map {
+  width: 100%;
+  height: 360px;
+
+  overflow: hidden;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 12px;
+
+  background: var(--bg);
+}
+
+.delivery-map-legend {
+  margin-top: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+}
+
+.delivery-map-legend div {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delivery-map-legend div:first-child i {
+  color: var(--gold);
+}
+
+.delivery-map-legend div:last-child i {
+  color: var(--cancelled);
+}
+
+.foodconnect-map-icon {
+  background: transparent;
+  border: none;
+}
+
+.rider-map-marker,
+.customer-map-marker {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 4px 14px
+    rgba(0, 0, 0, 0.35);
+}
+
+.rider-map-marker {
+  border: 3px solid #ffffff;
+
+  background: var(--gold);
+  color: #111;
+
+  font-size: 17px;
+}
+
+.customer-map-marker {
+  background: transparent;
+
+  color: var(--cancelled);
+
+  font-size: 38px;
+
+  text-shadow:
+    0 2px 5px
+    rgba(0, 0, 0, 0.5);
+}
+
+.delivery-map-unavailable {
+  margin-top: 24px;
+  padding: 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 11px;
+
+  background: var(--bg);
+}
+
+.delivery-map-unavailable > i {
+  color: var(--text-secondary);
+  font-size: 24px;
+}
+
+.delivery-map-unavailable strong {
+  display: block;
+
+  font-size: 12px;
+}
+
+.delivery-map-unavailable p {
+  margin-top: 3px;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+}
+
+/* =====================================
    RESPONSIVE DESIGN
 ===================================== */
 
@@ -1068,6 +1260,18 @@ button {
 }
 
 @media (max-width: 540px) {
+
+  .rider-delivery-map {
+  height: 300px;
+}
+
+.delivery-map-header {
+  flex-direction: column;
+}
+
+.live-tracking-badge {
+  align-self: flex-start;
+}
 
 .delivery-order-main{
     flex-direction:column;
@@ -1170,4 +1374,66 @@ button {
   .toast {
     width: 100%;
   }
+}
+
+.delivery-route-summary {
+  margin-top: 12px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.route-summary-item {
+  min-width: 0;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  background: var(--bg);
+}
+
+.route-summary-item > i {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background:
+    rgba(37, 99, 235, 0.12);
+
+  color: #2563eb;
+
+  font-size: 13px;
+}
+
+.route-summary-item span {
+  display: block;
+
+  color: var(--text-secondary);
+
+  font-size: 9px;
+}
+
+.route-summary-item strong {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--text-primary);
+
+  font-size: 12px;
 }

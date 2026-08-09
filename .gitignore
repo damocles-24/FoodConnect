@@ -1,5 +1,10 @@
 # Local secrets
-api/config.local.php
+api/config/config.local.php
+/api/config/geoapify.local.php
+
+# Firebase service account
+*firebase-service-account*.json
+
 # IDE
 .vscode/
 
