@@ -111,11 +111,6 @@ document.addEventListener(
         "staffLoginMsg"
       );
 
-      const staffCredentialMsg =
-      document.getElementById(
-        "staffCredentialMsg"
-      );
-
     const staffAccessCard =
       staffModal?.querySelector(
         ".staff-access-card"
@@ -228,10 +223,52 @@ const backToOwnerLoginBtn =
 
     let restaurantCards = [];
 
-const restaurantTrack =
+    const restaurantTrack =
+      document.getElementById(
+        "restaurantTrack"
+      );
+
+      const restaurantsPageTrack =
   document.getElementById(
-    "restaurantTrack"
+    "restaurantsPageTrack"
   );
+
+const restaurantsPageSearch =
+  document.getElementById(
+    "restaurantsPageSearch"
+  );
+
+const restaurantsPageSearchForm =
+  document.getElementById(
+    "restaurantsPageSearchForm"
+  );
+
+const restaurantsPageResultCount =
+  document.getElementById(
+    "restaurantsPageResultCount"
+  );
+
+const restaurantsPageEmptyState =
+  document.getElementById(
+    "restaurantsPageEmptyState"
+  );
+
+const restaurantsPageView =
+  document.getElementById(
+    "restaurants-page"
+  );
+
+const backToHomepageBtn =
+  document.getElementById(
+    "backToHomepageBtn"
+  );
+
+const restaurantsPageCategories =
+  document.querySelectorAll(
+    ".restaurants-page-category"
+  );
+
+let restaurantsPageCards = [];
 
     const restaurantResultCount =
       document.getElementById(
@@ -300,31 +337,6 @@ const restaurantTrack =
           ? "#65d68a"
           : "#ff777b";
     }
-
-    function setStaffCredentialMessage(
-  message = "",
-  type = "error"
-) {
-  if (!staffCredentialMsg) {
-    return;
-  }
-
-  staffCredentialMsg.textContent =
-    message;
-
-  staffCredentialMsg.classList.remove(
-    "error",
-    "success"
-  );
-
-  if (message) {
-    staffCredentialMsg.classList.add(
-      type === "success"
-        ? "success"
-        : "error"
-    );
-  }
-}
 
         /* =========================
        PORTAL VIEWS
@@ -1015,6 +1027,246 @@ function bindRestaurantLinks() {
       );
     }
   );
+}
+
+/* =========================================================
+   RESTAURANTS PAGE VIEW
+========================================================= */
+
+function renderRestaurantsPageCards() {
+
+  if (!restaurantsPageTrack) {
+    return;
+  }
+
+  restaurantsPageTrack.innerHTML = "";
+
+  const originalCards =
+    restaurantTrack
+      ? restaurantTrack.querySelectorAll(
+          ".restaurant-slide"
+        )
+      : [];
+
+  originalCards.forEach(
+    (card) => {
+
+      const clonedCard =
+        card.cloneNode(true);
+
+      clonedCard.style.display = "";
+
+      restaurantsPageTrack.appendChild(
+        clonedCard
+      );
+
+    }
+  );
+
+  restaurantsPageCards = [
+    ...restaurantsPageTrack.querySelectorAll(
+      ".restaurant-slide"
+    )
+  ];
+
+  bindRestaurantsPageLinks();
+
+  filterRestaurantsPage(
+    restaurantsPageSearch?.value || ""
+  );
+}
+
+
+function bindRestaurantsPageLinks() {
+
+  if (!restaurantsPageTrack) {
+    return;
+  }
+
+  const links =
+    restaurantsPageTrack.querySelectorAll(
+      ".restaurant-link"
+    );
+
+  links.forEach(
+    (link) => {
+
+      link.addEventListener(
+        "click",
+        async (event) => {
+
+          event.preventDefault();
+
+          const restaurantUrl =
+            link.getAttribute("href");
+
+          if (!restaurantUrl) {
+            return;
+          }
+
+          const login =
+            await checkLogin();
+
+          if (!login.logged_in) {
+            openLoginModal();
+
+            return;
+          }
+
+          window.location.href =
+            restaurantUrl;
+
+        }
+      );
+
+    }
+  );
+}
+
+
+function filterRestaurantsPage(
+  searchValue = ""
+) {
+
+  const query =
+    String(searchValue)
+      .trim()
+      .toLowerCase();
+
+  let visibleCount = 0;
+
+  restaurantsPageCards.forEach(
+    (card) => {
+
+      const searchableText = [
+
+        card.dataset.name || "",
+
+        card.dataset.description || ""
+
+      ]
+        .join(" ")
+        .toLowerCase();
+
+
+      const matches =
+        !query ||
+        searchableText.includes(
+          query
+        );
+
+
+      card.style.display =
+        matches ? "" : "none";
+
+
+      if (matches) {
+        visibleCount += 1;
+      }
+
+    }
+  );
+
+
+  if (restaurantsPageResultCount) {
+
+    restaurantsPageResultCount.textContent =
+      `${visibleCount} restaurant${
+        visibleCount === 1
+          ? ""
+          : "s"
+      }`;
+
+  }
+
+
+  if (restaurantsPageEmptyState) {
+
+    restaurantsPageEmptyState.style.display =
+      visibleCount === 0
+        ? "block"
+        : "none";
+
+  }
+
+}
+
+
+function showRestaurantsPage() {
+
+  const main =
+    document.querySelector("main");
+
+  const partnerCTA =
+    document.getElementById(
+      "restaurant-partner"
+    );
+
+
+  if (main) {
+    main.style.display = "none";
+  }
+
+
+  if (partnerCTA) {
+    partnerCTA.style.display = "none";
+  }
+
+
+  if (restaurantsPageView) {
+
+    restaurantsPageView.style.display =
+      "block";
+
+  }
+document.body.classList.add(
+  "restaurants-page-active"
+);
+
+  renderRestaurantsPageCards();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+function showHomePage() {
+
+  const main =
+    document.querySelector("main");
+
+  const partnerCTA =
+    document.getElementById(
+      "restaurant-partner"
+    );
+
+
+  if (restaurantsPageView) {
+
+    restaurantsPageView.style.display =
+      "none";
+
+  }
+
+
+  if (main) {
+    main.style.display = "";
+  }
+
+
+  if (partnerCTA) {
+    partnerCTA.style.display = "";
+  }
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
 }
 
 async function loadPublicRestaurants() {
@@ -1736,6 +1988,41 @@ function updateAllRestaurantCards() {
   }
 );
 
+/* =========================================================
+   RESTAURANTS PAGE NAVIGATION
+========================================================= */
+
+document
+  .querySelectorAll(
+    'a[href="#restaurants-page"]'
+  )
+  .forEach(
+    (link) => {
+
+      link.addEventListener(
+        "click",
+        (event) => {
+
+          event.preventDefault();
+
+          showRestaurantsPage();
+
+        }
+      );
+
+    }
+  );
+
+
+backToHomepageBtn?.addEventListener(
+  "click",
+  () => {
+
+    showHomePage();
+
+  }
+);
+
     /* =========================
        CATEGORY BUTTONS
     ========================= */
@@ -2351,20 +2638,20 @@ ownerVerificationCode?.addEventListener(
             0
           );
 
-        setStaffCredentialMessage("");
+        setStaffMessage("");
 
         if (!restaurantId) {
-          setStaffCredentialMessage(
-            "Please select your restaurant."
+          setStaffMessage(
+            "Select a restaurant."
           );
 
           return;
         }
 
         if (!email || !password) {
-          setStaffCredentialMessage(
-  "Please enter your staff email and password."
-);
+          setStaffMessage(
+            "Enter email and password."
+          );
 
           if (!email) {
             staffEmail?.focus();
@@ -2416,23 +2703,10 @@ ownerVerificationCode?.addEventListener(
             !response.ok ||
             !data.success
           ) {
-            let loginMessage =
-  data.message ||
-  "Unable to log in.";
-
-if (
-  response.status === 403 &&
-  String(data.message || "")
-    .toLowerCase()
-    .includes("disabled")
-) {
-  loginMessage =
-    "Your staff account is inactive. Please contact the restaurant owner to reactivate it.";
-}
-
-setStaffCredentialMessage(
-  loginMessage
-);
+            setStaffMessage(
+              data.message ||
+              "Invalid login credentials."
+            );
 
             return;
           }
@@ -2449,9 +2723,9 @@ setStaffCredentialMessage(
               break;
 
             case "owner":
-              setStaffCredentialMessage(
-  "Restaurant owners must use the FoodConnect Partner Portal."
-);
+              setStaffMessage(
+                "Restaurant owners must use the FoodConnect Partner Portal."
+              );
               break;
 
             case "cashier":
@@ -2465,9 +2739,9 @@ setStaffCredentialMessage(
               break;
 
             default:
-              setStaffCredentialMessage(
-  "This staff account does not have an assigned dashboard."
-);
+              setStaffMessage(
+                "This account does not have an available dashboard."
+              );
           }
         } catch (error) {
           console.error(
@@ -2475,10 +2749,10 @@ setStaffCredentialMessage(
             error
           );
 
-          setStaffCredentialMessage(
-  error.message ||
-  "Cannot connect to the server."
-);
+          setStaffMessage(
+            error.message ||
+            "Cannot connect to server."
+          );
         } finally {
           staffLoginBtn.disabled =
             false;
@@ -2597,3 +2871,63 @@ if (ownerPassword && toggleOwnerPassword) {
     }
   });
 }
+
+/* =========================================================
+   RESTAURANTS PAGE SEARCH
+========================================================= */
+
+restaurantsPageSearchForm?.addEventListener(
+  "submit",
+  (event) => {
+
+    event.preventDefault();
+
+    filterRestaurantsPage(
+      restaurantsPageSearch?.value || ""
+    );
+
+  }
+);
+
+
+restaurantsPageSearch?.addEventListener(
+  "input",
+  () => {
+
+    filterRestaurantsPage(
+      restaurantsPageSearch.value
+    );
+
+  }
+);
+
+/* =========================================================
+   RESTAURANTS PAGE CATEGORIES
+========================================================= */
+
+restaurantsPageCategories.forEach(
+  (button) => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const category =
+          button.dataset.category || "";
+
+        if (restaurantsPageSearch) {
+
+          restaurantsPageSearch.value =
+            category;
+
+          filterRestaurantsPage(
+            category
+          );
+
+        }
+
+      }
+    );
+
+  }
+);

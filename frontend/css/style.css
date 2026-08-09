@@ -3307,3 +3307,514 @@ body {
 #ownerLoginBox .password-toggle i {
   pointer-events: none;
 }
+
+/* =========================================================
+   RESTAURANTS PAGE VIEW
+========================================================= */
+
+.restaurants-page-view {
+  display: none;
+
+  min-height: calc(100vh - 78px);
+  background: #f8f9fb;
+
+  padding: 45px 0 70px;
+}
+
+.restaurants-page-container {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+
+/* =========================
+   TOP AREA
+========================= */
+
+.restaurants-page-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 45px;
+}
+
+
+/* SEARCH */
+
+.restaurants-page-search {
+  width: min(560px, 100%);
+
+  display: flex;
+  align-items: center;
+
+  min-height: 52px;
+
+  background: #ffffff;
+
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+
+  box-shadow: 0 5px 18px rgba(16, 24, 40, 0.05);
+
+  overflow: hidden;
+}
+
+.restaurants-page-search > i {
+  margin-left: 18px;
+
+  color: #98a2b3;
+
+  font-size: 16px;
+}
+
+.restaurants-page-search input {
+  flex: 1;
+
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  padding: 0 14px;
+
+  color: var(--text);
+
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.restaurants-page-search input::placeholder {
+  color: #98a2b3;
+}
+
+.restaurants-page-search button {
+  width: 48px;
+  height: 48px;
+
+  margin-right: 2px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: var(--primary);
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.restaurants-page-search button:hover {
+  transform: translateX(2px);
+  opacity: 0.9;
+}
+
+
+/* BACK BUTTON */
+
+.restaurants-page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--primary);
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  padding: 10px 0;
+}
+
+.restaurants-page-back i {
+  transition: transform 0.2s ease;
+}
+
+.restaurants-page-back:hover i {
+  transform: translateX(-4px);
+}
+
+
+/* =========================
+   PAGE HEADING
+========================= */
+
+.restaurants-page-heading {
+  margin-bottom: 48px;
+}
+
+.restaurants-page-heading h2 {
+  margin: 8px 0 8px;
+
+  color: var(--text);
+
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+}
+
+.restaurants-page-heading p {
+  max-width: 650px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* =========================
+   SECTION HEADINGS
+========================= */
+
+.restaurants-page-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.restaurants-page-section-heading h3 {
+  margin: 5px 0 0;
+
+  color: var(--text);
+
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.restaurants-page-section-heading > p {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+}
+
+
+/* =========================
+   CATEGORIES
+========================= */
+
+.restaurants-page-categories {
+  margin-bottom: 58px;
+}
+
+.restaurants-page-category-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.restaurants-page-category {
+  min-height: 130px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  padding: 18px 12px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  color: var(--text);
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 18px rgba(16, 24, 40, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.restaurants-page-category:hover {
+  transform: translateY(-4px);
+
+  border-color: #ffd0ad;
+
+  box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
+}
+
+.restaurants-page-category-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background: #fff4e9;
+
+  font-size: 29px;
+}
+
+.restaurants-page-category strong {
+  font-size: 13px;
+}
+
+
+/* =========================
+   RESTAURANTS
+========================= */
+
+.restaurants-page-list {
+  margin-bottom: 62px;
+}
+
+.restaurants-page-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+
+  gap: 24px;
+}
+
+
+/*
+   The existing restaurant cards are copied
+   into this grid. These rules make sure the
+   copied slide wrapper behaves correctly.
+*/
+
+.restaurants-page-grid .restaurant-slide {
+  width: 100%;
+  min-width: 0;
+}
+
+.restaurants-page-grid .restaurant-card {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* EMPTY RESULT */
+
+.restaurants-page-empty {
+  display: none;
+
+  margin: 30px 0 0;
+
+  padding: 35px 20px;
+
+  border: 1px dashed #d5d9e0;
+  border-radius: 18px;
+
+  color: var(--muted);
+
+  text-align: center;
+
+  background: #ffffff;
+}
+
+
+/* =========================
+   CLOSED RESTAURANTS
+========================= */
+
+.closed-restaurants-section {
+  margin-top: 15px;
+}
+
+.closed-restaurants-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 220px;
+
+  padding: 35px 20px;
+
+  border: 1px dashed #d5d9e0;
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  text-align: center;
+}
+
+.closed-restaurants-placeholder-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 16px;
+
+  border-radius: 18px;
+
+  background: #f2f4f7;
+
+  color: #98a2b3;
+
+  font-size: 24px;
+}
+
+.closed-restaurants-placeholder h4 {
+  margin: 0 0 7px;
+
+  color: var(--text);
+
+  font-size: 17px;
+}
+
+.closed-restaurants-placeholder p {
+  max-width: 450px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   RESTAURANTS PAGE RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .restaurants-page-category-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .restaurants-page-view {
+    padding: 35px 0 55px;
+  }
+
+  .restaurants-page-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .restaurants-page-search {
+    width: 100%;
+  }
+
+  .restaurants-page-back {
+    align-self: flex-start;
+  }
+
+  .restaurants-page-category-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .restaurants-page-container {
+    width: min(100% - 28px, 1180px);
+  }
+
+  .restaurants-page-heading {
+    margin-bottom: 35px;
+  }
+
+  .restaurants-page-heading h2 {
+    font-size: 30px;
+    letter-spacing: -0.8px;
+  }
+
+  .restaurants-page-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .restaurants-page-category-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+  }
+
+  .restaurants-page-category {
+    min-height: 115px;
+  }
+
+  .restaurants-page-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+}
+
+
+@media (max-width: 390px) {
+
+  .restaurants-page-container {
+    width: min(100% - 22px, 1180px);
+  }
+
+  .restaurants-page-category {
+    min-height: 105px;
+
+    padding: 14px 8px;
+  }
+
+  .restaurants-page-category-icon {
+    width: 50px;
+    height: 50px;
+
+    font-size: 25px;
+  }
+
+  .restaurants-page-category strong {
+    font-size: 12px;
+  }
+
+}
+
+/* Hide main navigation while viewing Restaurants page */
+body.restaurants-page-active .desktop-nav {
+  display: none !important;
+}
+
+/* Hide footer navigation on Restaurants page */
+body.restaurants-page-active .footer-links {
+  display: none !important;
+}

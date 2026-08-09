@@ -297,7 +297,7 @@
         </div>
 
         <a
-          href="#restaurants"
+          href="#restaurants-page"
           class="section-link"
         >
 
@@ -736,6 +736,251 @@
       </div>
 
     </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     RESTAURANTS PAGE VIEW
+===================================================== -->
+<section
+  class="restaurants-page-view"
+  id="restaurants-page"
+>
+
+  <div class="restaurants-page-container">
+
+    <!-- SEARCH + BACK -->
+    <div class="restaurants-page-top">
+
+      <form
+        class="restaurants-page-search"
+        id="restaurantsPageSearchForm"
+      >
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+          type="search"
+          id="restaurantsPageSearch"
+          placeholder="Search restaurants..."
+          autocomplete="off"
+        >
+
+        <button
+          type="submit"
+          aria-label="Search restaurants"
+        >
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+      </form>
+
+      <button
+        type="button"
+        class="restaurants-page-back"
+        id="backToHomepageBtn"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Back to Homepage</span>
+      </button>
+
+    </div>
+
+
+    <!-- PAGE TITLE -->
+    <div class="restaurants-page-heading">
+
+      <span class="section-kicker">
+        Explore FoodConnect
+      </span>
+
+      <h2>
+        Find Your Favorite Restaurants
+      </h2>
+
+      <p>
+        Browse restaurants and explore different food categories.
+      </p>
+
+    </div>
+
+
+    <!-- CATEGORIES -->
+    <section class="restaurants-page-categories">
+
+      <div class="restaurants-page-section-heading">
+        <h3>Categories</h3>
+      </div>
+
+      <div class="restaurants-page-category-grid">
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Burgers"
+        >
+          <span class="restaurants-page-category-icon">
+            🍔
+          </span>
+
+          <strong>Burgers</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Chickens"
+        >
+          <span class="restaurants-page-category-icon">
+            🍗
+          </span>
+
+          <strong>Chickens</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Milktea"
+        >
+          <span class="restaurants-page-category-icon">
+            🧋
+          </span>
+
+          <strong>Milktea</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Pizza"
+        >
+          <span class="restaurants-page-category-icon">
+            🍕
+          </span>
+
+          <strong>Pizza</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Coffee"
+        >
+          <span class="restaurants-page-category-icon">
+            ☕
+          </span>
+
+          <strong>Coffee</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Filipino"
+        >
+          <span class="restaurants-page-category-icon">
+            🍛
+          </span>
+
+          <strong>Filipino</strong>
+        </button>
+
+
+        <button
+          type="button"
+          class="restaurants-page-category"
+          data-category="Dessert"
+        >
+          <span class="restaurants-page-category-icon">
+            🍰
+          </span>
+
+          <strong>Dessert</strong>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- AVAILABLE RESTAURANTS -->
+    <section class="restaurants-page-list">
+
+      <div class="restaurants-page-section-heading">
+
+        <div>
+          <span class="section-kicker">
+            Available Restaurants
+          </span>
+
+          <h3>Restaurants</h3>
+        </div>
+
+        <p id="restaurantsPageResultCount">
+          Loading restaurants...
+        </p>
+
+      </div>
+
+
+      <div
+        class="restaurants-page-grid"
+        id="restaurantsPageTrack"
+      >
+        <!-- Existing restaurant cards are copied here by JavaScript. -->
+      </div>
+
+
+      <p
+        class="restaurants-page-empty"
+        id="restaurantsPageEmptyState"
+      >
+        No restaurant matched your search.
+      </p>
+
+    </section>
+
+
+    <!-- CLOSED RESTAURANTS -->
+    <section class="closed-restaurants-section">
+
+      <div class="restaurants-page-section-heading">
+
+        <div>
+          <span class="section-kicker">
+            Currently Unavailable
+          </span>
+
+          <h3>Closed Restaurant</h3>
+        </div>
+
+      </div>
+
+
+      <!-- Placeholder for backend integration -->
+      <div class="closed-restaurants-placeholder">
+
+        <div class="closed-restaurants-placeholder-icon">
+          <i class="fa-solid fa-store-slash"></i>
+        </div>
+
+        <h4>Closed Restaurants</h4>
+
+        <p>
+          Restaurant availability information will appear here.
+        </p>
+
+      </div>
+
+    </section>
 
   </div>
 
