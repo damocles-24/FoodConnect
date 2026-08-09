@@ -749,46 +749,31 @@
   id="restaurants-page"
 >
 
-  <div class="restaurants-page-container">
+  <section class="restaurants-page-container">
 
     <!-- SEARCH + BACK -->
-    <div class="restaurants-page-top">
+<div class="restaurants-page-top">
 
-      <form
-        class="restaurants-page-search"
-        id="restaurantsPageSearchForm"
-      >
+  <form
+    class="restaurants-page-search"
+    id="restaurantsPageSearchForm"
+  >
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input
+      type="search"
+      id="restaurantsPageSearch"
+      placeholder="Search restaurants..."
+      autocomplete="off"
+    >
+    <button
+      type="submit"
+      aria-label="Search restaurants"
+    >
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </form>
 
-        <i class="fa-solid fa-magnifying-glass"></i>
-
-        <input
-          type="search"
-          id="restaurantsPageSearch"
-          placeholder="Search restaurants..."
-          autocomplete="off"
-        >
-
-        <button
-          type="submit"
-          aria-label="Search restaurants"
-        >
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="restaurants-page-back"
-        id="backToHomepageBtn"
-      >
-        <i class="fa-solid fa-arrow-left"></i>
-        <span>Back to Homepage</span>
-      </button>
-
-    </div>
-
-
+</div>
     <!-- PAGE TITLE -->
     <div class="restaurants-page-heading">
 

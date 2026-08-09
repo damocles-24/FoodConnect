@@ -3359,6 +3359,8 @@ body {
   box-shadow: 0 5px 18px rgba(16, 24, 40, 0.05);
 
   overflow: hidden;
+
+  margin-left: auto;
 }
 
 .restaurants-page-search > i {
