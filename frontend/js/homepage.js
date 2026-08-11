@@ -2882,13 +2882,70 @@ restaurantsPageSearchForm?.addEventListener(
 
     event.preventDefault();
 
+    const searchValue =
+      restaurantsPageSearch?.value || "";
+
     filterRestaurantsPage(
-      restaurantsPageSearch?.value || ""
+      searchValue
     );
+
+    const query =
+      String(searchValue)
+        .trim()
+        .toLowerCase();
+
+    if (!query) {
+      return;
+    }
+
+    setTimeout(() => {
+
+      const matchedCard =
+        restaurantsPageCards.find(
+          (card) => {
+
+            const restaurantName =
+              String(
+                card.dataset.name || ""
+              )
+                .trim()
+                .toLowerCase();
+
+            return restaurantName === query;
+          }
+        );
+
+      if (!matchedCard) {
+        return;
+      }
+
+      matchedCard.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      matchedCard.classList.remove(
+        "restaurant-search-pop"
+      );
+
+      void matchedCard.offsetWidth;
+
+      matchedCard.classList.add(
+        "restaurant-search-pop"
+      );
+
+      setTimeout(() => {
+
+        matchedCard.classList.remove(
+          "restaurant-search-pop"
+        );
+
+      }, 900);
+
+    }, 150);
 
   }
 );
-
 
 restaurantsPageSearch?.addEventListener(
   "input",
