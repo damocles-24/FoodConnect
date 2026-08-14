@@ -1059,13 +1059,24 @@ $cartPriceUpdateStmt->close();
 
 $delivery_fee = 0.00;
 
+/*
+ * Backward-compatible default for restaurants created before
+ * configurable order types were added.
+ */
+$order_types = [
+    "dine-in",
+    "takeout",
+    "delivery"
+];
+
 if (
     $cart_restaurant_id > 0 &&
     !$has_mixed_restaurants
 ) {
     $restaurantStmt = $conn->prepare("
         SELECT
-            delivery_fee
+            delivery_fee,
+            order_types_json
 
         FROM tbl_restaurants
 
@@ -1132,6 +1143,34 @@ if (
                 $restaurantRow["delivery_fee"] ?? 0
             )
         );
+
+        $decodedOrderTypes = json_decode(
+            (string)(
+                $restaurantRow["order_types_json"] ?? ""
+            ),
+            true
+        );
+
+        if (is_array($decodedOrderTypes)) {
+            $allowedOrderTypes = [
+                "dine-in",
+                "takeout",
+                "delivery"
+            ];
+
+            $cleanOrderTypes = array_values(
+                array_unique(
+                    array_intersect(
+                        $decodedOrderTypes,
+                        $allowedOrderTypes
+                    )
+                )
+            );
+
+            if (!empty($cleanOrderTypes)) {
+                $order_types = $cleanOrderTypes;
+            }
+        }
     }
 }
 
@@ -1178,5 +1217,8 @@ respond_json([
         round(
             $delivery_fee,
             2
-        )
+        ),
+
+    "order_types" =>
+        $order_types
 ]);

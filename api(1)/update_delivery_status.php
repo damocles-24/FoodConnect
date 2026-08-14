@@ -90,13 +90,13 @@ try {
     */
 
     $assignmentSql = "
-        SELECT
-            assignment_id,
-            order_id,
-            restaurant_id,
-            rider_id,
-            delivery_status
-        FROM tbl_delivery_assignments
+       SELECT
+    assignment_id,
+    order_id,
+    restaurant_id,
+    rider_id,
+    delivery_status
+FROM tbl_delivery_assignments
         WHERE assignment_id = ?
           AND rider_id = ?
           AND restaurant_id = ?

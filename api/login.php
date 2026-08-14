@@ -150,7 +150,9 @@ if ($role !== "customer") {
 if ((int) $user["status"] !== 1) {
     respond_json(
         [
-            "error" => "Account is disabled."
+            "error" => "Your account is deactivated.",
+            "deactivated" => true,
+            "reactivation_available" => true
         ],
         403
     );

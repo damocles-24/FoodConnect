@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="../css/profile.css">
+  <title>Account Settings | FoodConnect</title>
+  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="header-container">
+    <a class="brand" href="index.html" aria-label="FoodConnect home">
+      <img
+        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom%20(2).png"
+        alt="FoodConnect"
+        class="brand-logo"
+      >
+
+      <div class="brand-copy">
+        <h1>
+          <span class="food">Food</span><span class="connect">Connect</span>
+        </h1>
+        <p>Customer account</p>
+      </div>
+    </a>
+
+    <button type="button" class="back-button" id="headerBackBtn">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Back</span>
+    </button>
+  </div>
+</header>
+
+<main class="settings-page">
+  <div class="page-container">
+
+    <section class="page-intro">
+      <div class="intro-row">
+        <div>
+          <span class="section-kicker">Account settings</span>
+          <h2>Manage your account</h2>
+          <p>Choose a setting to manage your FoodConnect account.</p>
+        </div>
+
+        <button type="button" class="mobile-menu-button" id="settingsMenuBtn" aria-label="Open account settings menu" aria-expanded="false">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </section>
+
+    <div class="settings-layout">
+
+      <div class="settings-nav-overlay" id="settingsNavOverlay"></div>
+      <aside class="settings-nav" id="settingsNav" aria-label="Account settings sections">
+        <div class="mobile-nav-header">
+          <strong>Account Settings</strong>
+          <button type="button" id="closeSettingsMenuBtn" class="mobile-nav-close" aria-label="Close menu">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <button class="settings-nav-item active" type="button" data-target="profileSection">
+          <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+          <span>
+            <strong>Profile</strong>
+            <small>Personal info</small>
+          </span>
+        </button>
+
+        <button class="settings-nav-item" type="button" data-target="securitySection">
+          <span class="nav-icon"><i class="fa-solid fa-key"></i></span>
+          <span>
+            <strong>Password & Security</strong>
+            <small>Change your password</small>
+          </span>
+        </button>
+
+        <button class="settings-nav-item" type="button" data-target="sessionSection">
+          <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+          <span>
+            <strong>Sign out</strong>
+            <small>End this session</small>
+          </span>
+        </button>
+
+        <button class="settings-nav-item danger-nav" type="button" data-target="dangerSection">
+          <span class="nav-icon"><i class="fa-regular fa-circle-xmark"></i></span>
+          <span>
+            <strong>Deactivate account</strong>
+            <small>Disable account access</small>
+          </span>
+        </button>
+      </aside>
+
+      <div class="settings-content">
+
+        <div id="globalStatusMessage" class="status-message" role="status" aria-live="polite"></div>
+
+        <section class="settings-card settings-panel active-panel" id="profileSection">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fa-regular fa-user"></i>
+            </div>
+
+            <div>
+              <h3>Profile information</h3>
+              <p>Keep your customer details updated for orders and delivery contact.</p>
+            </div>
+          </div>
+
+          <form id="profileForm" novalidate>
+            <div class="field-grid">
+
+              <label class="field">
+                <span class="field-label">Full name <strong>*</strong></span>
+                <div class="input-wrap">
+                  <i class="fa-regular fa-user"></i>
+                  <input
+                    id="fullName"
+                    name="full_name"
+                    type="text"
+                    maxlength="150"
+                    autocomplete="name"
+                    placeholder="Enter your full name"
+                    required
+                  >
+                </div>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Email <strong>*</strong></span>
+                <div class="input-wrap">
+                  <i class="fa-regular fa-envelope"></i>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    maxlength="150"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    required
+                  >
+                </div>
+              </label>
+
+              <label class="field field-full">
+                <span class="field-label">
+                  Contact number
+                  <small>Optional</small>
+                </span>
+
+                <div class="input-wrap">
+                  <i class="fa-solid fa-phone"></i>
+                  <input
+                    id="contactNumber"
+                    name="contact_number"
+                    type="tel"
+                    maxlength="13"
+                    placeholder="09123456789 or +639123456789"
+                    autocomplete="tel"
+                  >
+                </div>
+
+                <small class="field-hint">
+                  Use a Philippine mobile number.
+                </small>
+              </label>
+
+              <label class="field field-full">
+                <span class="field-label">
+                  Address
+                  <small>Optional</small>
+                </span>
+
+                <div class="input-wrap textarea-wrap">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <textarea
+                    id="address"
+                    name="address"
+                    data-ph-address="1"
+                    rows="4"
+                    maxlength="1000"
+                    autocomplete="street-address"
+                    placeholder="Enter your address"
+                  ></textarea>
+                </div>
+              </label>
+
+            </div>
+
+            <div id="profileStatus" class="inline-status" role="status" aria-live="polite"></div>
+
+            <div class="form-actions">
+              <button type="button" id="cancelBtn" class="btn secondary-btn">
+                Cancel
+              </button>
+
+              <button type="submit" id="saveBtn" class="btn primary-btn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Save changes</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="settings-card settings-panel" id="securitySection">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <div>
+              <h3>Password & Security</h3>
+              <p>Use your current password before creating a new one.</p>
+            </div>
+          </div>
+
+          <form id="passwordForm" novalidate>
+            <div class="field-grid one-column">
+
+              <label class="field">
+                <span class="field-label">Current password <strong>*</strong></span>
+                <div class="input-wrap password-wrap">
+                  <i class="fa-solid fa-key"></i>
+                  <input
+                    id="currentPassword"
+                    name="current_password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your current password"
+                    required
+                  >
+                  <button class="password-toggle" type="button" data-password-toggle="currentPassword" aria-label="Show current password">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </label>
+
+              <label class="field">
+                <span class="field-label">New password <strong>*</strong></span>
+                <div class="input-wrap password-wrap">
+                  <i class="fa-solid fa-lock"></i>
+                  <input
+                    id="newPassword"
+                    name="new_password"
+                    type="password"
+                    minlength="8"
+                    autocomplete="new-password"
+                    placeholder="Create a new password"
+                    required
+                  >
+                  <button class="password-toggle" type="button" data-password-toggle="newPassword" aria-label="Show new password">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+                <small class="field-hint">
+                  At least 8 characters with uppercase, lowercase, and a number.
+                </small>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Confirm new password <strong>*</strong></span>
+                <div class="input-wrap password-wrap">
+                  <i class="fa-solid fa-lock"></i>
+                  <input
+                    id="confirmPassword"
+                    name="confirm_password"
+                    type="password"
+                    minlength="8"
+                    autocomplete="new-password"
+                    placeholder="Repeat your new password"
+                    required
+                  >
+                  <button class="password-toggle" type="button" data-password-toggle="confirmPassword" aria-label="Show confirmed password">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </label>
+
+            </div>
+
+            <div id="passwordStatus" class="inline-status" role="status" aria-live="polite"></div>
+
+            <div class="form-actions">
+              <button type="reset" class="btn secondary-btn">Clear</button>
+              <button type="submit" id="passwordBtn" class="btn primary-btn">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Update password</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="settings-card compact-card settings-panel" id="sessionSection">
+          <div class="card-header compact-header">
+            <div class="card-icon">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+
+            <div class="grow">
+              <h3>Sign out</h3>
+              <p>End your current FoodConnect session on this browser.</p>
+            </div>
+
+            <button type="button" id="logoutSettingsBtn" class="btn dark-btn">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="settings-card danger-card settings-panel" id="dangerSection">
+          <div class="card-header compact-header">
+            <div class="card-icon danger-icon">
+              <i class="fa-regular fa-circle-xmark"></i>
+            </div>
+
+            <div class="grow">
+              <h3>Deactivate account</h3>
+              <p>
+                Your account will be disabled and you will no longer be able to sign in.
+                Your previous order records will stay in FoodConnect.
+              </p>
+            </div>
+          </div>
+
+          <div class="danger-action-row">
+            <div>
+              <strong>This action requires your password.</strong>
+              <span>You can ask an administrator to reactivate the account later if needed.</span>
+            </div>
+
+            <button type="button" id="openDeactivateBtn" class="btn danger-btn">
+              Deactivate account
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-backdrop hidden" id="deactivateModal" aria-hidden="true">
+  <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deactivateTitle">
+    <button type="button" class="modal-close" id="closeDeactivateBtn" aria-label="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="modal-warning-icon">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+
+    <h3 id="deactivateTitle">Deactivate your account?</h3>
+    <p>
+      You will be logged out immediately and this account will no longer be able to sign in.
+      Your past orders will not be deleted.
+    </p>
+
+    <label class="field modal-field">
+      <span class="field-label">Enter your password to confirm <strong>*</strong></span>
+      <div class="input-wrap password-wrap">
+        <i class="fa-solid fa-key"></i>
+        <input
+          id="deactivatePassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Your current password"
+        >
+        <button class="password-toggle" type="button" data-password-toggle="deactivatePassword" aria-label="Show password">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
+    </label>
+
+    <div id="deactivateStatus" class="inline-status" role="status" aria-live="polite"></div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn secondary-btn" id="cancelDeactivateBtn">Cancel</button>
+      <button type="button" class="btn danger-btn" id="confirmDeactivateBtn">
+        <span>Yes, deactivate</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
+<script src="../js/profile.js"></script>
+</body>
+</html>

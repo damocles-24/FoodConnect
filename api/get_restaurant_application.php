@@ -145,6 +145,7 @@ $stmt = $conn->prepare("
     restaurant_description,
     logo_path,
     business_email,
+    tax_registration_type,
     province,
     city_municipality,
     barangay,

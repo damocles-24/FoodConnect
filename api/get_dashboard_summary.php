@@ -241,7 +241,7 @@ $productStmt = $conn->prepare("
         COUNT(*) AS total_products,
         COUNT(DISTINCT NULLIF(TRIM(category), '')) AS total_categories,
         SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) AS available_products,
-        SUM(CASE WHEN status = 'Available' AND stock > 0 AND stock <= 10 THEN 1 ELSE 0 END) AS low_stock_products,
+        SUM(CASE WHEN status = 'Available' AND stock > 0 AND stock <= 5 THEN 1 ELSE 0 END) AS low_stock_products,
         SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END) AS out_of_stock_products,
         SUM(CASE WHEN status = 'Available' AND stock > 0 THEN 1 ELSE 0 END) AS orderable_products
     FROM tbl_products

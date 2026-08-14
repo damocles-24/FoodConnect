@@ -110,6 +110,11 @@ const businessEmailInput =
         "businessEmail"
     );
 
+const taxRegistrationTypeInput =
+    document.getElementById(
+        "taxRegistrationType"
+    );
+
 const restaurantDescriptionInput =
     document.getElementById(
         "restaurantDescription"
@@ -140,9 +145,9 @@ const postalCodeInput =
         "postalCode"
     );
 
-const minimumOrderInput =
+const deliveryFeeGroup =
     document.getElementById(
-        "minimumOrder"
+        "deliveryFeeGroup"
     );
 
 const deliveryFeeInput =
@@ -315,6 +320,11 @@ const reviewBusinessEmail =
         "reviewBusinessEmail"
     );
 
+const reviewTaxRegistrationType =
+    document.getElementById(
+        "reviewTaxRegistrationType"
+    );
+
 const reviewAddress =
     document.getElementById(
         "reviewAddress"
@@ -383,14 +393,14 @@ const STEP_TITLES = {
 };
 
 const DELIVERY_OPTION_LABELS = {
-    pickup:
-        "Customer pickup",
+    "dine-in":
+        "Dine-in",
 
-    restaurant_delivery:
-        "Restaurant delivery",
+    takeout:
+        "Takeout",
 
-    foodconnect_delivery:
-        "FoodConnect delivery"
+    delivery:
+        "Delivery"
 };
 
 let currentApplicationStatus =
@@ -419,6 +429,14 @@ async function initializePage() {
     bindEvents();
     updateDescriptionCounter();
     updateWizardButtons();
+
+    if (window.PHAddressDropdown) {
+        await window.PHAddressDropdown.bindCascadingSelects({
+            areaSelect: provinceInput,
+            localitySelect: cityMunicipalityInput,
+            barangaySelect: barangayInput
+        });
+    }
 
     await loadApplication();
 }
@@ -501,12 +519,12 @@ removeLogoButton.addEventListener(
         cuisineInput,
         restaurantContactInput,
         businessEmailInput,
+        taxRegistrationTypeInput,
         restaurantDescriptionInput,
         restaurantAddressInput,
         provinceInput,
         cityMunicipalityInput,
         barangayInput,
-        minimumOrderInput,
         deliveryFeeInput
     ].forEach((field) => {
         field.addEventListener(
@@ -532,6 +550,7 @@ removeLogoButton.addEventListener(
                 "change",
                 () => {
                     clearDeliveryOptionsError();
+                    updateDeliveryFeeVisibility();
                     updateWizardButtons();
                 }
             );
@@ -956,6 +975,9 @@ renderRestaurantLogo(
     businessEmailInput.value =
         application.business_email || "";
 
+    taxRegistrationTypeInput.value =
+        application.tax_registration_type || "";
+
     restaurantDescriptionInput.value =
         application.restaurant_description || "";
 
@@ -971,13 +993,19 @@ renderRestaurantLogo(
     barangayInput.value =
         application.barangay || "";
 
+    if (window.PHAddressDropdown) {
+        window.PHAddressDropdown.setCascadingValues({
+            areaSelect: provinceInput,
+            localitySelect: cityMunicipalityInput,
+            barangaySelect: barangayInput,
+            areaName: application.province || "",
+            localityName: application.city_municipality || "",
+            barangayName: application.barangay || ""
+        });
+    }
+
     postalCodeInput.value =
         application.postal_code || "";
-
-    minimumOrderInput.value =
-        formatMoneyInput(
-            application.minimum_order
-        );
 
     deliveryFeeInput.value =
         formatMoneyInput(
@@ -992,6 +1020,8 @@ renderRestaurantLogo(
         application.delivery_options
     );
 
+    updateDeliveryFeeVisibility();
+
     updateDescriptionCounter();
 
     renderApplicationStatus(
@@ -1002,6 +1032,24 @@ renderRestaurantLogo(
     applyStatusRestrictions(
         currentApplicationStatus
     );
+}
+
+function updateDeliveryFeeVisibility() {
+    const deliverySelected =
+        deliveryOptionInputs.some(
+            (checkbox) =>
+                checkbox.checked &&
+                checkbox.value === "delivery"
+        );
+
+    deliveryFeeGroup?.classList.toggle(
+        "hidden",
+        !deliverySelected
+    );
+
+    if (!deliverySelected) {
+        deliveryFeeInput.value = "0.00";
+    }
 }
 
 function populateBusinessHours(hours) {
@@ -1077,10 +1125,29 @@ function populateBusinessHours(hours) {
 }
 
 function populateDeliveryOptions(options) {
-    const selectedOptions =
+    let selectedOptions =
         Array.isArray(options)
             ? options
             : [];
+
+    // Backward compatibility for drafts saved with the old
+    // onboarding service names. Third-party FoodConnect
+    // delivery is intentionally not carried forward.
+    selectedOptions = selectedOptions
+        .map((option) => {
+            if (option === "pickup") {
+                return "takeout";
+            }
+
+            if (option === "restaurant_delivery") {
+                return "delivery";
+            }
+
+            return option;
+        })
+        .filter((option) =>
+            ["dine-in", "takeout", "delivery"].includes(option)
+        );
 
     deliveryOptionInputs.forEach(
         (checkbox) => {
@@ -1092,14 +1159,14 @@ function populateDeliveryOptions(options) {
     );
 
     if (selectedOptions.length === 0) {
-        const pickupCheckbox =
+        const takeoutCheckbox =
             deliveryOptionInputs.find(
                 (checkbox) =>
-                    checkbox.value === "pickup"
+                    checkbox.value === "takeout"
             );
 
-        if (pickupCheckbox) {
-            pickupCheckbox.checked =
+        if (takeoutCheckbox) {
+            takeoutCheckbox.checked =
                 true;
         }
     }
@@ -1605,6 +1672,13 @@ function validateRestaurantDetailsStep(
             showErrors
         ) && valid;
 
+    valid =
+        validateRequiredField(
+            taxRegistrationTypeInput,
+            "Select your BIR tax registration status.",
+            showErrors
+        ) && valid;
+
     if (
         businessEmailInput.value.trim() !== "" &&
         !businessEmailInput.validity.valid
@@ -1826,7 +1900,7 @@ function validateOrderServicesStep(
             clearDeliveryOptionsError();
         } else {
             deliveryOptionsError.textContent =
-                "Select at least one order service.";
+                "Select at least one order type.";
 
             document
                 .querySelector(
@@ -2467,6 +2541,13 @@ function renderReviewSummary() {
             businessEmailInput.value
         );
 
+    reviewTaxRegistrationType.textContent =
+        taxRegistrationTypeInput.value === "vat"
+            ? "VAT-Registered"
+            : taxRegistrationTypeInput.value === "non_vat"
+                ? "Non-VAT Registered"
+                : "—";
+
     const addressParts = [
         restaurantAddressInput.value,
         barangayInput.value,
@@ -2584,6 +2665,9 @@ function collectFormData(action) {
         business_email:
             businessEmailInput.value.trim(),
 
+        tax_registration_type:
+            taxRegistrationTypeInput.value.trim(),
+
         restaurant_description:
             restaurantDescriptionInput.value.trim(),
 
@@ -2608,15 +2692,12 @@ function collectFormData(action) {
         delivery_options:
             selectedDeliveryOptions,
 
-        minimum_order:
-            normalizeMoneyValue(
-                minimumOrderInput.value
-            ),
-
         delivery_fee:
-            normalizeMoneyValue(
-                deliveryFeeInput.value
-            )
+            selectedDeliveryOptions.includes("delivery")
+                ? normalizeMoneyValue(
+                    deliveryFeeInput.value
+                )
+                : 0
     };
 }
 
@@ -2975,6 +3056,9 @@ function applyServerValidationErrors(
 
         business_email:
             businessEmailInput,
+
+        tax_registration_type:
+            taxRegistrationTypeInput,
 
         restaurant_address:
             restaurantAddressInput,

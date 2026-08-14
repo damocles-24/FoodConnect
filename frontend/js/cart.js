@@ -553,6 +553,75 @@ function renderLoadError() {
    LOAD CART
    ========================================================= */
 
+function applyRestaurantOrderTypes(orderTypes) {
+    const orderTypeSelect =
+        document.getElementById("orderType");
+
+    if (!orderTypeSelect) {
+        return;
+    }
+
+    const allowedValues = [
+        "dine-in",
+        "takeout",
+        "delivery"
+    ];
+
+    const normalizedTypes = Array.isArray(orderTypes)
+        ? [
+            ...new Set(
+                orderTypes.filter(
+                    (value) =>
+                        allowedValues.includes(value)
+                )
+            )
+        ]
+        : allowedValues;
+
+    const effectiveTypes =
+        normalizedTypes.length > 0
+            ? normalizedTypes
+            : allowedValues;
+
+    const labels = {
+        "dine-in": "Dine-in",
+        "takeout": "Takeout",
+        "delivery": "Delivery"
+    };
+
+    const previousValue =
+        orderTypeSelect.value;
+
+    orderTypeSelect.innerHTML = `
+        <option value="">
+            Select order type
+        </option>
+        ${effectiveTypes
+            .map(
+                (value) => `
+                    <option value="${value}">
+                        ${labels[value]}
+                    </option>
+                `
+            )
+            .join("")}
+    `;
+
+    if (
+        effectiveTypes.includes(
+            previousValue
+        )
+    ) {
+        orderTypeSelect.value =
+            previousValue;
+    } else {
+        orderTypeSelect.value = "";
+        resetDeliveryAvailability();
+    }
+
+    updateOrderTypeFields();
+}
+
 async function loadCart() {
     const cartItemsContainer =
         document.getElementById("cartItems");
@@ -642,6 +711,10 @@ cartPricing.deliveryFee =
     Number(
         data.delivery_fee ?? 0
     );
+
+applyRestaurantOrderTypes(
+    data.order_types
+);
 
 cartPricing.selectedOrderType =
     document
@@ -934,15 +1007,6 @@ const addonTotal =
                             : ""
                     }
 
-                    <p>
-                        <span>
-                            Unit price
-                        </span>
-
-                        <strong>
-                            ${formatPrice(item.unit_price)}
-                        </strong>
-                    </p>
 
                 </div>
 
@@ -1614,14 +1678,72 @@ function useCustomerCurrentLocation() {
                     data.address_found &&
                     formattedAddress !== ""
                 ) {
-                    if (addressInput) {
+                    let structuredResult = null;
+
+                    if (
+                        window.PHAddressDropdown &&
+                        typeof window
+                            .PHAddressDropdown
+                            .setEnhancedValues ===
+                            "function"
+                    ) {
+                        structuredResult =
+                            await window
+                                .PHAddressDropdown
+                                .setEnhancedValues(
+                                    addressInput,
+                                    {
+                                        /*
+                                         * Defensive Philippine mapping:
+                                         * if Geoapify repeats the city as
+                                         * "province", use region/state instead.
+                                         */
+                                        provinceName:
+                                            (
+                                                String(
+                                                    location.province || ""
+                                                )
+                                                    .trim()
+                                                    .toLowerCase() ===
+                                                String(
+                                                    location.city || ""
+                                                )
+                                                    .trim()
+                                                    .toLowerCase()
+                                            )
+                                                ? (
+                                                    location.region ||
+                                                    location.province_county ||
+                                                    location.province ||
+                                                    ""
+                                                )
+                                                : (
+                                                    location.province ||
+                                                    location.region ||
+                                                    location.province_county ||
+                                                    ""
+                                                ),
+                                        cityName:
+                                            location.city ||
+                                            "",
+                                        barangayName:
+                                            location.barangay ||
+                                            "",
+                                        streetDetails:
+                                            location.street_details ||
+                                            location.road ||
+                                            ""
+                                    }
+                                );
+                    } else if (addressInput) {
+                        /*
+                         * Compatibility fallback only.
+                         * The structured Philippine address helper should
+                         * normally handle this branch.
+                         */
                         addressInput.value =
                             formattedAddress;
 
-                        /*
-                         * Notify the checkout validation
-                         * that the address value changed.
-                         */
                         addressInput.dispatchEvent(
                             new Event(
                                 "input",
@@ -1643,15 +1765,45 @@ function useCustomerCurrentLocation() {
 
                     clearDeliveryAddressResults();
 
-                    setDeliveryAddressSearchMessage(
-                        "Your current address was filled automatically. Add a house number or landmark if needed.",
-                        "success"
-                    );
+                    if (
+                        structuredResult &&
+                        structuredResult.areaMatched &&
+                        structuredResult.localityMatched &&
+                        !structuredResult.barangayMatched
+                    ) {
+                        setDeliveryAddressSearchMessage(
+                            "Current location found. Province and city were filled automatically; please select the correct barangay.",
+                            "info"
+                        );
 
-                    showCheckoutMessage(
-                        "Your current location and address were selected successfully.",
-                        "success"
-                    );
+                        showCheckoutMessage(
+                            "Location detected. Please select your barangay to complete the delivery address.",
+                            "success"
+                        );
+                    } else if (
+                        structuredResult &&
+                        structuredResult.success
+                    ) {
+                        setDeliveryAddressSearchMessage(
+                            "Your current location and Philippine address fields were filled automatically.",
+                            "success"
+                        );
+
+                        showCheckoutMessage(
+                            "Your current location and address were selected successfully.",
+                            "success"
+                        );
+                    } else {
+                        setDeliveryAddressSearchMessage(
+                            "Your current location was found. Please check the address fields and complete anything that could not be matched.",
+                            "info"
+                        );
+
+                        showCheckoutMessage(
+                            "Your current location was selected. Please review the delivery address.",
+                            "success"
+                        );
+                    }
                 } else {
                     setDeliveryAddressSearchMessage(
                         "Your location was selected, but no written address was found. Please enter your address or landmark manually.",
@@ -2231,13 +2383,18 @@ updateTotals(
 );
 
 dynamicFields.innerHTML = "";
-paymentMethod.value = "";
+paymentMethod.innerHTML = `
+    <option value="">Select payment method</option>
+`;
 
     resetDeliveryAvailability();
     showCheckoutMessage();
 
     if (type === "dine-in") {
-        paymentMethod.value = "Cash";
+        paymentMethod.innerHTML = `
+            <option value="Cash">Cash</option>
+            <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+        `;
 
         dynamicFields.innerHTML = `
             <label for="notes">
@@ -2253,7 +2410,10 @@ paymentMethod.value = "";
     }
 
     if (type === "takeout") {
-        paymentMethod.value = "Cash";
+        paymentMethod.innerHTML = `
+            <option value="Cash">Cash</option>
+            <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+        `;
 
         dynamicFields.innerHTML = `
             <label for="pickupTime">
@@ -2278,42 +2438,23 @@ paymentMethod.value = "";
     }
 
   if (type === "delivery") {
-    paymentMethod.value =
-        "Cash on Delivery";
+    paymentMethod.innerHTML = `
+        <option value="Cash on Delivery">Cash on Delivery</option>
+        <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+    `;
 
     dynamicFields.innerHTML = `
        <label for="address">
     Complete Address
 </label>
 
-<div class="delivery-address-search">
-    <textarea
-        id="address"
-        rows="3"
-        placeholder="Example: Lucap, Pag-asa Street, Nepo Mall, or your complete address"
-    ></textarea>
-
-    <button
-        type="button"
-        id="searchDeliveryAddressButton"
-        class="search-delivery-address-button"
-    >
-        <i class="fa-solid fa-magnifying-glass"></i>
-        Search Address
-    </button>
-</div>
-
-<p
-    id="deliveryAddressSearchMessage"
-    class="delivery-address-search-message"
-    hidden
-></p>
-
-<div
-    id="deliveryAddressResults"
-    class="delivery-address-results"
-    hidden
-></div>
+<textarea
+    id="address"
+    rows="3"
+    data-ph-address="1"
+    data-ph-address-required="1"
+    required
+></textarea>
 
         <label for="landmark">
             Landmark
@@ -2543,9 +2684,19 @@ function renderOrderQrExpiredState() {
             "orderQrGoToOrders"
         );
 
+    const payNowButton =
+        document.getElementById(
+            "orderQrPayNow"
+        );
+
     modal?.classList.remove(
         "verified"
     );
+
+    if (payNowButton) {
+        payNowButton.hidden = true;
+        payNowButton.dataset.orderId = "";
+    }
 
     if (headerIcon) {
         headerIcon.className =
@@ -3004,9 +3155,19 @@ function renderOrderQrPendingState() {
             "orderQrGoToOrders"
         );
 
+    const payNowButton =
+        document.getElementById(
+            "orderQrPayNow"
+        );
+
     modal?.classList.remove(
         "verified"
     );
+
+    if (payNowButton) {
+        payNowButton.hidden = true;
+        payNowButton.dataset.orderId = "";
+    }
 
     if (headerIcon) {
         headerIcon.className =
@@ -3116,6 +3277,11 @@ stopOrderQrCountdown();
             "orderQrGoToOrders"
         );
 
+    const payNowButton =
+        document.getElementById(
+            "orderQrPayNow"
+        );
+
     modal?.classList.add(
         "verified"
     );
@@ -3130,24 +3296,48 @@ stopOrderQrCountdown();
             "QR verified successfully";
     }
 
+    const paymentMethod =
+        String(
+            orderData?.payment_method || ""
+        ).trim();
+
+    const paymentStatus =
+        String(
+            orderData?.payment_status || ""
+        )
+            .trim()
+            .toLowerCase();
+
+    const requiresPayMongo =
+        paymentMethod === "PayMongo QR Ph" &&
+        paymentStatus !== "paid";
+
     if (title) {
         title.textContent =
-            "Order Received";
+            requiresPayMongo
+                ? "QR Verified — Complete Payment"
+                : "Order Received";
     }
 
     if (description) {
         description.textContent =
-            "Your QR has been verified. The restaurant can now process your order.";
+            requiresPayMongo
+                ? "Your order is verified. Complete your PayMongo payment so the restaurant can start preparing it."
+                : "Your QR has been verified. The restaurant can now process your order.";
     }
 
     if (statusIcon) {
         statusIcon.className =
-            "fa-solid fa-check";
+            requiresPayMongo
+                ? "fa-solid fa-wallet"
+                : "fa-solid fa-check";
     }
 
     if (statusTitle) {
         statusTitle.textContent =
-            "QR Verified";
+            requiresPayMongo
+                ? "Payment Required"
+                : "QR Verified";
     }
 
     if (statusDescription) {
@@ -3157,9 +3347,17 @@ stopOrderQrCountdown();
             );
 
         statusDescription.textContent =
-            trackingStatus === "preparing"
-                ? "The restaurant is now preparing your order."
-                : "Your order has been added to the restaurant processing queue.";
+            requiresPayMongo
+                ? `Pay ${formatPrice(
+                    Number(
+                        orderData?.total_amount || 0
+                    )
+                )} with PayMongo QR Ph to continue.`
+                : (
+                    trackingStatus === "preparing"
+                        ? "The restaurant is now preparing your order."
+                        : "Your order has been added to the restaurant processing queue."
+                );
     }
 
     if (qrCodeSection) {
@@ -3170,8 +3368,21 @@ stopOrderQrCountdown();
         reminder.hidden = true;
     }
 
+    if (payNowButton) {
+        payNowButton.hidden =
+            !requiresPayMongo;
+
+        payNowButton.dataset.orderId =
+            requiresPayMongo
+                ? String(
+                    orderData?.order_id || ""
+                )
+                : "";
+    }
+
     if (goToOrdersButton) {
-        goToOrdersButton.hidden = false;
+        goToOrdersButton.hidden =
+            requiresPayMongo;
     }
 }
 
@@ -3224,6 +3435,11 @@ function renderOrderQrCancelledState() {
     const goToOrdersButton =
         document.getElementById(
             "orderQrGoToOrders"
+        );
+
+    const payNowButton =
+        document.getElementById(
+            "orderQrPayNow"
         );
 
     modal?.classList.remove(
@@ -3566,6 +3782,58 @@ qrContainer.innerHTML = "";
     );
 }
 
+async function startPayMongoPayment(orderId) {
+    const normalizedOrderId =
+        Number(orderId || 0);
+
+    if (
+        !Number.isInteger(normalizedOrderId) ||
+        normalizedOrderId <= 0
+    ) {
+        throw new Error(
+            "A valid order is required before starting payment."
+        );
+    }
+
+    const response = await fetch(
+        `${API}/create_paymongo_checkout.php`,
+        {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                order_id: normalizedOrderId
+            })
+        }
+    );
+
+    const data =
+        await readJsonResponse(response);
+
+    if (!response.ok || !data.success) {
+        throw new Error(
+            data.message ||
+            "Unable to start PayMongo payment."
+        );
+    }
+
+    const checkoutUrl =
+        String(
+            data.checkout_url || ""
+        ).trim();
+
+    if (!checkoutUrl) {
+        throw new Error(
+            "PayMongo did not return a checkout page."
+        );
+    }
+
+    window.location.href = checkoutUrl;
+}
+
 async function placeOrder() {
     if (isPlacingOrder) {
         return;
@@ -3627,6 +3895,16 @@ async function placeOrder() {
         );
 
         contactNumber?.focus();
+        return;
+    }
+
+    if (!payment) {
+        showCheckoutMessage(
+            "Select a payment method.",
+            "error"
+        );
+
+        paymentMethod?.focus();
         return;
     }
 
@@ -3715,9 +3993,9 @@ async function placeOrder() {
         "error"
     );
 
-    document
-        .getElementById("address")
-        ?.focus();
+    if (window.PHAddressDropdown) {
+        window.PHAddressDropdown.validate("address");
+    }
 
     return;
 }
@@ -3820,6 +4098,35 @@ payload.customer_longitude =
 );
 
 if (
+    payment === "PayMongo QR Ph" &&
+    type === "delivery"
+) {
+    showCheckoutMessage(
+        "Order created. Opening PayMongo payment...",
+        "info"
+    );
+
+    await startPayMongoPayment(
+        data.order_id
+    );
+
+    return;
+}
+
+if (
+    payment === "PayMongo QR Ph" &&
+    (
+        type === "dine-in" ||
+        type === "takeout"
+    )
+) {
+    showCheckoutMessage(
+        "Order created. Present your FoodConnect QR to the cashier first. PayMongo payment becomes available after QR verification.",
+        "success"
+    );
+}
+
+if (
     type === "dine-in" ||
     type === "takeout"
 ) {
@@ -3853,7 +4160,9 @@ if (
         orderType.value = "";
         customerName.value = "";
         contactNumber.value = "";
-        paymentMethod.value = "";
+        paymentMethod.innerHTML = `
+            <option value="">Select payment method</option>
+        `;
         resetDeliveryAvailability();
         resetCartPricing();
         updateTotals(0);
@@ -4166,6 +4475,18 @@ function getCustomerTrackingStatus(order) {
         return "completed";
     }
 
+    const paymentMethod =
+        String(
+            order?.payment_method || ""
+        ).trim();
+
+    const paymentStatus =
+        String(
+            order?.payment_status || ""
+        )
+            .trim()
+            .toLowerCase();
+
     /*
      * Dine-in and takeout must remain here until the
      * cashier successfully scans the order QR.
@@ -4175,6 +4496,13 @@ function getCustomerTrackingStatus(order) {
         !qrVerified
     ) {
         return "waiting_for_qr";
+    }
+
+    if (
+        paymentMethod === "PayMongo QR Ph" &&
+        paymentStatus !== "paid"
+    ) {
+        return "waiting_for_payment";
     }
 
     if (
@@ -4230,6 +4558,9 @@ function getOrderStatusLabel(status) {
     const labels = {
         waiting_for_qr:
             "Waiting for QR Verification",
+
+        waiting_for_payment:
+            "Waiting for Payment",
 
         order_received:
             "Order Received",
@@ -4548,6 +4879,11 @@ function buildCustomerOrderTimeline(
                 icon: "fa-qrcode"
             },
             {
+                key: "waiting_for_payment",
+                label: "Payment",
+                icon: "fa-wallet"
+            },
+            {
                 key: "order_received",
                 label: "Order Received",
                 icon: "fa-receipt"
@@ -4710,6 +5046,17 @@ function buildCustomerOrderCard(order) {
         ).trim()
     );
 
+    const canPayOnline =
+        status === "waiting_for_payment" &&
+        String(
+            order.payment_method || ""
+        ).trim() === "PayMongo QR Ph" &&
+        String(
+            order.payment_status || ""
+        )
+            .trim()
+            .toLowerCase() !== "paid";
+
 const cancelRemainingMs =
     getCustomerCancelRemainingMs(
         order
@@ -4831,6 +5178,7 @@ const canCustomerCancel =
 
                ${
     canShowQr ||
+    canPayOnline ||
     canCustomerCancel
         ? `
             <section class="customer-order-actions-card">
@@ -4894,7 +5242,42 @@ const canCustomerCancel =
                 }
 
                 ${
-                    canShowQr &&
+                    canPayOnline
+                        ? `
+                            <div class="customer-order-action-section payment-action">
+
+                                <div class="customer-order-action-copy">
+                                    <span class="customer-order-action-label">
+                                        Online Payment
+                                    </span>
+
+                                    <strong>
+                                        QR verified — payment is ready
+                                    </strong>
+
+                                    <p>
+                                        Continue to PayMongo QR Ph. Your order
+                                        will not enter preparation until payment
+                                        is confirmed.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="customer-order-show-qr-button customer-order-pay-button"
+                                    data-pay-order="${orderId}"
+                                >
+                                    <i class="fa-solid fa-wallet"></i>
+                                    <span>Pay with PayMongo</span>
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+                ${
+                    (canShowQr || canPayOnline) &&
                     canCustomerCancel
                         ? `
                             <div
@@ -6761,6 +7144,41 @@ orderQrGoToOrdersButton
         }
     );
 
+const orderQrPayNowButton =
+    document.getElementById(
+        "orderQrPayNow"
+    );
+
+orderQrPayNowButton
+    ?.addEventListener(
+        "click",
+        async () => {
+            const orderId =
+                Number(
+                    orderQrPayNowButton
+                        .dataset.orderId || 0
+                );
+
+            if (orderId <= 0) {
+                showToast(
+                    "Payment Unavailable",
+                    "The order could not be found. Please refresh and try again."
+                );
+                return;
+            }
+
+            orderQrPayNowButton.disabled = true;
+
+            try {
+                await startPayMongoPayment(
+                    orderId
+                );
+            } finally {
+                orderQrPayNowButton.disabled = false;
+            }
+        }
+    );
+
 orderQrBackdrop?.addEventListener(
     "click",
     closeOrderQrModal
@@ -6911,7 +7329,39 @@ clearCompletedOrdersButton
 
 ordersContent?.addEventListener(
     "click",
-    (event) => {
+    async (event) => {
+
+const payOrderButton =
+    event.target.closest(
+        "[data-pay-order]"
+    );
+
+if (payOrderButton) {
+    const orderId =
+        Number(
+            payOrderButton.dataset.payOrder
+        );
+
+    if (
+        Number.isInteger(orderId) &&
+        orderId > 0
+    ) {
+        payOrderButton.disabled = true;
+
+        try {
+            await startPayMongoPayment(orderId);
+        } catch (error) {
+            payOrderButton.disabled = false;
+            window.alert(
+                error.message ||
+                "Unable to start PayMongo payment."
+            );
+            await loadCustomerOrders(true);
+        }
+    }
+
+    return;
+}
 
 const cancelOrderButton =
     event.target.closest(

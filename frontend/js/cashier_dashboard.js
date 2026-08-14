@@ -20,6 +20,14 @@ let restoreAssignModalAfterConfirm = false;
 let pendingCancellationReason = "";
 
 /* =========================================
+   AUTOMATIC RECEIPT PRINT QUEUE
+========================================= */
+
+let automaticReceiptPrintBusy = false;
+let automaticReceiptPrintTimer = null;
+let automaticReceiptPrintErrorShown = false;
+
+/* =========================================
    QR SCANNER STATE
 ========================================= */
 
@@ -35,6 +43,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadOrders();
   loadCashierNotifications();
+
+  /*
+   * Automatic first-print worker.
+   * Delivery orders become eligible immediately.
+   * Dine-in / Takeout become eligible after QR verification.
+   */
+  setTimeout(() => {
+    processAutomaticReceiptPrintQueue();
+  }, 1200);
+
+  automaticReceiptPrintTimer = setInterval(() => {
+    processAutomaticReceiptPrintQueue();
+  }, 2000);
 
   setInterval(() => {
     loadOrders();
@@ -618,6 +639,12 @@ await new Promise(resolve => {
     await closeQrScannerModal();
 
     openOrderModal(orderId);
+
+    /*
+     * Do not wait for the next 2-second queue poll after a successful
+     * Dine-in / Takeout QR verification.
+     */
+    processAutomaticReceiptPrintQueue();
 
     showToast(
       "Order QR Verified",
@@ -1540,8 +1567,60 @@ function openOrderModal(orderId) {
   document.getElementById("modalBody").innerHTML = buildModalContent(selectedOrder);
 
   updateModalButtons(selectedOrder.order_status);
+  updateReceiptRecoveryButtons();
 
   document.getElementById("orderModal").classList.add("active");
+}
+
+function updateReceiptRecoveryButtons() {
+  const customerReceiptBtn =
+    document.getElementById("printReceiptBtn");
+
+  const kitchenTicketBtn =
+    document.getElementById("printKitchenTicketBtn");
+
+  const onlinePaymentPending =
+    selectedOrder &&
+    String(
+      selectedOrder.payment_method || ""
+    ).trim() === "PayMongo QR Ph" &&
+    String(
+      selectedOrder.payment_status || ""
+    )
+      .trim()
+      .toLowerCase() !== "paid";
+
+  if (customerReceiptBtn) {
+    customerReceiptBtn.hidden =
+      Boolean(onlinePaymentPending);
+
+    customerReceiptBtn.disabled =
+      Boolean(onlinePaymentPending);
+
+    customerReceiptBtn.innerHTML = `
+      <i class="fa-solid fa-receipt"></i>
+      Print / Reprint Customer Receipt
+    `;
+
+    customerReceiptBtn.title =
+      "Use this again if the print dialog was cancelled, closed, or the receipt needs another copy.";
+  }
+
+  if (kitchenTicketBtn) {
+    kitchenTicketBtn.hidden =
+      Boolean(onlinePaymentPending);
+
+    kitchenTicketBtn.disabled =
+      Boolean(onlinePaymentPending);
+
+    kitchenTicketBtn.innerHTML = `
+      <i class="fa-solid fa-print"></i>
+      Print / Reprint Kitchen Ticket
+    `;
+
+    kitchenTicketBtn.title =
+      "Use this again if the print dialog was cancelled, closed, or the kitchen ticket needs another copy.";
+  }
 }
 
 function buildModalContent(order) {
@@ -1951,6 +2030,23 @@ function buildModalContent(order) {
               )}
             </strong>
           </div>
+
+          <div class="ticket-info-card">
+            <span>Payment Status</span>
+
+            <strong>
+              ${escapeHTML(
+                String(
+                  order.payment_status ||
+                  "cash_pending"
+                )
+                  .replaceAll("_", " ")
+                  .replace(/\b\w/g, character =>
+                    character.toUpperCase()
+                  )
+              )}
+            </strong>
+          </div>
         </div>
       </section>
 
@@ -2071,6 +2167,25 @@ function updateModalButtons(status) {
   }
 
   if (!selectedOrder) {
+    return;
+  }
+
+  const onlinePaymentPending =
+    String(
+      selectedOrder.payment_method || ""
+    ).trim() === "PayMongo QR Ph" &&
+    String(
+      selectedOrder.payment_status || ""
+    )
+      .trim()
+      .toLowerCase() !== "paid";
+
+  if (onlinePaymentPending) {
+    if (cancelBtn) {
+      cancelBtn.style.display =
+        "inline-flex";
+    }
+
     return;
   }
 
@@ -3645,102 +3760,403 @@ function showToast(title, message) {
   }, 4000);
 }
 
-function printCustomerReceipt() {
-  if (!selectedOrder) {
-    showToast("No Order Selected", "Please select an order first.");
-    return;
-  }
+function buildCustomerReceiptContent(order) {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : [];
 
-  const order = selectedOrder;
-  const items = Array.isArray(order.items) ? order.items : [];
+  const orderType = String(
+    order?.order_type || ""
+  ).toLowerCase().trim();
 
-  const itemRows = items.map(item => {
+  const isDelivery = orderType === "delivery";
+
+  const itemsSubtotal = items.reduce((sum, item) => {
     const quantity = Number(item.quantity || 0);
     const price = Number(item.price || 0);
-    const subtotal = quantity * price;
+
+    return sum + (quantity * price);
+  }, 0);
+
+  const deliveryFee = isDelivery
+    ? Number(order?.delivery_fee || 0)
+    : 0;
+
+  const itemBlocks = items.map(item => {
+    const quantity = Number(item.quantity || 0);
+    const price = Number(item.price || 0);
+    const lineTotal = quantity * price;
+
+    const optionLines = [
+      item.base_text
+        ? `<div>Variant: ${escapeHTML(item.base_text)}</div>`
+        : "",
+      item.combo_choice_text
+        ? `<div>Drink: ${escapeHTML(item.combo_choice_text)}</div>`
+        : "",
+      item.addon_text &&
+      item.addon_text !== "No Add-on"
+        ? `<div>Add-ons: ${escapeHTML(item.addon_text)}</div>`
+        : ""
+    ].filter(Boolean).join("");
 
     return `
-      <tr>
-        <td>
-          ${escapeHTML(item.product_name || "Unnamed Item")}
-         ${item.base_text
-    ? `<br><small>Variant: ${escapeHTML(item.base_text)}</small>`
-    : ""
-}
+      <div class="receipt-item">
+        <div class="receipt-item-top">
+          <strong class="receipt-item-name">
+            ${escapeHTML(item.product_name || "Unnamed Item")}
+          </strong>
 
-${item.combo_choice_text
-    ? `<br><small>Drink: ${escapeHTML(item.combo_choice_text)}</small>`
-    : ""
-}
+          <strong class="receipt-item-total">
+            ₱${formatMoney(lineTotal)}
+          </strong>
+        </div>
 
-${
-    item.addon_text &&
-    item.addon_text !== "No Add-on"
-        ? `<br><small>Add-ons: ${escapeHTML(item.addon_text)}</small>`
-        : ""
-}
-        </td>
-        <td class="center">${quantity}</td>
-        <td class="right">₱${formatMoney(price)}</td>
-        <td class="right">₱${formatMoney(subtotal)}</td>
-      </tr>
+        <div class="receipt-item-subline">
+          ${quantity} x ₱${formatMoney(price)}
+        </div>
+
+        ${
+          optionLines
+            ? `<div class="receipt-item-options">${optionLines}</div>`
+            : ""
+        }
+      </div>
     `;
   }).join("");
 
- const content = `
-  <div class="receipt customer-receipt">
-    <h1>${escapeHtml(order.restaurant_name || "FoodConnect")}</h1>
-    <p class="center-text">CUSTOMER RECEIPT</p>
-    <p class="center-text">Thank you for your order</p>
+  return `
+    <div class="receipt customer-receipt">
+      <h1 class="restaurant-name">
+        ${escapeHTML(order?.restaurant_name || "FoodConnect")}
+      </h1>
 
-    <hr>
+      <p class="receipt-document-label">
+        CUSTOMER RECEIPT
+      </p>
 
-    <p><strong>Queue:</strong> #${escapeHTML(order.queue_number || "N/A")}</p>
-    <p><strong>Order:</strong> #${escapeHTML(order.order_id)}</p>
-    <p><strong>Customer:</strong> ${escapeHTML(order.customer_name || "N/A")}</p>
-    <p><strong>Type:</strong> ${escapeHTML(formatOrderType(order.order_type))}</p>
-    <p><strong>Payment:</strong> ${escapeHTML(order.payment_method || "N/A")}</p>
-    <p><strong>Date:</strong> ${escapeHTML(formatDateTime(order.created_at))}</p>
+      <hr>
 
-    <hr>
+      <div class="customer-queue-block">
+        <div class="customer-queue-label">
+          QUEUE NUMBER
+        </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Price</th>
-          <th>Total</th>
-        </tr>
-      </thead>
+        <div class="customer-queue-number">
+          #${escapeHTML(order?.queue_number || "N/A")}
+        </div>
 
-      <tbody>
-        ${itemRows}
-      </tbody>
-    </table>
+        <div class="customer-queue-help">
+          Please keep this receipt for your order.
+        </div>
+      </div>
 
-    <hr>
+      <hr>
 
-    <h2 class="right">
-      TOTAL: ₱${formatMoney(order.total_amount)}
-    </h2>
+      <div class="receipt-meta">
+        <div class="receipt-meta-row">
+          <span>Order ID</span>
+          <strong>#${escapeHTML(order?.order_id || "N/A")}</strong>
+        </div>
 
-    ${
-      order.notes
-        ? `
-          <hr>
-          <p><strong>Notes:</strong> ${escapeHTML(order.notes)}</p>
-        `
-        : ""
+        <div class="receipt-meta-row">
+          <span>Customer</span>
+          <strong>${escapeHTML(order?.customer_name || "N/A")}</strong>
+        </div>
+
+        <div class="receipt-meta-row">
+          <span>Order Type</span>
+          <strong>${escapeHTML(formatOrderType(order?.order_type))}</strong>
+        </div>
+
+        <div class="receipt-meta-row">
+          <span>Payment</span>
+          <strong>${escapeHTML(order?.payment_method || "N/A")}</strong>
+        </div>
+
+        <div class="receipt-meta-row">
+          <span>Date</span>
+          <strong>${escapeHTML(formatDateTime(order?.created_at))}</strong>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="receipt-section-title">
+        ORDER SUMMARY
+      </div>
+
+      <div class="receipt-items">
+        ${itemBlocks || "<p>No items found.</p>"}
+      </div>
+
+      <hr>
+
+      <div class="receipt-totals">
+        <div class="receipt-total-row">
+          <span>Subtotal</span>
+          <strong>₱${formatMoney(itemsSubtotal)}</strong>
+        </div>
+
+        ${
+          isDelivery
+            ? `
+              <div class="receipt-total-row delivery-fee-row">
+                <span>Delivery Fee</span>
+                <strong>₱${formatMoney(deliveryFee)}</strong>
+              </div>
+            `
+            : ""
+        }
+
+        <div class="receipt-grand-total">
+          <span>TOTAL</span>
+          <strong>₱${formatMoney(order?.total_amount)}</strong>
+        </div>
+      </div>
+
+      ${
+        isDelivery && order?.address
+          ? `
+              <hr>
+
+              <div class="receipt-delivery-info">
+                <strong>DELIVERY TO</strong>
+                <p>${escapeHTML(order.address)}</p>
+                ${
+                  order?.landmark
+                    ? `<p>Landmark: ${escapeHTML(order.landmark)}</p>`
+                    : ""
+                }
+              </div>
+            `
+          : ""
+      }
+
+      ${
+        order?.notes
+          ? `
+              <hr>
+              <div class="receipt-customer-notes">
+                <strong>Notes:</strong>
+                ${escapeHTML(order.notes)}
+              </div>
+            `
+          : ""
+      }
+
+      <p class="thank-you">
+        THANK YOU!
+      </p>
+    </div>
+  `;
+}
+
+function printCustomerReceipt() {
+  if (!selectedOrder) {
+    showToast(
+      "No Order Selected",
+      "Please select an order first."
+    );
+    return;
+  }
+
+  if (
+    String(
+      selectedOrder.payment_method || ""
+    ).trim() === "PayMongo QR Ph" &&
+    String(
+      selectedOrder.payment_status || ""
+    )
+      .trim()
+      .toLowerCase() !== "paid"
+  ) {
+    showToast(
+      "Payment Pending",
+      "PayMongo payment must be confirmed before printing the receipt."
+    );
+    return;
+  }
+
+  const orderId = Number(
+    selectedOrder.order_id || 0
+  );
+
+  const content =
+    buildCustomerReceiptContent(selectedOrder);
+
+  /*
+   * Keep window.open() inside the cashier's direct click event.
+   * Waiting for the activity-log request first could cause the
+   * browser to block the print popup.
+   */
+  openPrintWindow(
+    "Customer Receipt",
+    content
+  );
+
+  /*
+   * Accountability log only for this MANUAL button path.
+   * Automatic first printing never calls this function, so it
+   * will not be recorded as a receipt reprint/request.
+   */
+  logManualReceiptPrintRequest(
+    orderId,
+    "customer_receipt"
+  );
+}
+
+async function processAutomaticReceiptPrintQueue() {
+  if (automaticReceiptPrintBusy) {
+    return;
+  }
+
+  automaticReceiptPrintBusy = true;
+  let claimedPrintJobId = 0;
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/claim_receipt_print_job.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to check the automatic receipt print queue."
+      );
     }
 
-    <p class="thank-you">
-      THANK YOU!
-    </p>
-  </div>
-`;
+    if (!data.job || !data.order) {
+      automaticReceiptPrintErrorShown = false;
+      return;
+    }
 
-  openPrintWindow("Customer Receipt", content);
+    claimedPrintJobId = Number(
+      data.job.print_job_id || 0
+    );
+
+    const order = data.order;
+
+    if (
+      !Number.isInteger(claimedPrintJobId) ||
+      claimedPrintJobId <= 0 ||
+      !Number(order.order_id)
+    ) {
+      throw new Error(
+        "The receipt print queue returned invalid data."
+      );
+    }
+
+    const printKind = String(
+      data.job.print_kind || ""
+    ).trim();
+
+    let content = "";
+    let printTitle = "";
+    let toastLabel = "";
+
+    if (printKind === "customer_receipt") {
+      content = buildCustomerReceiptContent(order);
+      printTitle = `Order #${order.order_id} Customer Receipt`;
+      toastLabel = "Customer receipt";
+    } else if (printKind === "kitchen_ticket") {
+      content = buildKitchenTicketContent(order);
+      printTitle = `Order #${order.order_id} Kitchen Ticket`;
+      toastLabel = "Kitchen ticket";
+    } else {
+      throw new Error(
+        "Unknown automatic print job type."
+      );
+    }
+
+    await openAutomaticPrintFrame(
+      printTitle,
+      content
+    );
+
+    await finishAutomaticReceiptPrintJob(
+      claimedPrintJobId
+    );
+
+    automaticReceiptPrintErrorShown = false;
+
+    showToast(
+      "Print Job Processed",
+      `${toastLabel} for Order #${order.order_id} was sent to the printer.`
+    );
+
+    /*
+ * Give Chrome enough time to completely close the previous
+ * print dialog before requesting the next print job.
+ *
+ * This is especially important when the same order has:
+ * 1. Customer Receipt
+ * 2. Kitchen Ticket
+ */
+setTimeout(() => {
+  processAutomaticReceiptPrintQueue();
+}, 2500);
+
+  } catch (error) {
+    console.error(
+      "Automatic receipt printing error:",
+      error
+    );
+
+    /*
+     * A claimed job is intentionally NOT auto-released here.
+     * This prevents a browser/network problem from printing the same
+     * first receipt repeatedly. The existing manual receipt button
+     * remains available if the physical print fails.
+     */
+    if (!automaticReceiptPrintErrorShown) {
+      showToast(
+        "Automatic Printing Error",
+        error.message ||
+        "Unable to automatically print the receipt."
+      );
+
+      automaticReceiptPrintErrorShown = true;
+    }
+
+  } finally {
+    automaticReceiptPrintBusy = false;
+  }
+}
+
+async function finishAutomaticReceiptPrintJob(
+  printJobId
+) {
+  const response = await fetch(
+    `${API_BASE}/finish_receipt_print_job.php`,
+    {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        print_job_id: printJobId
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(
+      data.message ||
+      "The receipt printed, but FoodConnect could not finish its print job."
+    );
+  }
 }
 
 function formatMoney(value) {
@@ -3923,159 +4339,250 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
-function printKitchenTicket() {
-  if (!selectedOrder) {
-    showToast("No Order Selected", "Please select an order first.");
-    return;
-  }
+function buildKitchenTicketContent(order) {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : [];
 
-  const order = selectedOrder;
-  const items = Array.isArray(order.items) ? order.items : [];
+  const itemBlocks = items.map(item => {
+    const quantity = Number(item.quantity || 0);
+    const baseText = String(item.base_text || "").trim();
+    const comboChoiceText = String(
+      item.combo_choice_text || ""
+    ).trim();
+    const addonText = String(
+      item.addon_text || ""
+    ).trim();
 
-  const itemRows = items.map(item => {
-  const quantity = Number(item.quantity || 0);
-  const price = Number(item.price || 0);
-  const subtotal = quantity * price;
-
-  const baseText = String(item.base_text || "").trim();
-  const comboChoiceText = String(
-    item.combo_choice_text || ""
-  ).trim();
-
-  const addonText = String(
-    item.addon_text || ""
-  ).trim();
-
-  return `
-    <tr>
-      <td>
-        ${escapeHTML(item.product_name || "Unnamed Item")}
+    return `
+      <div class="kitchen-item">
+        <strong>
+          ${quantity}x ${escapeHTML(item.product_name || "Unnamed Item")}
+        </strong>
 
         ${
           baseText
-            ? `<br><small>Variant: ${escapeHTML(baseText)}</small>`
+            ? `<p>Variant: ${escapeHTML(baseText)}</p>`
             : ""
         }
 
         ${
           comboChoiceText
-            ? `<br><small>Drink: ${escapeHTML(comboChoiceText)}</small>`
+            ? `<p>Drink: ${escapeHTML(comboChoiceText)}</p>`
             : ""
         }
 
         ${
           addonText && addonText !== "No Add-on"
-            ? `<br><small>Add-ons: ${escapeHTML(addonText)}</small>`
+            ? `<p>Add-ons: ${escapeHTML(addonText)}</p>`
             : ""
         }
-      </td>
+      </div>
+    `;
+  }).join("");
 
-      <td class="center">${quantity}</td>
-      <td class="right">₱${formatMoney(price)}</td>
-      <td class="right">₱${formatMoney(subtotal)}</td>
-    </tr>
-  `;
-}).join("");
+  const normalizedOrderType = String(
+    order?.order_type || ""
+  ).toLowerCase();
 
-  const content = `
-  <div class="receipt kitchen-ticket">
-    <h1>KITCHEN ORDER</h1>
+  return `
+    <div class="receipt kitchen-ticket">
+      <h1>KITCHEN TICKET</h1>
 
-    <div class="queue-number">
-      #${escapeHTML(order.queue_number || "N/A")}
+      <div class="queue-number">
+        #${escapeHTML(order?.queue_number || "N/A")}
+      </div>
+
+      <p class="center-text">
+        Order #${escapeHTML(order?.order_id || "N/A")}
+      </p>
+
+      <hr>
+
+      <p>
+        <strong>Type:</strong>
+        ${escapeHTML(formatOrderType(order?.order_type))}
+      </p>
+
+      <p>
+        <strong>Customer:</strong>
+        ${escapeHTML(order?.customer_name || "N/A")}
+      </p>
+
+      ${
+        normalizedOrderType === "dine-in"
+          ? `
+            <p>
+              <strong>Table:</strong>
+              ${escapeHTML(order?.table_number || "N/A")}
+            </p>
+          `
+          : ""
+      }
+
+      ${
+        normalizedOrderType === "take-out" ||
+        normalizedOrderType === "takeout"
+          ? `
+            <p>
+              <strong>Pickup:</strong>
+              ${escapeHTML(order?.pickup_time || "N/A")}
+            </p>
+          `
+          : ""
+      }
+
+      <p>
+        <strong>Time:</strong>
+        ${escapeHTML(formatDateTime(order?.created_at))}
+      </p>
+
+      <hr>
+
+      ${itemBlocks || "<p>No items found.</p>"}
+
+      ${
+        order?.notes
+          ? `
+            <hr>
+
+            <div class="notes">
+              <strong>IMPORTANT NOTES</strong>
+              <p>${escapeHTML(order.notes)}</p>
+            </div>
+          `
+          : ""
+      }
+
+      <hr>
+
+      <p class="center-text">
+        --- END OF ORDER ---
+      </p>
     </div>
-
-    <p class="center-text">
-      Order #${escapeHTML(order.order_id)}
-    </p>
-
-    <hr>
-
-    <p>
-      <strong>Type:</strong>
-      ${escapeHTML(formatOrderType(order.order_type))}
-    </p>
-
-    <p>
-      <strong>Customer:</strong>
-      ${escapeHTML(order.customer_name || "N/A")}
-    </p>
-
-    ${
-      String(order.order_type || "").toLowerCase() === "dine-in"
-        ? `
-          <p>
-            <strong>Table:</strong>
-            ${escapeHTML(order.table_number || "N/A")}
-          </p>
-        `
-        : ""
-    }
-
-    ${
-      String(order.order_type || "").toLowerCase() === "take-out"
-        ? `
-          <p>
-            <strong>Pickup:</strong>
-            ${escapeHTML(order.pickup_time || "N/A")}
-          </p>
-        `
-        : ""
-    }
-
-    <p>
-      <strong>Time:</strong>
-      ${escapeHTML(formatDateTime(order.created_at))}
-    </p>
-
-    <hr>
-
-    ${itemRows || "<p>No items found.</p>"}
-
-    ${
-      order.notes
-        ? `
-          <hr>
-
-          <div class="notes">
-            <strong>IMPORTANT NOTES</strong>
-            <p>${escapeHTML(order.notes)}</p>
-          </div>
-        `
-        : ""
-    }
-
-    <hr>
-
-    <p class="center-text">
-      --- END OF ORDER ---
-    </p>
-  </div>
-`;
-
-  openPrintWindow("Kitchen Order Ticket", content);
+  `;
 }
 
-
-
-function openPrintWindow(title, content) {
-  const printWindow = window.open(
-    "",
-    "_blank",
-    "width=420,height=700"
-  );
-
-  if (!printWindow) {
+function printKitchenTicket() {
+  if (!selectedOrder) {
     showToast(
-      "Printing Blocked",
-      "Please allow pop-ups so the receipt can be printed."
+      "No Order Selected",
+      "Please select an order first."
     );
     return;
   }
 
-  printWindow.document.open();
+  if (
+    String(
+      selectedOrder.payment_method || ""
+    ).trim() === "PayMongo QR Ph" &&
+    String(
+      selectedOrder.payment_status || ""
+    )
+      .trim()
+      .toLowerCase() !== "paid"
+  ) {
+    showToast(
+      "Payment Pending",
+      "PayMongo payment must be confirmed before printing the kitchen ticket."
+    );
+    return;
+  }
 
-  printWindow.document.write(`
+  const orderId = Number(
+    selectedOrder.order_id || 0
+  );
+
+  const content =
+    buildKitchenTicketContent(selectedOrder);
+
+  /*
+   * Keep the real print popup tied directly to the cashier click.
+   */
+  openPrintWindow(
+    "Kitchen Ticket",
+    content
+  );
+
+  /* Manual print/reprint accountability only. */
+  logManualReceiptPrintRequest(
+    orderId,
+    "kitchen_ticket"
+  );
+}
+
+async function logManualReceiptPrintRequest(
+  orderId,
+  documentType
+) {
+  const normalizedOrderId = Number(orderId || 0);
+
+  if (
+    !Number.isInteger(normalizedOrderId) ||
+    normalizedOrderId <= 0
+  ) {
+    console.error(
+      "Receipt print activity log skipped: invalid order ID.",
+      orderId
+    );
+
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/add_activity_log.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action_type: "receipt_print_request",
+          order_id: normalizedOrderId,
+          document_type: documentType
+        })
+      }
+    );
+
+    const responseText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      console.error(
+        "Invalid receipt print activity-log response:",
+        responseText
+      );
+
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      console.error(
+        "Receipt print activity log failed:",
+        data.message || "Unknown logging error."
+      );
+    }
+  } catch (error) {
+    /*
+     * Logging must never block or cancel the cashier's print action.
+     * The print request already happened, so we only report the
+     * logging problem in the developer console.
+     */
+    console.error(
+      "Receipt print activity log error:",
+      error
+    );
+  }
+}
+
+
+function buildPrintDocumentMarkup(title, content) {
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -4109,11 +4616,12 @@ function openPrintWindow(title, content) {
 
         body {
           font-family:
-            "Courier New",
-            Courier,
-            monospace;
+            Arial,
+            Helvetica,
+            sans-serif;
 
-          font-size: 10px;
+          font-size: 11px;
+          font-weight: 600;
           line-height: 1.3;
 
           -webkit-print-color-adjust: exact;
@@ -4121,86 +4629,99 @@ function openPrintWindow(title, content) {
         }
 
         .receipt {
-          width: 54mm;
-          max-width: 54mm;
+          width: 48mm;
+          max-width: 48mm;
           margin: 0 auto;
-          padding: 3mm 2mm 5mm;
+          padding: 2mm 1mm 4mm;
           overflow-wrap: anywhere;
         }
 
         h1 {
           margin: 0 0 2mm;
           text-align: center;
-          font-size: 16px;
+          font-size: 17px;
           line-height: 1.15;
-          font-weight: 700;
+          font-weight: 800;
           text-transform: uppercase;
         }
 
         h2 {
           margin: 2mm 0;
-          font-size: 13px;
+          font-size: 14px;
           line-height: 1.2;
+          font-weight: 800;
         }
 
         p {
           margin: 1mm 0;
-          font-size: 10px;
+          font-size: 11px;
+          font-weight: 600;
           line-height: 1.3;
         }
 
+        strong {
+          font-weight: 800;
+        }
+
         small {
-          font-size: 8px;
-          line-height: 1.2;
+          font-size: 10px;
+          font-weight: 600;
+          line-height: 1.25;
         }
 
         hr {
           width: 100%;
-          margin: 2.5mm 0;
+          margin: 2.25mm 0;
           border: 0;
-          border-top: 1px dashed #000000;
+          border-top: 1.5px dashed #000000;
         }
 
         table {
           width: 100%;
           border-collapse: collapse;
           table-layout: fixed;
-          font-size: 9px;
+          font-size: 10px;
+          font-weight: 600;
         }
 
         th,
         td {
-          padding: 1mm 0.5mm;
+          padding: 1mm 0.35mm;
           vertical-align: top;
           overflow-wrap: anywhere;
         }
 
         th {
-          border-bottom: 1px dashed #000000;
-          font-size: 8px;
+          border-bottom: 1.5px dashed #000000;
+          font-size: 9px;
+          font-weight: 800;
           text-align: left;
+        }
+
+        td {
+          font-weight: 600;
         }
 
         th:nth-child(1),
         td:nth-child(1) {
-          width: 43%;
+          width: 42%;
         }
 
         th:nth-child(2),
         td:nth-child(2) {
-          width: 11%;
+          width: 10%;
           text-align: center;
         }
 
         th:nth-child(3),
         td:nth-child(3) {
-          width: 21%;
+          width: 22%;
           text-align: right;
         }
 
         th:nth-child(4),
         td:nth-child(4) {
-          width: 25%;
+          width: 26%;
           text-align: right;
         }
 
@@ -4219,38 +4740,211 @@ function openPrintWindow(title, content) {
         .thank-you {
           margin-top: 4mm;
           text-align: center;
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .restaurant-name {
+          margin-bottom: 1mm;
+          font-size: 18px;
+          font-weight: 900;
+        }
+
+        .receipt-document-label {
+          margin: 0;
+          text-align: center;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.4px;
+        }
+
+        .customer-queue-block {
+          text-align: center;
+          page-break-inside: avoid;
+        }
+
+        .customer-queue-label {
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.5px;
+        }
+
+        .customer-queue-number {
+          margin: 1.5mm 0 1mm;
+          font-size: 36px;
+          line-height: 1;
+          font-weight: 900;
+        }
+
+        .customer-queue-help {
+          font-size: 9px;
+          font-weight: 700;
+          line-height: 1.25;
+        }
+
+        .receipt-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 0.7mm;
+        }
+
+        .receipt-meta-row,
+        .receipt-total-row,
+        .receipt-grand-total {
+          display: flex;
+          justify-content: space-between;
+          gap: 2mm;
+          align-items: flex-start;
+        }
+
+        .receipt-meta-row span,
+        .receipt-total-row span {
+          flex: 0 0 auto;
           font-size: 10px;
           font-weight: 700;
+        }
+
+        .receipt-meta-row strong,
+        .receipt-total-row strong {
+          text-align: right;
+          font-size: 10px;
+          font-weight: 800;
+          overflow-wrap: anywhere;
+        }
+
+        .receipt-section-title {
+          margin-bottom: 1mm;
+          text-align: center;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.4px;
+        }
+
+        .receipt-item {
+          padding: 1.7mm 0;
+          border-bottom: 1px dashed #000000;
+          page-break-inside: avoid;
+        }
+
+        .receipt-item:last-child {
+          border-bottom: 0;
+        }
+
+        .receipt-item-top {
+          display: flex;
+          justify-content: space-between;
+          gap: 2mm;
+          align-items: flex-start;
+        }
+
+        .receipt-item-name {
+          flex: 1;
+          font-size: 11px;
+          font-weight: 900;
+        }
+
+        .receipt-item-total {
+          flex: 0 0 auto;
+          text-align: right;
+          font-size: 11px;
+          font-weight: 900;
+          white-space: nowrap;
+        }
+
+        .receipt-item-subline {
+          margin-top: 0.5mm;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .receipt-item-options {
+          margin-top: 0.8mm;
+          padding-left: 2mm;
+          font-size: 9px;
+          font-weight: 700;
+          line-height: 1.3;
+        }
+
+        .receipt-totals {
+          display: flex;
+          flex-direction: column;
+          gap: 1mm;
+          page-break-inside: avoid;
+        }
+
+        .delivery-fee-row {
+          padding-bottom: 1mm;
+          border-bottom: 1px dashed #000000;
+        }
+
+        .receipt-grand-total {
+          margin-top: 0.7mm;
+          align-items: baseline;
+        }
+
+        .receipt-grand-total span,
+        .receipt-grand-total strong {
+          font-size: 16px;
+          font-weight: 900;
+        }
+
+        .receipt-delivery-info {
+          padding: 1.5mm;
+          border: 1.5px solid #000000;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1.3;
+          page-break-inside: avoid;
+        }
+
+        .receipt-delivery-info > strong {
+          display: block;
+          margin-bottom: 1mm;
+          font-size: 10px;
+          font-weight: 900;
+        }
+
+        .receipt-delivery-info p {
+          margin: 0.7mm 0;
+          font-size: 9px;
+          font-weight: 700;
+        }
+
+        .receipt-customer-notes {
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1.3;
         }
 
         .queue-number {
           margin: 3mm 0;
           text-align: center;
-          font-size: 30px;
+          font-size: 32px;
           line-height: 1;
           font-weight: 900;
         }
 
         .kitchen-ticket h1 {
-          font-size: 18px;
+          font-size: 19px;
         }
 
         .kitchen-item {
           padding: 2.5mm 0;
-          border-bottom: 1px dashed #000000;
+          border-bottom: 1.5px dashed #000000;
           font-size: 14px;
+          font-weight: 700;
           line-height: 1.25;
           page-break-inside: avoid;
         }
 
         .kitchen-item strong {
           display: block;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 900;
         }
 
         .kitchen-item p {
-          margin: 1mm 0 0 4mm;
+          margin: 1mm 0 0 3mm;
           font-size: 11px;
           font-weight: 700;
         }
@@ -4261,14 +4955,14 @@ function openPrintWindow(title, content) {
           border: 2px solid #000000;
           font-size: 12px;
           line-height: 1.3;
-          font-weight: 700;
+          font-weight: 800;
           page-break-inside: avoid;
         }
 
         .notes p {
           margin-top: 1mm;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 800;
         }
 
         @media screen {
@@ -4292,8 +4986,8 @@ function openPrintWindow(title, content) {
           }
 
           .receipt {
-            width: 54mm !important;
-            max-width: 54mm !important;
+            width: 48mm !important;
+            max-width: 48mm !important;
           }
         }
       </style>
@@ -4301,22 +4995,181 @@ function openPrintWindow(title, content) {
 
     <body>
       ${content}
-
-      <script>
-        window.onload = function () {
-          setTimeout(function () {
-            window.focus();
-            window.print();
-          }, 250);
-        };
-
-        window.onafterprint = function () {
-          window.close();
-        };
-      <\/script>
     </body>
     </html>
-  `);
+  `;
+}
 
+function openPrintWindow(title, content) {
+  const printWindow = window.open(
+    "",
+    "_blank",
+    "width=420,height=700"
+  );
+
+  if (!printWindow) {
+    showToast(
+      "Printing Blocked",
+      "Please allow pop-ups so the receipt can be printed."
+    );
+    return false;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(
+    buildPrintDocumentMarkup(
+      title,
+      content
+    )
+  );
   printWindow.document.close();
+
+  /*
+   * Manual Print / Reprint:
+   * Do not depend on popup.onload because Chrome may not fire it
+   * reliably after document.write() into about:blank.
+   *
+   * Give the receipt a moment to render, then open the real
+   * browser print dialog directly.
+   */
+  setTimeout(() => {
+    try {
+      if (printWindow.closed) {
+        return;
+      }
+
+      printWindow.focus();
+      printWindow.print();
+    } catch (error) {
+      console.error(
+        "Manual receipt print error:",
+        error
+      );
+    }
+  }, 500);
+
+  /*
+   * Close the temporary receipt window after Chrome finishes
+   * the print dialog. If Chrome does not fire afterprint,
+   * the cashier can simply close the temporary window manually.
+   */
+  printWindow.onafterprint = function () {
+    try {
+      printWindow.close();
+    } catch (error) {
+      console.warn(
+        "Unable to close manual receipt window:",
+        error
+      );
+    }
+  };
+
+  return true;
+}
+
+function openAutomaticPrintFrame(
+  title,
+  content
+) {
+  return new Promise((resolve, reject) => {
+    const printFrame =
+      document.createElement("iframe");
+
+    printFrame.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    printFrame.style.position = "fixed";
+    printFrame.style.right = "0";
+    printFrame.style.bottom = "0";
+    printFrame.style.width = "1px";
+    printFrame.style.height = "1px";
+    printFrame.style.opacity = "0";
+    printFrame.style.border = "0";
+    printFrame.style.pointerEvents = "none";
+
+    document.body.appendChild(printFrame);
+
+    let finished = false;
+
+    const cleanup = () => {
+      if (printFrame.isConnected) {
+        printFrame.remove();
+      }
+    };
+
+    const finish = () => {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      cleanup();
+      resolve();
+    };
+
+    const fail = error => {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      cleanup();
+      reject(error);
+    };
+
+    try {
+      const frameWindow =
+        printFrame.contentWindow;
+
+      const frameDocument =
+        printFrame.contentDocument ||
+        frameWindow?.document;
+
+      if (!frameWindow || !frameDocument) {
+        throw new Error(
+          "Unable to create the automatic print frame."
+        );
+      }
+
+      frameDocument.open();
+      frameDocument.write(
+        buildPrintDocumentMarkup(
+          title,
+          content
+        )
+      );
+      frameDocument.close();
+
+      /*
+       * Chrome normally pauses JavaScript while the print dialog
+       * is open. frameWindow.print() therefore returns after the
+       * cashier closes the dialog by printing or cancelling.
+       *
+       * Do not wait for iframe.onafterprint here because Chrome can
+       * delay that event for many seconds on some printer drivers.
+       */
+      setTimeout(() => {
+        try {
+          frameWindow.focus();
+          frameWindow.print();
+
+          /*
+           * Give Chrome / the printer driver a short moment to fully
+           * close the previous dialog before the queue continues.
+           */
+          setTimeout(
+            finish,
+            700
+          );
+        } catch (error) {
+          fail(error);
+        }
+      }, 300);
+
+    } catch (error) {
+      fail(error);
+    }
+  });
 }

@@ -199,6 +199,7 @@ $sql = "
         o.total_amount,
         r.delivery_fee,
         o.payment_method,
+        o.payment_status,
         o.address,
         o.landmark,
         o.table_number,
@@ -228,7 +229,13 @@ LEFT JOIN tbl_order_items AS oi
 
     WHERE o.restaurant_id = ?
   AND (
-        LOWER(TRIM(o.order_type)) = 'delivery'
+        (
+            LOWER(TRIM(o.order_type)) = 'delivery'
+            AND (
+                LOWER(TRIM(COALESCE(o.payment_method, ''))) <> 'paymongo qr ph'
+                OR LOWER(TRIM(COALESCE(o.payment_status, ''))) = 'paid'
+            )
+        )
 
         OR (
             LOWER(TRIM(o.order_type)) IN (
@@ -313,6 +320,13 @@ while ($row = $result->fetch_assoc()) {
             "restaurant_id" =>
                 (int)$row["restaurant_id"],
 
+            "restaurant_name" =>
+                trim(
+                    (string)(
+                        $row["restaurant_name"] ?? ""
+                    )
+                ),
+
             "customer_name" =>
                 trim(
                     (string)(
@@ -385,6 +399,13 @@ while ($row = $result->fetch_assoc()) {
                 trim(
                     (string)(
                         $row["payment_method"] ?? ""
+                    )
+                ),
+
+            "payment_status" =>
+                trim(
+                    (string)(
+                        $row["payment_status"] ?? ""
                     )
                 ),
 

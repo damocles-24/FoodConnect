@@ -150,9 +150,11 @@ try {
             o.subtotal,
             o.delivery_fee,
             o.total_amount,
-            o.payment_method,
+           o.payment_method,
             o.address,
             o.landmark,
+            o.customer_latitude,
+            o.customer_longitude,
             o.table_number,
             o.pickup_time,
             o.notes,
@@ -586,16 +588,26 @@ try {
                     "payment_method"
                 ],
 
-            "address" =>
-                $row["address"],
+                        "address" =>
+                    $row["address"],
 
-            "landmark" =>
-                $row["landmark"],
+                "landmark" =>
+                    $row["landmark"],
 
-            "table_number" =>
-                $row[
-                    "table_number"
-                ],
+                "customer_latitude" =>
+                    $row["customer_latitude"] !== null
+                        ? (float)$row["customer_latitude"]
+                        : null,
+
+                "customer_longitude" =>
+                    $row["customer_longitude"] !== null
+                        ? (float)$row["customer_longitude"]
+                        : null,
+
+                "table_number" =>
+                    $row[
+                        "table_number"
+                    ],
 
             "pickup_time" =>
                 $row[

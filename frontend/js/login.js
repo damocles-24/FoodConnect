@@ -23,6 +23,29 @@ const forgotPanel =
 const resetPanel =
     document.getElementById("resetPanel");
 
+const reactivationPanel =
+    document.getElementById("reactivationPanel");
+
+const reactivationMsg =
+    document.getElementById("reactivationMsg");
+
+const sendReactivationCodeBtn =
+    document.getElementById("sendReactivationCodeBtn");
+
+const verifyReactivationCodeBtn =
+    document.getElementById("verifyReactivationCodeBtn");
+
+const resendReactivationCodeBtn =
+    document.getElementById("resendReactivationCodeBtn");
+
+const reactivationCodeArea =
+    document.getElementById("reactivationCodeArea");
+
+const reactivationCode =
+    document.getElementById("reactivationCode");
+
+let pendingReactivation = null;
+
 const loginForm =
     document.getElementById("loginForm");
 
@@ -179,12 +202,26 @@ function showPanel(panelName) {
     loginPanel?.classList.add("hidden");
     forgotPanel?.classList.add("hidden");
     resetPanel?.classList.add("hidden");
+    reactivationPanel?.classList.add("hidden");
 
     setMessage(loginMsg);
     setMessage(forgotMsg);
     setMessage(resetMsg);
+    setMessage(reactivationMsg);
 
     showVerifyHelp(false);
+
+    if (panelName === "reactivation") {
+        panelTitle.textContent =
+            "Reactivate your account";
+
+        panelDescription.textContent =
+            "Verify your email to restore access to FoodConnect.";
+
+        reactivationPanel?.classList.remove("hidden");
+
+        return;
+    }
 
     if (panelName === "forgot") {
         panelTitle.textContent =
@@ -333,7 +370,29 @@ loginForm?.addEventListener(
                 const lowerMessage =
                     errorMessage.toLowerCase();
 
-                if (
+                if (data.deactivated === true) {
+                    pendingReactivation = {
+                        email,
+                        password,
+                        remember
+                    };
+
+                    if (reactivationCodeArea) {
+                        reactivationCodeArea.classList.add("hidden");
+                    }
+
+                    if (reactivationCode) {
+                        reactivationCode.value = "";
+                    }
+
+                    showPanel("reactivation");
+
+                    setMessage(
+                        reactivationMsg,
+                        "Your account is deactivated. Send a verification code to reactivate it.",
+                        "error"
+                    );
+                } else if (
                     lowerMessage.includes("verify")
                 ) {
                     setMessage(
@@ -398,12 +457,259 @@ loginForm?.addEventListener(
 );
 
 /* =========================================================
+   CUSTOMER SELF-REACTIVATION
+   ========================================================= */
+
+async function sendReactivationCode() {
+    setMessage(reactivationMsg);
+
+    if (!pendingReactivation?.email || !pendingReactivation?.password) {
+        setMessage(
+            reactivationMsg,
+            "Please return to login and enter your email and password again.",
+            "error"
+        );
+        return false;
+    }
+
+    setButtonLoading(
+        sendReactivationCodeBtn,
+        true,
+        "Sending Code...",
+        "Send Verification Code"
+    );
+
+    if (resendReactivationCodeBtn) {
+        resendReactivationCodeBtn.disabled = true;
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/request_customer_reactivation.php`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: pendingReactivation.email,
+                    password: pendingReactivation.password
+                })
+            }
+        );
+
+        const data = await readJsonResponse(response);
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                "Unable to send the verification code."
+            );
+        }
+
+        reactivationCodeArea?.classList.remove("hidden");
+
+        setMessage(
+            reactivationMsg,
+            data.message ||
+            "Verification code sent to your email.",
+            "success"
+        );
+
+        reactivationCode?.focus();
+
+        return true;
+    } catch (error) {
+        setMessage(
+            reactivationMsg,
+            error.message ||
+            "Unable to send the verification code.",
+            "error"
+        );
+
+        return false;
+    } finally {
+        setButtonLoading(
+            sendReactivationCodeBtn,
+            false,
+            "Sending Code...",
+            "Send Verification Code"
+        );
+
+        if (resendReactivationCodeBtn) {
+            resendReactivationCodeBtn.disabled = false;
+        }
+    }
+}
+
+sendReactivationCodeBtn?.addEventListener(
+    "click",
+    async () => {
+        await sendReactivationCode();
+    }
+);
+
+resendReactivationCodeBtn?.addEventListener(
+    "click",
+    async () => {
+        const sent = await sendReactivationCode();
+
+        if (sent && resendReactivationCodeBtn) {
+            beginCooldown(
+                resendReactivationCodeBtn,
+                30,
+                "Resend code"
+            );
+        }
+    }
+);
+
+verifyReactivationCodeBtn?.addEventListener(
+    "click",
+    async () => {
+        setMessage(reactivationMsg);
+
+        const code =
+            reactivationCode?.value
+                .replace(/\D/g, "")
+                .trim() || "";
+
+        if (!/^\d{6}$/.test(code)) {
+            setMessage(
+                reactivationMsg,
+                "Enter the 6-digit verification code.",
+                "error"
+            );
+            reactivationCode?.focus();
+            return;
+        }
+
+        setButtonLoading(
+            verifyReactivationCodeBtn,
+            true,
+            "Verifying...",
+            "Reactivate Account"
+        );
+
+        try {
+            const response = await fetch(
+                `${API}/verify_customer_reactivation.php`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ code })
+                }
+            );
+
+            const data = await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    "Unable to reactivate your account."
+                );
+            }
+
+            setMessage(
+                reactivationMsg,
+                "Account reactivated. Signing you in...",
+                "success"
+            );
+
+            const loginResponse = await fetch(
+                `${API}/login.php`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(pendingReactivation)
+                }
+            );
+
+            const loginData =
+                await readJsonResponse(loginResponse);
+
+            if (!loginResponse.ok) {
+                showPanel("login");
+
+                setMessage(
+                    loginMsg,
+                    "Account reactivated successfully. Please log in again.",
+                    "success"
+                );
+
+                return;
+            }
+
+            localStorage.setItem(
+                "user_full_name",
+                loginData.user?.full_name || ""
+            );
+
+            localStorage.setItem(
+                "user_role",
+                loginData.user?.role || "customer"
+            );
+
+            window.setTimeout(() => {
+                window.location.href = "index.html";
+            }, 500);
+        } catch (error) {
+            setMessage(
+                reactivationMsg,
+                error.message ||
+                "Unable to reactivate your account.",
+                "error"
+            );
+        } finally {
+            setButtonLoading(
+                verifyReactivationCodeBtn,
+                false,
+                "Verifying...",
+                "Reactivate Account"
+            );
+        }
+    }
+);
+
+reactivationCode?.addEventListener("input", () => {
+    reactivationCode.value =
+        reactivationCode.value
+            .replace(/\D/g, "")
+            .slice(0, 6);
+});
+
+document
+    .getElementById("backToLoginReactivation")
+    ?.addEventListener("click", () => {
+        pendingReactivation = null;
+
+        if (reactivationCodeArea) {
+            reactivationCodeArea.classList.add("hidden");
+        }
+
+        if (reactivationCode) {
+            reactivationCode.value = "";
+        }
+
+        showPanel("login");
+    });
+
+/* =========================================================
    RESEND VERIFICATION
    ========================================================= */
 
-function beginCooldown(button, seconds) {
-    const originalText =
-        "Resend verification email";
+function beginCooldown(
+    button,
+    seconds,
+    originalText = "Resend verification email"
+) {
 
     let remaining =
         seconds;

@@ -11,6 +11,7 @@ header(
 );
 
 require_once __DIR__ . "/session_config.php";
+require_once __DIR__ . "/db.php";
 
 $geoapifyConfigFile =
     __DIR__ .
@@ -100,35 +101,7 @@ if (empty($_SESSION["user_id"])) {
     ], 401);
 }
 
-/* =========================================================
-   SIMPLE RATE LIMIT
 
-   Public Nominatim allows a maximum of one request
-   per second. This session-based limit protects the API
-   from accidental repeated searches.
-========================================================= */
-
-$currentTime = microtime(true);
-
-$lastSearchTime = isset(
-    $_SESSION["delivery_address_last_search"]
-)
-    ? (float)$_SESSION["delivery_address_last_search"]
-    : 0.0;
-
-if (
-    $lastSearchTime > 0 &&
-    ($currentTime - $lastSearchTime) < 1.0
-) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Please wait a moment before searching again."
-    ], 429);
-}
-
-$_SESSION["delivery_address_last_search"] =
-    $currentTime;
 
 /* =========================================================
    REQUEST DATA
@@ -181,6 +154,442 @@ if ($queryLength > 180) {
             "The address search is too long."
     ], 400);
 }
+
+/* =========================================================
+   CHECK ADDRESS CACHE FIRST
+========================================================= */
+
+$normalizedQuery =
+    normalize_address_query(
+        $query
+    );
+
+$cachedLocations =
+    load_cached_addresses(
+        $conn,
+        $normalizedQuery
+    );
+
+if (!empty($cachedLocations)) {
+    respond_json([
+        "success" => true,
+
+        "message" =>
+            "Address results loaded successfully.",
+
+        "searched_query" =>
+            $query,
+
+        "attempted_queries" => [
+            $query
+        ],
+
+        "source" =>
+            "cache",
+
+        "locations" =>
+            $cachedLocations
+    ]);
+}
+
+/* =========================================================
+   ADDRESS CACHE HELPERS
+
+   Compatible with PHP 7.2+ and MariaDB 10.1+.
+========================================================= */
+
+function normalize_address_query(
+    string $query
+): string {
+    $normalizedQuery = trim($query);
+
+    $collapsedQuery = preg_replace(
+        "/\s+/u",
+        " ",
+        $normalizedQuery
+    );
+
+    if (is_string($collapsedQuery)) {
+        $normalizedQuery =
+            $collapsedQuery;
+    }
+
+    if (function_exists("mb_strtolower")) {
+        return mb_strtolower(
+            $normalizedQuery,
+            "UTF-8"
+        );
+    }
+
+    return strtolower(
+        $normalizedQuery
+    );
+}
+
+function load_cached_addresses(
+    mysqli $conn,
+    string $normalizedQuery
+): array {
+    $sql = "
+        SELECT
+            cache_id,
+            display_name,
+            latitude,
+            longitude,
+            road,
+            barangay,
+            city,
+            province,
+            place_type,
+            category
+        FROM tbl_address_cache
+        WHERE normalized_query = ?
+          AND (
+              expires_at IS NULL
+              OR expires_at > NOW()
+          )
+        ORDER BY result_position ASC
+        LIMIT 5
+    ";
+
+    $statement =
+        $conn->prepare($sql);
+
+    if (!$statement) {
+        error_log(
+            "Address cache prepare error: " .
+            $conn->error
+        );
+
+        return [];
+    }
+
+    $statement->bind_param(
+        "s",
+        $normalizedQuery
+    );
+
+    if (!$statement->execute()) {
+        error_log(
+            "Address cache query error: " .
+            $statement->error
+        );
+
+        $statement->close();
+
+        return [];
+    }
+
+    $result =
+        $statement->get_result();
+
+    $locations = [];
+    $cacheIds = [];
+
+    while (
+        $row = $result->fetch_assoc()
+    ) {
+        $cacheIds[] =
+            (int)$row["cache_id"];
+
+        $locations[] = [
+            "display_name" =>
+                (string)$row["display_name"],
+
+            "latitude" =>
+                (float)$row["latitude"],
+
+            "longitude" =>
+                (float)$row["longitude"],
+
+            "road" =>
+                (string)($row["road"] ?? ""),
+
+            "barangay" =>
+                (string)($row["barangay"] ?? ""),
+
+            "city" =>
+                (string)($row["city"] ?? ""),
+
+            "province" =>
+                (string)($row["province"] ?? ""),
+
+            "place_type" =>
+                (string)($row["place_type"] ?? ""),
+
+            "category" =>
+                (string)($row["category"] ?? "")
+        ];
+    }
+
+    $statement->close();
+
+    if (!empty($cacheIds)) {
+        /*
+         * The values came from our own integer primary keys.
+         * Casting above prevents SQL injection here.
+         */
+        $cacheIdList =
+            implode(
+                ",",
+                $cacheIds
+            );
+
+        $updateSql = "
+            UPDATE tbl_address_cache
+            SET
+                hit_count = hit_count + 1,
+                last_used_at = NOW()
+            WHERE cache_id IN (
+                {$cacheIdList}
+            )
+        ";
+
+        if (!$conn->query($updateSql)) {
+            error_log(
+                "Address cache usage update error: " .
+                $conn->error
+            );
+        }
+    }
+
+    return $locations;
+}
+
+function save_addresses_to_cache(
+    mysqli $conn,
+    string $normalizedQuery,
+    string $originalQuery,
+    array $locations
+): void {
+    if (empty($locations)) {
+        return;
+    }
+
+    $sql = "
+        INSERT INTO tbl_address_cache (
+            normalized_query,
+            original_query,
+            result_position,
+            display_name,
+            latitude,
+            longitude,
+            road,
+            barangay,
+            city,
+            province,
+            place_type,
+            category,
+            provider,
+            hit_count,
+            created_at,
+            last_used_at,
+            expires_at
+        )
+        VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            'geoapify',
+            0,
+            NOW(),
+            NOW(),
+            DATE_ADD(
+                NOW(),
+                INTERVAL 30 DAY
+            )
+        )
+        ON DUPLICATE KEY UPDATE
+            original_query =
+                VALUES(original_query),
+
+            result_position =
+                VALUES(result_position),
+
+            display_name =
+                VALUES(display_name),
+
+            road =
+                VALUES(road),
+
+            barangay =
+                VALUES(barangay),
+
+            city =
+                VALUES(city),
+
+            province =
+                VALUES(province),
+
+            place_type =
+                VALUES(place_type),
+
+            category =
+                VALUES(category),
+
+            provider =
+                'geoapify',
+
+            last_used_at =
+                NOW(),
+
+            expires_at =
+                DATE_ADD(
+                    NOW(),
+                    INTERVAL 30 DAY
+                )
+    ";
+
+    $statement =
+        $conn->prepare($sql);
+
+    if (!$statement) {
+        error_log(
+            "Address cache insert prepare error: " .
+            $conn->error
+        );
+
+        return;
+    }
+
+    foreach (
+        array_values($locations)
+        as $index => $location
+    ) {
+        $resultPosition =
+            $index + 1;
+
+        $displayName = trim(
+            (string)(
+                $location["display_name"] ?? ""
+            )
+        );
+
+        $latitude =
+            (float)(
+                $location["latitude"] ?? 0
+            );
+
+        $longitude =
+            (float)(
+                $location["longitude"] ?? 0
+            );
+
+        $road = trim(
+            (string)(
+                $location["road"] ?? ""
+            )
+        );
+
+        $barangay = trim(
+            (string)(
+                $location["barangay"] ?? ""
+            )
+        );
+
+        $city = trim(
+            (string)(
+                $location["city"] ?? ""
+            )
+        );
+
+        $province = trim(
+            (string)(
+                $location["province"] ?? ""
+            )
+        );
+
+        $placeType = trim(
+            (string)(
+                $location["place_type"] ?? ""
+            )
+        );
+
+        $category = trim(
+            (string)(
+                $location["category"] ?? ""
+            )
+        );
+
+        if (
+            $displayName === "" ||
+            $latitude < -90 ||
+            $latitude > 90 ||
+            $longitude < -180 ||
+            $longitude > 180
+        ) {
+            continue;
+        }
+
+        $statement->bind_param(
+            "ssisddssssss",
+            $normalizedQuery,
+            $originalQuery,
+            $resultPosition,
+            $displayName,
+            $latitude,
+            $longitude,
+            $road,
+            $barangay,
+            $city,
+            $province,
+            $placeType,
+            $category
+        );
+
+        if (!$statement->execute()) {
+            error_log(
+                "Address cache insert error: " .
+                $statement->error
+            );
+        }
+    }
+
+    $statement->close();
+}
+
+/* =========================================================
+   EXTERNAL ADDRESS SEARCH RATE LIMIT
+
+   Applied only after a cache miss.
+========================================================= */
+
+$currentTime =
+    microtime(true);
+
+$lastSearchTime = isset(
+    $_SESSION[
+        "delivery_address_last_search"
+    ]
+)
+    ? (float)$_SESSION[
+        "delivery_address_last_search"
+    ]
+    : 0.0;
+
+if (
+    $lastSearchTime > 0 &&
+    ($currentTime - $lastSearchTime) < 1.0
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Please wait a moment before searching again."
+    ], 429);
+}
+
+$_SESSION[
+    "delivery_address_last_search"
+] = $currentTime;
 
 /* =========================================================
    GEOAPIFY SEARCH HELPER
@@ -353,58 +762,59 @@ function search_geoapify(
    BUILD SEARCH FALLBACKS
 ========================================================= */
 
-$normalizedQuery =
-    strtolower($query);
+$queryContextText =
+    normalize_address_query(
+        $query
+    );
 
 $hasAlaminosContext =
     strpos(
-        $normalizedQuery,
+        $queryContextText,
         "alaminos"
     ) !== false;
 
 $hasPangasinanContext =
     strpos(
-        $normalizedQuery,
+        $queryContextText,
         "pangasinan"
     ) !== false;
 
 $hasPhilippinesContext =
     strpos(
-        $normalizedQuery,
+        $queryContextText,
         "philippines"
     ) !== false;
 
 /*
- * Try the customer's exact wording first.
+ * Search using the most complete local address first.
  *
- * This is important because places such as Lucap may be
- * indexed differently from:
- * "Lucap, Alaminos City, Pangasinan".
+ * This prevents common names such as "Poblacion" from
+ * matching another province before Alaminos.
  */
-$searchQueries = [
-    $query
-];
-
-if (!$hasAlaminosContext) {
-    $searchQueries[] =
-        $query .
-        ", Alaminos, Pangasinan, Philippines";
-}
+$searchQueries = [];
 
 if (
-    !$hasPangasinanContext &&
-    !$hasAlaminosContext
+    $hasAlaminosContext &&
+    !$hasPangasinanContext
 ) {
     $searchQueries[] =
         $query .
         ", Pangasinan, Philippines";
-}
-
-if (!$hasPhilippinesContext) {
+} elseif (!$hasAlaminosContext) {
+    $searchQueries[] =
+        $query .
+        ", Alaminos, Pangasinan, Philippines";
+} elseif (!$hasPhilippinesContext) {
     $searchQueries[] =
         $query .
         ", Philippines";
 }
+
+/*
+ * Use the customer's exact wording only as a fallback.
+ */
+$searchQueries[] =
+    $query;
 
 /*
  * Remove duplicate query strings while preserving order.
@@ -623,6 +1033,19 @@ foreach ($results as $result) {
     ];
 }
 
+/* =========================================================
+   SAVE SUCCESSFUL RESULTS TO CACHE
+========================================================= */
+
+if (!empty($locations)) {
+    save_addresses_to_cache(
+        $conn,
+        $normalizedQuery,
+        $query,
+        $locations
+    );
+}
+
 respond_json([
     "success" => true,
 
@@ -637,6 +1060,9 @@ respond_json([
 "attempted_queries" =>
     $searchQueries,
 
-    "locations" =>
-        $locations
+"source" =>
+    "geoapify",
+
+"locations" =>
+    $locations
 ]);

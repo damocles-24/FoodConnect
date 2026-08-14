@@ -37,6 +37,7 @@
         rel="stylesheet"
         href="../css/partner_apply.css"
     >
+  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
 </head>
 
 <body>
@@ -342,21 +343,23 @@
                             Personal Contact Number
                         </label>
 
-                        <div class="input-wrapper">
+                    <div class="input-wrapper phone-input">
+                        <i class="fa-solid fa-phone"></i>
 
-                            <i class="fa-solid fa-phone"></i>
+                        <span class="phone-prefix">+63</span>
 
-                            <input
-                                type="tel"
-                                id="contact_number"
-                                name="contact_number"
-                                placeholder="09XXXXXXXXX"
-                                autocomplete="tel"
-                                inputmode="numeric"
-                                required
-                            >
-
-                        </div>
+                        <input
+                            type="tel"
+                            id="contact_number"
+                            name="contact_number"
+                            placeholder="9XXXXXXXXX"
+                            autocomplete="tel"
+                            inputmode="numeric"
+                            maxlength="10"
+                            pattern="9[0-9]{9}"
+                            required
+                        >
+                    </div>
 
                     </div>
 
@@ -490,6 +493,8 @@
                                 type="text"
                                 id="restaurant_address"
                                 name="restaurant_address"
+                                data-ph-address="1"
+                                data-ph-address-required="1"
                                 placeholder="Enter complete restaurant address"
                                 required
                             >
@@ -504,20 +509,22 @@
                             Business Contact Number
                         </label>
 
-                        <div class="input-wrapper">
+                      <div class="input-wrapper phone-input">
+    <i class="fa-solid fa-phone-volume"></i>
 
-                            <i class="fa-solid fa-phone-volume"></i>
+    <span class="phone-prefix">+63</span>
 
-                            <input
-                                type="tel"
-                                id="restaurant_contact"
-                                name="restaurant_contact"
-                                placeholder="09XXXXXXXXX"
-                                inputmode="numeric"
-                                required
-                            >
-
-                        </div>
+    <input
+        type="tel"
+        id="restaurant_contact"
+        name="restaurant_contact"
+        placeholder="9XXXXXXXXX"
+        inputmode="numeric"
+        maxlength="10"
+        pattern="9[0-9]{9}"
+        required
+    >
+</div>
 
                     </div>
 
@@ -713,6 +720,7 @@
 
 </footer>
 
+<script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
 <script src="../js/partner_apply.js?v=2"></script>
 </body>
 </html>

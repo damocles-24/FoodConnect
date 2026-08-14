@@ -313,6 +313,13 @@ while ($row = $result->fetch_assoc()) {
             "restaurant_id" =>
                 (int)$row["restaurant_id"],
 
+            "restaurant_name" =>
+                trim(
+                    (string)(
+                        $row["restaurant_name"] ?? ""
+                    )
+                ),
+
             "customer_name" =>
                 trim(
                     (string)(

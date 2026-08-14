@@ -81,11 +81,6 @@
 
         <div class="presentation-content">
 
-            <span class="presentation-badge">
-                <i class="fa-solid fa-bag-shopping"></i>
-                Customer Access
-            </span>
-
             <h1>
                 Your favorite meals are just a few clicks away.
             </h1>
@@ -356,6 +351,108 @@
             </div>
 
             <!-- =========================
+                 ACCOUNT REACTIVATION
+                 ========================= -->
+
+            <div
+                id="reactivationPanel"
+                class="hidden"
+            >
+
+                <div class="reactivation-box">
+                    <span class="reactivation-icon">
+                        <i class="fa-solid fa-rotate"></i>
+                    </span>
+
+                    <h3>
+                        Reactivate your account
+                    </h3>
+
+                    <p id="reactivationDescription">
+                        Your customer account is currently deactivated.
+                        Verify your email to activate it again.
+                    </p>
+                </div>
+
+                <div
+                    id="reactivationMsg"
+                    class="form-message"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+                <button
+                    type="button"
+                    id="sendReactivationCodeBtn"
+                    class="primary-button"
+                >
+                    <span class="button-label">
+                        Send Verification Code
+                    </span>
+
+                    <i class="fa-regular fa-paper-plane"></i>
+                </button>
+
+                <div
+                    id="reactivationCodeArea"
+                    class="reactivation-code-area hidden"
+                >
+                    <div class="form-group">
+                        <label for="reactivationCode">
+                            Verification Code
+                        </label>
+
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                            <input
+                                type="text"
+                                id="reactivationCode"
+                                inputmode="numeric"
+                                maxlength="6"
+                                autocomplete="one-time-code"
+                                placeholder="Enter 6-digit code"
+                            >
+                        </div>
+
+                        <small class="field-help">
+                            The code expires after 10 minutes.
+                        </small>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="verifyReactivationCodeBtn"
+                        class="primary-button"
+                    >
+                        <span class="button-label">
+                            Reactivate Account
+                        </span>
+
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        id="resendReactivationCodeBtn"
+                        class="resend-btn reactivation-resend"
+                    >
+                        Resend code
+                    </button>
+                </div>
+
+                <button
+                    type="button"
+                    id="backToLoginReactivation"
+                    class="back-button"
+                >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back to Customer Login
+                </button>
+
+            </div>
+
+            <!-- =========================
                  FORGOT PASSWORD
                  ========================= -->
 
@@ -555,7 +652,7 @@
 
 </footer>
 
-<script src="../js/login.js?v=11"></script>
+<script src="../js/login.js?v=12"></script>
 
 </body>
 </html>

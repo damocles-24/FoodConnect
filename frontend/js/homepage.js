@@ -2850,8 +2850,6 @@ window.setInterval(
   updateAllRestaurantCards,
   60000
 );
-  }
-);
 
     // ===== Owner Password Toggle (Partner Portal) =====
 if (ownerPassword && toggleOwnerPassword) {
@@ -2929,5 +2927,7 @@ restaurantsPageCategories.forEach(
       }
     );
 
+  }
+);
   }
 );

@@ -348,8 +348,35 @@ $formattedAddress = trim(
 $road = trim(
     (string)(
         $result["street"] ??
-        $result["address_line1"] ??
+        $result["road"] ??
         ""
+    )
+);
+
+$houseNumber = trim(
+    (string)(
+        $result["housenumber"] ??
+        $result["house_number"] ??
+        ""
+    )
+);
+
+$streetDetails = trim(
+    implode(
+        " ",
+        array_values(
+            array_filter(
+                [
+                    $houseNumber,
+                    $road
+                ],
+                static function ($value): bool {
+                    return trim(
+                        (string)$value
+                    ) !== "";
+                }
+            )
+        )
     )
 );
 
@@ -371,12 +398,44 @@ $city = trim(
     )
 );
 
-$province = trim(
+/*
+ * For Philippine Geoapify results, `state` is the best primary
+ * candidate for FoodConnect's Province / Area.
+ *
+ * Example from the real Alaminos response:
+ *   city   = Alaminos
+ *   county = Alaminos
+ *   state  = Pangasinan
+ *
+ * This is generic logic, not a Pangasinan hard-code.
+ */
+$provinceState = trim(
     (string)(
         $result["state"] ??
         ""
     )
 );
+
+$provinceCounty = trim(
+    (string)(
+        $result["county"] ??
+        ""
+    )
+);
+
+$province = $provinceState;
+
+if (
+    $province === "" &&
+    $provinceCounty !== "" &&
+    strcasecmp(
+        $provinceCounty,
+        $city
+    ) !== 0
+) {
+    $province =
+        $provinceCounty;
+}
 
 respond_json([
     "success" =>
@@ -408,6 +467,9 @@ respond_json([
         "road" =>
             $road,
 
+        "street_details" =>
+            $streetDetails,
+
         "barangay" =>
             $barangay,
 
@@ -415,6 +477,15 @@ respond_json([
             $city,
 
         "province" =>
-            $province
+            $province,
+
+        /*
+         * Non-secret administrative hints for defensive frontend matching.
+         */
+        "province_county" =>
+            $provinceCounty,
+
+        "region" =>
+            $provinceState
     ]
 ]);

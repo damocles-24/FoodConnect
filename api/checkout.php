@@ -320,8 +320,17 @@ if (
 ========================================================= */
 
 if ($order_type === "delivery") {
-    $payment_method =
-        "Cash on Delivery";
+    $allowedPaymentMethods = [
+        "Cash on Delivery",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid delivery payment method."
+        ], 400);
+    }
 
     if ($address === "") {
         respond_json([
@@ -374,7 +383,17 @@ if ($order_type === "delivery") {
     $pickup_time = "";
 
 } elseif ($order_type === "takeout") {
-    $payment_method = "Cash";
+    $allowedPaymentMethods = [
+        "Cash",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid takeout payment method."
+        ], 400);
+    }
 
     if ($pickup_time === "") {
         respond_json([
@@ -394,7 +413,17 @@ if ($order_type === "delivery") {
     /*
      * Dine-in
      */
-    $payment_method = "Cash";
+    $allowedPaymentMethods = [
+        "Cash",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid dine-in payment method."
+        ], 400);
+    }
 
       $address = "";
     $landmark = "";
@@ -1637,6 +1666,104 @@ $total +=
         );
     }
 
+    /* =====================================================
+       RESTAURANT ORDER TYPE AVAILABILITY
+
+       Never rely only on the checkout dropdown. The backend
+       verifies that this restaurant actually enabled the
+       requested Dine-in, Takeout, or Delivery service.
+    ===================================================== */
+
+    $orderTypesStmt = $conn->prepare("
+        SELECT
+            order_types_json
+
+        FROM tbl_restaurants
+
+        WHERE restaurant_id = ?
+
+        LIMIT 1
+    ");
+
+    if (!$orderTypesStmt) {
+        throw new RuntimeException(
+            "Unable to validate restaurant order types."
+        );
+    }
+
+    $orderTypesStmt->bind_param(
+        "i",
+        $restaurant_id
+    );
+
+    if (!$orderTypesStmt->execute()) {
+        $orderTypesStmt->close();
+
+        throw new RuntimeException(
+            "Unable to validate restaurant order types."
+        );
+    }
+
+    $orderTypesRow =
+        $orderTypesStmt
+            ->get_result()
+            ->fetch_assoc();
+
+    $orderTypesStmt->close();
+
+    if (!$orderTypesRow) {
+        throw new RuntimeException(
+            "The selected restaurant no longer exists."
+        );
+    }
+
+    /*
+     * Backward-compatible fallback for existing restaurants.
+     * The migration also fills these records with all three
+     * order types, but this keeps checkout safe if a legacy
+     * NULL/invalid value is encountered.
+     */
+    $restaurantOrderTypes = [
+        "dine-in",
+        "takeout",
+        "delivery"
+    ];
+
+    $decodedRestaurantOrderTypes = json_decode(
+        (string)(
+            $orderTypesRow["order_types_json"] ?? ""
+        ),
+        true
+    );
+
+    if (is_array($decodedRestaurantOrderTypes)) {
+        $cleanRestaurantOrderTypes = array_values(
+            array_unique(
+                array_intersect(
+                    $decodedRestaurantOrderTypes,
+                    $allowedTypes
+                )
+            )
+        );
+
+        if (!empty($cleanRestaurantOrderTypes)) {
+            $restaurantOrderTypes =
+                $cleanRestaurantOrderTypes;
+        }
+    }
+
+    if (
+        !in_array(
+            $order_type,
+            $restaurantOrderTypes,
+            true
+        )
+    ) {
+        throw new DomainException(
+            "This order type is not available for this restaurant."
+        );
+    }
+
         /* =====================================================
        DELIVERY RIDER AVAILABILITY
 
@@ -1933,6 +2060,11 @@ if (
         );
 }
 
+$payment_status =
+    $payment_method === "PayMongo QR Ph"
+        ? "pending"
+        : "cash_pending";
+
    $insertOrderStmt = $conn->prepare("
         INSERT INTO tbl_orders (
         queue_number,
@@ -1944,6 +2076,7 @@ if (
         contact_number,
         order_type,
         payment_method,
+        payment_status,
         address,
         landmark,
         customer_latitude,
@@ -1957,6 +2090,7 @@ if (
         total_amount
     )
        VALUES (
+        ?,
         ?,
         ?,
         ?,
@@ -1987,7 +2121,7 @@ if (!$insertOrderStmt) {
 }
 
 $insertOrderStmt->bind_param(
-    "issiissssssddsssddd",
+"issiisssssssddsssddd",
     $queue_number,
     $order_qr_token,
     $order_qr_expires_at,
@@ -1997,6 +2131,7 @@ $insertOrderStmt->bind_param(
     $contact_number,
     $order_type,
     $payment_method,
+    $payment_status,
     $address,
     $landmark,
     $customer_latitude,
@@ -2611,6 +2746,23 @@ $addonIdsJson = encode_id_array(
 "qr_expires_at" =>
     $order_qr_expires_at,
 
+"payment_method" =>
+        $payment_method,
+
+"payment_status" =>
+        $payment_status,
+
+"payment_required" =>
+        $payment_method === "PayMongo QR Ph",
+
+"payment_requires_qr_first" =>
+        $payment_method === "PayMongo QR Ph" &&
+        in_array(
+            $normalizedQrOrderType,
+            ["dine-in", "dinein", "takeout"],
+            true
+        ),
+
 "subtotal" =>
         round($subtotal, 2),
 
@@ -2656,6 +2808,7 @@ $addonIdsJson = encode_id_array(
         "An invalid combo option was found.",
         "An invalid add-on was found.",
         "Unable to determine the restaurant.",
+        "This order type is not available for this restaurant.",
         "No delivery rider is currently available for this restaurant. Please choose Takeout or Dine-in.",
         "Products from different restaurants cannot be checked out together.",
         "A product in your cart no longer exists.",

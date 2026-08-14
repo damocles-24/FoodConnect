@@ -7,7 +7,7 @@ const partnerForm =
 const formMessage =
     document.getElementById("formMessage");
 
-const submitButton =
+const submitButton = 
     document.getElementById("submitButton");
 
 const buttonText =
@@ -284,6 +284,28 @@ document
         );
     });
 
+    /* =========================================================
+   CONTACT NUMBER INPUT
+========================================================= */
+
+[
+    "contact_number",
+    "restaurant_contact"
+].forEach((id) => {
+    const input =
+        document.getElementById(id);
+
+    input?.addEventListener(
+        "input",
+        () => {
+            input.value =
+                input.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+        }
+    );
+});
+
 /* =========================================================
    PARTNER REGISTRATION
    ========================================================= */
@@ -370,6 +392,42 @@ partnerForm?.addEventListener(
 
             return;
         }
+const philippineMobilePattern =
+    /^9\d{9}$/;
+
+if (
+    !philippineMobilePattern.test(
+        contactNumber
+    )
+) {
+    showMessage(
+        "error",
+        "Personal contact number must start with 9 and contain 10 digits after +63."
+    );
+
+    document
+        .getElementById("contact_number")
+        ?.focus();
+
+    return;
+}
+
+if (
+    !philippineMobilePattern.test(
+        restaurantContact
+    )
+) {
+    showMessage(
+        "error",
+        "Business contact number must start with 9 and contain 10 digits after +63."
+    );
+
+    document
+        .getElementById("restaurant_contact")
+        ?.focus();
+
+    return;
+}
 
         if (password.length < 8) {
             showMessage(
@@ -404,12 +462,13 @@ partnerForm?.addEventListener(
         const payload = {
             full_name: fullName,
             email,
-            contact_number: contactNumber,
+            contact_number:
+            `+63${contactNumber}`,
             password,
             restaurant_name: restaurantName,
             restaurant_address: restaurantAddress,
             restaurant_contact:
-                restaurantContact,
+            `+63${restaurantContact}`,
             cuisine
         };
 

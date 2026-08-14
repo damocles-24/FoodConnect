@@ -14,6 +14,7 @@
         rel="stylesheet"
         href="../css/create_restaurant.css"
     >
+  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
 </head>
 
 <body>
@@ -98,7 +99,7 @@
                         <strong>Order services</strong>
 
                         <small>
-                            Pickup and delivery options
+                            Available order types
                         </small>
                     </div>
                 </div>
@@ -373,6 +374,36 @@
                         </div>
 
                         <div class="form-group form-group-full">
+                            <label for="taxRegistrationType">
+                                BIR tax registration
+                                <span class="required">*</span>
+                            </label>
+
+                            <select
+                                id="taxRegistrationType"
+                                name="tax_registration_type"
+                                required
+                            >
+                                <option value="">
+                                    Select VAT or Non-VAT registration
+                                </option>
+                                <option value="vat">
+                                    VAT-Registered
+                                </option>
+                                <option value="non_vat">
+                                    Non-VAT Registered
+                                </option>
+                            </select>
+
+                            <small>
+                                Choose your restaurant's actual BIR tax registration status.
+                                FoodConnect will not ask you to enter a VAT amount manually.
+                            </small>
+
+                            <small class="field-error"></small>
+                        </div>
+
+                        <div class="form-group form-group-full">
                             <label for="restaurantDescription">
                                 Restaurant description
 
@@ -427,14 +458,14 @@
                     </div>
 
                     <div class="required-note">
-                        Street address, province, city or municipality,
+                        Building/street details, province or area, city or municipality,
                         and barangay are required.
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group form-group-full">
                             <label for="restaurantAddress">
-                                Street address
+                                Building / street / subdivision details
                                 <span class="required">*</span>
                             </label>
 
@@ -457,15 +488,9 @@
                                 <span class="required">*</span>
                             </label>
 
-                            <input
-                                type="text"
-                                id="province"
-                                name="province"
-                                maxlength="100"
-                                autocomplete="address-level1"
-                                placeholder="Example: Pangasinan"
-                                required
-                            >
+                            <select id="province" name="province" autocomplete="address-level1" required>
+                                <option value="">Loading provinces / areas...</option>
+                            </select>
 
                             <small class="field-error"></small>
                         </div>
@@ -476,15 +501,9 @@
                                 <span class="required">*</span>
                             </label>
 
-                            <input
-                                type="text"
-                                id="cityMunicipality"
-                                name="city_municipality"
-                                maxlength="100"
-                                autocomplete="address-level2"
-                                placeholder="Example: Alaminos City"
-                                required
-                            >
+                            <select id="cityMunicipality" name="city_municipality" autocomplete="address-level2" required disabled>
+                                <option value="">Select province / area first</option>
+                            </select>
 
                             <small class="field-error"></small>
                         </div>
@@ -495,15 +514,9 @@
                                 <span class="required">*</span>
                             </label>
 
-                            <input
-                                type="text"
-                                id="barangay"
-                                name="barangay"
-                                maxlength="100"
-                                autocomplete="address-level3"
-                                placeholder="Example: Poblacion"
-                                required
-                            >
+                            <select id="barangay" name="barangay" autocomplete="address-level3" required disabled>
+                                <option value="">Select city / municipality first</option>
+                            </select>
 
                             <small class="field-error"></small>
                         </div>
@@ -600,14 +613,14 @@
                             <h3>Order services</h3>
 
                             <p>
-                                Select how customers can receive their
-                                orders.
+                                Select the order types your restaurant
+                                accepts.
                             </p>
                         </div>
                     </div>
 
                     <div class="required-note">
-                        Select at least one order service.
+                        Select at least one order type.
                     </div>
 
                     <div class="service-options">
@@ -615,40 +628,16 @@
                             <input
                                 type="checkbox"
                                 name="delivery_options"
-                                value="pickup"
-                                checked
+                                value="dine-in"
                             >
 
                             <span class="service-check"></span>
 
                             <span class="service-content">
-                                <strong>
-                                    Customer pickup
-                                </strong>
+                                <strong>Dine-in</strong>
 
                                 <small>
-                                    Customers collect orders directly from
-                                    your restaurant.
-                                </small>
-                            </span>
-                        </label>
-
-                        <label class="service-card">
-                            <input
-                                type="checkbox"
-                                name="delivery_options"
-                                value="restaurant_delivery"
-                            >
-
-                            <span class="service-check"></span>
-
-                            <span class="service-content">
-                                <strong>
-                                    Restaurant delivery
-                                </strong>
-
-                                <small>
-                                    Use delivery staff employed by your
+                                    Customers eat their orders at your
                                     restaurant.
                                 </small>
                             </span>
@@ -658,19 +647,36 @@
                             <input
                                 type="checkbox"
                                 name="delivery_options"
-                                value="foodconnect_delivery"
+                                value="takeout"
+                                checked
                             >
 
                             <span class="service-check"></span>
 
                             <span class="service-content">
-                                <strong>
-                                    FoodConnect delivery
-                                </strong>
+                                <strong>Takeout</strong>
 
                                 <small>
-                                    Request third-party riders through the
-                                    FoodConnect Delivery Coordinator.
+                                    Customers order food to take away.
+                                </small>
+                            </span>
+                        </label>
+
+                        <label class="service-card">
+                            <input
+                                type="checkbox"
+                                name="delivery_options"
+                                value="delivery"
+                            >
+
+                            <span class="service-check"></span>
+
+                            <span class="service-content">
+                                <strong>Delivery</strong>
+
+                                <small>
+                                    Your restaurant's own delivery staff
+                                    delivers orders to customers.
                                 </small>
                             </span>
                         </label>
@@ -681,37 +687,13 @@
                         id="deliveryOptionsError"
                     ></small>
 
-                    <div class="form-grid pricing-grid">
-                        <div class="form-group">
-                            <label for="minimumOrder">
-                                Minimum order
-
-                                <span class="optional-label">
-                                    (Optional)
-                                </span>
-                            </label>
-
-                            <div class="money-input">
-                                <span>₱</span>
-
-                                <input
-                                    type="number"
-                                    id="minimumOrder"
-                                    name="minimum_order"
-                                    min="0"
-                                    step="0.01"
-                                    value="0.00"
-                                >
-                            </div>
-
-                            <small>
-                                Keep ₱0.00 if no minimum order is required.
-                            </small>
-                        </div>
-
+                    <div
+                        class="form-grid pricing-grid hidden"
+                        id="deliveryFeeGroup"
+                    >
                         <div class="form-group">
                             <label for="deliveryFee">
-                                Fixed restaurant delivery fee
+                                Delivery fee
 
                                 <span class="optional-label">
                                     (Optional)
@@ -732,8 +714,7 @@
                             </div>
 
                             <small>
-                                This applies to restaurant-owned delivery.
-                                Keep ₱0.00 if delivery is free.
+                                Keep ₱0.00 if your restaurant offers free delivery.
                             </small>
                         </div>
                     </div>
@@ -844,6 +825,11 @@
                                 <div>
                                     <dt>Business email</dt>
                                     <dd id="reviewBusinessEmail">—</dd>
+                                </div>
+
+                                <div>
+                                    <dt>BIR tax registration</dt>
+                                    <dd id="reviewTaxRegistrationType">—</dd>
                                 </div>
                             </dl>
                         </div>
@@ -1050,6 +1036,7 @@
         </div>
     </div>
 
+    <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
     <script src="../js/create_restaurant.js"></script>
 </body>
 </html>

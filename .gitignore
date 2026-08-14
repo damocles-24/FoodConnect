@@ -4,6 +4,7 @@
 
 /api/config/config.local.php
 /api/config/geoapify.local.php
+/api/config/paymongo.local.php
 
 
 # ==============================

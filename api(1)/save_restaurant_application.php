@@ -216,6 +216,14 @@ $businessEmail =
         )
     );
 
+$taxRegistrationType =
+    strtolower(
+        clean_text(
+            $data,
+            "tax_registration_type"
+        )
+    );
+
 $restaurantDescription =
     clean_text(
         $data,
@@ -256,30 +264,18 @@ $postalCode =
    MONEY VALUES
    ========================================================= */
 
-$minimumOrderRaw =
-    $data["minimum_order"] ?? 0;
+// Minimum order is no longer part of FoodConnect onboarding.
+// Keep the existing database column for backward compatibility,
+// but reset it to zero whenever this setup is saved.
+$minimumOrder = 0.0;
 
 $deliveryFeeRaw =
     $data["delivery_fee"] ?? 0;
-
-$minimumOrder =
-    is_numeric($minimumOrderRaw)
-        ? (float) $minimumOrderRaw
-        : 0;
 
 $deliveryFee =
     is_numeric($deliveryFeeRaw)
         ? (float) $deliveryFeeRaw
         : 0;
-
-$minimumOrder =
-    max(
-        0,
-        round(
-            $minimumOrder,
-            2
-        )
-    );
 
 $deliveryFee =
     max(
@@ -313,9 +309,9 @@ if (
 }
 
 $allowedDeliveryOptions = [
-    "pickup",
-    "restaurant_delivery",
-    "foodconnect_delivery"
+    "dine-in",
+    "takeout",
+    "delivery"
 ];
 
 $deliveryOptions =
@@ -327,6 +323,10 @@ $deliveryOptions =
             )
         )
     );
+
+if (!in_array("delivery", $deliveryOptions, true)) {
+    $deliveryFee = 0.0;
+}
 
     /* =========================================================
    LOGO PATH VALIDATION
@@ -388,6 +388,17 @@ if ($businessEmail === "") {
         "Enter a valid business email address.";
 }
 
+if (
+    !in_array(
+        $taxRegistrationType,
+        ["vat", "non_vat"],
+        true
+    )
+) {
+    $errors["tax_registration_type"] =
+        "Select VAT-Registered or Non-VAT Registered.";
+}
+
 if ($restaurantAddress === "") {
     $errors["restaurant_address"] =
         "Street address is required.";
@@ -436,9 +447,9 @@ if (
     validation_response(
         [
             "delivery_options" =>
-                "Select at least one order service."
+                "Select at least one order type."
         ],
-        "Select at least one order service."
+        "Select at least one order type."
     );
 }
 
@@ -801,6 +812,7 @@ try {
                 restaurant_description = ?,
                 logo_path = ?,
                 business_email = ?,
+                tax_registration_type = ?,
                 province = ?,
                 city_municipality = ?,
                 barangay = ?,
@@ -826,7 +838,7 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssssssssssddii",
+        "ssssssssssssssddii",
         $restaurantName,
         $restaurantAddress,
         $restaurantContact,
@@ -834,6 +846,7 @@ try {
         $restaurantDescription,
         $logoPath,
         $businessEmail,
+        $taxRegistrationType,
         $province,
         $cityMunicipality,
         $barangay,
@@ -985,6 +998,8 @@ try {
                     contact_number,
                     opening_hours,
                     delivery_fee,
+                    tax_registration_type,
+                    order_types_json,
                     business_status,
                     owner_id,
                     staff_access_code,
@@ -992,6 +1007,8 @@ try {
                     customer_visibility
                 )
                 VALUES (
+                    ?,
+                    ?,
                     ?,
                     ?,
                     ?,
@@ -1014,7 +1031,7 @@ try {
         }
 
         $createRestaurantStmt->bind_param(
-            "ssssssdsiss",
+            "ssssssdsssiss",
             $restaurantName,
             $restaurantDescription,
             $logoPath,
@@ -1022,6 +1039,8 @@ try {
             $restaurantContact,
             $openingHours,
             $deliveryFee,
+            $taxRegistrationType,
+            $deliveryOptionsJson,
             $businessStatus,
             $ownerId,
             $staffAccessCode,

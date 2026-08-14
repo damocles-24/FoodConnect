@@ -636,6 +636,7 @@ const bestCategoriesList = document.getElementById("bestCategoriesList");
 
 const exportExcelBtn = document.getElementById("exportExcelBtn");
 const exportPdfBtn = document.getElementById("exportPdfBtn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
 
 const cashierPerformanceRange =
   document.getElementById(
@@ -3741,6 +3742,40 @@ async function loadSalesReport(
   }
 }
 
+function exportSalesReportCSV() {
+  const range =
+    reportSalesRange?.value ||
+    "weekly";
+
+  const allowedRanges = [
+    "daily",
+    "weekly",
+    "monthly"
+  ];
+
+  const safeRange =
+    allowedRanges.includes(range)
+      ? range
+      : "weekly";
+
+  const link =
+    document.createElement("a");
+
+  link.href =
+    `${OWNER_API_BASE}/export_sales_report_csv.php?range=${encodeURIComponent(
+      safeRange
+    )}`;
+
+  link.setAttribute(
+    "download",
+    ""
+  );
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 function exportSalesReportExcel() {
   const summary = salesReport.summary || {};
   const bestProducts = salesReport.bestProducts || [];
@@ -4841,16 +4876,36 @@ if (sort === "price-high") {
 function renderLowStock() {
   if (!lowStockList) return;
 
-  const low = products.filter(p => p.stock <= 5);
+  const low = products
+    .filter(product => {
+      const stock = Number(product.stock) || 0;
+
+      return stock > 0 && stock <= 5;
+    })
+    .sort(
+      (a, b) =>
+        Number(a.stock) -
+        Number(b.stock)
+    );
 
   lowStockList.innerHTML = low.length
-    ? low.map(p => `
-      <div class="low-stock-item">
-        <span>${p.name}${p.size ? " - " + p.size : ""}</span>
-        <strong>${p.stock}</strong>
-      </div>
-    `).join("")
-    : "<p>No low stock</p>";
+    ? low.map(product => `
+        <div class="low-stock-item">
+          <span>
+            ${escapeHtml(product.name)}
+            ${
+              product.size
+                ? " - " + escapeHtml(product.size)
+                : ""
+            }
+          </span>
+
+          <strong>
+            ${Number(product.stock)} left
+          </strong>
+        </div>
+      `).join("")
+    : "<p>No low-stock products.</p>";
 }
 
 /* =========================
@@ -7768,6 +7823,7 @@ reportSalesRange?.addEventListener(
 
 exportExcelBtn?.addEventListener("click", exportSalesReportExcel);
 exportPdfBtn?.addEventListener("click", exportSalesReportPDF);
+exportCsvBtn?.addEventListener("click", exportSalesReportCSV);
 
 salesRange?.addEventListener(
   "change",

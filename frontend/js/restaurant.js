@@ -154,29 +154,45 @@ const authenticatedRole =
 
 loggedIn =
     authResponse.ok &&
-    authData.success === true &&
-    (
-        authenticatedRole ===
-            "customer" ||
-        Number(
-            authenticatedUser.user_id ||
-            authData.user_id ||
-            0
-        ) > 0
-    );
+    authData.logged_in === true &&
+    authenticatedRole === "customer" &&
+    Number(
+        authenticatedUser.user_id ||
+        0
+    ) > 0;
 
     if (loggedIn) {
         if (nameEl) {
             nameEl.textContent =
-    authenticatedUser.full_name ||
-    authenticatedUser.name ||
-    "Customer";
+                authenticatedUser.full_name ||
+                authenticatedUser.name ||
+                "Customer";
+        }
+
+        if (goProfileBtn) {
+            goProfileBtn.style.display = "block";
+        }
+
+        if (logoutBtn) {
+            logoutBtn.style.display = "block";
         }
 
         wrapper?.classList.add(
             "logged-in"
         );
     } else {
+        if (nameEl) {
+            nameEl.textContent = "Guest";
+        }
+
+        if (goProfileBtn) {
+            goProfileBtn.style.display = "block";
+        }
+
+        if (logoutBtn) {
+            logoutBtn.style.display = "none";
+        }
+
         wrapper?.classList.remove(
             "logged-in"
         );
@@ -4352,8 +4368,15 @@ applyFilters();
 await updateCartBadge();
 
 
+
+goProfileBtn?.addEventListener("click", () => {
+    window.location.href = loggedIn
+        ? "profile.html"
+        : "login.html";
 });
 
 logoutBtn?.addEventListener("click", () => {
     window.location.href = `${API}/logout.php`;
+});
+
 });

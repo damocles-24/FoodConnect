@@ -785,3 +785,34 @@
         padding: 13px;
     }
 }
+
+
+/* PayMongo payment state */
+.customer-order-status.waiting_for_payment {
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.customer-order-pay-button {
+    min-width: 190px;
+}
+
+.customer-order-pay-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+
+/* =========================================================
+   QR-FIRST PAYMONGO CONTINUATION
+   Keep the next payment action inside the same QR modal.
+========================================================= */
+
+.order-qr-pay-now-button {
+    margin-top: 12px;
+    font-weight: 800;
+}
+
+.order-qr-pay-now-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
