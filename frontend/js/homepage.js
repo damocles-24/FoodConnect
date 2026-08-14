@@ -293,16 +293,36 @@ let restaurantsPageCards = [];
        LOGIN MODAL
     ========================= */
 
+    function syncModalScrollLock() {
+      const hasOpenModal =
+        loginModal?.classList.contains(
+          "is-open"
+        ) ||
+        staffModal?.classList.contains(
+          "is-open"
+        );
+
+      document.body.classList.toggle(
+        "modal-scroll-locked",
+        Boolean(hasOpenModal)
+      );
+    }
+
     function openLoginModal() {
       if (!loginModal) {
         return;
       }
 
-      loginModal.style.display =
-        "block";
+      loginModal.classList.add(
+        "is-open"
+      );
+      loginModal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+      loginModal.scrollTop = 0;
 
-      document.body.style.overflow =
-        "hidden";
+      syncModalScrollLock();
     }
 
     function closeLoginModal() {
@@ -310,11 +330,15 @@ let restaurantsPageCards = [];
         return;
       }
 
-      loginModal.style.display =
-        "none";
+      loginModal.classList.remove(
+        "is-open"
+      );
+      loginModal.setAttribute(
+        "aria-hidden",
+        "true"
+      );
 
-      document.body.style.overflow =
-        "";
+      syncModalScrollLock();
     }
 
     /* =========================
@@ -518,11 +542,20 @@ let restaurantsPageCards = [];
         return;
       }
 
-      staffModal.style.display =
-        "block";
+      staffModal.classList.add(
+        "is-open"
+      );
+      staffModal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+      staffModal.scrollTop = 0;
 
-      document.body.style.overflow =
-        "hidden";
+      if (staffAccessCard) {
+        staffAccessCard.scrollTop = 0;
+      }
+
+      syncModalScrollLock();
 
       if (staffRestaurantId) {
         staffRestaurantId.value = "1";
@@ -560,11 +593,15 @@ let restaurantsPageCards = [];
         return;
       }
 
-      staffModal.style.display =
-        "none";
+      staffModal.classList.remove(
+        "is-open"
+      );
+      staffModal.setAttribute(
+        "aria-hidden",
+        "true"
+      );
 
-      document.body.style.overflow =
-        "";
+      syncModalScrollLock();
 
       setStaffMessage("");
 
@@ -1868,12 +1905,22 @@ function updateAllRestaurantCards() {
       (event) => {
         if (
           event.altKey &&
-          event.key.toLowerCase() ===
-            "q"
+          event.code === "KeyQ"
         ) {
           event.preventDefault();
+          event.stopPropagation();
 
-          openStaffModal();
+          if (event.repeat) {
+            return;
+          }
+
+          if (
+            !staffModal?.classList.contains(
+              "is-open"
+            )
+          ) {
+            openStaffModal();
+          }
         }
       }
     );

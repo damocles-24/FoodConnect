@@ -1670,6 +1670,15 @@ img {
   -webkit-backdrop-filter: blur(7px);
 }
 
+.modal.is-open,
+.staff-access-modal.is-open {
+  display: block;
+}
+
+body.modal-scroll-locked {
+  overflow: hidden;
+}
+
 .modal-content {
   position: relative;
 
