@@ -2040,13 +2040,15 @@
       />
 
       <div class="settings-logo-actions">
-        <button
-          type="button"
+        <label
+          for="settingsLogoInput"
           class="settings-logo-upload-btn"
           id="selectSettingsLogoBtn"
+          role="button"
+          tabindex="0"
         >
           Change Logo
-        </button>
+        </label>
 
         <button
           type="button"
@@ -2375,13 +2377,30 @@
         />
 
         <small class="form-helper">
-          Used to organise products into menu groups.
+          Example: Coffee, Drinks, Meals, Snacks, Add-ons
         </small>
       </div>
 
+      <div class="form-group product-structure-group">
+        <label for="productStructure">
+          Does this product have sizes or variants?
+          <span class="required-label">*</span>
+        </label>
+
+        <select id="productStructure">
+          <option value="single">No — one price only</option>
+          <option value="variants">Yes — different sizes / versions</option>
+        </select>
+
+        <small class="form-helper">
+          Example: Americano has Hot, Medium and Large with different prices.
+        </small>
+      </div>
+
+      <div id="singleProductFields">
       <div class="form-group">
         <label for="productSize">
-          Variant / Size
+          Size / Version
           <span class="optional-label">Optional</span>
         </label>
 
@@ -2394,10 +2413,44 @@
         />
 
         <small class="form-helper">
-          Leave this blank when the product has no variant.
+          Leave blank if this product has only one version.
         </small>
       </div>
+      </div>
 
+      <section
+        class="product-variants-builder"
+        id="productVariantsBuilder"
+        hidden
+        aria-labelledby="productVariantsBuilderTitle"
+      >
+        <div class="product-variants-builder-header">
+          <div>
+            <span class="section-overline">Sizes / versions</span>
+            <h4 id="productVariantsBuilderTitle">Add each size and price</h4>
+            <p>Example: Hot ₱80, Medium ₱90, Large ₱100.</p>
+          </div>
+
+          <button
+            type="button"
+            class="secondary-btn add-variant-row-btn"
+            id="addVariantRowBtn"
+          >
+            + Add Size / Version
+          </button>
+        </div>
+
+        <div
+          class="product-variant-rows"
+          id="productVariantRows"
+        ></div>
+
+        <div class="variant-builder-guide">
+          Enter each size/version, its price, stock, and availability.
+        </div>
+      </section>
+
+      <div id="singleProductPricingFields">
       <div class="product-form-grid">
         <div class="form-group">
           <label for="productPrice">
@@ -2433,7 +2486,7 @@
           />
 
           <small class="form-helper">
-            The quantity currently available.
+            How many are available now.
           </small>
         </div>
       </div>
@@ -2455,12 +2508,10 @@
         </select>
 
         <div class="availability-guide">
-          <strong>Available</strong>
-          allows ordering when stock is greater than zero.
-
-          <strong>Unavailable</strong>
-          keeps the product saved but prevents customers from ordering it.
+          <strong>Available</strong> = customers can order it.
+          <strong>Unavailable</strong> = customers cannot order it.
         </div>
+      </div>
       </div>
 
             <!-- PRODUCT DISCOUNT -->
@@ -3435,5 +3486,6 @@
 
   <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
   <script src="../js/owner_dashboard.js"></script>
+  <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

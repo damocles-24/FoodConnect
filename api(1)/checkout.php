@@ -320,8 +320,17 @@ if (
 ========================================================= */
 
 if ($order_type === "delivery") {
-    $payment_method =
-        "Cash on Delivery";
+    $allowedPaymentMethods = [
+        "Cash on Delivery",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid delivery payment method."
+        ], 400);
+    }
 
     if ($address === "") {
         respond_json([
@@ -374,7 +383,17 @@ if ($order_type === "delivery") {
     $pickup_time = "";
 
 } elseif ($order_type === "takeout") {
-    $payment_method = "Cash";
+    $allowedPaymentMethods = [
+        "Cash",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid takeout payment method."
+        ], 400);
+    }
 
     if ($pickup_time === "") {
         respond_json([
@@ -394,7 +413,17 @@ if ($order_type === "delivery") {
     /*
      * Dine-in
      */
-    $payment_method = "Cash";
+    $allowedPaymentMethods = [
+        "Cash",
+        "PayMongo QR Ph"
+    ];
+
+    if (!in_array($payment_method, $allowedPaymentMethods, true)) {
+        respond_json([
+            "success" => false,
+            "message" => "Select a valid dine-in payment method."
+        ], 400);
+    }
 
       $address = "";
     $landmark = "";
@@ -2031,6 +2060,11 @@ if (
         );
 }
 
+$payment_status =
+    $payment_method === "PayMongo QR Ph"
+        ? "pending"
+        : "cash_pending";
+
    $insertOrderStmt = $conn->prepare("
         INSERT INTO tbl_orders (
         queue_number,
@@ -2042,6 +2076,7 @@ if (
         contact_number,
         order_type,
         payment_method,
+        payment_status,
         address,
         landmark,
         customer_latitude,
@@ -2055,6 +2090,7 @@ if (
         total_amount
     )
        VALUES (
+        ?,
         ?,
         ?,
         ?,
@@ -2085,7 +2121,7 @@ if (!$insertOrderStmt) {
 }
 
 $insertOrderStmt->bind_param(
-    "issiissssssddsssddd",
+"issiisssssssddsssddd",
     $queue_number,
     $order_qr_token,
     $order_qr_expires_at,
@@ -2095,6 +2131,7 @@ $insertOrderStmt->bind_param(
     $contact_number,
     $order_type,
     $payment_method,
+    $payment_status,
     $address,
     $landmark,
     $customer_latitude,
@@ -2708,6 +2745,23 @@ $addonIdsJson = encode_id_array(
 
 "qr_expires_at" =>
     $order_qr_expires_at,
+
+"payment_method" =>
+        $payment_method,
+
+"payment_status" =>
+        $payment_status,
+
+"payment_required" =>
+        $payment_method === "PayMongo QR Ph",
+
+"payment_requires_qr_first" =>
+        $payment_method === "PayMongo QR Ph" &&
+        in_array(
+            $normalizedQrOrderType,
+            ["dine-in", "dinein", "takeout"],
+            true
+        ),
 
 "subtotal" =>
         round($subtotal, 2),

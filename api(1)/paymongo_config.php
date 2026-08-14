@@ -45,3 +45,9 @@ if (
         "FoodConnect Step 1 only accepts a PayMongo TEST secret key."
     );
 }
+
+
+/* Optional PayMongo webhook secret. */
+if (defined("PAYMONGO_WEBHOOK_SECRET")) {
+    $paymongoWebhookSecret = trim((string)PAYMONGO_WEBHOOK_SECRET);
+}

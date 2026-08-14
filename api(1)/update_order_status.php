@@ -180,6 +180,8 @@ try {
             customer_name,
             order_type,
             total_amount,
+            payment_method,
+            payment_status,
             order_status
 
         FROM tbl_orders
@@ -394,6 +396,43 @@ $actorRoleLabel =
             "order_status" =>
                 $current_status
         ]);
+    }
+
+    /* =====================================================
+       ONLINE PAYMENT GATE
+
+       PayMongo orders cannot enter preparation or completion
+       until PayMongo has confirmed payment. Cancellation remains
+       allowed so an unpaid order can still be safely closed.
+    ===================================================== */
+
+    $orderPaymentMethod = trim(
+        (string)(
+            $order["payment_method"] ?? ""
+        )
+    );
+
+    $orderPaymentStatus = strtolower(
+        trim(
+            (string)(
+                $order["payment_status"] ?? ""
+            )
+        )
+    );
+
+    if (
+        $orderPaymentMethod === "PayMongo QR Ph" &&
+        $new_status !== "cancelled" &&
+        $new_status !== "pending" &&
+        $orderPaymentStatus !== "paid"
+    ) {
+        $conn->rollback();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "PayMongo payment must be confirmed before this order can be prepared."
+        ], 409);
     }
 
     /* =====================================================

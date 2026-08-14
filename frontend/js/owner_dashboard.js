@@ -731,6 +731,10 @@ const saveSettingsBtn =
   document.getElementById(
     "saveSettingsBtn"
   );
+const settingsFormMessage =
+  document.getElementById(
+    "settingsFormMessage"
+  );
 const settingsStatusRadios =
   document.querySelectorAll(
     'input[name="restaurantBusinessStatus"]'
@@ -789,12 +793,6 @@ let restaurantSettingsLoading = false;
 
 let readinessChecklistExpanded = false;
 
-selectSettingsLogoBtn?.addEventListener(
-  "click",
-  () => {
-    settingsLogoInput?.click();
-  }
-);
 
 settingsLogoInput?.addEventListener(
   "change",
@@ -807,6 +805,19 @@ settingsLogoInput?.addEventListener(
     }
 
     uploadSettingsLogo(file);
+  }
+);
+
+selectSettingsLogoBtn?.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      settingsLogoInput?.click();
+    }
   }
 );
 
@@ -9447,6 +9458,11 @@ function settingsHaveChanges() {
     getCurrentRestaurantSettings();
 
   return (
+    current.logo_path !==
+      String(
+        savedRestaurantSettings.logo_path || ""
+      ).trim() ||
+
     current.name !==
       savedRestaurantSettings.name ||
 
@@ -9491,6 +9507,28 @@ function setSettingsSaveState(
   if (settingsSaveStateText) {
     settingsSaveStateText.textContent =
       message;
+  }
+
+  /*
+   * Mirror the save status beside the actual Save Changes button.
+   * Previously the bottom message existed in HTML but was never updated,
+   * which made successful saves look like "nothing happened".
+   */
+  if (settingsFormMessage) {
+    settingsFormMessage.hidden = false;
+    settingsFormMessage.textContent =
+      message;
+
+    settingsFormMessage.classList.remove(
+      "is-saved",
+      "is-unsaved",
+      "is-saving",
+      "is-error"
+    );
+
+    settingsFormMessage.classList.add(
+      `is-${state}`
+    );
   }
 }
 
@@ -9886,8 +9924,11 @@ document.title =
 
 setSettingsSaveState(
   "saved",
-  "Settings saved successfully"
+  result.message ||
+    "Settings saved successfully."
 );
+
+
 
     await addActivityLog(
       "system",

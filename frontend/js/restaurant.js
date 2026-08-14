@@ -1356,8 +1356,8 @@ function mapDatabaseCategory(rawCategory) {
    * They must not appear as regular product cards.
    */
   if (
-    category === "milktea classic add-on" ||
-    category === "milktea creamcheese add-on"
+    category.includes("add-on") ||
+    category.includes("addon")
   ) {
     return {
       main: "",
@@ -1622,9 +1622,10 @@ const status =
      * different sections.
      */
     const groupKey =
-      rawCategory.toLowerCase() +
+      String(product.group_key || "").trim() ||
+      (rawCategory.toLowerCase() +
       "::" +
-      name.toLowerCase();
+      name.toLowerCase());
 
     if (!grouped.has(groupKey)) {
       grouped.set(groupKey, {
@@ -2460,35 +2461,96 @@ function getAddonsForProductGroup(group) {
     return [];
   }
 
-  const categorySlug = String(
-    group.categorySlug || ""
-  )
-    .trim()
-    .toLowerCase();
+  const productCategory =
+    normalizeAddonCategory(
+      group.rawCategory
+    );
 
-  if (categorySlug === "milktea") {
-    return databaseAddons.filter(
-      (addon) =>
+  const normalizedProductCategory =
+    productCategory
+      .replace(/\badd-ons?\b/g, "")
+      .replace(/\baddons?\b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  return databaseAddons.filter(
+    addon => {
+      const addonCategory =
         normalizeAddonCategory(
           addon.category
-        ) === "milktea classic add-on"
-    );
-  }
+        );
 
-  if (
-    categorySlug ===
-    "milktea-creamcheese"
-  ) {
-    return databaseAddons.filter(
-      (addon) =>
-        normalizeAddonCategory(
-          addon.category
-        ) ===
-        "milktea creamcheese add-on"
-    );
-  }
+      /*
+       * Global add-ons:
+       *   Add-on / Add-ons / Addon / Addons
+       */
+      if (
+        [
+          "add-on",
+          "add-ons",
+          "addon",
+          "addons"
+        ].includes(addonCategory)
+      ) {
+        return true;
+      }
 
-  return [];
+      /*
+       * Scoped add-ons:
+       *   Coffee Based Add-on
+       *   Add-on Coffee Based
+       *   Burger Series Add-ons
+       *
+       * This preserves the existing database design: add-ons are still
+       * ordinary tbl_products rows, but owners can scope them by category.
+       */
+      const addonScope =
+        addonCategory
+          .replace(/\badd-ons?\b/g, "")
+          .replace(/\baddons?\b/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      if (
+        addonScope &&
+        normalizedProductCategory &&
+        addonScope ===
+          normalizedProductCategory
+      ) {
+        return true;
+      }
+
+      /*
+       * Backward compatibility for the original milk-tea categories.
+       */
+      const categorySlug =
+        String(
+          group.categorySlug || ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (
+        categorySlug ===
+          "milktea" &&
+        addonCategory ===
+          "milktea classic add-on"
+      ) {
+        return true;
+      }
+
+      if (
+        categorySlug ===
+          "milktea-creamcheese" &&
+        addonCategory ===
+          "milktea creamcheese add-on"
+      ) {
+        return true;
+      }
+
+      return false;
+    }
+  );
 }
 
 function isPotentialBundleGroup(group) {
@@ -3326,17 +3388,16 @@ restaurantAcceptingOrders =
 const addonMap = new Map();
 
 products.forEach((product) => {
-  const category = normalizeAddonCategory(
-    product.category
-  );
+  const category =
+    normalizeAddonCategory(
+      product.category
+    );
 
-  const isClassicAddon =
-    category === "milktea classic add-on";
+  const isAddon =
+    category.includes("add-on") ||
+    category.includes("addon");
 
-  const isCreamcheeseAddon =
-    category === "milktea creamcheese add-on";
-
-  if (!isClassicAddon && !isCreamcheeseAddon) {
+  if (!isAddon) {
     return;
   }
 
@@ -3352,7 +3413,9 @@ products.forEach((product) => {
   );
 
   const price = Number(
-    product.price || 0
+    product.final_price ??
+    product.price ??
+    0
   );
 
   const stock = Number(
@@ -3382,10 +3445,6 @@ products.forEach((product) => {
   const existing =
     addonMap.get(addonKey);
 
-  /*
-   * Your database contains old and new duplicate
-   * add-on rows. Keep only the newer available ID.
-   */
   if (
     !existing ||
     productId > existing.productId

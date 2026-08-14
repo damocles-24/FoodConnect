@@ -382,11 +382,18 @@ if ($isDiscountActive) {
     );
 }
 
+    $productGroupKey =
+        strtolower(trim($category)) .
+        "::" .
+        strtolower(trim($productName));
+
     $products[] = [
         "id" => $productId,
         "product_id" => $productId,
 
         "product_name" => $productName,
+        "group_key" => $productGroupKey,
+        "variant_label" => $size !== "" ? $size : "Standard",
 
         "category" => $category,
         "size" => $size,

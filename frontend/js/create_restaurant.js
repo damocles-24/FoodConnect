@@ -110,10 +110,6 @@ const businessEmailInput =
         "businessEmail"
     );
 
-const taxRegistrationTypeInput =
-    document.getElementById(
-        "taxRegistrationType"
-    );
 
 const restaurantDescriptionInput =
     document.getElementById(
@@ -320,10 +316,6 @@ const reviewBusinessEmail =
         "reviewBusinessEmail"
     );
 
-const reviewTaxRegistrationType =
-    document.getElementById(
-        "reviewTaxRegistrationType"
-    );
 
 const reviewAddress =
     document.getElementById(
@@ -519,7 +511,6 @@ removeLogoButton.addEventListener(
         cuisineInput,
         restaurantContactInput,
         businessEmailInput,
-        taxRegistrationTypeInput,
         restaurantDescriptionInput,
         restaurantAddressInput,
         provinceInput,
@@ -585,6 +576,13 @@ removeLogoButton.addEventListener(
                 top: 0,
                 behavior: "smooth"
             });
+        }
+    );
+
+    document.addEventListener(
+        "foodconnect:verification-documents-changed",
+        () => {
+            updateWizardButtons();
         }
     );
 }
@@ -974,9 +972,6 @@ renderRestaurantLogo(
 
     businessEmailInput.value =
         application.business_email || "";
-
-    taxRegistrationTypeInput.value =
-        application.tax_registration_type || "";
 
     restaurantDescriptionInput.value =
         application.restaurant_description || "";
@@ -1672,13 +1667,6 @@ function validateRestaurantDetailsStep(
             showErrors
         ) && valid;
 
-    valid =
-        validateRequiredField(
-            taxRegistrationTypeInput,
-            "Select your BIR tax registration status.",
-            showErrors
-        ) && valid;
-
     if (
         businessEmailInput.value.trim() !== "" &&
         !businessEmailInput.validity.valid
@@ -1691,6 +1679,43 @@ function validateRestaurantDetailsStep(
         }
 
         valid = false;
+    }
+
+    /*
+     * Verification documents are now part of Step 1.
+     * The owner cannot continue until all three required
+     * documents have been uploaded successfully.
+     */
+    if (
+        window.FoodConnectVerificationDocuments &&
+        typeof window
+            .FoodConnectVerificationDocuments
+            .validateForSubmit === "function"
+    ) {
+        valid =
+            window
+                .FoodConnectVerificationDocuments
+                .validateForSubmit(showErrors) &&
+            valid;
+    } else {
+        /*
+         * Fail closed if the verification controller did not load.
+         * This prevents bypassing the requirement because of a
+         * missing/failed script.
+         */
+        valid = false;
+
+        if (showErrors) {
+            const verificationError =
+                document.getElementById(
+                    "verificationDocumentsError"
+                );
+
+            if (verificationError) {
+                verificationError.textContent =
+                    "Restaurant verification documents are required before continuing.";
+            }
+        }
     }
 
     return valid;
@@ -2541,13 +2566,6 @@ function renderReviewSummary() {
             businessEmailInput.value
         );
 
-    reviewTaxRegistrationType.textContent =
-        taxRegistrationTypeInput.value === "vat"
-            ? "VAT-Registered"
-            : taxRegistrationTypeInput.value === "non_vat"
-                ? "Non-VAT Registered"
-                : "—";
-
     const addressParts = [
         restaurantAddressInput.value,
         barangayInput.value,
@@ -2664,9 +2682,6 @@ function collectFormData(action) {
 
         business_email:
             businessEmailInput.value.trim(),
-
-        tax_registration_type:
-            taxRegistrationTypeInput.value.trim(),
 
         restaurant_description:
             restaurantDescriptionInput.value.trim(),
@@ -3056,9 +3071,6 @@ function applyServerValidationErrors(
 
         business_email:
             businessEmailInput,
-
-        tax_registration_type:
-            taxRegistrationTypeInput,
 
         restaurant_address:
             restaurantAddressInput,

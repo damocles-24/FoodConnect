@@ -133,6 +133,10 @@ try {
         WHERE o.restaurant_id = ?
           AND LOWER(TRIM(o.order_status)) <> 'cancelled'
           AND (
+                LOWER(TRIM(COALESCE(o.payment_method, ''))) <> 'paymongo qr ph'
+                OR LOWER(TRIM(COALESCE(o.payment_status, ''))) = 'paid'
+              )
+          AND (
                 LOWER(TRIM(o.order_type)) = 'delivery'
 
                 OR (

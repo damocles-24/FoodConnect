@@ -373,35 +373,63 @@
                             <small class="field-error"></small>
                         </div>
 
-                        <div class="form-group form-group-full">
-                            <label for="taxRegistrationType">
-                                BIR tax registration
-                                <span class="required">*</span>
-                            </label>
-
-                            <select
-                                id="taxRegistrationType"
-                                name="tax_registration_type"
-                                required
-                            >
-                                <option value="">
-                                    Select VAT or Non-VAT registration
-                                </option>
-                                <option value="vat">
-                                    VAT-Registered
-                                </option>
-                                <option value="non_vat">
-                                    Non-VAT Registered
-                                </option>
-                            </select>
-
-                            <small>
-                                Choose your restaurant's actual BIR tax registration status.
-                                FoodConnect will not ask you to enter a VAT amount manually.
-                            </small>
-
-                            <small class="field-error"></small>
+                        <div class="verification-documents-card form-group-full">
+                        <div class="verification-documents-heading">
+                            <div>
+                                <span class="verification-kicker">Restaurant verification</span>
+                                <h4>Verification documents</h4>
+                                <p>
+                                    Upload clear copies for FoodConnect administrator review.
+                                    These requirements are patterned after foodpanda Philippines merchant onboarding.
+                                </p>
+                            </div>
+                            <span class="verification-required-badge">Required before submission</span>
                         </div>
+
+                        <div class="verification-source-note">
+                            <strong>FoodConnect verification set:</strong>
+                            BIR Form 2303, restaurant/dine-in menu, and applicant identification document.
+                            FoodConnect does not request bank proof because the current system does not operate a restaurant payout/settlement feature.
+                        </div>
+
+                        <div class="verification-document-grid">
+                            <div class="verification-document-item" data-document-type="bir_2303">
+                                <div class="verification-document-copy">
+                                    <strong>BIR Form 2303</strong>
+                                    <span>Certificate of Registration / BIR registration document</span>
+                                </div>
+                                <input type="file" id="verificationBir2303" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                <button type="button" class="secondary-button verification-upload-button" data-input-id="verificationBir2303" data-document-type="bir_2303">Upload file</button>
+                                <span class="verification-file-status" id="verificationBir2303Status">Not uploaded</span>
+                            </div>
+
+                            <div class="verification-document-item" data-document-type="restaurant_menu">
+                                <div class="verification-document-copy">
+                                    <strong>Restaurant / Dine-in Menu</strong>
+                                    <span>Clear PDF or image showing menu items and prices</span>
+                                </div>
+                                <input type="file" id="verificationRestaurantMenu" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                <button type="button" class="secondary-button verification-upload-button" data-input-id="verificationRestaurantMenu" data-document-type="restaurant_menu">Upload file</button>
+                                <span class="verification-file-status" id="verificationRestaurantMenuStatus">Not uploaded</span>
+                            </div>
+
+                            <div class="verification-document-item" data-document-type="applicant_id">
+                                <div class="verification-document-copy">
+                                    <strong>Applicant Identification Document</strong>
+                                    <span>Valid identification document of the restaurant applicant</span>
+                                </div>
+                                <input type="file" id="verificationApplicantId" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                <button type="button" class="secondary-button verification-upload-button" data-input-id="verificationApplicantId" data-document-type="applicant_id">Upload file</button>
+                                <span class="verification-file-status" id="verificationApplicantIdStatus">Not uploaded</span>
+                            </div>
+                        </div>
+
+                        <small class="section-error" id="verificationDocumentsError"></small>
+                        <p class="verification-privacy-note">
+                            Accepted: PDF, JPG, PNG · Maximum 5 MB each. Documents are for administrator verification and are not shown to customers.
+                        </p>
+                    </div>
+
 
                         <div class="form-group form-group-full">
                             <label for="restaurantDescription">
@@ -1037,6 +1065,7 @@
     </div>
 
     <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
+    <script src="../js/restaurant_verification_documents.js?v=20260815"></script>
     <script src="../js/create_restaurant.js"></script>
 </body>
 </html>

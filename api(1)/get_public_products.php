@@ -468,6 +468,11 @@ while ($row = $result->fetch_assoc()) {
        PUBLIC RESPONSE
     ===================================================== */
 
+    $publicProductName = (string) ($row["product_name"] ?? "Unnamed Product");
+    $publicCategory = (string) ($row["category"] ?? "Uncategorized");
+    $publicSize = trim((string) ($row["size"] ?? ""));
+    $productGroupKey = strtolower(trim($publicCategory)) . "::" . strtolower(trim($publicProductName));
+
     $products[] = [
         "id" =>
             $productId,
@@ -475,28 +480,12 @@ while ($row = $result->fetch_assoc()) {
         "product_id" =>
             $productId,
 
-        "name" =>
-            (string) (
-                $row["product_name"] ??
-                "Unnamed Product"
-            ),
-
-        "product_name" =>
-            (string) (
-                $row["product_name"] ??
-                "Unnamed Product"
-            ),
-
-        "category" =>
-            (string) (
-                $row["category"] ??
-                "Uncategorized"
-            ),
-
-        "size" =>
-            (string) (
-                $row["size"] ?? ""
-            ),
+        "name" => $publicProductName,
+        "product_name" => $publicProductName,
+        "group_key" => $productGroupKey,
+        "variant_label" => $publicSize !== "" ? $publicSize : "Standard",
+        "category" => $publicCategory,
+        "size" => $publicSize,
 
         "price" =>
             $regularPrice,

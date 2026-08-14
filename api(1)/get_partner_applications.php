@@ -239,6 +239,25 @@ while ($row = $result->fetch_assoc()) {
 
 $stmt->close();
 
+$documentStmt = $conn->prepare("SELECT document_id, document_type, original_name, mime_type, file_size, uploaded_at FROM tbl_partner_application_documents WHERE application_id = ? ORDER BY document_type");
+if ($documentStmt) {
+    foreach ($applications as &$applicationItem) {
+        $applicationIdForDocs = (int)$applicationItem["application_id"];
+        $documentStmt->bind_param("i", $applicationIdForDocs);
+        $documentStmt->execute();
+        $documentResult = $documentStmt->get_result();
+        $applicationItem["verification_documents"] = [];
+        while ($documentRow = $documentResult->fetch_assoc()) {
+            $documentRow["document_id"] = (int)$documentRow["document_id"];
+            $documentRow["file_size"] = (int)$documentRow["file_size"];
+            $documentRow["view_url"] = "/FoodConnect/api/view_restaurant_verification_document.php?document_id=" . $documentRow["document_id"];
+            $applicationItem["verification_documents"][] = $documentRow;
+        }
+    }
+    unset($applicationItem);
+    $documentStmt->close();
+}
+
 $counts = [
     "all" => 0,
     "email_pending" => 0,

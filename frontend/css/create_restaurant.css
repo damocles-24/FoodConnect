@@ -2132,3 +2132,24 @@ button {
     color: var(--text);
     background: #ffffff;
 }
+
+
+/* =========================================================
+   RESTAURANT VERIFICATION DOCUMENTS
+========================================================= */
+.verification-documents-card { margin-top: 24px; padding: 22px; border: 1px solid #e5e7eb; border-radius: 16px; background: #fff; }
+.verification-documents-heading { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:14px; }
+.verification-documents-heading h4 { margin:4px 0 6px; font-size:1.05rem; }
+.verification-documents-heading p, .verification-privacy-note { margin:0; color:#667085; line-height:1.55; }
+.verification-kicker { font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#667085; }
+.verification-required-badge { flex:0 0 auto; padding:7px 10px; border-radius:999px; background:#fff7ed; border:1px solid #fed7aa; font-size:.76rem; font-weight:700; }
+.verification-source-note { padding:12px 14px; margin-bottom:16px; border-radius:12px; background:#f8fafc; color:#475467; line-height:1.5; font-size:.9rem; }
+.verification-document-grid { display:grid; gap:12px; }
+.verification-document-item { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; align-items:center; padding:14px; border:1px solid #eaecf0; border-radius:12px; }
+.verification-document-copy { display:flex; flex-direction:column; gap:3px; }
+.verification-document-copy span, .verification-file-status { color:#667085; font-size:.85rem; }
+.verification-file-status { grid-column:1 / -1; }
+.verification-file-status.uploaded { color:#027a48; font-weight:600; }
+.verification-file-status.error { color:#b42318; }
+.verification-privacy-note { margin-top:12px; font-size:.82rem; }
+@media (max-width:700px) { .verification-documents-heading { flex-direction:column; } .verification-document-item { grid-template-columns:1fr; } .verification-upload-button { width:100%; } }

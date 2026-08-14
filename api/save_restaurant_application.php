@@ -216,13 +216,7 @@ $businessEmail =
         )
     );
 
-$taxRegistrationType =
-    strtolower(
-        clean_text(
-            $data,
-            "tax_registration_type"
-        )
-    );
+$taxRegistrationType = "";
 
 $restaurantDescription =
     clean_text(
@@ -388,16 +382,6 @@ if ($businessEmail === "") {
         "Enter a valid business email address.";
 }
 
-if (
-    !in_array(
-        $taxRegistrationType,
-        ["vat", "non_vat"],
-        true
-    )
-) {
-    $errors["tax_registration_type"] =
-        "Select VAT-Registered or Non-VAT Registered.";
-}
 
 if ($restaurantAddress === "") {
     $errors["restaurant_address"] =
@@ -787,6 +771,35 @@ $applicationId =
 
 $isCompletingSetup =
     $action === "submit";
+
+if ($isCompletingSetup) {
+    $documentStmt = $conn->prepare("
+        SELECT document_type
+        FROM tbl_partner_application_documents
+        WHERE application_id = ?
+          AND owner_id = ?
+          AND document_type IN ('bir_2303','restaurant_menu','applicant_id')
+    ");
+    if (!$documentStmt) {
+        respond_json(["success" => false, "message" => "Unable to verify restaurant documents."], 500);
+    }
+    $documentStmt->bind_param("ii", $applicationId, $ownerId);
+    $documentStmt->execute();
+    $documentResult = $documentStmt->get_result();
+    $documentTypes = [];
+    while ($documentRow = $documentResult->fetch_assoc()) {
+        $documentTypes[] = (string)$documentRow["document_type"];
+    }
+    $documentStmt->close();
+    $requiredDocuments = ["bir_2303", "restaurant_menu", "applicant_id"];
+    $missingDocuments = array_values(array_diff($requiredDocuments, $documentTypes));
+    if (!empty($missingDocuments)) {
+        validation_response(
+            ["verification_documents" => "Upload BIR Form 2303, restaurant/dine-in menu, and applicant identification document."],
+            "Complete the required restaurant verification documents before submitting."
+        );
+    }
+}
 
 $newStatus =
     "draft";

@@ -5154,6 +5154,19 @@ function openApplicationDetails(
       }
     </div>
 
+    <div class="application-preview-card">
+      <div class="application-preview-card-copy">
+        <span class="application-preview-label">Verification documents</span>
+        <h3>Restaurant verification files</h3>
+        <p>Open each submitted file before approving the restaurant.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+          ${(application.verification_documents || []).length
+            ? (application.verification_documents || []).map(doc => `<a class="application-preview-button" target="_blank" rel="noopener" href="${escapeHtml(doc.view_url)}">${escapeHtml(({bir_2303:'BIR Form 2303',restaurant_menu:'Restaurant Menu',applicant_id:'Applicant ID'})[doc.document_type] || doc.document_type)}</a>`).join("")
+            : '<span class="table-secondary">No verification documents uploaded.</span>'}
+        </div>
+      </div>
+    </div>
+
     ${
       isSubmitted
         ? `
