@@ -3739,7 +3739,6 @@ body {
 
   .restaurants-page-search {
     width: 100%;
-    top: 0;
   }
 
   .restaurants-page-back {
@@ -3749,10 +3748,6 @@ body {
   .restaurants-page-category-grid {
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
-  }
-
-  .restaurants-page-heading {
-    top: 0;
   }
 
 }
@@ -3831,26 +3826,4 @@ body.restaurants-page-active .desktop-nav {
 /* Hide footer navigation on Restaurants page */
 body.restaurants-page-active .footer-links {
   display: none !important;
-}
-
-.restaurant-search-pop {
-  animation: restaurantSearchPop 0.9s ease;
-}
-
-@keyframes restaurantSearchPop {
-  0% {
-    transform: scale(1);
-  }
-
-  40% {
-    transform: scale(1.04);
-  }
-
-  70% {
-    transform: scale(0.99);
-  }
-
-  100% {
-    transform: scale(1);
-  }
 }
