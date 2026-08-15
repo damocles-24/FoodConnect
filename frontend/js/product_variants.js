@@ -494,6 +494,39 @@
         );
       }
 
+      const firstProductId =
+        Number(
+          Array.isArray(result.product_ids)
+            ? result.product_ids[0]
+            : 0
+        );
+
+      if (
+        firstProductId > 0 &&
+        typeof window.saveProductAddonAssignments === "function"
+      ) {
+        const container =
+          document.getElementById(
+            "productAddonChoiceList"
+          );
+
+        const addonIds =
+          container
+            ? Array.from(
+                container.querySelectorAll(
+                  'input[type="checkbox"]:checked'
+                )
+              )
+                .map(input => Number(input.value))
+                .filter(id => Number.isInteger(id) && id > 0)
+            : [];
+
+        await window.saveProductAddonAssignments(
+          firstProductId,
+          addonIds
+        );
+      }
+
       modal?.classList.remove(
         "show"
       );

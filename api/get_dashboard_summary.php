@@ -246,6 +246,7 @@ $productStmt = $conn->prepare("
         SUM(CASE WHEN status = 'Available' AND stock > 0 THEN 1 ELSE 0 END) AS orderable_products
     FROM tbl_products
     WHERE restaurant_id = ?
+      AND item_type = 'menu_item'
 ");
 
 if (!$productStmt) {

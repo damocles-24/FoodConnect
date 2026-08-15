@@ -16,6 +16,7 @@ session_set_cookie_params(
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/addon_helper.php";
 
 /*
  * Product promotion schedules use Philippine local time.
@@ -1126,19 +1127,13 @@ $discount_savings = round(
                 product_id,
                 product_name,
                 price,
-                stock,
                 status
 
             FROM tbl_products
 
             WHERE product_id = ?
               AND restaurant_id = ?
-              AND (
-                    LOWER(category)
-                        LIKE '%add-on%'
-                 OR LOWER(category)
-                        LIKE '%addon%'
-              )
+              AND item_type = 'add_on'
 
             LIMIT 1
 
@@ -1187,6 +1182,27 @@ $discount_savings = round(
                 );
             }
 
+            if (
+                !product_allows_addon(
+                    $conn,
+                    $restaurant_id,
+                    $product_id,
+                    (int)$addon["product_id"]
+                )
+            ) {
+                $addonStmt->close();
+
+                rollback_and_respond(
+                    $conn,
+                    [
+                        "success" => false,
+                        "message" =>
+                            "This add-on is not available for the selected menu item."
+                    ],
+                    400
+                );
+            }
+
             $validated_addons[] = [
                 "product_id" =>
                     (int)$addon["product_id"],
@@ -1196,9 +1212,6 @@ $discount_savings = round(
 
                 "price" =>
                     (float)$addon["price"],
-
-                "stock" =>
-                    (int)$addon["stock"],
 
                 "status" =>
                     strtolower(
@@ -1398,18 +1411,15 @@ $discount_savings = round(
     }
 
     /*
-     * Selected add-ons are also required once
-     * per ordered quantity.
+     * Add-ons do not have stock/quantity.
+     * Only their availability status is checked.
      */
     foreach (
         $validated_addons
         as $addon
     ) {
         if (
-            $addon["status"]
-                !== "available" ||
-            (int)$addon["stock"]
-                < $final_quantity
+            $addon["status"] !== "available"
         ) {
             rollback_and_respond(
                 $conn,
@@ -1417,7 +1427,7 @@ $discount_savings = round(
                     "success" => false,
                     "message" =>
                         $addon["name"] .
-                        " does not have enough stock for this quantity."
+                        " is currently unavailable."
                 ],
                 409
             );

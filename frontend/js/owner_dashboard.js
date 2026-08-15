@@ -1,4 +1,5 @@
 let products = [];
+let activeProductMode = "menu";
 
 /*
  * The main Dashboard and Advanced Analytics
@@ -38,6 +39,17 @@ const productsGrid = document.getElementById("productsGrid");
 const productSearch = document.getElementById("productSearch");
 const productCategoryFilter = document.getElementById("productCategoryFilter");
 const productSort = document.getElementById("productSort");
+const menuItemsTabBtn = document.getElementById("menuItemsTabBtn");
+const addonsTabBtn = document.getElementById("addonsTabBtn");
+const addonModal = document.getElementById("addonModal");
+const addonModalTitle = document.getElementById("addonModalTitle");
+const addonProductId = document.getElementById("addonProductId");
+const addonName = document.getElementById("addonName");
+const addonPrice = document.getElementById("addonPrice");
+const addonStatus = document.getElementById("addonStatus");
+const saveAddonBtn = document.getElementById("saveAddonBtn");
+const productAddonChoiceList = document.getElementById("productAddonChoiceList");
+const editProductAddonChoiceList = document.getElementById("editProductAddonChoiceList");
 const lowStockList = document.getElementById("lowStockList");
 const salesChart = document.getElementById("salesChart");
 const salesRange = document.getElementById("salesRange");
@@ -2462,6 +2474,16 @@ async function loadProducts() {
       p.category ||
       "Uncategorized",
 
+    itemType:
+      String(p.item_type || "menu_item").trim().toLowerCase() === "add_on"
+        ? "add_on"
+        : "menu_item",
+
+    addonIds:
+      Array.isArray(p.addon_ids)
+        ? p.addon_ids.map(Number).filter(id => Number.isInteger(id) && id > 0)
+        : [],
+
     size:
       p.size || "",
 
@@ -2554,7 +2576,7 @@ async function loadProducts() {
   renderLowStock();
   populateInventoryCategories();
   applyInventoryFilters();
-  
+  renderAddonChoiceLists();
 }
 
 /* =========================
@@ -4224,6 +4246,15 @@ function renderProducts(list = products) {
     return;
   }
 
+  if (activeProductMode === "addons") {
+    renderAddons(list);
+    return;
+  }
+
+  const menuProducts = products.filter(
+    product => product.itemType !== "add_on"
+  );
+
   const productOverviewTotal =
     document.getElementById(
       "productOverviewTotal"
@@ -4269,22 +4300,22 @@ function renderProducts(list = products) {
       "promotionOverviewNone"
     );
 
-  const totalProducts = products.length;
+  const totalProducts = menuProducts.length;
 
   const availableProducts =
-    products.filter(
+    menuProducts.filter(
       product => Number(product.stock) > 5
     ).length;
 
   const lowStockProducts =
-    products.filter(product => {
+    menuProducts.filter(product => {
       const stock = Number(product.stock);
 
       return stock > 0 && stock <= 5;
     }).length;
 
     const outOfStockProducts =
-    products.filter(
+    menuProducts.filter(
       product => Number(product.stock) <= 0
     ).length;
 
@@ -4296,7 +4327,7 @@ function renderProducts(list = products) {
     none: 0
   };
 
-  products.forEach(product => {
+  menuProducts.forEach(product => {
     const promoStatus =
       getProductPromoStatus(
         product
@@ -4747,7 +4778,9 @@ function populateProductCategories() {
   const categoryMap =
     new Map();
 
-  products.forEach(product => {
+  products
+    .filter(product => product.itemType !== "add_on")
+    .forEach(product => {
     const displayName =
       String(
         product.category || ""
@@ -4818,7 +4851,12 @@ function populateProductCategories() {
   }
 }
 function applyProductFilters() {
-  let list = [...products];
+  let list = products.filter(
+    product =>
+      activeProductMode === "addons"
+        ? product.itemType === "add_on"
+        : product.itemType !== "add_on"
+  );
 
   const search = productSearch?.value.toLowerCase().trim() || "";
   const category = productCategoryFilter?.value || "all";
@@ -4877,8 +4915,12 @@ if (sort === "price-high") {
       )
   );
 }
-  if (sort === "stock-low") list.sort((a, b) => a.stock - b.stock);
-  if (sort === "stock-high") list.sort((a, b) => b.stock - a.stock);
+  if (activeProductMode !== "addons" && sort === "stock-low") {
+    list.sort((a, b) => a.stock - b.stock);
+  }
+  if (activeProductMode !== "addons" && sort === "stock-high") {
+    list.sort((a, b) => b.stock - a.stock);
+  }
 
   renderProducts(list);
 }
@@ -4888,6 +4930,7 @@ function renderLowStock() {
   if (!lowStockList) return;
 
   const low = products
+    .filter(product => product.itemType !== "add_on")
     .filter(product => {
       const stock = Number(product.stock) || 0;
 
@@ -4929,17 +4972,25 @@ function renderInventory(
     return;
   }
 
+  const inventoryProducts = products.filter(
+    product => product.itemType !== "add_on"
+  );
+
+  list = list.filter(
+    product => product.itemType !== "add_on"
+  );
+
   const total =
-    products.length;
+    inventoryProducts.length;
 
   const available =
-    products.filter(
+    inventoryProducts.filter(
       product =>
         Number(product.stock) > 0
     ).length;
 
   const low =
-    products.filter(
+    inventoryProducts.filter(
       product => {
         const stock =
           Number(product.stock) || 0;
@@ -4952,7 +5003,7 @@ function renderInventory(
     ).length;
 
   const out =
-    products.filter(
+    inventoryProducts.filter(
       product =>
         Number(product.stock) <= 0
     ).length;
@@ -5111,7 +5162,14 @@ function populateInventoryCategories() {
   if (!inventoryCategoryFilter) return;
 
   const currentValue = inventoryCategoryFilter.value || "all";
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+  const categories = [
+    ...new Set(
+      products
+        .filter(product => product.itemType !== "add_on")
+        .map(product => product.category)
+        .filter(Boolean)
+    )
+  ].sort();
 
   inventoryCategoryFilter.innerHTML = `
     <option value="all">All Categories</option>
@@ -5126,7 +5184,9 @@ function populateInventoryCategories() {
 }
 
 function applyInventoryFilters() {
-  let list = [...products];
+  let list = products.filter(
+    product => product.itemType !== "add_on"
+  );
 
   const search = inventorySearch?.value.toLowerCase().trim() || "";
   const stockFilter = inventoryFilter?.value || "all";
@@ -6907,6 +6967,17 @@ formData.append(
             }
           );
 
+        const createdProductId = Number(
+          result.product_id || result.product?.product_id || 0
+        );
+
+        if (createdProductId > 0) {
+          await saveProductAddonAssignments(
+            createdProductId,
+            collectSelectedAddonIds(productAddonChoiceList)
+          );
+        }
+
         addProductModal?.classList.remove(
           "show"
         );
@@ -7200,6 +7271,11 @@ if (updateProductBtn) {
               body: formData
             }
           );
+
+        await saveProductAddonAssignments(
+          Number(productId),
+          collectSelectedAddonIds(editProductAddonChoiceList)
+        );
 
         editProductModal?.classList.remove(
           "show"
@@ -8264,7 +8340,15 @@ closeEditUserModal?.addEventListener("click", () => editUserModal.classList.remo
 menuToggle?.addEventListener("click", () => sidebar?.classList.add("show"));
 closeSidebar?.addEventListener("click", () => sidebar?.classList.remove("show"));
 
-openAddProductModal?.addEventListener("click", () => addProductModal.classList.add("show"));
+openAddProductModal?.addEventListener("click", () => {
+  if (activeProductMode === "addons") {
+    openAddonModal();
+    return;
+  }
+
+  renderAddonChoiceList(productAddonChoiceList, []);
+  addProductModal?.classList.add("show");
+});
 closeAddProductModal?.addEventListener("click", () => addProductModal.classList.remove("show"));
 
 closeEditProductModal?.addEventListener("click", () => {
@@ -8277,6 +8361,268 @@ closeRestockModal?.addEventListener(
 );
 logoutBtn?.addEventListener("click", () => {
   window.location.href = "/FoodConnect/api/logout.php";
+});
+
+
+/* =========================
+   ADD-ON MANAGEMENT
+========================= */
+
+function getAddonProducts() {
+  return products.filter(product => product.itemType === "add_on");
+}
+
+function collectSelectedAddonIds(container) {
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('input[type="checkbox"]:checked'))
+    .map(input => Number(input.value))
+    .filter(id => Number.isInteger(id) && id > 0);
+}
+
+function renderAddonChoiceList(container, selectedIds = []) {
+  if (!container) return;
+
+  const addons = getAddonProducts();
+  const selected = new Set((selectedIds || []).map(Number));
+
+  if (!addons.length) {
+    container.innerHTML = `
+      <div class="product-addon-empty">
+        No add-ons yet. Open the Add-ons tab and create one first.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = addons.map(addon => `
+    <label class="product-addon-choice">
+      <span>
+        <input
+          type="checkbox"
+          value="${Number(addon.id)}"
+          ${selected.has(Number(addon.id)) ? "checked" : ""}
+        />
+        <span class="product-addon-choice-name">${escapeHtml(addon.name)}</span>
+      </span>
+      <strong>+${formatPeso(addon.regularPrice)}</strong>
+    </label>
+  `).join("");
+}
+
+function renderAddonChoiceLists() {
+  renderAddonChoiceList(
+    productAddonChoiceList,
+    collectSelectedAddonIds(productAddonChoiceList)
+  );
+}
+
+async function saveProductAddonAssignments(productId, addonIds) {
+  if (!Number.isInteger(Number(productId)) || Number(productId) <= 0) return;
+
+  await fetchJSON(
+    `${OWNER_API_BASE}/save_product_addons.php`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        product_id: Number(productId),
+        addon_ids: addonIds || []
+      })
+    }
+  );
+}
+
+window.saveProductAddonAssignments =
+  saveProductAddonAssignments;
+
+function setProductMode(mode) {
+  activeProductMode = mode === "addons" ? "addons" : "menu";
+
+  menuItemsTabBtn?.classList.toggle("is-active", activeProductMode === "menu");
+  addonsTabBtn?.classList.toggle("is-active", activeProductMode === "addons");
+  menuItemsTabBtn?.setAttribute("aria-selected", activeProductMode === "menu" ? "true" : "false");
+  addonsTabBtn?.setAttribute("aria-selected", activeProductMode === "addons" ? "true" : "false");
+
+  document.getElementById("productsSection")?.classList.toggle(
+    "showing-addons",
+    activeProductMode === "addons"
+  );
+
+  const label = openAddProductModal?.querySelector("span:last-child");
+  if (label) {
+    label.textContent = activeProductMode === "addons" ? "Add Add-on" : "Add Product";
+  }
+
+  if (productSearch) {
+    productSearch.placeholder = activeProductMode === "addons" ? "Search add-ons..." : "Search products...";
+  }
+
+  if (productCategoryFilter) {
+    productCategoryFilter.hidden = activeProductMode === "addons";
+  }
+
+  if (productSort) {
+    Array.from(productSort.options).forEach(option => {
+      if (["stock-low", "stock-high"].includes(option.value)) {
+        option.hidden = activeProductMode === "addons";
+      }
+    });
+
+    if (
+      activeProductMode === "addons" &&
+      ["stock-low", "stock-high"].includes(productSort.value)
+    ) {
+      productSort.value = "newest";
+    }
+  }
+
+  applyProductFilters();
+}
+
+function renderAddons(list) {
+  if (!productsGrid) return;
+
+  if (!list.length) {
+    productsGrid.innerHTML = `
+      <div class="product-empty-state">
+        <div class="product-empty-icon">＋</div>
+        <h3>No add-ons yet</h3>
+        <p>Create extras such as Espresso Shot, Pearls, Syrup, Cheese, or Extra Rice.</p>
+      </div>
+    `;
+    return;
+  }
+
+  productsGrid.innerHTML = list.map(addon => {
+    const available = String(addon.status || "").toLowerCase() === "available";
+
+    return `
+      <article class="addon-management-card">
+        <div class="addon-management-main">
+          <div>
+            <span class="product-card-category">ADD-ON</span>
+            <h3>${escapeHtml(addon.name)}</h3>
+            <p>Optional extra for assigned menu items.</p>
+          </div>
+          <span class="addon-availability-badge ${available ? "is-available" : "is-unavailable"}">
+            ${available ? "Available" : "Unavailable"}
+          </span>
+        </div>
+
+        <div class="addon-management-price">
+          <span>Extra price</span>
+          <strong>${formatPeso(addon.regularPrice)}</strong>
+        </div>
+
+        <div class="addon-no-stock-inline">No stock / quantity tracking</div>
+
+        <div class="product-actions">
+          <button type="button" class="product-action-btn product-edit-btn"
+            onclick="openEditAddonModal(${Number(addon.id)})">
+            <span>✎</span> Edit
+          </button>
+          <button type="button" class="product-action-btn product-delete-btn"
+            onclick="deleteProduct(${Number(addon.id)})">
+            <span>⌫</span> Delete
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function resetAddonModal() {
+  if (addonProductId) addonProductId.value = "";
+  if (addonName) addonName.value = "";
+  if (addonPrice) addonPrice.value = "";
+  if (addonStatus) addonStatus.value = "Available";
+  if (addonModalTitle) addonModalTitle.textContent = "Add Add-on";
+  if (saveAddonBtn) saveAddonBtn.textContent = "Save Add-on";
+}
+
+function openAddonModal() {
+  resetAddonModal();
+  addonModal?.classList.add("show");
+}
+
+window.openEditAddonModal = function(id) {
+  const addon = products.find(
+    product => Number(product.id) === Number(id) && product.itemType === "add_on"
+  );
+
+  if (!addon) {
+    alert("Add-on not found.");
+    return;
+  }
+
+  addonProductId.value = String(addon.id);
+  addonName.value = addon.name || "";
+  addonPrice.value = String(addon.regularPrice || "");
+  addonStatus.value =
+    String(addon.status || "").toLowerCase() === "unavailable"
+      ? "Unavailable"
+      : "Available";
+
+  addonModalTitle.textContent = "Edit Add-on";
+  saveAddonBtn.textContent = "Update Add-on";
+  addonModal?.classList.add("show");
+};
+
+menuItemsTabBtn?.addEventListener("click", () => setProductMode("menu"));
+addonsTabBtn?.addEventListener("click", () => setProductMode("addons"));
+document.getElementById("closeAddonModal")?.addEventListener("click", () => addonModal?.classList.remove("show"));
+document.getElementById("cancelAddonBtn")?.addEventListener("click", () => addonModal?.classList.remove("show"));
+
+saveAddonBtn?.addEventListener("click", async () => {
+  const id = Number(addonProductId?.value || 0);
+  const name = addonName?.value.trim() || "";
+  const price = Number(addonPrice?.value);
+  const status = addonStatus?.value || "Available";
+
+  if (!name) {
+    alert("Add-on name is required.");
+    addonName?.focus();
+    return;
+  }
+
+  if (!Number.isFinite(price) || price <= 0) {
+    alert("Extra price must be greater than zero.");
+    addonPrice?.focus();
+    return;
+  }
+
+  const original = saveAddonBtn.textContent;
+
+  try {
+    saveAddonBtn.disabled = true;
+    saveAddonBtn.textContent = id > 0 ? "Updating..." : "Saving...";
+
+    const endpoint = id > 0 ? "update_addon.php" : "add_addon.php";
+    const payload = { name, price, status };
+    if (id > 0) payload.product_id = id;
+
+    const result = await fetchJSON(
+      `${OWNER_API_BASE}/${endpoint}`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }
+    );
+
+    addonModal?.classList.remove("show");
+
+    await Promise.all([
+      loadProducts(),
+      loadDashboardSummary()
+    ]);
+
+    alert(result.message || "Add-on saved successfully.");
+  } catch (error) {
+    console.error("Save add-on failed:", error);
+    alert(error.message || "Unable to save add-on.");
+  } finally {
+    saveAddonBtn.disabled = false;
+    saveAddonBtn.textContent = original;
+  }
 });
 
 /* =========================
@@ -8538,6 +8884,11 @@ window.openEditProductModal = function(id) {
         true;
     }
   }
+
+  renderAddonChoiceList(
+    editProductAddonChoiceList,
+    p.addonIds || []
+  );
 
   editProductModal?.classList.add(
     "show"

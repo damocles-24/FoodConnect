@@ -152,6 +152,7 @@ $stmt = $conn->prepare("
         product_id,
         product_name,
         category,
+        item_type,
         size,
         price,
         stock,
@@ -485,6 +486,21 @@ while ($row = $result->fetch_assoc()) {
         "group_key" => $productGroupKey,
         "variant_label" => $publicSize !== "" ? $publicSize : "Standard",
         "category" => $publicCategory,
+
+        "item_type" =>
+            strtolower(
+                trim(
+                    (string) (
+                        $row["item_type"] ??
+                        "menu_item"
+                    )
+                )
+            ) === "add_on"
+                ? "add_on"
+                : "menu_item",
+
+        "addon_ids" => [],
+
         "size" => $publicSize,
 
         "price" =>
@@ -538,6 +554,57 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
+/* Product-group add-on assignments. */
+$linkStmt = $conn->prepare("
+    SELECT
+        product_name,
+        product_category,
+        addon_product_id
+    FROM tbl_product_addon_links
+    WHERE restaurant_id = ?
+");
+
+if ($linkStmt) {
+    $linkStmt->bind_param("i", $restaurant_id);
+
+    if ($linkStmt->execute()) {
+        $addonMap = [];
+        $linkResult = $linkStmt->get_result();
+
+        while ($linkRow = $linkResult->fetch_assoc()) {
+            $key =
+                mb_strtolower(trim((string)$linkRow["product_category"])) .
+                "::" .
+                mb_strtolower(trim((string)$linkRow["product_name"]));
+
+            $addonMap[$key][] =
+                (int)$linkRow["addon_product_id"];
+        }
+
+        foreach ($products as &$product) {
+            if (($product["item_type"] ?? "menu_item") !== "menu_item") {
+                continue;
+            }
+
+            $key =
+                mb_strtolower(trim((string)($product["category"] ?? ""))) .
+                "::" .
+                mb_strtolower(trim((string)($product["product_name"] ?? "")));
+
+            $product["addon_ids"] =
+                array_values(
+                    array_unique(
+                        $addonMap[$key] ?? []
+                    )
+                );
+        }
+
+        unset($product);
+    }
+
+    $linkStmt->close();
+}
 
 respond_json([
     "success" => true,

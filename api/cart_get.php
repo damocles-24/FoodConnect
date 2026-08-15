@@ -191,17 +191,13 @@ $addonStmt = $conn->prepare("
         product_id,
         product_name,
         price,
-        stock,
         status
 
     FROM tbl_products
 
     WHERE product_id = ?
       AND restaurant_id = ?
-      AND (
-            LOWER(category) LIKE '%add-on%'
-         OR LOWER(category) LIKE '%addon%'
-      )
+      AND item_type = 'add_on'
 
     LIMIT 1
 ");
@@ -693,7 +689,7 @@ while ($row = $cartResult->fetch_assoc()) {
                 round($addon_price, 2),
 
             "stock" =>
-                (int)$addon["stock"],
+                null,
 
             "status" =>
                 $addon["status"]

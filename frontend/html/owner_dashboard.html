@@ -478,6 +478,30 @@
     </button>
   </div>
 
+  <div class="product-management-tabs" role="tablist" aria-label="Product management">
+    <button
+      type="button"
+      class="product-management-tab is-active"
+      id="menuItemsTabBtn"
+      data-product-mode="menu"
+      role="tab"
+      aria-selected="true"
+    >
+      Menu Items
+    </button>
+
+    <button
+      type="button"
+      class="product-management-tab"
+      id="addonsTabBtn"
+      data-product-mode="addons"
+      role="tab"
+      aria-selected="false"
+    >
+      Add-ons
+    </button>
+  </div>
+
   <div
     class="product-overview"
     aria-label="Product overview"
@@ -2701,6 +2725,30 @@
         </div>
       </div>
 
+      <div
+        class="form-group product-addon-assignment"
+        id="productAddonAssignment"
+      >
+        <label>
+          Available Add-ons
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <small class="form-helper">
+          Choose which extras customers may add to this menu item.
+          Add-ons are managed separately and do not have stock quantities.
+        </small>
+
+        <div
+          class="product-addon-choice-list"
+          id="productAddonChoiceList"
+        >
+          <div class="product-addon-empty">
+            Add add-ons first from the Add-ons tab.
+          </div>
+        </div>
+      </div>
+
       <div class="form-group product-image-field">
         <label for="productImage">
           Product Image
@@ -2758,6 +2806,94 @@
           id="saveProductBtn"
         >
           Save Product
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT ADD-ON MODAL -->
+<div class="modal-overlay" id="addonModal">
+  <div class="modal addon-form-modal">
+    <div class="modal-header">
+      <div>
+        <span class="modal-eyebrow">Optional extra</span>
+        <h3 id="addonModalTitle">Add Add-on</h3>
+        <p class="modal-description">
+          Add-ons have a price and availability only. No stock or quantity is tracked.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeAddonModal"
+        aria-label="Close Add-on"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body product-form-body">
+      <input type="hidden" id="addonProductId" />
+
+      <div class="form-group">
+        <label for="addonName">
+          Add-on Name
+          <span class="required-label">*</span>
+        </label>
+        <input
+          type="text"
+          id="addonName"
+          maxlength="150"
+          placeholder="Example: Espresso Shot"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="product-form-grid">
+        <div class="form-group">
+          <label for="addonPrice">
+            Extra Price
+            <span class="required-label">*</span>
+          </label>
+          <input
+            type="number"
+            id="addonPrice"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="addonStatus">
+            Availability
+            <span class="required-label">*</span>
+          </label>
+          <select id="addonStatus">
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="addon-no-stock-note">
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="secondary-btn"
+          id="cancelAddonBtn"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          id="saveAddonBtn"
+        >
+          Save Add-on
         </button>
       </div>
     </div>
@@ -3097,6 +3233,26 @@
           Fixed discounts cannot exceed the regular product
           price.
         </div>
+      </div>
+
+      <div
+        class="form-group product-addon-assignment"
+        id="editProductAddonAssignment"
+      >
+        <label>
+          Available Add-ons
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <small class="form-helper">
+          Select the extras customers can choose with this menu item.
+          The same selection is shared by its variants.
+        </small>
+
+        <div
+          class="product-addon-choice-list"
+          id="editProductAddonChoiceList"
+        ></div>
       </div>
 
       <div class="form-group product-image-field">

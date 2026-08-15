@@ -8,6 +8,7 @@ session_set_cookie_params(0, "/FoodConnect", "", false, true);
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/addon_helper.php";
 
 function respond_json($arr, $code = 200) {
     http_response_code($code);
@@ -237,12 +238,11 @@ try {
         product_id,
         product_name,
         price,
-        stock,
         status
     FROM tbl_products
     WHERE product_id = ?
       AND restaurant_id = ?
-      AND category LIKE '%Add-on%'
+      AND item_type = 'add_on'
     LIMIT 1
     FOR UPDATE
 ");
@@ -276,12 +276,11 @@ try {
                 ], 400);
             }
 
-            $addon_stock = (int)$addon["stock"];
             $addon_status = strtolower(
                 trim((string)$addon["status"])
             );
 
-            if ($addon_status !== "available" || $addon_stock <= 0) {
+            if ($addon_status !== "available") {
                 $addonStmt->close();
 
                 rollback_and_respond($conn, [
@@ -292,21 +291,21 @@ try {
                 ], 409);
             }
 
-            /*
-             * One selected add-on is required for every
-             * quantity of the main product.
-             */
-            if ($quantity > $addon_stock) {
+            if (
+                !product_allows_addon(
+                    $conn,
+                    $restaurant_id,
+                    (int)$cartItem["product_id"],
+                    (int)$addon["product_id"]
+                )
+            ) {
                 $addonStmt->close();
 
                 rollback_and_respond($conn, [
                     "success" => false,
                     "message" =>
-                        "Only " . $addon_stock .
-                        " stock available for " .
-                        $addon["product_name"] . ".",
-                    "available_stock" => $addon_stock
-                ], 409);
+                        "This add-on is not available for the selected menu item."
+                ], 400);
             }
 
             $addon_price = (float)$addon["price"];

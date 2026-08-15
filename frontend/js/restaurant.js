@@ -1526,7 +1526,10 @@ function groupProducts(products) {
      * Add-on products are saved separately for the
      * future options modal and are not rendered as cards.
      */
-    if (categoryMapping.isAddonCategory) {
+    if (
+      String(product.item_type || "").trim().toLowerCase() === "add_on" ||
+      categoryMapping.isAddonCategory
+    ) {
       return;
     }
 
@@ -1640,11 +1643,29 @@ const status =
         categorySlug: categoryMapping.main,
         subcategorySlug: categoryMapping.sub,
 
+        allowedAddonIds: [],
+
         variants: []
       });
     }
 
-    grouped.get(groupKey).variants.push({
+    const group = grouped.get(groupKey);
+
+    const configuredAddonIds =
+      Array.isArray(product.addon_ids)
+        ? product.addon_ids
+            .map(Number)
+            .filter(id => Number.isInteger(id) && id > 0)
+        : [];
+
+    group.allowedAddonIds = Array.from(
+      new Set([
+        ...(group.allowedAddonIds || []),
+        ...configuredAddonIds
+      ])
+    );
+
+    group.variants.push({
   productId,
   size,
 
@@ -2461,95 +2482,17 @@ function getAddonsForProductGroup(group) {
     return [];
   }
 
-  const productCategory =
-    normalizeAddonCategory(
-      group.rawCategory
-    );
-
-  const normalizedProductCategory =
-    productCategory
-      .replace(/\badd-ons?\b/g, "")
-      .replace(/\baddons?\b/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+  const allowedIds = new Set(
+    Array.isArray(group.allowedAddonIds)
+      ? group.allowedAddonIds.map(Number)
+      : []
+  );
 
   return databaseAddons.filter(
-    addon => {
-      const addonCategory =
-        normalizeAddonCategory(
-          addon.category
-        );
-
-      /*
-       * Global add-ons:
-       *   Add-on / Add-ons / Addon / Addons
-       */
-      if (
-        [
-          "add-on",
-          "add-ons",
-          "addon",
-          "addons"
-        ].includes(addonCategory)
-      ) {
-        return true;
-      }
-
-      /*
-       * Scoped add-ons:
-       *   Coffee Based Add-on
-       *   Add-on Coffee Based
-       *   Burger Series Add-ons
-       *
-       * This preserves the existing database design: add-ons are still
-       * ordinary tbl_products rows, but owners can scope them by category.
-       */
-      const addonScope =
-        addonCategory
-          .replace(/\badd-ons?\b/g, "")
-          .replace(/\baddons?\b/g, "")
-          .replace(/\s+/g, " ")
-          .trim();
-
-      if (
-        addonScope &&
-        normalizedProductCategory &&
-        addonScope ===
-          normalizedProductCategory
-      ) {
-        return true;
-      }
-
-      /*
-       * Backward compatibility for the original milk-tea categories.
-       */
-      const categorySlug =
-        String(
-          group.categorySlug || ""
-        )
-          .trim()
-          .toLowerCase();
-
-      if (
-        categorySlug ===
-          "milktea" &&
-        addonCategory ===
-          "milktea classic add-on"
-      ) {
-        return true;
-      }
-
-      if (
-        categorySlug ===
-          "milktea-creamcheese" &&
-        addonCategory ===
-          "milktea creamcheese add-on"
-      ) {
-        return true;
-      }
-
-      return false;
-    }
+    addon =>
+      allowedIds.has(
+        Number(addon.productId)
+      )
   );
 }
 
@@ -3394,6 +3337,9 @@ products.forEach((product) => {
     );
 
   const isAddon =
+    String(
+      product.item_type || ""
+    ).trim().toLowerCase() === "add_on" ||
     category.includes("add-on") ||
     category.includes("addon");
 
@@ -3431,7 +3377,6 @@ products.forEach((product) => {
   if (
     productId <= 0 ||
     name === "" ||
-    stock <= 0 ||
     status !== "available"
   ) {
     return;
@@ -3454,7 +3399,7 @@ products.forEach((product) => {
       name,
       category,
       price,
-      stock,
+      stock: null,
       status
     });
   }
