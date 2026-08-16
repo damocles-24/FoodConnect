@@ -98,7 +98,9 @@ $ownerStmt = $conn->prepare("
 
     pa.application_id,
     pa.application_status,
-    pa.rejection_reason
+    pa.rejection_reason,
+    pa.business_hours_json,
+    pa.delivery_options_json
 
 FROM tbl_users u
 
@@ -106,7 +108,11 @@ INNER JOIN tbl_restaurants r
     ON r.restaurant_id = u.restaurant_id
 
 LEFT JOIN tbl_partner_applications pa
-    ON pa.owner_id = u.user_id
+    ON pa.application_id = (
+        SELECT MAX(pa_latest.application_id)
+        FROM tbl_partner_applications pa_latest
+        WHERE pa_latest.owner_id = u.user_id
+    )
     WHERE u.user_id = ?
       AND u.restaurant_id = ?
       AND LOWER(u.role) = 'owner'
@@ -316,7 +322,15 @@ $restaurantInfoReady =
     trim((string) ($owner["contact_number"] ?? "")) !== "";
 
 $openingHours = trim((string) ($owner["opening_hours"] ?? ""));
-$hoursReady =
+
+/*
+ * The create-restaurant wizard stores the authoritative weekly schedule
+ * in tbl_partner_applications.business_hours_json. Older restaurant rows
+ * may still contain the placeholder "Configured in restaurant setup".
+ * Treat a valid saved weekly schedule as configured so the Go-Live
+ * checklist does not incorrectly block an owner who already entered it.
+ */
+$hasExplicitOpeningHours =
     $openingHours !== "" &&
     !in_array(
         strtolower($openingHours),
@@ -326,6 +340,35 @@ $hoursReady =
         ],
         true
     );
+
+$hasApplicationSchedule = false;
+$businessHoursJson = trim((string) ($owner["business_hours_json"] ?? ""));
+
+if ($businessHoursJson !== "") {
+    $decodedBusinessHours = json_decode($businessHoursJson, true);
+
+    if (is_array($decodedBusinessHours)) {
+        foreach ($decodedBusinessHours as $daySchedule) {
+            if (!is_array($daySchedule) || !empty($daySchedule["closed"])) {
+                continue;
+            }
+
+            $openTime = trim((string) ($daySchedule["open"] ?? ""));
+            $closeTime = trim((string) ($daySchedule["close"] ?? ""));
+
+            if (
+                preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $openTime) &&
+                preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $closeTime) &&
+                $openTime !== $closeTime
+            ) {
+                $hasApplicationSchedule = true;
+                break;
+            }
+        }
+    }
+}
+
+$hoursReady = $hasExplicitOpeningHours || $hasApplicationSchedule;
 
 $categoryReady = (int) ($productSummary["total_categories"] ?? 0) > 0;
 $productReady = (int) ($productSummary["total_products"] ?? 0) > 0;

@@ -215,39 +215,43 @@ function normalize_popular_product(
 try {
 
     /*
-     * Popularity is based only on successfully finished
-     * orders.
+     * Latest FoodConnect database schema:
      *
-     * Supported final statuses:
-     * - completed
-     * - delivered
-     * - picked_up_by_customer
+     * tbl_orders.order_status supports:
+     * pending, preparing, ready, assigned,
+     * out_for_delivery, completed, cancelled.
      *
-     * Cancelled and unfinished orders are excluded.
+     * Therefore only `completed` is a valid finished-sale
+     * status for Popular Products.
      *
-     * Product variants are grouped using:
-     * - restaurant_id
-     * - category
-     * - product_name
+     * We also explicitly keep only current menu items that
+     * customers can actually order.
      */
+
+    $safeLimit =
+        max(
+            1,
+            min(
+                (int)$limit,
+                12
+            )
+        );
 
     $popularSql = "
         SELECT
-            p.product_name,
-            p.category,
+            MIN(p.product_name)
+                AS product_name,
+
+            MIN(p.category)
+                AS category,
 
             GROUP_CONCAT(
                 DISTINCT p.product_id
                 ORDER BY p.product_id ASC
             ) AS product_ids,
 
-           SUM(
-    CASE
-        WHEN oi.quantity > 0
-            THEN oi.quantity
-        ELSE 0
-    END
-) AS total_sold,
+            SUM(oi.quantity)
+                AS total_sold,
 
             COUNT(
                 DISTINCT o.order_id
@@ -266,40 +270,39 @@ try {
         WHERE o.restaurant_id = ?
           AND p.restaurant_id = ?
 
+          AND o.order_status =
+              'completed'
+
           AND oi.quantity > 0
 
-          AND LOWER(
-              TRIM(o.order_status)
-          ) IN (
-              'completed',
-              'delivered',
-              'picked_up_by_customer'
-          )
+          AND p.item_type =
+              'menu_item'
 
-          AND LOWER(
-              TRIM(p.category)
-          ) NOT LIKE '%add-on%'
+          AND p.stock > 0
 
-          AND LOWER(
-              TRIM(p.category)
-          ) NOT LIKE '%addon%'
+          AND p.status =
+              'Available'
 
         GROUP BY
-            p.restaurant_id,
-            LOWER(TRIM(p.category)),
-            LOWER(TRIM(p.product_name))
+            LOWER(
+                TRIM(p.category)
+            ),
+            LOWER(
+                TRIM(p.product_name)
+            )
 
         ORDER BY
             total_sold DESC,
             order_count DESC,
-            p.product_name ASC
+            product_name ASC
 
-        LIMIT ?
+        LIMIT {$safeLimit}
     ";
 
-    $popularStmt = $conn->prepare(
-        $popularSql
-    );
+    $popularStmt =
+        $conn->prepare(
+            $popularSql
+        );
 
     if (!$popularStmt) {
         throw new RuntimeException(
@@ -309,10 +312,9 @@ try {
     }
 
     $popularStmt->bind_param(
-        "iii",
+        "ii",
         $restaurant_id,
-        $restaurant_id,
-        $limit
+        $restaurant_id
     );
 
     if (!$popularStmt->execute()) {
@@ -340,21 +342,20 @@ try {
 
     $popularStmt->close();
 
-    /* =====================================================
-       FALLBACK FOR RESTAURANTS WITH NO COMPLETED SALES
-    ===================================================== */
-
+    /*
+     * Fallback:
+     * If this restaurant has no completed sales yet,
+     * recommend its newest currently-orderable menu items.
+     */
     if (count($products) === 0) {
-
-        /*
-         * Show the newest available product groups instead
-         * of leaving the section empty.
-         */
 
         $fallbackSql = "
             SELECT
-                p.product_name,
-                p.category,
+                MIN(p.product_name)
+                    AS product_name,
+
+                MIN(p.category)
+                    AS category,
 
                 GROUP_CONCAT(
                     DISTINCT p.product_id
@@ -371,34 +372,32 @@ try {
 
             WHERE p.restaurant_id = ?
 
+              AND p.item_type =
+                  'menu_item'
+
               AND p.stock > 0
 
-              AND LOWER(
-                  TRIM(p.status)
-              ) = 'available'
-
-              AND LOWER(
-                  TRIM(p.category)
-              ) NOT LIKE '%add-on%'
-
-              AND LOWER(
-                  TRIM(p.category)
-              ) NOT LIKE '%addon%'
+              AND p.status =
+                  'Available'
 
             GROUP BY
-                p.restaurant_id,
-                LOWER(TRIM(p.category)),
-                LOWER(TRIM(p.product_name))
+                LOWER(
+                    TRIM(p.category)
+                ),
+                LOWER(
+                    TRIM(p.product_name)
+                )
 
             ORDER BY
                 newest_product_id DESC
 
-            LIMIT ?
+            LIMIT {$safeLimit}
         ";
 
-        $fallbackStmt = $conn->prepare(
-            $fallbackSql
-        );
+        $fallbackStmt =
+            $conn->prepare(
+                $fallbackSql
+            );
 
         if (!$fallbackStmt) {
             throw new RuntimeException(
@@ -408,9 +407,8 @@ try {
         }
 
         $fallbackStmt->bind_param(
-            "ii",
-            $restaurant_id,
-            $limit
+            "i",
+            $restaurant_id
         );
 
         if (!$fallbackStmt->execute()) {
@@ -437,24 +435,24 @@ try {
         $fallbackStmt->close();
     }
 
-   $usingFallback =
-    count($products) > 0 &&
-    $products[0]["is_fallback"] === true;
+    $usingFallback =
+        count($products) > 0 &&
+        $products[0]["is_fallback"] === true;
 
-respond_json([
-    "success" => true,
+    respond_json([
+        "success" => true,
 
-    "restaurant_id" =>
-        $restaurant_id,
+        "restaurant_id" =>
+            $restaurant_id,
 
-    "source" =>
-        $usingFallback
-            ? "fallback"
-            : "sales",
+        "source" =>
+            $usingFallback
+                ? "fallback"
+                : "sales",
 
-    "products" =>
-        $products
-]);
+        "products" =>
+            $products
+    ]);
 
 } catch (Throwable $error) {
 
@@ -463,10 +461,52 @@ respond_json([
         $error->getMessage()
     );
 
-    respond_json([
+    $remoteAddress =
+        $_SERVER["REMOTE_ADDR"] ?? "";
+
+    $serverName =
+        strtolower(
+            (string)(
+                $_SERVER["SERVER_NAME"] ?? ""
+            )
+        );
+
+    $isLocalDebug =
+        in_array(
+            $remoteAddress,
+            [
+                "127.0.0.1",
+                "::1"
+            ],
+            true
+        ) ||
+        in_array(
+            $serverName,
+            [
+                "localhost",
+                "127.0.0.1"
+            ],
+            true
+        );
+
+    $response = [
         "success" => false,
         "message" =>
             "Unable to load popular products.",
         "products" => []
-    ], 500);
+    ];
+
+    /*
+     * Never expose SQL details on live hosting.
+     * This field appears only on localhost.
+     */
+    if ($isLocalDebug) {
+        $response["debug_error"] =
+            $error->getMessage();
+    }
+
+    respond_json(
+        $response,
+        500
+    );
 }

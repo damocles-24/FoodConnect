@@ -204,6 +204,16 @@ $result = $stmt->get_result();
 
 $products = [];
 
+/*
+ * One timestamp is enough for all products in this request.
+ * This keeps the original working SQL/add-on logic unchanged.
+ */
+$currentDateTime =
+    new DateTime(
+        "now",
+        $promotionTimezone
+    );
+
 while ($row = $result->fetch_assoc()) {
     $productId = (int) (
         $row["product_id"] ?? 0
@@ -371,12 +381,6 @@ while ($row = $result->fetch_assoc()) {
     ===================================================== */
 
     $isDiscountActive = false;
-
-    $currentDateTime =
-        new DateTime(
-            "now",
-            $promotionTimezone
-        );
 
     if (
         $discountType !== "none" &&

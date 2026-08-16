@@ -15,8 +15,6 @@ session_set_cookie_params(
 
 require_once __DIR__ . "/session_config.php";
 
-require_once __DIR__ . "/db.php";
-
 /*
  * Product promotion schedules use Philippine local time.
  */
@@ -93,6 +91,9 @@ if (empty($_SESSION["user_id"])) {
         "total_price" => 0
     ], 401);
 }
+
+/* Only authenticated carts require the remote database. */
+require_once __DIR__ . "/db.php";
 
 $user_id = (int)$_SESSION["user_id"];
 

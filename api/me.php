@@ -7,8 +7,6 @@ ini_set("display_errors", "0");
 
 require_once __DIR__ . "/session_config.php";
 
-require_once __DIR__ . "/db.php";
-
 function respond_json(
     array $data,
     int $statusCode = 200
@@ -410,6 +408,23 @@ function load_user_by_id(
 
     return $user ?: null;
 }
+
+/* =========================================================
+   FAST GUEST PATH
+
+   A guest does not need a database connection just to learn
+   that no FoodConnect customer session exists. This avoids
+   one remote cloud-MySQL connection on public page loads.
+========================================================= */
+
+if (
+    empty($_SESSION["user_id"]) &&
+    empty($_COOKIE["remember_me"])
+) {
+    respond_not_logged_in();
+}
+
+require_once __DIR__ . "/db.php";
 
 /* =========================================================
    1. EXISTING SESSION

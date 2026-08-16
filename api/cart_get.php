@@ -15,8 +15,6 @@ session_set_cookie_params(
 
 require_once __DIR__ . "/session_config.php";
 
-require_once __DIR__ . "/db.php";
-
 /*
  * Product promotion schedules use Philippine local time.
  */
@@ -93,6 +91,9 @@ if (empty($_SESSION["user_id"])) {
         "total_price" => 0
     ], 401);
 }
+
+/* Only authenticated carts require the remote database. */
+require_once __DIR__ . "/db.php";
 
 $user_id = (int)$_SESSION["user_id"];
 
@@ -178,111 +179,231 @@ if (!$cartStmt->execute()) {
 $cartResult = $cartStmt->get_result();
 
 /* =========================================================
-   PREPARE ADD-ON LOOKUP
+   CACHE CART ROWS + COLLECT RELATED IDS
 
-   Each add-on must:
-   - belong to the same restaurant
-   - exist in tbl_products
-   - belong to an add-on category
+   Cloud optimization:
+   The previous implementation executed one remote SQL query
+   for every add-on and every combo choice. We first collect
+   all required IDs, then load them in bulk.
+
+   Validation rules are unchanged:
+   - add-ons must still belong to the same restaurant
+   - add-ons must still be item_type = add_on
+   - combo choices must still belong to the cart product's
+     active combo and active choice group
 ========================================================= */
 
-$addonStmt = $conn->prepare("
-    SELECT
-        product_id,
-        product_name,
-        price,
-        status
+$cartRows = [];
 
-    FROM tbl_products
+$allAddonIds = [];
+$allComboChoiceIds = [];
 
-    WHERE product_id = ?
-      AND restaurant_id = ?
-      AND item_type = 'add_on'
+while ($cartRow = $cartResult->fetch_assoc()) {
+    $cartRows[] = $cartRow;
 
-    LIMIT 1
-");
+    foreach (
+        decode_id_array(
+            $cartRow["addon_ids"] ?? null
+        )
+        as $addonId
+    ) {
+        $allAddonIds[$addonId] = true;
+    }
 
-if (!$addonStmt) {
-    error_log(
-        "cart_get.php add-on query prepare error: " .
-        $conn->error
-    );
-
-    $cartStmt->close();
-
-    respond_json([
-        "success" => false,
-        "message" => "Unable to prepare add-on query.",
-        "items" => [],
-        "total_items" => 0,
-        "total_price" => 0
-    ], 500);
+    foreach (
+        decode_id_array(
+            $cartRow[
+                "combo_choice_ids_json"
+            ] ?? null
+        )
+        as $choiceOptionId
+    ) {
+        $allComboChoiceIds[
+            $choiceOptionId
+        ] = true;
+    }
 }
 
-/* =========================================================
-   PREPARE COMBO OPTION LOOKUP
+$addonLookup = [];
 
-   Validates that the selected choice option:
-   - belongs to the combo represented by the cart product
-   - belongs to the same restaurant
-   - belongs to an active group
-   - belongs to an active combo
-   - is an active choice option
-========================================================= */
-
-$comboOptionStmt = $conn->prepare("
-    SELECT
-        o.choice_option_id,
-        o.choice_group_id,
-        o.product_id,
-        o.price_adjustment,
-
-        g.group_name,
-
-        p.product_name,
-        p.size,
-        p.stock,
-        p.status
-
-    FROM tbl_combo_choice_options o
-
-    INNER JOIN tbl_combo_choice_groups g
-        ON g.choice_group_id = o.choice_group_id
-       AND g.is_active = 1
-
-    INNER JOIN tbl_combos c
-        ON c.combo_id = g.combo_id
-       AND c.restaurant_id = ?
-       AND c.product_id = ?
-       AND c.is_active = 1
-
-    INNER JOIN tbl_products p
-        ON p.product_id = o.product_id
-       AND p.restaurant_id = c.restaurant_id
-
-    WHERE o.choice_option_id = ?
-      AND o.is_active = 1
-
-    LIMIT 1
-");
-
-if (!$comboOptionStmt) {
-    error_log(
-        "cart_get.php combo option query prepare error: " .
-        $conn->error
+if (!empty($allAddonIds)) {
+    $addonIdList = implode(
+        ",",
+        array_map(
+            "intval",
+            array_keys($allAddonIds)
+        )
     );
 
-    $cartStmt->close();
-    $addonStmt->close();
+    $addonBulkSql = "
+        SELECT
+            product_id,
+            restaurant_id,
+            product_name,
+            price,
+            status
 
-    respond_json([
-        "success" => false,
-        "message" => "Unable to prepare combo option query.",
-        "items" => [],
-        "total_items" => 0,
-        "total_price" => 0
-    ], 500);
+        FROM tbl_products
+
+        WHERE product_id IN (
+            {$addonIdList}
+        )
+          AND item_type = 'add_on'
+    ";
+
+    $addonBulkResult =
+        $conn->query(
+            $addonBulkSql
+        );
+
+    if ($addonBulkResult === false) {
+        error_log(
+            "cart_get.php bulk add-on query error: " .
+            $conn->error
+        );
+
+        $cartStmt->close();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to load cart add-ons.",
+            "items" => [],
+            "total_items" => 0,
+            "total_price" => 0
+        ], 500);
+    }
+
+    while (
+        $addonRow =
+        $addonBulkResult->fetch_assoc()
+    ) {
+        $addonKey =
+            (int)$addonRow[
+                "restaurant_id"
+            ] .
+            ":" .
+            (int)$addonRow[
+                "product_id"
+            ];
+
+        $addonLookup[
+            $addonKey
+        ] = $addonRow;
+    }
+
+    $addonBulkResult->free();
 }
+
+/*
+ * Key format:
+ * restaurant_id:combo_product_id:choice_option_id
+ */
+$comboOptionLookup = [];
+
+if (!empty($allComboChoiceIds)) {
+    $comboChoiceIdList = implode(
+        ",",
+        array_map(
+            "intval",
+            array_keys(
+                $allComboChoiceIds
+            )
+        )
+    );
+
+    $comboBulkSql = "
+        SELECT
+            o.choice_option_id,
+            o.choice_group_id,
+            o.product_id,
+            o.price_adjustment,
+
+            g.group_name,
+
+            c.restaurant_id
+                AS combo_restaurant_id,
+
+            c.product_id
+                AS combo_product_id,
+
+            p.product_name,
+            p.size,
+            p.stock,
+            p.status
+
+        FROM tbl_combo_choice_options o
+
+        INNER JOIN tbl_combo_choice_groups g
+            ON g.choice_group_id =
+               o.choice_group_id
+           AND g.is_active = 1
+
+        INNER JOIN tbl_combos c
+            ON c.combo_id =
+               g.combo_id
+           AND c.is_active = 1
+
+        INNER JOIN tbl_products p
+            ON p.product_id =
+               o.product_id
+           AND p.restaurant_id =
+               c.restaurant_id
+
+        WHERE o.choice_option_id IN (
+            {$comboChoiceIdList}
+        )
+          AND o.is_active = 1
+    ";
+
+    $comboBulkResult =
+        $conn->query(
+            $comboBulkSql
+        );
+
+    if ($comboBulkResult === false) {
+        error_log(
+            "cart_get.php bulk combo query error: " .
+            $conn->error
+        );
+
+        $cartStmt->close();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Unable to load cart combo choices.",
+            "items" => [],
+            "total_items" => 0,
+            "total_price" => 0
+        ], 500);
+    }
+
+    while (
+        $comboRow =
+        $comboBulkResult->fetch_assoc()
+    ) {
+        $comboKey =
+            (int)$comboRow[
+                "combo_restaurant_id"
+            ] .
+            ":" .
+            (int)$comboRow[
+                "combo_product_id"
+            ] .
+            ":" .
+            (int)$comboRow[
+                "choice_option_id"
+            ];
+
+        $comboOptionLookup[
+            $comboKey
+        ] = $comboRow;
+    }
+
+    $comboBulkResult->free();
+}
+
 
 /* =========================================================
    PREPARE CART PRICE REFRESH
@@ -312,8 +433,6 @@ if (!$cartPriceUpdateStmt) {
     );
 
     $cartStmt->close();
-    $addonStmt->close();
-    $comboOptionStmt->close();
 
     respond_json([
         "success" => false,
@@ -339,7 +458,17 @@ $has_price_changes = false;
 $cart_restaurant_id = 0;
 $has_mixed_restaurants = false;
 
-while ($row = $cartResult->fetch_assoc()) {
+/*
+ * One Philippine timestamp is enough for every cart row
+ * in this response.
+ */
+$currentDateTime =
+    new DateTime(
+        "now",
+        $promotionTimezone
+    );
+
+foreach ($cartRows as $row) {
     $cart_id = (int)$row["cart_id"];
     $restaurant_id = (int)$row["restaurant_id"];
     $product_id = (int)$row["product_id"];
@@ -501,12 +630,6 @@ while ($row = $cartResult->fetch_assoc()) {
 
     $is_discount_active = false;
 
-    $currentDateTime =
-        new DateTime(
-            "now",
-            $promotionTimezone
-        );
-
     if (
         $discount_type !== "none" &&
         $discount_value > 0 &&
@@ -648,46 +771,48 @@ while ($row = $cartResult->fetch_assoc()) {
     $addon_total = 0.00;
 
     foreach ($addon_ids as $addon_id) {
-        $addonStmt->bind_param(
-            "ii",
-            $addon_id,
-            $restaurant_id
-        );
+        $addonKey =
+            $restaurant_id .
+            ":" .
+            $addon_id;
 
-        if (!$addonStmt->execute()) {
-            error_log(
-                "cart_get.php add-on lookup error for ID " .
-                $addon_id .
-                ": " .
-                $addonStmt->error
-            );
-
-            continue;
-        }
-
-        $addonResult = $addonStmt->get_result();
-        $addon = $addonResult->fetch_assoc();
+        $addon =
+            $addonLookup[
+                $addonKey
+            ] ?? null;
 
         if (!$addon) {
             continue;
         }
 
-        $addon_price = (float)$addon["price"];
+        $addon_price =
+            (float)$addon["price"];
 
         $addon_name = trim(
-            (string)$addon["product_name"]
+            (string)$addon[
+                "product_name"
+            ]
         );
 
         $addons[] = [
             "product_id" =>
-                (int)$addon["product_id"],
+                (int)$addon[
+                    "product_id"
+                ],
 
             "name" =>
                 $addon_name,
 
             "price" =>
-                round($addon_price, 2),
+                round(
+                    $addon_price,
+                    2
+                ),
 
+            /*
+             * Preserve current FoodConnect add-on behavior:
+             * add-ons do not expose or consume stock.
+             */
             "stock" =>
                 null,
 
@@ -696,10 +821,12 @@ while ($row = $cartResult->fetch_assoc()) {
         ];
 
         if ($addon_name !== "") {
-            $addon_names[] = $addon_name;
+            $addon_names[] =
+                $addon_name;
         }
 
-        $addon_total += $addon_price;
+        $addon_total +=
+            $addon_price;
     }
 
     $addon_text = !empty($addon_names)
@@ -725,64 +852,78 @@ while ($row = $cartResult->fetch_assoc()) {
         $combo_choice_ids
         as $choice_option_id
     ) {
-        $comboOptionStmt->bind_param(
-            "iii",
-            $restaurant_id,
-            $product_id,
-            $choice_option_id
-        );
-
-        if (!$comboOptionStmt->execute()) {
-            error_log(
-                "cart_get.php combo option lookup error for ID " .
-                $choice_option_id .
-                ": " .
-                $comboOptionStmt->error
-            );
-
-            continue;
-        }
-
-        $comboOptionResult =
-            $comboOptionStmt->get_result();
+        $comboKey =
+            $restaurant_id .
+            ":" .
+            $product_id .
+            ":" .
+            $choice_option_id;
 
         $comboOption =
-            $comboOptionResult->fetch_assoc();
+            $comboOptionLookup[
+                $comboKey
+            ] ?? null;
 
+        /*
+         * Same validation as before:
+         * a choice is accepted only if the bulk query proved
+         * that it belongs to this restaurant + cart product's
+         * active combo/group/option.
+         */
         if (!$comboOption) {
             continue;
         }
 
         $product_name = trim(
-            (string)$comboOption["product_name"]
+            (string)$comboOption[
+                "product_name"
+            ]
         );
 
         $size = trim(
-            (string)($comboOption["size"] ?? "")
+            (string)(
+                $comboOption[
+                    "size"
+                ] ?? ""
+            )
         );
 
-        $choice_text = $product_name;
+        $choice_text =
+            $product_name;
 
         if ($size !== "") {
-            $choice_text .= " - " . $size;
+            $choice_text .=
+                " - " .
+                $size;
         }
 
-        $price_adjustment = (float)(
-            $comboOption["price_adjustment"] ?? 0
-        );
+        $price_adjustment =
+            (float)(
+                $comboOption[
+                    "price_adjustment"
+                ] ?? 0
+            );
 
         $combo_choices[] = [
             "choice_option_id" =>
-                (int)$comboOption["choice_option_id"],
+                (int)$comboOption[
+                    "choice_option_id"
+                ],
 
             "choice_group_id" =>
-                (int)$comboOption["choice_group_id"],
+                (int)$comboOption[
+                    "choice_group_id"
+                ],
 
             "group_name" =>
-                $comboOption["group_name"],
+                $comboOption[
+                    "group_name"
+                ],
 
             "product_id" =>
-                (int)$comboOption["product_id"],
+                (int)$comboOption[
+                    "product_id"
+                ],
 
             "product_name" =>
                 $product_name,
@@ -794,13 +935,20 @@ while ($row = $cartResult->fetch_assoc()) {
                 $choice_text,
 
             "price_adjustment" =>
-                round($price_adjustment, 2),
+                round(
+                    $price_adjustment,
+                    2
+                ),
 
             "stock" =>
-                (int)$comboOption["stock"],
+                (int)$comboOption[
+                    "stock"
+                ],
 
             "status" =>
-                $comboOption["status"]
+                $comboOption[
+                    "status"
+                ]
         ];
 
         if ($choice_text !== "") {
@@ -1041,8 +1189,6 @@ while ($row = $cartResult->fetch_assoc()) {
 ========================================================= */
 
 $cartStmt->close();
-$addonStmt->close();
-$comboOptionStmt->close();
 $cartPriceUpdateStmt->close();
 
 /* =========================================================

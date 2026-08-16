@@ -553,6 +553,109 @@ $deliveryOptionsJson =
         JSON_UNESCAPED_UNICODE
     );
 
+/*
+ * Keep tbl_restaurants.opening_hours useful for the Owner Settings
+ * screen and public restaurant details. The application still keeps
+ * the full structured Monday-Sunday JSON as the source of truth.
+ */
+function format_business_hours_summary(array $hours): string
+{
+    $dayNames = [
+        "Monday", "Tuesday", "Wednesday", "Thursday",
+        "Friday", "Saturday", "Sunday"
+    ];
+
+    $shortDays = [
+        "Monday" => "Mon",
+        "Tuesday" => "Tue",
+        "Wednesday" => "Wed",
+        "Thursday" => "Thu",
+        "Friday" => "Fri",
+        "Saturday" => "Sat",
+        "Sunday" => "Sun"
+    ];
+
+    $formatTime = static function ($time): string {
+        $time = trim((string) $time);
+        $date = DateTime::createFromFormat("H:i", $time);
+        return $date ? $date->format("g:i A") : $time;
+    };
+
+    $entries = [];
+    foreach ($dayNames as $day) {
+        $row = isset($hours[$day]) && is_array($hours[$day])
+            ? $hours[$day]
+            : [];
+
+        $closed = !empty($row["closed"]);
+        $signature = $closed
+            ? "closed"
+            : trim((string) ($row["open"] ?? "")) . "|" .
+              trim((string) ($row["close"] ?? ""));
+
+        $entries[] = [
+            "day" => $day,
+            "signature" => $signature,
+            "closed" => $closed,
+            "open" => $row["open"] ?? null,
+            "close" => $row["close"] ?? null
+        ];
+    }
+
+    $groups = [];
+    $start = 0;
+    while ($start < count($entries)) {
+        $end = $start;
+        while (
+            $end + 1 < count($entries) &&
+            $entries[$end + 1]["signature"] === $entries[$start]["signature"]
+        ) {
+            $end++;
+        }
+
+        $first = $entries[$start];
+        $label = $shortDays[$entries[$start]["day"]];
+        if ($end > $start) {
+            $label .= "-" . $shortDays[$entries[$end]["day"]];
+        }
+
+        if ($first["closed"]) {
+            $groups[] = $label . " Closed";
+        } else {
+            $groups[] = $label . " " .
+                $formatTime($first["open"]) . "-" .
+                $formatTime($first["close"]);
+        }
+
+        $start = $end + 1;
+    }
+
+    $summary = implode("; ", $groups);
+
+    // Existing Settings validation/UI currently allows up to 100 characters.
+    if (mb_strlen($summary) <= 100) {
+        return $summary;
+    }
+
+    // Compact fallback for unusually different hours every day.
+    $compact = [];
+    foreach ($entries as $entry) {
+        $label = $shortDays[$entry["day"]];
+        if ($entry["closed"]) {
+            $compact[] = $label . " Closed";
+        } else {
+            $compact[] = $label . " " .
+                trim((string) $entry["open"]) . "-" .
+                trim((string) $entry["close"]);
+        }
+    }
+
+    return mb_substr(implode(";", $compact), 0, 100);
+}
+
+$openingHoursSummary =
+    format_business_hours_summary($cleanBusinessHours);
+
 if (
     $businessHoursJson === false ||
     $deliveryOptionsJson === false
@@ -993,7 +1096,7 @@ try {
             generate_staff_access_code();
 
         $openingHours =
-            "Configured in restaurant setup";
+            $openingHoursSummary;
 
         $businessStatus =
             "Closed";

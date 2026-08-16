@@ -125,86 +125,97 @@ document.addEventListener("click", (e) => {
 
   let loggedIn = false;
 
-  try {
-    const authResponse =
-        await fetch(
-            `${API}/me.php`,
-            {
-                credentials: "include",
-                cache: "no-store"
-            }
-        );
+  /* =========================================================
+     CLOUD PERFORMANCE
 
-    const authData =
-        await authResponse.json();
+     Session/account validation is independent from the public
+     restaurant/menu request. Start it immediately, but do not
+     block the restaurant storefront while Aiven responds.
+  ========================================================= */
 
-    const authenticatedUser =
-    authData.user ||
-    authData.data?.user ||
-    authData;
+  const accountSessionTask = (async () => {
+    try {
+      const authResponse =
+          await fetch(
+              `${API}/me.php`,
+              {
+                  credentials: "include",
+                  cache: "no-store"
+              }
+          );
 
-const authenticatedRole =
-    String(
-        authenticatedUser.role ||
-        authData.role ||
-        ""
-    )
-        .trim()
-        .toLowerCase();
+      const authData =
+          await authResponse.json();
 
-loggedIn =
-    authResponse.ok &&
-    authData.logged_in === true &&
-    authenticatedRole === "customer" &&
-    Number(
-        authenticatedUser.user_id ||
-        0
-    ) > 0;
+      const authenticatedUser =
+      authData.user ||
+      authData.data?.user ||
+      authData;
 
-    if (loggedIn) {
-        if (nameEl) {
-            nameEl.textContent =
-                authenticatedUser.full_name ||
-                authenticatedUser.name ||
-                "Customer";
-        }
+  const authenticatedRole =
+      String(
+          authenticatedUser.role ||
+          authData.role ||
+          ""
+      )
+          .trim()
+          .toLowerCase();
 
-        if (goProfileBtn) {
-            goProfileBtn.style.display = "block";
-        }
+  loggedIn =
+      authResponse.ok &&
+      authData.logged_in === true &&
+      authenticatedRole === "customer" &&
+      Number(
+          authenticatedUser.user_id ||
+          0
+      ) > 0;
 
-        if (logoutBtn) {
-            logoutBtn.style.display = "block";
-        }
+      if (loggedIn) {
+          if (nameEl) {
+              nameEl.textContent =
+                  authenticatedUser.full_name ||
+                  authenticatedUser.name ||
+                  "Customer";
+          }
 
-        wrapper?.classList.add(
-            "logged-in"
-        );
-    } else {
-        if (nameEl) {
-            nameEl.textContent = "Guest";
-        }
+          if (goProfileBtn) {
+              goProfileBtn.style.display = "block";
+          }
 
-        if (goProfileBtn) {
-            goProfileBtn.style.display = "block";
-        }
+          if (logoutBtn) {
+              logoutBtn.style.display = "block";
+          }
 
-        if (logoutBtn) {
-            logoutBtn.style.display = "none";
-        }
+          wrapper?.classList.add(
+              "logged-in"
+          );
+      } else {
+          if (nameEl) {
+              nameEl.textContent = "Guest";
+          }
 
-        wrapper?.classList.remove(
-            "logged-in"
-        );
-    }
-} catch (error) {
-    console.error(
-        "Customer session check error:",
-        error
-    );
+          if (goProfileBtn) {
+              goProfileBtn.style.display = "block";
+          }
 
-    loggedIn = false;
-}
+          if (logoutBtn) {
+              logoutBtn.style.display = "none";
+          }
+
+          wrapper?.classList.remove(
+              "logged-in"
+          );
+      }
+  } catch (error) {
+      console.error(
+          "Customer session check error:",
+          error
+      );
+
+      loggedIn = false;
+  }
+
+  })();
 
     /* =========================
      RESTAURANT IDENTITY
@@ -4321,9 +4332,6 @@ confirmProductAddToCart?.addEventListener(
   }
 );
 
-
-
-
 const restaurantLoaded =
   await loadRestaurantIdentity();
 
@@ -4379,6 +4387,12 @@ void loadPopularProducts();
  */
 void updateCartBadge();
 
+  /*
+   * Account UI may finish after the menu. Wait here only so
+   * profile/logout handlers use the final authenticated state.
+   * The customer menu has already rendered before this wait.
+   */
+  await accountSessionTask;
 
 
 goProfileBtn?.addEventListener("click", () => {
