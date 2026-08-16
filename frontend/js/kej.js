@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!menuItem) return;
 
       if (!loggedIn) {
-        alert("Please login first.");
+        alert("Please log in to continue.");
         window.location.href = "login.html";
         return;
       }
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const baseText = priceEl?.textContent.trim() || "";
 
       if (!itemName || price <= 0) {
-        alert("Invalid item data.");
+        alert("This item could not be added. Please refresh and try again.");
         return;
       }
 
@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           restaurant_id: 2,
           product_name: itemName,
           product_image: itemImage,
-          base_text: baseText,
+          variant_text: baseText,
           addon_text: "No Add-on",
           price: price,
           quantity: 1
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await res.json();
 
         if (!data.success) {
-          alert(data.message || "Failed to add to cart.");
+          alert(data.message || "Unable to add this item to your cart. Please try again.");
           return;
         }
 
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       } catch (error) {
         console.error("Add to cart error:", error);
-        alert("Something went wrong while adding to cart.");
+        alert("Unable to add this item to your cart. Please try again.");
       }
     });
   });

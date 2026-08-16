@@ -10,6 +10,7 @@ ini_set("display_errors", "0");
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 function payment_json(array $data, int $statusCode = 200): void
 {
@@ -38,6 +39,20 @@ $orderId = (int)($input["order_id"] ?? 0);
 if ($orderId <= 0) {
     payment_json(["success" => false, "message" => "Invalid order ID."], 400);
 }
+
+rate_limit_enforce(
+    $conn,
+    "paymongo-checkout-create",
+    rate_limit_identifier(
+        (string)$customerId,
+        (string)$orderId,
+        rate_limit_client_ip()
+    ),
+    5,
+    600,
+    600,
+    "Too many payment-session requests for this order. Please wait 10 minutes and try again."
+);
 
 $orderStmt = $conn->prepare("\n    SELECT\n        o.order_id,\n        o.restaurant_id,\n        o.user_id,\n        o.order_type,\n        o.order_status,\n        o.qr_verified_at,\n        o.payment_method,\n        o.payment_status,\n        o.total_amount,\n        r.name AS restaurant_name\n    FROM tbl_orders AS o\n    INNER JOIN tbl_restaurants AS r\n        ON r.restaurant_id = o.restaurant_id\n    WHERE o.order_id = ?\n      AND o.user_id = ?\n    LIMIT 1\n");
 

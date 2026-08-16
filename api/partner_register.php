@@ -23,6 +23,8 @@ ini_set(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
+require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/mailer.php";
 
 /* =========================================================
@@ -64,7 +66,7 @@ if (
 ) {
     respond_json(
         false,
-        "Method not allowed.",
+        "This action is not available.",
         405
     );
 }
@@ -150,6 +152,19 @@ $cuisine =
         )
     );
 
+$contactNumberRaw = $contactNumber;
+$restaurantContactRaw = $restaurantContact;
+$contactNumber = normalize_ph_mobile($contactNumberRaw);
+$restaurantContact = normalize_ph_mobile($restaurantContactRaw);
+
+if ($contactNumberRaw !== "" && $contactNumber === "") {
+    respond_json(false, "Enter a valid Philippine mobile number for your personal contact.", 422);
+}
+
+if ($restaurantContactRaw !== "" && $restaurantContact === "") {
+    respond_json(false, "Enter a valid Philippine mobile number for the restaurant contact.", 422);
+}
+
 /* =========================================================
    REQUIRED FIELD VALIDATION
 ========================================================= */
@@ -220,6 +235,19 @@ $verificationExpiresAt =
 /* =========================================================
    DATABASE TRANSACTION
 ========================================================= */
+
+rate_limit_enforce(
+    $conn,
+    "partner-registration",
+    rate_limit_identifier(
+        rate_limit_client_ip(),
+        $email
+    ),
+    4,
+    3600,
+    1800,
+    "Too many partner registration attempts. Please wait before trying again."
+);
 
 try {
     $conn->begin_transaction();

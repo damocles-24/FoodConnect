@@ -17,7 +17,7 @@ function respond_json(array $data, int $statusCode = 200): void
 if (!isset($_SESSION["user_id"], $_SESSION["restaurant_id"])) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access.",
+        "message" => "Your session has expired or you do not have access. Please log in again.",
         "riders" => []
     ], 401);
 }
@@ -27,7 +27,7 @@ $restaurant_id = (int) $_SESSION["restaurant_id"];
 if ($restaurant_id <= 0) {
     respond_json([
         "success" => false,
-        "message" => "Invalid restaurant session.",
+        "message" => "Your restaurant session has expired. Please log in again.",
         "riders" => []
     ], 400);
 }
@@ -58,7 +58,7 @@ $sql = "
     FROM tbl_users u
 
     LEFT JOIN tbl_delivery_assignments da
-        ON da.rider_id = u.user_id
+        ON da.delivery_staff_id = u.user_id
        AND da.restaurant_id = u.restaurant_id
        AND da.delivery_status NOT IN (
             'completed',

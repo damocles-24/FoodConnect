@@ -145,14 +145,12 @@ $stmt = $conn->prepare("
     restaurant_description,
     logo_path,
     business_email,
-    tax_registration_type,
     province,
     city_municipality,
     barangay,
     postal_code,
     business_hours_json,
-    delivery_options_json,
-    minimum_order,
+    order_types_json,
     delivery_fee,
     application_status,
     rejection_reason,
@@ -213,7 +211,7 @@ $businessHours = json_decode(
 
 $deliveryOptions = json_decode(
     (string) (
-        $application["delivery_options_json"] ?? ""
+        $application["order_types_json"] ?? ""
     ),
     true
 );
@@ -232,8 +230,6 @@ $application["application_id"] =
 $application["owner_id"] =
     (int) $application["owner_id"];
 
-$application["minimum_order"] =
-    (float) $application["minimum_order"];
 
 $application["delivery_fee"] =
     (float) $application["delivery_fee"];
@@ -246,7 +242,7 @@ $application["delivery_options"] =
 
 unset(
     $application["business_hours_json"],
-    $application["delivery_options_json"]
+    $application["order_types_json"]
 );
 
 respond_json([

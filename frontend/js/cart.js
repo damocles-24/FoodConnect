@@ -42,6 +42,27 @@ let cartPricing = {
     selectedOrderType: ""
 };
 
+/*
+ * Local cart snapshot used for instant quantity/remove UI updates.
+ * The server remains authoritative; a failed mutation triggers a
+ * full reload to restore the correct cart.
+ */
+let currentCartItems = [];
+let currentCustomerTab = "cart";
+
+/*
+ * Per-cart-item quantity sync state.
+ *
+ * Rapid +/- clicks update the UI immediately, but only the latest
+ * quantity is sent after a short pause. At most one cart_update.php
+ * request per item is allowed in flight at a time.
+ */
+const cartQuantitySyncStates =
+    new Map();
+
+const CART_QUANTITY_DEBOUNCE_MS =
+    450;
+
 /* =========================================================
    CUSTOMER ORDERS STATE
 ========================================================= */
@@ -56,6 +77,22 @@ let customerCancellationSubmitting =
     false;
 let currentOrderFilter = "active";
 let customerOrdersLoading = false;
+
+/*
+ * Local/test PayMongo confirmation fallback.
+ *
+ * PayMongo Dashboard "Simulate Payment" does not redirect the
+ * customer's browser back to FoodConnect, so the normal
+ * paymongo_return handler is not triggered. While My Orders is
+ * visible, only QR-verified pending PayMongo orders are checked,
+ * and each order is throttled to one verification every 10 seconds.
+ */
+const payMongoPendingSyncLastAttempt =
+    new Map();
+
+const PAYMONGO_PENDING_SYNC_INTERVAL_MS =
+    10000;
+
 let customerOrdersInterval = null;
 let customerCancelCountdownInterval =
     null;
@@ -199,7 +236,7 @@ async function readJsonResponse(response) {
         );
 
         throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
         );
     }
 }
@@ -663,6 +700,8 @@ async function loadCart() {
             await readJsonResponse(response);
 
         if (!response.ok || !data.success) {
+            currentCartItems = [];
+
             renderLoginRequired(
                 data.message ||
                 "Please log in first."
@@ -680,6 +719,7 @@ async function loadCart() {
             !Array.isArray(data.items) ||
             data.items.length === 0
         ) {
+            currentCartItems = [];
             renderEmptyCart();
 
             if (checkoutSection) {
@@ -690,8 +730,13 @@ async function loadCart() {
             return;
         }
 
+        currentCartItems =
+            data.items.map(item => ({
+                ...item
+            }));
+
         cartItemsContainer.innerHTML =
-            data.items
+            currentCartItems
                 .map(renderCartItem)
                 .join("");
         cartPricing.subtotal =
@@ -748,7 +793,7 @@ if (checkoutSection) {
 
         showCartNotice(
             error.message ||
-            "Unable to connect to the server.",
+            "Unable to connect. Please check your connection and try again.",
             "error"
         );
     }
@@ -810,7 +855,7 @@ const addonTotal =
 
     const baseText =
         String(
-            item.base_text || ""
+            item.variant_text || ""
         ).trim();
 
     const imageSource =
@@ -871,7 +916,10 @@ const addonTotal =
             `;
 
     return `
-        <article class="cart-item">
+        <article
+            class="cart-item"
+            data-cart-id="${cartId}"
+        >
 
            <div class="cart-item-image">
 
@@ -1095,6 +1143,566 @@ const addonTotal =
 }
 
 /* =========================================================
+   FAST LOCAL CART UPDATES
+   ========================================================= */
+
+function getLocalCartItem(cartId) {
+    const numericId =
+        Number(cartId);
+
+    return currentCartItems.find(
+        item =>
+            Number(item.cart_id) ===
+            numericId
+    ) || null;
+}
+
+function getLocalCartTotalItems() {
+    return currentCartItems.reduce(
+        (sum, item) =>
+            sum +
+            Math.max(
+                0,
+                Number(item.quantity) || 0
+            ),
+        0
+    );
+}
+
+function updateCartItemDomQuantity(
+    cartId,
+    quantity
+) {
+    const itemElement =
+        document.querySelector(
+            `.cart-item[data-cart-id="${Number(cartId)}"]`
+        );
+
+    if (!itemElement) {
+        return;
+    }
+
+    const item =
+        getLocalCartItem(cartId);
+
+    if (!item) {
+        return;
+    }
+
+    const input =
+        itemElement.querySelector(
+            ".qty-number"
+        );
+
+    const buttons =
+        itemElement.querySelectorAll(
+            ".qty-btn"
+        );
+
+    const itemPrice =
+        itemElement.querySelector(
+            ".item-price"
+        );
+
+    if (input) {
+        input.value =
+            String(quantity);
+    }
+
+    const unitSubtotal =
+        Number(
+            item.__unitSubtotal ??
+            (
+                Number(item.subtotal || 0) /
+                Math.max(
+                    1,
+                    Number(item.__previousQuantity || item.quantity || 1)
+                )
+            )
+        ) || 0;
+
+    item.__unitSubtotal =
+        unitSubtotal;
+
+    const nextSubtotal =
+        unitSubtotal *
+        quantity;
+
+    item.subtotal =
+        nextSubtotal;
+
+    if (itemPrice) {
+        itemPrice.textContent =
+            formatPrice(
+                nextSubtotal
+            );
+    }
+
+    if (buttons.length >= 2) {
+        buttons[0].setAttribute(
+            "onclick",
+            `changeQty(${Number(cartId)}, ${quantity - 1})`
+        );
+
+        buttons[1].setAttribute(
+            "onclick",
+            `changeQty(${Number(cartId)}, ${quantity + 1})`
+        );
+    }
+}
+
+function applyLocalQuantity(
+    cartId,
+    newQuantity
+) {
+    const item =
+        getLocalCartItem(cartId);
+
+    if (!item) {
+        return false;
+    }
+
+    const previousQuantity =
+        Math.max(
+            1,
+            Number(item.quantity) || 1
+        );
+
+    if (
+        previousQuantity ===
+        newQuantity
+    ) {
+        return true;
+    }
+
+    const previousSubtotal =
+        Number(item.subtotal || 0);
+
+    const unitSubtotal =
+        Number(
+            item.__unitSubtotal ??
+            (
+                previousSubtotal /
+                previousQuantity
+            )
+        ) || 0;
+
+    const discountPerItem =
+        Number(
+            item.discount_savings || 0
+        ) || 0;
+
+    item.__unitSubtotal =
+        unitSubtotal;
+
+    const nextSubtotal =
+        unitSubtotal *
+        newQuantity;
+
+    item.__previousQuantity =
+        previousQuantity;
+
+    item.quantity =
+        newQuantity;
+
+    item.subtotal =
+        nextSubtotal;
+
+    cartPricing.subtotal =
+        Math.max(
+            0,
+            Number(cartPricing.subtotal || 0) -
+            previousSubtotal +
+            nextSubtotal
+        );
+
+    cartPricing.promotionSavings =
+        Math.max(
+            0,
+            Number(
+                cartPricing.promotionSavings ||
+                0
+            ) +
+            (
+                newQuantity -
+                previousQuantity
+            ) *
+            discountPerItem
+        );
+
+    updateCartItemDomQuantity(
+        cartId,
+        newQuantity
+    );
+
+    updateTotals(
+        getLocalCartTotalItems()
+    );
+
+    return true;
+}
+
+function applyLocalRemove(cartId) {
+    const numericId =
+        Number(cartId);
+
+    const itemIndex =
+        currentCartItems.findIndex(
+            item =>
+                Number(item.cart_id) ===
+                numericId
+        );
+
+    if (itemIndex < 0) {
+        return false;
+    }
+
+    const item =
+        currentCartItems[
+            itemIndex
+        ];
+
+    const quantity =
+        Math.max(
+            1,
+            Number(item.quantity) || 1
+        );
+
+    cartPricing.subtotal =
+        Math.max(
+            0,
+            Number(cartPricing.subtotal || 0) -
+            Number(item.subtotal || 0)
+        );
+
+    cartPricing.promotionSavings =
+        Math.max(
+            0,
+            Number(
+                cartPricing.promotionSavings ||
+                0
+            ) -
+            (
+                Number(
+                    item.discount_savings ||
+                    0
+                ) *
+                quantity
+            )
+        );
+
+    currentCartItems.splice(
+        itemIndex,
+        1
+    );
+
+    document
+        .querySelector(
+            `.cart-item[data-cart-id="${numericId}"]`
+        )
+        ?.remove();
+
+    const totalItems =
+        getLocalCartTotalItems();
+
+    updateTotals(totalItems);
+
+    if (
+        currentCartItems.length ===
+        0
+    ) {
+        renderEmptyCart();
+
+        const checkoutSection =
+            document.getElementById(
+                "checkoutSection"
+            );
+
+        if (checkoutSection) {
+            checkoutSection.style.display =
+                "none";
+        }
+    }
+
+    return true;
+}
+
+/* =========================================================
+   DEBOUNCED SERVER QUANTITY SYNC
+   ========================================================= */
+
+function getCartQuantitySyncState(cartId) {
+    const numericId =
+        Number(cartId);
+
+    if (
+        !cartQuantitySyncStates.has(
+            numericId
+        )
+    ) {
+        cartQuantitySyncStates.set(
+            numericId,
+            {
+                timer: null,
+                inFlight: false,
+                promise: null,
+                lastSentQuantity: null
+            }
+        );
+    }
+
+    return cartQuantitySyncStates.get(
+        numericId
+    );
+}
+
+function clearCartQuantitySyncTimer(
+    cartId
+) {
+    const state =
+        cartQuantitySyncStates.get(
+            Number(cartId)
+        );
+
+    if (!state?.timer) {
+        return;
+    }
+
+    window.clearTimeout(
+        state.timer
+    );
+
+    state.timer = null;
+}
+
+async function sendLatestCartQuantity(
+    cartId
+) {
+    const numericId =
+        Number(cartId);
+
+    const state =
+        getCartQuantitySyncState(
+            numericId
+        );
+
+    if (state.inFlight) {
+        return state.promise;
+    }
+
+    const item =
+        getLocalCartItem(
+            numericId
+        );
+
+    if (!item) {
+        cartQuantitySyncStates.delete(
+            numericId
+        );
+
+        return;
+    }
+
+    const quantity =
+        Math.max(
+            1,
+            Math.min(
+                99,
+                Number(item.quantity) || 1
+            )
+        );
+
+    /*
+     * The latest quantity is already on the server.
+     */
+    if (
+        state.lastSentQuantity ===
+        quantity
+    ) {
+        return;
+    }
+
+    state.inFlight = true;
+    state.lastSentQuantity =
+        quantity;
+
+    state.promise = (async () => {
+        try {
+            const response =
+                await fetch(
+                    `${API}/cart_update.php`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            cart_id:
+                                numericId,
+
+                            quantity:
+                                quantity
+                        })
+                    }
+                );
+
+            const data =
+                await readJsonResponse(
+                    response
+                );
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+                throw new Error(
+                    data.message ||
+                    "Unable to update the quantity. Please try again."
+                );
+            }
+
+            const latestItem =
+                getLocalCartItem(
+                    numericId
+                );
+
+            const latestQuantity =
+                Number(
+                    latestItem?.quantity ||
+                    quantity
+                );
+
+            if (
+                latestQuantity ===
+                quantity
+            ) {
+                showCartNotice(
+                    "Cart quantity updated.",
+                    "success"
+                );
+            }
+
+        } catch (error) {
+            console.error(
+                "Quantity sync error:",
+                error
+            );
+
+            showCartNotice(
+                error.message ||
+                "Unable to update quantity.",
+                "error"
+            );
+
+            /*
+             * Server stays authoritative on any failed mutation.
+             */
+            await loadCart();
+
+        } finally {
+            state.inFlight = false;
+            state.promise = null;
+
+            const latestItem =
+                getLocalCartItem(
+                    numericId
+                );
+
+            const latestQuantity =
+                Number(
+                    latestItem?.quantity ||
+                    0
+                );
+
+            /*
+             * If the owner/customer clicked again while the request
+             * was in flight, send only the newest final quantity.
+             */
+            if (
+                latestItem &&
+                latestQuantity !==
+                state.lastSentQuantity
+            ) {
+                state.timer =
+                    window.setTimeout(
+                        () => {
+                            state.timer =
+                                null;
+
+                            void sendLatestCartQuantity(
+                                numericId
+                            );
+                        },
+                        120
+                    );
+            }
+        }
+    })();
+
+    return state.promise;
+}
+
+function scheduleCartQuantitySync(
+    cartId
+) {
+    const numericId =
+        Number(cartId);
+
+    const state =
+        getCartQuantitySyncState(
+            numericId
+        );
+
+    clearCartQuantitySyncTimer(
+        numericId
+    );
+
+    state.timer =
+        window.setTimeout(
+            () => {
+                state.timer = null;
+
+                void sendLatestCartQuantity(
+                    numericId
+                );
+            },
+            CART_QUANTITY_DEBOUNCE_MS
+        );
+}
+
+async function settleCartQuantitySync(
+    cartId
+) {
+    const numericId =
+        Number(cartId);
+
+    const state =
+        cartQuantitySyncStates.get(
+            numericId
+        );
+
+    if (!state) {
+        return;
+    }
+
+    clearCartQuantitySyncTimer(
+        numericId
+    );
+
+    if (state.inFlight && state.promise) {
+        try {
+            await state.promise;
+        } catch (_) {
+            // sendLatestCartQuantity handles recovery.
+        }
+    }
+}
+
+/* =========================================================
    QUANTITY
    ========================================================= */
 
@@ -1155,64 +1763,35 @@ async function changeQty(
             "error"
         );
 
+        return;
+    }
+
+    /*
+     * Update visible quantity/price instantly.
+     */
+    const changed =
+        applyLocalQuantity(
+            cartId,
+            newQuantity
+        );
+
+    if (!changed) {
         await loadCart();
         return;
     }
 
     showCartNotice(
-        "Updating quantity...",
+        "Saving quantity...",
         "info"
     );
 
-    try {
-        const response = await fetch(
-            `${API}/cart_update.php`,
-            {
-                method: "POST",
-                credentials: "include",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    cart_id: cartId,
-                    quantity: newQuantity
-                })
-            }
-        );
-
-        const data =
-            await readJsonResponse(response);
-
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.message ||
-                "Failed to update quantity."
-            );
-        }
-
-        await loadCart();
-
-        showCartNotice(
-            "Cart quantity updated.",
-            "success"
-        );
-    } catch (error) {
-        console.error(
-            "Change quantity error:",
-            error
-        );
-
-        showCartNotice(
-            error.message ||
-            "Unable to update quantity.",
-            "error"
-        );
-
-        await loadCart();
-    }
+    /*
+     * Do NOT send one cloud request per click.
+     * Wait briefly, then send only the latest quantity.
+     */
+    scheduleCartQuantitySync(
+        cartId
+    );
 }
 
 /* =========================================================
@@ -1229,7 +1808,34 @@ async function removeItem(cartId) {
         return;
     }
 
+    /*
+     * Cancel any not-yet-sent quantity update for this item.
+     * If one update is already in flight, let it finish before the
+     * remove request so server-side mutation order stays predictable.
+     */
+    const pendingSync =
+        settleCartQuantitySync(
+            cartId
+        );
+
+    /*
+     * Remove immediately from the visible cart.
+     * If the server rejects it, loadCart() restores the item.
+     */
+    applyLocalRemove(cartId);
+
+    showCartNotice(
+        "Removing item...",
+        "info"
+    );
+
     try {
+        await pendingSync;
+
+        cartQuantitySyncStates.delete(
+            Number(cartId)
+        );
+
         const response = await fetch(
             `${API}/cart_remove.php`,
             {
@@ -1253,11 +1859,9 @@ async function removeItem(cartId) {
         if (!response.ok || !data.success) {
             throw new Error(
                 data.message ||
-                "Failed to remove item."
+                "Unable to remove this item. Please try again."
             );
         }
-
-        await loadCart();
 
         showCartNotice(
             "Item removed from your cart.",
@@ -1274,6 +1878,8 @@ async function removeItem(cartId) {
             "Unable to remove item.",
             "error"
         );
+
+        await loadCart();
     }
 }
 
@@ -2416,15 +3022,6 @@ paymentMethod.innerHTML = `
         `;
 
         dynamicFields.innerHTML = `
-            <label for="pickupTime">
-                Pickup Time
-            </label>
-
-            <input
-                type="time"
-                id="pickupTime"
-            >
-
             <label for="notes">
                 Notes
             </label>
@@ -2974,7 +3571,7 @@ if (hasPromotion) {
 
             const baseText =
                 String(
-                    item.base_text || ""
+                    item.variant_text || ""
                 ).trim();
 
             const comboText =
@@ -3908,7 +4505,7 @@ async function placeOrder() {
         return;
     }
 
-    if (!/^9\d{9}$/.test(contact)) {
+    if (!window.FoodConnectPhone.isValid(contact)) {
     showCheckoutMessage(
         "Enter a valid 10-digit mobile number after +63, starting with 9.",
         "error"
@@ -3921,7 +4518,7 @@ async function placeOrder() {
     const payload = {
         order_type: type,
         customer_name: name,
-        contact_number: contact,
+        contact_number: window.FoodConnectPhone.normalize(contact),
         payment_method: payment
     };
 
@@ -3934,28 +4531,6 @@ async function placeOrder() {
     }
 
     if (type === "takeout") {
-        const pickupTime =
-            document
-                .getElementById("pickupTime")
-                ?.value
-                .trim() || "";
-
-        if (!pickupTime) {
-            showCheckoutMessage(
-                "Select your preferred pickup time.",
-                "error"
-            );
-
-            document
-                .getElementById("pickupTime")
-                ?.focus();
-
-            return;
-        }
-
-        payload.pickup_time =
-            pickupTime;
-
         payload.notes =
             document
                 .getElementById("notes")
@@ -4093,7 +4668,7 @@ payload.customer_longitude =
         }
 
         showCheckoutMessage(
-    `Order placed successfully. Your order ID is ${data.order_id}.`,
+    "Order placed successfully!",
     "success"
 );
 
@@ -4209,7 +4784,7 @@ window.setTimeout(() => {
 
         showCheckoutMessage(
             error.message ||
-            "Something went wrong during checkout.",
+            "Unable to place your order right now. Please try again.",
             "error"
         );
 
@@ -4750,7 +5325,7 @@ function buildCustomerOrderItems(order) {
 
             const baseText =
                 String(
-                    item.base_text || ""
+                    item.variant_text || ""
                 ).trim();
 
             const comboText =
@@ -5008,7 +5583,7 @@ function buildCustomerOrderCard(order) {
         order?.delivery?.assignment_id || 0
     ) > 0 &&
     Number(
-        order?.delivery?.rider_id || 0
+        order?.delivery?.delivery_staff_id || 0
     ) > 0;
 
     const expanded =
@@ -6728,6 +7303,176 @@ function renderFilteredCustomerOrders() {
    LOAD CUSTOMER ORDERS
 ========================================================= */
 
+
+function orderNeedsPayMongoStatusSync(
+    order
+) {
+    const paymentMethod =
+        String(
+            order?.payment_method || ""
+        ).trim();
+
+    const paymentStatus =
+        String(
+            order?.payment_status || ""
+        )
+            .trim()
+            .toLowerCase();
+
+    const orderType =
+        normalizeOrderType(
+            order?.order_type
+        );
+
+    const qrVerifiedAt =
+        String(
+            order?.qr_verified_at ?? ""
+        ).trim();
+
+    const qrVerifiedFlag =
+        order?.qr_verified === true ||
+        order?.qr_verified === 1 ||
+        order?.qr_verified === "1";
+
+    const qrVerified =
+        (
+            qrVerifiedAt !== "" &&
+            qrVerifiedAt !==
+                "0000-00-00 00:00:00"
+        ) ||
+        qrVerifiedFlag;
+
+    return (
+        paymentMethod ===
+            "PayMongo QR Ph" &&
+        paymentStatus !== "paid" &&
+        (
+            orderType === "delivery" ||
+            (
+                [
+                    "dine-in",
+                    "take-out"
+                ].includes(orderType) &&
+                qrVerified
+            )
+        )
+    );
+}
+
+async function syncPendingPayMongoOrders(
+    ordersToCheck
+) {
+    if (
+        currentCustomerTab !== "orders" ||
+        !Array.isArray(ordersToCheck)
+    ) {
+        return false;
+    }
+
+    const now =
+        Date.now();
+
+    const eligibleOrders =
+        ordersToCheck
+            .filter(
+                orderNeedsPayMongoStatusSync
+            )
+            .filter(order => {
+                const orderId =
+                    Number(
+                        order?.order_id || 0
+                    );
+
+                if (
+                    !Number.isInteger(orderId) ||
+                    orderId <= 0
+                ) {
+                    return false;
+                }
+
+                const lastAttempt =
+                    Number(
+                        payMongoPendingSyncLastAttempt
+                            .get(orderId) || 0
+                    );
+
+                return (
+                    now - lastAttempt >=
+                    PAYMONGO_PENDING_SYNC_INTERVAL_MS
+                );
+            })
+            .slice(0, 2);
+
+    if (eligibleOrders.length === 0) {
+        return false;
+    }
+
+    let paymentChanged =
+        false;
+
+    for (const order of eligibleOrders) {
+        const orderId =
+            Number(order.order_id);
+
+        payMongoPendingSyncLastAttempt.set(
+            orderId,
+            Date.now()
+        );
+
+        try {
+            const response =
+                await fetch(
+                    `${API}/sync_paymongo_payment.php`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        cache: "no-store",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            order_id: orderId
+                        })
+                    }
+                );
+
+            const data =
+                await readJsonResponse(
+                    response
+                );
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+                console.warn(
+                    `PayMongo background sync for Order #${orderId}:`,
+                    data.message ||
+                    `HTTP ${response.status}`
+                );
+
+                continue;
+            }
+
+            if (data.paid === true) {
+                paymentChanged =
+                    true;
+
+                payMongoPendingSyncLastAttempt
+                    .delete(orderId);
+            }
+        } catch (error) {
+            console.warn(
+                `PayMongo background sync for Order #${orderId} failed:`,
+                error
+            );
+        }
+    }
+
+    return paymentChanged;
+}
+
 async function loadCustomerOrders(
     showLoading = true
 ) {
@@ -6786,12 +7531,52 @@ async function loadCustomerOrders(
             );
         }
 
-    const nextCustomerOrders =
+    let nextCustomerOrders =
     Array.isArray(
         data.orders
     )
         ? data.orders
         : [];
+
+const paymentChanged =
+    await syncPendingPayMongoOrders(
+        nextCustomerOrders
+    );
+
+/*
+ * If PayMongo changed a pending order to paid, fetch once more
+ * immediately so the customer UI reflects the confirmed status
+ * without waiting for the next 5-second My Orders poll.
+ */
+if (paymentChanged) {
+    const refreshedResponse =
+        await fetch(
+            `${API}/get_customer_orders.php`,
+            {
+                credentials:
+                    "include",
+
+                cache:
+                    "no-store"
+            }
+        );
+
+    const refreshedData =
+        await readJsonResponse(
+            refreshedResponse
+        );
+
+    if (
+        refreshedResponse.ok &&
+        refreshedData.success &&
+        Array.isArray(
+            refreshedData.orders
+        )
+    ) {
+        nextCustomerOrders =
+            refreshedData.orders;
+    }
+}
 
 const nextRenderSignature =
     JSON.stringify(
@@ -6891,6 +7676,11 @@ function switchCustomerTab(tabName) {
     const showingOrders =
         tabName === "orders";
 
+    currentCustomerTab =
+        showingOrders
+            ? "orders"
+            : "cart";
+
     cartTabButton?.classList.toggle(
         "active",
         !showingOrders
@@ -6931,10 +7721,140 @@ function switchCustomerTab(tabName) {
         );
     }
 
+    if (showingOrders) {
+        void loadCustomerOrders(
+            customerOrders.length === 0
+        );
+    }
+
    window.scrollTo({
     top: 0,
     behavior: "smooth"
 });
+}
+
+
+async function handlePayMongoReturn() {
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const returnState =
+        String(
+            params.get(
+                "paymongo_return"
+            ) || ""
+        )
+            .trim()
+            .toLowerCase();
+
+    const orderId =
+        Number(
+            params.get("order_id") || 0
+        );
+
+    if (
+        !["success", "cancelled"]
+            .includes(returnState)
+    ) {
+        return;
+    }
+
+    const cleanedUrl =
+        new URL(
+            window.location.href
+        );
+
+    cleanedUrl.searchParams.delete(
+        "paymongo_return"
+    );
+
+    cleanedUrl.searchParams.delete(
+        "order_id"
+    );
+
+    window.history.replaceState(
+        {},
+        "",
+        cleanedUrl.pathname +
+            cleanedUrl.search +
+            cleanedUrl.hash
+    );
+
+    switchCustomerTab("orders");
+
+    if (returnState === "cancelled") {
+        showToast(
+            "Payment Not Completed",
+            "Your order is still waiting for payment. You can try again from My Orders."
+        );
+
+        await loadCustomerOrders(true);
+        return;
+    }
+
+    try {
+        showToast(
+            "Confirming Payment",
+            "Checking your PayMongo payment..."
+        );
+
+        const response =
+            await fetch(
+                `${API}/sync_paymongo_payment.php`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId
+                    })
+                }
+            );
+
+        const data =
+            await readJsonResponse(
+                response
+            );
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to confirm the payment right now."
+            );
+        }
+
+        if (data.paid) {
+            showToast(
+                "Payment Confirmed",
+                "Your payment was successful. The restaurant can now process your order."
+            );
+        } else {
+            showToast(
+                "Payment Processing",
+                "Your payment is still being confirmed. Refresh My Orders in a moment."
+            );
+        }
+    } catch (error) {
+        console.error(
+            "PayMongo return sync error:",
+            error
+        );
+
+        showToast(
+            "Payment Confirmation Delayed",
+            "Your payment may already be successful, but FoodConnect could not confirm it yet. Refresh My Orders shortly."
+        );
+    }
+
+    await loadCustomerOrders(true);
 }
 
 /* =========================================================
@@ -6944,6 +7864,8 @@ function switchCustomerTab(tabName) {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
+        void handlePayMongoReturn();
 
         const customerCancelModal =
     document.getElementById(
@@ -7504,18 +8426,7 @@ if (cancelOrderButton) {
                 goBackToMenu();
             }
         );
-
-        contactNumberInput?.addEventListener(
-            "input",
-            function () {
-                this.value =
-                    this.value
-                        .replace(/[^0-9]/g, "")
-                        .slice(0, 10);
-            }
-        );
-
-        clearCartButton?.addEventListener(
+clearCartButton?.addEventListener(
             "click",
             async () => {
                 const confirmed =
@@ -7657,7 +8568,13 @@ clearedCompletedOrderIds =
     getClearedCompletedOrderIds();
 
 loadCart();
-loadCustomerOrders(true);
+
+/*
+ * Fetch order counters once without blocking the Cart tab.
+ * Continuous order polling is only needed while My Orders
+ * is actually visible.
+ */
+loadCustomerOrders(false);
 
 if (
     customerOrdersInterval ===
@@ -7666,11 +8583,38 @@ if (
     customerOrdersInterval =
         window.setInterval(
             () => {
-                loadCustomerOrders(
-                    false
-                );
+                const qrModal =
+                    document.getElementById(
+                        "orderQrModal"
+                    );
+
+                const qrModalIsOpen =
+                    activeQrModalOrderId > 0 &&
+                    qrModal?.classList.contains(
+                        "show"
+                    );
+
+                /*
+                 * Keep the existing lightweight 5-second polling,
+                 * but also refresh while the QR modal is open.
+                 *
+                 * This lets Dine-In/Takeout customers see the
+                 * PayMongo step automatically as soon as the
+                 * cashier verifies their QR, without manually
+                 * opening My Orders.
+                 */
+                if (
+                
+                    currentCustomerTab ===
+                        "orders" ||
+                    qrModalIsOpen
+                ) {
+                    loadCustomerOrders(
+                        false
+                    );
+                }
             },
-            5000
+            3000
         );
 }
                 }

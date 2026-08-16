@@ -6,6 +6,7 @@ ini_set("display_errors", "0");
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 function respond_json(array $data, int $statusCode = 200): void
@@ -30,6 +31,16 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === "") {
         400
     );
 }
+
+rate_limit_enforce(
+    $conn,
+    "customer-reactivation-request",
+    rate_limit_identifier(rate_limit_client_ip(), $email),
+    3,
+    900,
+    900,
+    "Too many reactivation requests. Please wait 15 minutes and try again."
+);
 
 $stmt = $conn->prepare("
     SELECT

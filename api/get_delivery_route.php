@@ -45,7 +45,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -59,7 +59,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -206,7 +206,7 @@ $stmt = $conn->prepare("
        AND o.restaurant_id = da.restaurant_id
 
     WHERE da.assignment_id = ?
-      AND da.rider_id = ?
+      AND da.delivery_staff_id = ?
       AND da.restaurant_id = ?
       AND da.delivery_status = 'out_for_delivery'
 

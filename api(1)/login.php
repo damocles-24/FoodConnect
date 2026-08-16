@@ -16,6 +16,7 @@ session_set_cookie_params(
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 function respond_json(array $data, int $statusCode = 200): void
 {
@@ -63,6 +64,19 @@ if ($email === "" || $password === "") {
         400
     );
 }
+
+rate_limit_enforce(
+    $conn,
+    "customer-login",
+    rate_limit_identifier(
+        rate_limit_client_ip(),
+        $email
+    ),
+    10,
+    900,
+    900,
+    "Too many login attempts. Please wait 15 minutes and try again."
+);
 
 /* =========================================================
    FIND USER

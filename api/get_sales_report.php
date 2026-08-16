@@ -63,7 +63,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -77,7 +77,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -1076,12 +1076,12 @@ $previousCancellationRate =
        DELIVERY PERFORMANCE
 
        Delivery assignments are attributed using:
-       tbl_delivery_assignments.rider_id
+       tbl_delivery_assignments.delivery_staff_id
     ===================================================== */
 
     $deliverySql = "
         SELECT
-            u.user_id AS rider_id,
+            u.user_id AS delivery_staff_id,
             u.full_name AS rider_name,
             u.status AS account_status,
 
@@ -1151,7 +1151,7 @@ $previousCancellationRate =
         FROM tbl_users u
 
         LEFT JOIN tbl_delivery_assignments da
-            ON da.rider_id = u.user_id
+            ON da.delivery_staff_id = u.user_id
 
            AND da.restaurant_id =
                 u.restaurant_id
@@ -1204,8 +1204,8 @@ $previousCancellationRate =
 
     foreach ($deliveryRows as $row) {
         $deliveryPerformance[] = [
-            "rider_id" =>
-                (int) $row["rider_id"],
+            "delivery_staff_id" =>
+                (int) $row["delivery_staff_id"],
 
             "rider_name" =>
                 (string) $row["rider_name"],

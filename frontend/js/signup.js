@@ -111,7 +111,7 @@ async function readJsonResponse(response) {
         );
 
         throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
         );
     }
 }

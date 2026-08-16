@@ -15,6 +15,7 @@
         href="../css/create_restaurant.css"
     >
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+  <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 </head>
 
 <body>
@@ -341,15 +342,20 @@
                                 <span class="required">*</span>
                             </label>
 
-                            <input
-                                type="tel"
-                                id="restaurantContact"
-                                name="restaurant_contact"
-                                maxlength="30"
-                                autocomplete="tel"
-                                placeholder="Example: 0912 345 6789"
-                                required
-                            >
+                            <div class="ph-phone-field">
+                                <span class="ph-phone-prefix">+63</span>
+                                <input
+                                    type="tel"
+                                    id="restaurantContact"
+                                    name="restaurant_contact"
+                                    maxlength="10"
+                                    autocomplete="tel"
+                                    inputmode="numeric"
+                                    placeholder="9123456789"
+                                    data-ph-phone-local
+                                    required
+                                >
+                            </div>
 
                             <small class="field-error"></small>
                         </div>
@@ -854,12 +860,7 @@
                                     <dt>Business email</dt>
                                     <dd id="reviewBusinessEmail">—</dd>
                                 </div>
-
-                                <div>
-                                    <dt>BIR tax registration</dt>
-                                    <dd id="reviewTaxRegistrationType">—</dd>
-                                </div>
-                            </dl>
+</dl>
                         </div>
 
                         <div class="review-group">
@@ -1066,6 +1067,7 @@
 
     <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
     <script src="../js/restaurant_verification_documents.js?v=20260815"></script>
-    <script src="../js/create_restaurant.js"></script>
+    <script src="../js/ph-phone.js?v=20260816"></script>
+<script src="../js/create_restaurant.js"></script>
 </body>
 </html>

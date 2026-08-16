@@ -5,7 +5,7 @@ header("Cache-Control: no-store");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 function out(array $d, int $s=200): void { http_response_code($s); echo json_encode($d, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES); exit; }
-if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") out(["success"=>false,"message"=>"Method not allowed."],405);
+if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") out(["success"=>false,"message"=>"This action is not available."],405);
 if (empty($_SESSION["user_id"]) || strtolower((string)($_SESSION["role"]??"")) !== "owner") out(["success"=>false,"message"=>"Owner authentication is required."],401);
 $ownerId=(int)$_SESSION["user_id"];
 $type=trim((string)($_POST["document_type"]??""));

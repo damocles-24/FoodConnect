@@ -280,14 +280,27 @@ function build_logged_in_response(
             );
 
         if ($restaurant) {
-            $restaurantId =
+            $resolvedRestaurantId =
                 (int) $restaurant["restaurant_id"];
 
-            sync_owner_restaurant(
-                $conn,
-                $userId,
-                $restaurantId
-            );
+            /*
+             * Do not issue an UPDATE on every me.php request when
+             * tbl_users.restaurant_id is already correct. This saves
+             * one remote cloud-DB write during normal owner page loads.
+             */
+            if (
+                $restaurantId !==
+                $resolvedRestaurantId
+            ) {
+                sync_owner_restaurant(
+                    $conn,
+                    $userId,
+                    $resolvedRestaurantId
+                );
+            }
+
+            $restaurantId =
+                $resolvedRestaurantId;
 
             $_SESSION["restaurant_id"] =
                 $restaurantId;

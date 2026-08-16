@@ -15,6 +15,7 @@ if (empty($_SESSION["staff_access_verified"])) {
 }
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 function respond_json($arr, $code = 200) {
   http_response_code($code);
@@ -30,6 +31,16 @@ $password = $input["password"] ?? "";
 if ($email === "" || $password === "") {
   respond_json(["success" => false, "message" => "Please enter email and password."], 400);
 }
+
+rate_limit_enforce(
+  $conn,
+  "staff-login",
+  rate_limit_identifier(rate_limit_client_ip(), strtolower($email)),
+  10,
+  900,
+  900,
+  "Too many staff login attempts. Please wait 15 minutes and try again."
+);
 
 $stmt = $conn->prepare("
   SELECT user_id, restaurant_id, role, full_name, email, password_hash, status, is_verified

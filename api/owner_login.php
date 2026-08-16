@@ -29,6 +29,7 @@ ini_set(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 /* =========================================================
@@ -167,7 +168,7 @@ if ($requestMethod !== "POST") {
         [
             "success" => false,
             "message" =>
-                "Method not allowed."
+                "This action is not available."
         ],
         405
     );
@@ -244,6 +245,19 @@ if (
         422
     );
 }
+
+rate_limit_enforce(
+    $conn,
+    "owner-login",
+    rate_limit_identifier(
+        rate_limit_client_ip(),
+        $email
+    ),
+    8,
+    900,
+    900,
+    "Too many owner login attempts. Please wait 15 minutes and try again."
+);
 
 /* =========================================================
    FIND OWNER ACCOUNT

@@ -10,6 +10,7 @@ header(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -43,7 +44,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -74,7 +75,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access. Please log in again."
+            "Your session has expired or you do not have access. Please log in again. Please log in again."
     ], 401);
 }
 
@@ -197,6 +198,9 @@ $contactNumber = trim(
     )
 );
 
+$contactNumberRaw = $contactNumber;
+$contactNumber = $contactNumberRaw === "" ? "" : normalize_ph_mobile($contactNumberRaw);
+
 $address = trim(
     (string)(
         $data["address"] ?? ""
@@ -298,7 +302,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Contact number must be an 11-digit Philippine mobile number beginning with 09."
+            "Enter a valid Philippine mobile number starting with 9."
     ], 422);
 }
 

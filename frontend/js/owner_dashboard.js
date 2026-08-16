@@ -873,7 +873,7 @@ settingsFormControls.forEach(control => {
         settingsContactNumber
       ) {
         const normalizedContact =
-          normalizePhilippineContactNumber(
+          window.FoodConnectPhone.toLocalDigits(
             control.value
           );
 
@@ -1503,7 +1503,7 @@ async function loadOwnerIdentity() {
       data = JSON.parse(rawText);
     } catch (parseError) {
       throw new Error(
-        "The account API returned invalid JSON."
+        "Unable to load your account right now. Please try again."
       );
     }
 
@@ -1667,7 +1667,7 @@ async function fetchJSON(
     );
 
     throw new Error(
-      "The server returned invalid JSON."
+      "Something went wrong. Please try again."
     );
   }
 
@@ -2275,7 +2275,7 @@ async function loadDashboardSummary() {
     if (!data.success) {
       throw new Error(
         data.message ||
-        "Unable to load dashboard summary."
+        "Unable to load the dashboard right now. Please try again."
       );
     }
 
@@ -2412,7 +2412,7 @@ async function submitGoLiveApplication() {
 
     alert(
       error.message ||
-      "Unable to submit the restaurant for review."
+      "Unable to submit the restaurant for review. Please try again."
     );
 
     applyGoLiveBtn.disabled = false;
@@ -2732,7 +2732,7 @@ async function loadStaffAccessCode() {
     currentStaffAccessCode = "";
 
     staffAccessCodeDisplay.textContent =
-      "Unable to load code";
+      "Unable to load the staff access code";
 
     showStaffAccessCodeMessage(
       error.message ||
@@ -3705,7 +3705,7 @@ async function loadSalesReport(
     if (!data.success) {
       throw new Error(
         data.message ||
-        "Failed to load sales report."
+        "Unable to load the sales report right now. Please try again."
       );
     }
 
@@ -5252,7 +5252,7 @@ function renderUsers(list = users) {
       <tr>
         <td>${u.full_name}</td>
         <td>${u.email}</td>
-<td>${u.contact_number || "-"}</td>
+<td>${window.FoodConnectPhone.format(u.contact_number, "-")}</td>
 <td>${u.address || "-"}</td>
 <td>
   <span class="user-role-badge user-role-${u.role}">
@@ -7037,7 +7037,7 @@ alert(
 
         alert(
           error.message ||
-          "Unable to add product."
+          "Unable to add the product. Please try again."
         );
       } finally {
         saveProductBtn.disabled =
@@ -7721,7 +7721,7 @@ navItems.forEach(btn => {
 
         if (settingsContactNumber) {
           settingsContactNumber.value =
-            savedRestaurantSettings.contact_number;
+            window.FoodConnectPhone.toLocalDigits(savedRestaurantSettings.contact_number);
         }
 
         if (settingsAddress) {
@@ -7771,6 +7771,19 @@ navItems.forEach(btn => {
       );
     });
 
+    /*
+     * Load expensive cloud-backed section data only when that
+     * section is actually opened.
+     */
+    void ensureOwnerSectionLoaded(
+      targetSection
+    ).catch(error => {
+      console.error(
+        `Unable to load ${targetSection}:`,
+        error
+      );
+    });
+
     sidebar?.classList.remove("show");
   });
 });
@@ -7785,6 +7798,15 @@ document.querySelectorAll(".view-all-btn").forEach(btn => {
 
     navItems.forEach(item => {
       item.classList.toggle("active", item.dataset.section === target);
+    });
+
+    void ensureOwnerSectionLoaded(
+      target
+    ).catch(error => {
+      console.error(
+        `Unable to load ${target}:`,
+        error
+      );
     });
   });
 });
@@ -8059,12 +8081,12 @@ saveUserBtn?.addEventListener(
 
     if (
       contactNumber &&
-      !/^[0-9]{11}$/.test(
+      !window.FoodConnectPhone.isValid(
         contactNumber
       )
     ) {
       alert(
-        "Contact number must be exactly 11 digits."
+        "Enter a valid Philippine mobile number after +63, starting with 9."
       );
 
       contactInput?.focus();
@@ -8088,7 +8110,9 @@ saveUserBtn?.addEventListener(
             full_name: fullName,
             email,
             contact_number:
-              contactNumber,
+              contactNumber
+                ? window.FoodConnectPhone.normalize(contactNumber)
+                : "",
             address,
             password,
             role,
@@ -8266,12 +8290,12 @@ updateUserBtn?.addEventListener(
 
     if (
       contactNumber &&
-      !/^[0-9]{11}$/.test(
+      !window.FoodConnectPhone.isValid(
         contactNumber
       )
     ) {
       alert(
-        "Contact number must be exactly 11 digits."
+        "Enter a valid Philippine mobile number after +63, starting with 9."
       );
 
       contactInput?.focus();
@@ -8302,7 +8326,9 @@ updateUserBtn?.addEventListener(
             full_name: fullName,
             email,
             contact_number:
-              contactNumber,
+              contactNumber
+                ? window.FoodConnectPhone.normalize(contactNumber)
+                : "",
             address,
             role,
             status
@@ -8643,7 +8669,7 @@ saveAddonBtn?.addEventListener("click", async () => {
     alert(result.message || "Add-on saved successfully.");
   } catch (error) {
     console.error("Save add-on failed:", error);
-    alert(error.message || "Unable to save add-on.");
+    alert(error.message || "Changes could not be saved add-on.");
   } finally {
     saveAddonBtn.disabled = false;
     saveAddonBtn.textContent = original;
@@ -8665,7 +8691,7 @@ window.openEditUserModal = function(id) {
   document.getElementById("editUserId").value = user.id;
   document.getElementById("editUserFullName").value = user.full_name;
   document.getElementById("editUserEmail").value = user.email;
-  document.getElementById("editUserContactNumber").value = user.contact_number || "";
+  document.getElementById("editUserContactNumber").value = window.FoodConnectPhone.toLocalDigits(user.contact_number);
 document.getElementById("editUserAddress").value = user.address || "";
   document.getElementById("editUserRole").value = user.role;
   document.getElementById("editUserStatus").value = String(user.status);
@@ -8951,7 +8977,7 @@ window.deleteProduct = async function(id) {
     ? `${product.name}${product.size ? " - " + product.size : ""}`
     : "Product";
 
-  const confirmDelete = confirm("Are you sure you want to delete this product?");
+  const confirmDelete = confirm("Delete this product? This action cannot be undone.");
   if (!confirmDelete) return;
 
   try {
@@ -9260,24 +9286,8 @@ function normalizeSettingsAddress(value) {
     .trim();
 }
 
-function normalizePhilippineContactNumber(
-  value
-) {
-  let normalized = String(value || "")
-    .replace(/[^\d+]/g, "");
-
-  if (normalized.startsWith("+63")) {
-    normalized =
-      `0${normalized.slice(3)}`;
-  } else if (
-    normalized.startsWith("63") &&
-    normalized.length === 12
-  ) {
-    normalized =
-      `0${normalized.slice(2)}`;
-  }
-
-  return normalized.slice(0, 11);
+function normalizePhilippineContactNumber(value) {
+  return window.FoodConnectPhone.normalize(value);
 }
 
 function clearSettingsFieldErrors() {
@@ -10027,8 +10037,10 @@ function updateSettingsPreview() {
 
   if (settingsPreviewContact) {
     settingsPreviewContact.textContent =
-      settings.contact_number ||
-      "Not provided";
+      window.FoodConnectPhone.format(
+        settings.contact_number,
+        "Not provided"
+      );
   }
 
   if (settingsPreviewAddress) {
@@ -10245,7 +10257,7 @@ function validateRestaurantSettings(
       settingsContactNumber
     );
 
-    return "Enter a valid 11-digit Philippine mobile number starting with 09.";
+    return "Enter a valid Philippine mobile number after +63, starting with 9.";
   }
 
   if (!settings.address) {
@@ -10395,7 +10407,7 @@ const loadedSettings = {
 
     if (settingsContactNumber) {
       settingsContactNumber.value =
-        loadedSettings.contact_number;
+        window.FoodConnectPhone.toLocalDigits(loadedSettings.contact_number);
     }
 
     if (settingsAddress) {
@@ -10597,7 +10609,7 @@ setSettingsSaveState(
     setSettingsSaveState(
       "error",
       error.message ||
-      "Unable to save settings."
+      "Changes could not be saved settings."
     );
   } finally {
     saveSettingsBtn.innerHTML =
@@ -10614,6 +10626,72 @@ setSettingsSaveState(
 
 let ownerDashboardRefreshTimer = null;
 let ownerDashboardRefreshRunning = false;
+let ownerDashboardLastRefreshAt = 0;
+let ownerDashboardReady = false;
+
+/*
+ * Hidden Owner Dashboard sections are loaded only when opened.
+ * This avoids paying cloud-DB latency for data the owner is not
+ * currently viewing.
+ */
+const ownerSectionLoadState = {
+  productsSection: false,
+  inventorySection: false,
+  reportsSection: false,
+  usersSection: false,
+  logsSection: false,
+  settingsSection: false
+};
+
+async function ensureOwnerSectionLoaded(
+  sectionId,
+  force = false
+) {
+  if (
+    !force &&
+    ownerSectionLoadState[sectionId]
+  ) {
+    return;
+  }
+
+  switch (sectionId) {
+    case "productsSection":
+    case "inventorySection":
+      await loadProducts();
+      ownerSectionLoadState.productsSection = true;
+      ownerSectionLoadState.inventorySection = true;
+      break;
+
+    case "reportsSection":
+      await Promise.all([
+        loadReportSalesChart("weekly"),
+        loadSalesReport("weekly")
+      ]);
+      ownerSectionLoadState.reportsSection = true;
+      break;
+
+    case "usersSection":
+      await Promise.all([
+        loadUsers(),
+        loadStaffAccessCode()
+      ]);
+      ownerSectionLoadState.usersSection = true;
+      break;
+
+    case "logsSection":
+      await loadActivityLogs();
+      ownerSectionLoadState.logsSection = true;
+      break;
+
+    case "settingsSection":
+      await loadRestaurantSettings();
+      ownerSectionLoadState.settingsSection = true;
+      break;
+
+    default:
+      break;
+  }
+}
 
 function isOwnerModalOpen() {
   return Boolean(
@@ -10623,8 +10701,32 @@ function isOwnerModalOpen() {
   );
 }
 
-async function refreshOwnerOperationalData() {
-  if (ownerDashboardRefreshRunning) {
+async function refreshOwnerOperationalData(
+  force = false
+) {
+  /*
+   * Do not start background cloud requests while the initial
+   * Owner Dashboard batch is still loading.
+   */
+  if (
+    !ownerDashboardReady ||
+    ownerDashboardRefreshRunning
+  ) {
+    return;
+  }
+
+  /*
+   * Opening DevTools, switching tabs, and returning to the
+   * window can fire focus + visibility events together.
+   * Require a full minute between automatic refreshes.
+   */
+  const now = Date.now();
+
+  if (
+    !force &&
+    ownerDashboardLastRefreshAt > 0 &&
+    now - ownerDashboardLastRefreshAt < 60000
+  ) {
     return;
   }
 
@@ -10640,11 +10742,17 @@ async function refreshOwnerOperationalData() {
 
   try {
     await Promise.all([
-  loadProducts(),
-  loadDashboardSummary()
-]);
+      loadProducts(),
+      loadDashboardSummary()
+    ]);
 
-    await loadActivityLogs();
+    ownerDashboardLastRefreshAt = Date.now();
+
+    /*
+     * Products and Inventory use the same data source.
+     */
+    ownerSectionLoadState.productsSection = true;
+    ownerSectionLoadState.inventorySection = true;
 
   } catch (error) {
     console.error(
@@ -10661,6 +10769,10 @@ function startOwnerDashboardRefresh() {
     clearInterval(ownerDashboardRefreshTimer);
   }
 
+  /*
+   * Keep the dashboard live, but avoid hammering the remote
+   * cloud database every 15 seconds.
+   */
   ownerDashboardRefreshTimer = window.setInterval(
     () => {
       if (
@@ -10669,7 +10781,7 @@ function startOwnerDashboardRefresh() {
         refreshOwnerOperationalData();
       }
     },
-    15000
+    60000
   );
 }
 
@@ -10684,16 +10796,21 @@ document.addEventListener(
   "visibilitychange",
   () => {
     if (
-      document.visibilityState === "visible"
+      document.visibilityState === "visible" &&
+      ownerDashboardReady
     ) {
-      refreshOwnerOperationalData();
+      refreshOwnerOperationalData(false);
     }
   }
 );
 
 window.addEventListener(
   "focus",
-  refreshOwnerOperationalData
+  () => {
+    if (ownerDashboardReady) {
+      refreshOwnerOperationalData(false);
+    }
+  }
 );
 
 window.addEventListener(
@@ -10725,25 +10842,19 @@ async function initDashboard() {
 await Promise.all([
   loadDashboardSummary(),
   loadProducts(),
-  loadUsers(),
-  loadStaffAccessCode(),
-
   loadDashboardSalesChart(
     "weekly"
-  ),
-
-  loadReportSalesChart(
-    "weekly"
-  ),
-
-  loadSalesReport(
-    "weekly"
-  ),
-
-  loadRestaurantSettings()
+  )
 ]);
 
-    await loadActivityLogs();
+    /*
+     * Products are also used by the Dashboard low-stock panel.
+     * Other hidden sections load only when the owner opens them.
+     */
+    ownerSectionLoadState.productsSection = true;
+    ownerSectionLoadState.inventorySection = true;
+    ownerDashboardLastRefreshAt = Date.now();
+    ownerDashboardReady = true;
 
     return true;
   } catch (error) {

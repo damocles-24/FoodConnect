@@ -14,6 +14,9 @@ let knownCashierNotificationIds =
 let cashierNotificationsFirstLoadDone =
   false;
 
+let cashierNotifications = [];
+let currentNotificationFilter = "all";
+
 let firstLoadDone = false;
 let confirmCallback = null;
 let restoreAssignModalAfterConfirm = false;
@@ -41,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
      INITIAL DATA LOADING
   ========================================= */
 
+  loadCashierProfile();
   loadOrders();
   loadCashierNotifications();
 
@@ -65,6 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================
      ORDER FILTERS AND REFRESH
   ========================================= */
+
+  document
+    .querySelectorAll(".notification-filter-btn")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        currentNotificationFilter =
+          button.dataset.notificationFilter || "all";
+
+        document
+          .querySelectorAll(".notification-filter-btn")
+          .forEach((item) => item.classList.remove("active"));
+
+        button.classList.add("active");
+        renderCashierNotifications();
+      });
+    });
+
+  const markAllNotificationsReadBtn =
+    document.getElementById("markAllNotificationsReadBtn");
+
+  if (markAllNotificationsReadBtn) {
+    markAllNotificationsReadBtn.addEventListener(
+      "click",
+      markAllCashierNotificationsRead
+    );
+  }
 
   document
     .getElementById("refreshOrdersBtn")
@@ -552,7 +582,7 @@ const verificationStartedAt =
       );
 
       throw new Error(
-        "The server returned an invalid response."
+        "Something went wrong. Please try again."
       );
     }
 
@@ -597,6 +627,36 @@ if (
       );
     }
 
+    const waitingForPayment =
+      data.waiting_for_payment === true ||
+      data.order?.waiting_for_payment === true;
+
+    if (waitingForPayment) {
+      setQrScannerMessage(
+        "Order QR verified. Waiting for the customer to complete payment.",
+        "success"
+      );
+
+      playNotificationSound();
+
+      showToast(
+        "QR Verified",
+        "Waiting for customer payment. The order will appear automatically after payment is confirmed."
+      );
+
+      await loadOrders();
+
+      await new Promise(resolve => {
+        setTimeout(resolve, 1800);
+      });
+
+      await closeQrScannerModal();
+
+      orderQrScanProcessing = false;
+
+      return;
+    }
+
     /*
      * Refresh the global orders array so that
      * openOrderModal() can find the scanned order.
@@ -618,7 +678,7 @@ if (
     }
 
  setQrScannerMessage(
-  `Order #${orderId} verified successfully.`,
+  `Order verified successfully.`,
   "success"
 );
 
@@ -648,7 +708,7 @@ await new Promise(resolve => {
 
     showToast(
       "Order QR Verified",
-      `Order #${orderId} was opened successfully.`
+      `Order opened successfully.`
     );
 
   } catch (error) {
@@ -659,7 +719,7 @@ await new Promise(resolve => {
 
     setQrScannerMessage(
       error.message ||
-      "Unable to verify the order QR.",
+      "Unable to verify this QR code. Please try again.",
       "error"
     );
 
@@ -813,7 +873,7 @@ message.textContent = text;
     ?.addEventListener("click", () => {
       openConfirmModal(
         "Logout Account",
-        "Are you sure you want to logout from the cashier dashboard?",
+        "Log out of the cashier dashboard?",
         () => {
           window.location.href =
             `${API_BASE}/logout.php`;
@@ -1158,7 +1218,7 @@ async function loadOrders() {
     const data = await response.json();
 
     if (!data.success) {
-      throw new Error(data.message || "Failed to load orders.");
+      throw new Error(data.message || "Unable to load orders right now. Please try again.");
     }
 
     const fetchedOrders = Array.isArray(data.orders) ? data.orders : [];
@@ -1371,8 +1431,7 @@ function renderOrders() {
 
               <small>
                 ${escapeHTML(
-                  order.contact_number ||
-                  "No contact"
+                  window.FoodConnectPhone.format(order.contact_number, "No contact")
                 )}
               </small>
             </td>
@@ -1665,7 +1724,7 @@ function buildModalContent(order) {
 
             const baseText =
               String(
-                item.base_text || ""
+                item.variant_text || ""
               ).trim();
 
             const comboChoiceText =
@@ -2002,8 +2061,7 @@ function buildModalContent(order) {
 
             <strong>
               ${escapeHTML(
-                order.contact_number ||
-                "No contact number"
+                window.FoodConnectPhone.format(order.contact_number, "No contact number")
               )}
             </strong>
           </div>
@@ -2463,8 +2521,7 @@ async function openAssignRiderModal() {
 
         <strong>
           ${escapeHTML(
-            selectedOrder.contact_number ||
-            "No contact number"
+            window.FoodConnectPhone.format(selectedOrder.contact_number, "No contact number")
           )}
         </strong>
       </div>
@@ -2656,7 +2713,7 @@ async function loadAvailableRiders() {
 
     if (!response.ok || !data.success) {
       throw new Error(
-        data.message || "Failed to load riders."
+        data.message || "Unable to load delivery staff right now. Please try again."
       );
     }
 
@@ -2689,7 +2746,7 @@ async function loadAvailableRiders() {
           ${escapeHTML(rider.full_name)}
           ${
             rider.contact_number
-              ? ` — ${escapeHTML(rider.contact_number)}`
+              ? ` — ${escapeHTML(window.FoodConnectPhone.format(rider.contact_number, rider.contact_number))}`
               : ""
           }
         </option>
@@ -2714,7 +2771,7 @@ async function loadAvailableRiders() {
 
     if (message) {
       message.textContent =
-        error.message || "Failed to load rider availability.";
+        error.message || "Unable to check delivery staff availability right now.";
     }
 
   } finally {
@@ -2795,9 +2852,9 @@ async function submitRiderAssignment() {
    */
   const assignmentPayload = {
     order_id: orderId,
-    rider_id: riderId,
+    delivery_staff_id: riderId,
     delivery_fee: deliveryFee,
-    rider_payment: 0
+    delivery_staff_payment: 0
   };
 
   restoreAssignModalAfterConfirm = true;
@@ -2848,7 +2905,7 @@ async function submitRiderAssignment() {
         ) {
           throw new Error(
             data.message ||
-            "Failed to assign the rider."
+            "Unable to assign the delivery staff. Please try again."
           );
         }
 
@@ -2878,7 +2935,7 @@ async function submitRiderAssignment() {
         showToast(
           "Assignment Failed",
           error.message ||
-          "Failed to assign the rider."
+          "Unable to assign the delivery staff. Please try again."
         );
 
         document
@@ -3217,7 +3274,7 @@ async function submitCashierCancellation() {
     ) {
       throw new Error(
         data.message ||
-        "Failed to cancel the order."
+        "Unable to cancel the order. Please try again."
       );
     }
 
@@ -3237,7 +3294,7 @@ async function submitCashierCancellation() {
 
     showToast(
       "Order Cancelled",
-      `Order #${orderId} was cancelled successfully.`
+      `Order cancelled successfully.`
     );
 
     await loadOrders();
@@ -3338,7 +3395,7 @@ async function updateOrderStatus(newStatus) {
           "The customer will be notified and the stock will be restored."
         )
       : (
-          `Are you sure you want to update Order #${orderId} to ${statusLabel}?`
+          `Update this order to ${statusLabel}?`
         );
 
   openConfirmModal(
@@ -3387,14 +3444,14 @@ async function updateOrderStatus(newStatus) {
           );
 
           throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
           );
         }
 
         if (!response.ok || !data.success) {
           throw new Error(
             data.message ||
-            "Failed to update order status."
+            "Unable to update the order status. Please try again."
           );
         }
 
@@ -3409,7 +3466,7 @@ async function updateOrderStatus(newStatus) {
                 "The customer will be notified."
               )
             : (
-                `Order #${orderId} status updated successfully.`
+                `Order status updated successfully.`
               )
         );
 
@@ -3426,7 +3483,7 @@ async function updateOrderStatus(newStatus) {
         showToast(
           "Update Failed",
           error.message ||
-          "Failed to update the order status."
+          "Unable to update the order status. Please try again."
         );
       }
     }
@@ -3470,6 +3527,87 @@ function playNotificationSound() {
   }
 }
 
+async function loadCashierProfile() {
+  const profileName = document.getElementById("cashierProfileName");
+  if (!profileName) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/me.php`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store"
+    });
+    const data = await response.json();
+    const fullName = String(data?.user?.full_name || "").trim();
+    if (response.ok && data.logged_in && fullName) {
+      profileName.textContent = fullName;
+      profileName.title = fullName;
+    }
+  } catch (error) {
+    console.error("Load cashier profile error:", error);
+  }
+}
+
+function renderCashierNotifications() {
+  const list = document.getElementById("notificationsList");
+  if (!list) return;
+
+  const markAllBtn =
+    document.getElementById("markAllNotificationsReadBtn");
+
+  const hasUnread = cashierNotifications.some(
+    (notif) => Number(notif.is_read || 0) !== 1
+  );
+
+  if (markAllBtn) {
+    markAllBtn.disabled = !hasUnread;
+  }
+
+  const filtered = cashierNotifications.filter((notif) => {
+    const isRead = Number(notif.is_read) === 1;
+    if (currentNotificationFilter === "unread") return !isRead;
+    if (currentNotificationFilter === "read") return isRead;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    const message = currentNotificationFilter === "unread"
+      ? "You're all caught up. No unread notifications."
+      : currentNotificationFilter === "read"
+        ? "No read notifications yet."
+        : "No notifications yet.";
+    list.innerHTML = `<div class="notification-empty-state"><i class="fa-regular fa-bell"></i><strong>${escapeHTML(message)}</strong></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((notif) => {
+    const logId = Number(notif.log_id);
+    const isRead = Number(notif.is_read) === 1;
+    const title = notif.action_title || "Notification";
+    let message = String(notif.action_description || "");
+    // Keep internal database order IDs out of the cashier-facing notification.
+    message = message.replace(/\s*Order\s*#\d+\s*\/\s*/i, " ");
+    const time = formatDateTime(notif.created_at);
+    const icon = title.toLowerCase().includes("cancel") ? "fa-circle-xmark" : "fa-bell";
+
+    return `
+      <article class="notification-item ${isRead ? "is-read" : "is-unread"}" data-log-id="${logId}">
+        <div class="notification-icon"><i class="fa-solid ${icon}"></i></div>
+        <div class="notification-content">
+          <div class="notification-title-row">
+            <h4>${escapeHTML(title)}</h4>
+            ${!isRead ? '<span class="notification-new-dot">New</span>' : ''}
+          </div>
+          <p>${escapeHTML(message)}</p>
+          <div class="notification-meta">
+            <small>${escapeHTML(time)}</small>
+            ${isRead ? '<span class="notification-read-label">Read</span>' : `<button type="button" class="mark-read-btn" onclick="markCashierNotificationRead(${logId})">Mark as Read</button>`}
+          </div>
+        </div>
+      </article>`;
+  }).join("");
+}
+
 async function loadCashierNotifications() {
   const list = document.getElementById("notificationsList");
   const badge = document.getElementById("cashierNotificationBadge");
@@ -3494,13 +3632,14 @@ async function loadCashierNotifications() {
       !Array.isArray(data.notifications)
     ) {
       throw new Error(
-        data.message || "Failed to load notifications."
+        data.message || "Unable to load notifications right now. Please try again."
       );
     }
 
   if (
   data.notifications.length === 0
 ) {
+  cashierNotifications = [];
   list.innerHTML = `
     <p class="empty-message">
       No notifications yet.
@@ -3599,66 +3738,93 @@ cashierNotificationsFirstLoadDone =
         unreadCount > 0 ? "inline-flex" : "none";
     }
 
-    list.innerHTML = data.notifications
-      .map((notif) => {
-        const logId = Number(notif.log_id);
-        const isRead = Number(notif.is_read) === 1;
-
-        const title =
-          notif.action_title || "Notification";
-
-        const message =
-          notif.action_description || "";
-
-        const time =
-          formatDateTime(notif.created_at);
-
-        const icon = title
-          .toLowerCase()
-          .includes("cancel")
-            ? "fa-circle-xmark"
-            : "fa-bell";
-
-        return `
-          <div
-            class="notification-item ${isRead ? "is-read" : "is-unread"}"
-            data-log-id="${logId}"
-          >
-            <i class="fa-solid ${icon}"></i>
-
-            <div class="notification-content">
-              <h4>${escapeHTML(title)}</h4>
-              <p>${escapeHTML(message)}</p>
-              <small>${escapeHTML(time)}</small>
-
-              ${
-                isRead
-                  ? `
-                    <span class="notification-read-label">
-                      Read
-                    </span>
-                  `
-                  : `
-                    <button
-                      type="button"
-                      class="mark-read-btn"
-                      onclick="markCashierNotificationRead(${logId})"
-                    >
-                      Mark as Read
-                    </button>
-                  `
-              }
-            </div>
-          </div>
-        `;
-      })
-      .join("");
+    cashierNotifications = data.notifications;
+    renderCashierNotifications();
 
   } catch (error) {
     console.error(
       "Load cashier notifications error:",
       error
     );
+  }
+}
+
+async function markAllCashierNotificationsRead() {
+  const button =
+    document.getElementById("markAllNotificationsReadBtn");
+
+  if (!cashierNotifications.some(
+    (notif) => Number(notif.is_read || 0) !== 1
+  )) {
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin"></i> Marking...';
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/mark_all_notifications_read.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to mark all notifications as read. Please try again."
+      );
+    }
+
+    cashierNotifications = cashierNotifications.map(
+      (notif) => ({ ...notif, is_read: 1 })
+    );
+
+    const badge =
+      document.getElementById("cashierNotificationBadge");
+
+    if (badge) {
+      badge.textContent = "0";
+      badge.style.display = "none";
+    }
+
+    renderCashierNotifications();
+
+    showToast(
+      "Notifications Updated",
+      "All notifications have been marked as read."
+    );
+
+  } catch (error) {
+    console.error(
+      "Mark all cashier notifications read error:",
+      error
+    );
+
+    showToast(
+      "Update Failed",
+      error.message ||
+      "Unable to mark all notifications as read."
+    );
+  } finally {
+    if (button) {
+      button.innerHTML =
+        '<i class="fa-solid fa-check-double"></i> Mark all as read';
+
+      button.disabled = !cashierNotifications.some(
+        (notif) => Number(notif.is_read || 0) !== 1
+      );
+    }
   }
 }
 
@@ -3693,7 +3859,7 @@ async function markCashierNotificationRead(logId) {
     if (!response.ok || !data.success) {
       throw new Error(
         data.message ||
-        "Failed to mark notification as read."
+        "Unable to mark this notification as read. Please try again."
       );
     }
 
@@ -3782,14 +3948,39 @@ function buildCustomerReceiptContent(order) {
     ? Number(order?.delivery_fee || 0)
     : 0;
 
+  /*
+   * FoodConnect receipts treat menu prices / order totals as
+   * VAT-inclusive. VAT is therefore a BREAKDOWN of the amount
+   * already paid, not an extra 12% charge.
+   *
+   * VATable Sales = Gross VAT-inclusive Amount / 1.12
+   * VAT (12%)     = Gross VAT-inclusive Amount - VATable Sales
+   */
+  const receiptTotal = Math.max(
+    0,
+    Number(
+      order?.total_amount ??
+      (itemsSubtotal + deliveryFee)
+    ) || 0
+  );
+
+  const vatableSales =
+    receiptTotal / 1.12;
+
+  const vatAmount =
+    receiptTotal - vatableSales;
+
+  const vatExemptSales = 0;
+  const zeroRatedSales = 0;
+
   const itemBlocks = items.map(item => {
     const quantity = Number(item.quantity || 0);
     const price = Number(item.price || 0);
     const lineTotal = quantity * price;
 
     const optionLines = [
-      item.base_text
-        ? `<div>Variant: ${escapeHTML(item.base_text)}</div>`
+      item.variant_text
+        ? `<div>Variant: ${escapeHTML(item.variant_text)}</div>`
         : "",
       item.combo_choice_text
         ? `<div>Drink: ${escapeHTML(item.combo_choice_text)}</div>`
@@ -3855,11 +4046,6 @@ function buildCustomerReceiptContent(order) {
 
       <div class="receipt-meta">
         <div class="receipt-meta-row">
-          <span>Order ID</span>
-          <strong>#${escapeHTML(order?.order_id || "N/A")}</strong>
-        </div>
-
-        <div class="receipt-meta-row">
           <span>Customer</span>
           <strong>${escapeHTML(order?.customer_name || "N/A")}</strong>
         </div>
@@ -3911,7 +4097,35 @@ function buildCustomerReceiptContent(order) {
 
         <div class="receipt-grand-total">
           <span>TOTAL</span>
-          <strong>₱${formatMoney(order?.total_amount)}</strong>
+          <strong>₱${formatMoney(receiptTotal)}</strong>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="receipt-vat-breakdown">
+        <div class="receipt-vat-title">
+          VAT BREAKDOWN
+        </div>
+
+        <div class="receipt-total-row">
+          <span>VATable Sales</span>
+          <strong>₱${formatMoney(vatableSales)}</strong>
+        </div>
+
+        <div class="receipt-total-row">
+          <span>VAT (12%)</span>
+          <strong>₱${formatMoney(vatAmount)}</strong>
+        </div>
+
+        <div class="receipt-total-row">
+          <span>VAT-Exempt Sales</span>
+          <strong>₱${formatMoney(vatExemptSales)}</strong>
+        </div>
+
+        <div class="receipt-total-row">
+          <span>Zero-Rated Sales</span>
+          <strong>₱${formatMoney(zeroRatedSales)}</strong>
         </div>
       </div>
 
@@ -4169,21 +4383,45 @@ function formatMoney(value) {
 }
 
 function formatDateTime(dateValue) {
-  if (!dateValue) return "N/A";
-
-  const date = new Date(dateValue);
-
-  if (isNaN(date.getTime())) {
-    return dateValue;
+  if (!dateValue) {
+    return "N/A";
   }
 
-  return date.toLocaleString("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  const rawValue =
+    String(dateValue).trim();
+
+  /*
+   * Cloud MySQL DATETIME values normally arrive without a timezone.
+   * Treat timezone-less values as UTC, then display them explicitly
+   * in Philippine Standard Time (Asia/Manila, UTC+8).
+   */
+  const mysqlDateTimePattern =
+    /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
+
+  const normalizedValue =
+    mysqlDateTimePattern.test(rawValue)
+      ? `${rawValue.replace(" ", "T")}Z`
+      : rawValue;
+
+  const date =
+    new Date(normalizedValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return rawValue;
+  }
+
+  return date.toLocaleString(
+    "en-PH",
+    {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    }
+  );
 }
 
 function getStatusDisplayLabel(
@@ -4346,7 +4584,7 @@ function buildKitchenTicketContent(order) {
 
   const itemBlocks = items.map(item => {
     const quantity = Number(item.quantity || 0);
-    const baseText = String(item.base_text || "").trim();
+    const baseText = String(item.variant_text || "").trim();
     const comboChoiceText = String(
       item.combo_choice_text || ""
     ).trim();
@@ -4419,20 +4657,7 @@ function buildKitchenTicketContent(order) {
           `
           : ""
       }
-
-      ${
-        normalizedOrderType === "take-out" ||
-        normalizedOrderType === "takeout"
-          ? `
-            <p>
-              <strong>Pickup:</strong>
-              ${escapeHTML(order?.pickup_time || "N/A")}
-            </p>
-          `
-          : ""
-      }
-
-      <p>
+<p>
         <strong>Time:</strong>
         ${escapeHTML(formatDateTime(order?.created_at))}
       </p>
@@ -4770,10 +4995,12 @@ function buildPrintDocumentMarkup(title, content) {
         }
 
         .customer-queue-number {
-          margin: 1.5mm 0 1mm;
-          font-size: 36px;
-          line-height: 1;
+          margin: 1.8mm 0 1.2mm;
+          font-size: 46px;
+          line-height: 0.95;
           font-weight: 900;
+          letter-spacing: -1px;
+          white-space: nowrap;
         }
 
         .customer-queue-help {
@@ -4870,6 +5097,26 @@ function buildPrintDocumentMarkup(title, content) {
           flex-direction: column;
           gap: 1mm;
           page-break-inside: avoid;
+        }
+
+        .receipt-vat-breakdown {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8mm;
+          page-break-inside: avoid;
+        }
+
+        .receipt-vat-title {
+          margin-bottom: 0.5mm;
+          text-align: center;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.35px;
+        }
+
+        .receipt-vat-breakdown .receipt-total-row span,
+        .receipt-vat-breakdown .receipt-total-row strong {
+          font-size: 9.5px;
         }
 
         .delivery-fee-row {

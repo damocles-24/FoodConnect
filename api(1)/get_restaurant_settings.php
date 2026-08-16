@@ -25,7 +25,7 @@ if (!isset($_SESSION["user_id"])) {
     http_response_code(401);
     echo json_encode([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ]);
     exit;
 }
@@ -37,7 +37,7 @@ $restaurant_id = isset($_SESSION["restaurant_id"])
 if ($restaurant_id <= 0) {
     echo json_encode([
         "success" => false,
-        "message" => "Invalid restaurant session."
+        "message" => "Your restaurant session has expired. Please log in again."
     ]);
     exit;
 }
@@ -218,7 +218,7 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         "success" => false,
-        "message" => "Failed to load restaurant settings.",
+        "message" => "Unable to load restaurant settings right now. Please try again.",
         "error" => $e->getMessage()
     ]);
 }

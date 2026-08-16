@@ -19,6 +19,7 @@ ini_set(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -115,6 +116,20 @@ if ($qrValue === "") {
     ], 400);
 }
 
+rate_limit_enforce(
+    $conn,
+    "cashier-qr-scan",
+    rate_limit_identifier(
+        (string)$userId,
+        (string)$restaurantId,
+        rate_limit_client_ip()
+    ),
+    30,
+    60,
+    60,
+    "Too many QR verification attempts. Please wait one minute and try again."
+);
+
 /* =========================================================
    QR FORMAT VALIDATION
 ========================================================= */
@@ -177,6 +192,8 @@ $stmt = $conn->prepare("
     restaurant_id,
     order_type,
     order_status,
+    payment_method,
+    payment_status,
     qr_verified_at,
     qr_expires_at
 FROM tbl_orders
@@ -438,6 +455,127 @@ WHERE order_id = ?
 }
 
 /* =========================================================
+   CASH PAYMENT CONFIRMATION
+   Dine-In / Takeout only.
+
+   Successful cashier QR verification is FoodConnect's
+   confirmation that counter cash payment was received.
+   Delivery cash remains Cash on Delivery and is untouched.
+========================================================= */
+
+$normalizedPaymentMethod =
+    strtolower(
+        trim(
+            (string)(
+                $order["payment_method"] ?? ""
+            )
+        )
+    );
+
+$normalizedPaymentStatus =
+    strtolower(
+        trim(
+            (string)(
+                $order["payment_status"] ?? ""
+            )
+        )
+    );
+
+$isCounterCashOrder =
+    in_array(
+        $orderType,
+        [
+            "dine-in",
+            "takeout"
+        ],
+        true
+    ) &&
+    $normalizedPaymentMethod === "cash";
+
+if (
+    $isCounterCashOrder &&
+    $normalizedPaymentStatus !== "paid"
+) {
+    $cashPaidStmt =
+        $conn->prepare("
+            UPDATE tbl_orders
+            SET payment_status = 'paid'
+            WHERE order_id = ?
+              AND restaurant_id = ?
+              AND LOWER(TRIM(payment_method)) = 'cash'
+              AND LOWER(TRIM(COALESCE(payment_status, 'pending'))) <> 'paid'
+        ");
+
+    if (!$cashPaidStmt) {
+        error_log(
+            "FoodConnect cash payment confirmation prepare error: " .
+            $conn->error
+        );
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The QR was verified, but the cash payment could not be confirmed."
+        ], 500);
+    }
+
+    $orderId =
+        (int)$order["order_id"];
+
+    $cashPaidStmt->bind_param(
+        "ii",
+        $orderId,
+        $restaurantId
+    );
+
+    if (!$cashPaidStmt->execute()) {
+        error_log(
+            "FoodConnect cash payment confirmation execute error: " .
+            $cashPaidStmt->error
+        );
+
+        $cashPaidStmt->close();
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The QR was verified, but the cash payment could not be confirmed."
+        ], 500);
+    }
+
+    $cashPaidStmt->close();
+
+    $order["payment_status"] =
+        "paid";
+}
+
+/* =========================================================
+   PAYMENT GATING STATE
+========================================================= */
+
+$paymentMethod =
+    strtolower(
+        trim(
+            (string)(
+                $order["payment_method"] ?? ""
+            )
+        )
+    );
+
+$paymentStatus =
+    strtolower(
+        trim(
+            (string)(
+                $order["payment_status"] ?? ""
+            )
+        )
+    );
+
+$waitingForPayment =
+    $paymentMethod === "paymongo qr ph" &&
+    $paymentStatus !== "paid";
+
+/* =========================================================
    SUCCESS
 ========================================================= */
 
@@ -445,9 +583,25 @@ respond_json([
     "success" => true,
 
     "message" =>
-        $alreadyVerified
-            ? "This order QR was already verified."
-            : "Order QR verified successfully.",
+        $waitingForPayment
+            ? "Order QR verified. Waiting for customer payment."
+            : (
+                $isCounterCashOrder
+                    ? "Order QR verified. Cash payment confirmed."
+                    : (
+                        $alreadyVerified
+                            ? "This order QR was already verified."
+                            : "Order QR verified successfully."
+                    )
+            ),
+
+    "waiting_for_payment" =>
+        $waitingForPayment,
+
+    "payment_status" =>
+        $paymentStatus !== ""
+            ? $paymentStatus
+            : "pending",
 
     "already_verified" =>
         $alreadyVerified,
@@ -466,6 +620,14 @@ respond_json([
 
         "order_status" =>
             $orderStatus,
+
+        "payment_status" =>
+            $paymentStatus !== ""
+                ? $paymentStatus
+                : "pending",
+
+        "waiting_for_payment" =>
+            $waitingForPayment,
 
             "qr_expires_at" =>
     $order["qr_expires_at"] ?? null,

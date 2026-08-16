@@ -94,7 +94,7 @@ try {
             cart_id,
             restaurant_id,
             product_id,
-            addon_ids,
+            addon_ids_json AS addon_ids,
             quantity
         FROM tbl_cart
         WHERE cart_id = ?

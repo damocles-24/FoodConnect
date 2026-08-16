@@ -820,7 +820,7 @@ function buildDeliveryCard(delivery) {
     delivery.customer_name || "Unknown Customer";
 
   const contactNumber =
-    delivery.contact_number || "No contact number";
+    window.FoodConnectPhone.format(delivery.contact_number, "No contact number");
 
   const fullAddress = buildFullAddress(delivery);
 
@@ -1085,7 +1085,7 @@ const hasDeliveryCoordinates =
               quantity * itemPrice;
 
             const variantText = String(
-              item.base_text || ""
+              item.variant_text || ""
             ).trim();
 
             const comboChoiceText = String(
@@ -2618,11 +2618,7 @@ function buildFullAddress(delivery) {
 }
 
 function sanitizePhoneNumber(value) {
-  const rawValue = String(value || "").trim();
-
-  if (!rawValue) return "";
-
-  return rawValue.replace(/[^\d+]/g, "");
+  return window.FoodConnectPhone.tel(value);
 }
 
 function formatMoney(value) {

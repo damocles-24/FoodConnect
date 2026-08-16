@@ -3863,3 +3863,36 @@ body.restaurants-page-active .footer-links {
     transform: scale(1);
   }
 }
+
+/* =========================================================
+   STAFF / OWNER PORTAL GLOBAL STATUS MESSAGE
+========================================================= */
+.portal-status-message {
+  width: 100%;
+  margin: 14px 0 4px;
+}
+
+.portal-status-message.error {
+  display: block;
+  color: #ffb4b7;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.portal-status-message.success {
+  display: block;
+  color: #9be7b0;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.portal-status-message.info {
+  display: block;
+  color: #c7d7ff;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.30);
+}
+
+.portal-status-message:empty {
+  display: none;
+}

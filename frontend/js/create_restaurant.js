@@ -968,7 +968,7 @@ renderRestaurantLogo(
         application.cuisine || "";
 
     restaurantContactInput.value =
-        application.restaurant_contact || "";
+        window.FoodConnectPhone.toLocalDigits(application.restaurant_contact);
 
     businessEmailInput.value =
         application.business_email || "";
@@ -1660,6 +1660,19 @@ function validateRestaurantDetailsStep(
             showErrors
         ) && valid;
 
+    if (
+        restaurantContactInput.value.trim() !== "" &&
+        !window.FoodConnectPhone.isValid(restaurantContactInput.value)
+    ) {
+        if (showErrors) {
+            setFieldError(
+                restaurantContactInput,
+                "Enter a valid Philippine mobile number after +63, starting with 9."
+            );
+        }
+        valid = false;
+    }
+
     valid =
         validateRequiredField(
             businessEmailInput,
@@ -2157,7 +2170,7 @@ async function saveApplication(
 
             throw new Error(
                 result.message ||
-                "Unable to save the restaurant application."
+                "Changes could not be saved the restaurant application."
             );
         }
 
@@ -2207,7 +2220,7 @@ async function saveApplication(
         );
 
         showToast(
-            "Unable to save",
+            "Changes could not be saved",
             error.message,
             "error"
         );
@@ -2557,8 +2570,9 @@ function renderReviewSummary() {
         );
 
     reviewRestaurantContact.textContent =
-        valueOrDash(
-            restaurantContactInput.value
+        window.FoodConnectPhone.format(
+            restaurantContactInput.value,
+            "—"
         );
 
     reviewBusinessEmail.textContent =
@@ -2678,7 +2692,7 @@ function collectFormData(action) {
             cuisineInput.value.trim(),
 
         restaurant_contact:
-            restaurantContactInput.value.trim(),
+            window.FoodConnectPhone.normalize(restaurantContactInput.value),
 
         business_email:
             businessEmailInput.value.trim(),
@@ -3331,7 +3345,7 @@ async function parseJsonResponse(
         );
 
         throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
         );
     }
 }

@@ -49,7 +49,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Database connection is unavailable.",
+            "Service is temporarily unavailable. Please try again shortly.",
         "notifications" => [],
         "unread_count" => 0
     ], 500);
@@ -68,7 +68,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access.",
+            "Your session has expired or you do not have access. Please log in again.",
         "notifications" => [],
         "unread_count" => 0
     ], 401);

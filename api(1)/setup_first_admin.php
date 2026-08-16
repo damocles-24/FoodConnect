@@ -8,6 +8,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", "0");
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 /* =========================================================
    JSON RESPONSE HELPER
@@ -180,7 +181,7 @@ if ($requestMethod !== "POST") {
     respond_json([
         "success" => false,
         "message" =>
-            "Method not allowed."
+            "This action is not available."
     ], 405);
 }
 
@@ -231,6 +232,9 @@ $contactNumber = trim(
         ?? ""
     )
 );
+
+$contactNumberRaw = $contactNumber;
+$contactNumber = normalize_ph_mobile($contactNumberRaw);
 
 $password =
     (string) (
@@ -299,13 +303,16 @@ if (strlen($email) > 150) {
     ], 422);
 }
 
-if (strlen($contactNumber) > 20) {
+if ($contactNumber === "") {
     respond_json([
         "success" => false,
         "message" =>
-            "Administrator contact number is too long."
+            "Enter a valid Philippine mobile number starting with 9."
     ], 422);
 }
+
+
+
 
 if (
     !preg_match(

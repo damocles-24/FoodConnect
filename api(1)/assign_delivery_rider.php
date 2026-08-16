@@ -17,14 +17,14 @@ function respond_json(array $data, int $statusCode = 200): void
 if (!isset($_SESSION["user_id"], $_SESSION["restaurant_id"])) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
-$assigned_by = (int) $_SESSION["user_id"];
+$assigned_by_user_id = (int) $_SESSION["user_id"];
 $restaurant_id = (int) $_SESSION["restaurant_id"];
 
-if ($assigned_by <= 0 || $restaurant_id <= 0) {
+if ($assigned_by_user_id <= 0 || $restaurant_id <= 0) {
     respond_json([
         "success" => false,
         "message" => "Invalid user or restaurant session."
@@ -44,26 +44,26 @@ $order_id = isset($data["order_id"])
     ? (int) $data["order_id"]
     : 0;
 
-$rider_id = isset($data["rider_id"])
-    ? (int) $data["rider_id"]
+$delivery_staff_id = isset($data["delivery_staff_id"])
+    ? (int) $data["delivery_staff_id"]
     : 0;
 
 $delivery_fee = isset($data["delivery_fee"])
     ? (float) $data["delivery_fee"]
     : 0.00;
 
-$rider_payment = isset($data["rider_payment"])
-    ? (float) $data["rider_payment"]
+$delivery_staff_payment = isset($data["delivery_staff_payment"])
+    ? (float) $data["delivery_staff_payment"]
     : 0.00;
 
-if ($order_id <= 0 || $rider_id <= 0) {
+if ($order_id <= 0 || $delivery_staff_id <= 0) {
     respond_json([
         "success" => false,
         "message" => "Order ID and rider ID are required."
     ], 400);
 }
 
-if ($delivery_fee < 0 || $rider_payment < 0) {
+if ($delivery_fee < 0 || $delivery_staff_payment < 0) {
     respond_json([
         "success" => false,
         "message" => "Delivery fee and rider payment cannot be negative."
@@ -195,7 +195,7 @@ try {
 
     $riderStmt->bind_param(
         "ii",
-        $rider_id,
+        $delivery_staff_id,
         $restaurant_id
     );
 
@@ -221,7 +221,7 @@ try {
     $availabilitySql = "
         SELECT assignment_id
         FROM tbl_delivery_assignments
-        WHERE rider_id = ?
+        WHERE delivery_staff_id = ?
           AND restaurant_id = ?
           AND delivery_status NOT IN (
               'completed',
@@ -241,7 +241,7 @@ try {
 
     $availabilityStmt->bind_param(
         "ii",
-        $rider_id,
+        $delivery_staff_id,
         $restaurant_id
     );
 
@@ -268,12 +268,12 @@ try {
     INSERT INTO tbl_delivery_assignments (
         order_id,
         restaurant_id,
-        rider_id,
-        assigned_by,
+        delivery_staff_id,
+        assigned_by_user_id,
         assignment_type,
         delivery_status,
         delivery_fee,
-        rider_payment,
+        delivery_staff_payment,
         assigned_at,
         accepted_at
     )
@@ -303,10 +303,10 @@ try {
         "iiiidd",
         $order_id,
         $restaurant_id,
-        $rider_id,
-        $assigned_by,
+        $delivery_staff_id,
+        $assigned_by_user_id,
         $delivery_fee,
-        $rider_payment
+        $delivery_staff_payment
     );
 
     $insertStmt->execute();
@@ -404,7 +404,7 @@ if (!$logStmt) {
 $logStmt->bind_param(
     "iisss",
     $restaurant_id,
-    $assigned_by,
+    $assigned_by_user_id,
     $action_type,
     $action_title,
     $action_description
@@ -431,12 +431,12 @@ $logStmt->close();
         "assignment" => [
             "assignment_id" => $assignment_id,
             "order_id" => $order_id,
-            "rider_id" => $rider_id,
+            "delivery_staff_id" => $delivery_staff_id,
             "rider_name" => $rider["full_name"],
             "assignment_type" => "internal",
             "delivery_status" => "accepted",
             "delivery_fee" => $delivery_fee,
-            "rider_payment" => $rider_payment
+            "delivery_staff_payment" => $delivery_staff_payment
         ]
     ]);
 

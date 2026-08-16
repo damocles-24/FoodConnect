@@ -51,7 +51,7 @@ function normalize_combo_choice_text($value): string
 if (!isset($conn) || !($conn instanceof mysqli)) {
     respond_json([
         "success" => false,
-        "message" => "Database connection is unavailable."
+        "message" => "Service is temporarily unavailable. Please try again shortly."
     ], 500);
 }
 
@@ -60,7 +60,7 @@ if (empty($_SESSION["user_id"]) || empty($_SESSION["restaurant_id"])) {
 
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -297,7 +297,6 @@ try {
             o.address,
             o.landmark,
             o.table_number,
-            o.pickup_time,
             o.notes,
             o.created_at,
 
@@ -307,7 +306,7 @@ try {
             oi.quantity,
             oi.price,
             oi.product_name,
-            oi.base_text,
+            oi.variant_text,
             oi.addon_text,
             oi.combo_choice_text
 
@@ -364,7 +363,6 @@ try {
                 "address" => trim((string)($row["address"] ?? "")),
                 "landmark" => trim((string)($row["landmark"] ?? "")),
                 "table_number" => trim((string)($row["table_number"] ?? "")),
-                "pickup_time" => trim((string)($row["pickup_time"] ?? "")),
                 "notes" => trim((string)($row["notes"] ?? "")),
                 "created_at" => $row["created_at"],
                 "items" => []
@@ -383,7 +381,7 @@ try {
                 "quantity" => (int)($row["quantity"] ?? 0),
                 "price" => round((float)($row["price"] ?? 0), 2),
                 "product_name" => trim((string)($row["product_name"] ?? "")),
-                "base_text" => trim((string)($row["base_text"] ?? "")),
+                "variant_text" => trim((string)($row["variant_text"] ?? "")),
                 "addon_text" => normalize_addon_text($row["addon_text"] ?? ""),
                 "combo_choice_text" => normalize_combo_choice_text($row["combo_choice_text"] ?? "")
             ];

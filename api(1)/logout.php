@@ -31,16 +31,52 @@ if (ini_get("session.use_cookies")) {
     $params =
         session_get_cookie_params();
 
+    $sessionCookieName =
+        session_name();
+
+    /*
+     * Clear the current FoodConnect session cookie using the
+     * configured path.
+     */
     setcookie(
-        session_name(),
+        $sessionCookieName,
         "",
         [
             "expires" => time() - 3600,
-            "path" => $params["path"] ?? "/FoodConnect",
-            "domain" => $params["domain"] ?? "",
-            "secure" => $params["secure"] ?? false,
-            "httponly" => $params["httponly"] ?? true,
-            "samesite" => $params["samesite"] ?? "Lax"
+            "path" =>
+                $params["path"] ??
+                "/FoodConnect",
+            "domain" =>
+                $params["domain"] ?? "",
+            "secure" =>
+                $params["secure"] ?? false,
+            "httponly" =>
+                $params["httponly"] ?? true,
+            "samesite" =>
+                $params["samesite"] ?? "Lax"
+        ]
+    );
+
+    /*
+     * Older/local FoodConnect sessions may have been created
+     * with path "/". Clearing both paths prevents an old session
+     * cookie from making the homepage think the owner is still
+     * logged in after Logout.
+     */
+    setcookie(
+        $sessionCookieName,
+        "",
+        [
+            "expires" => time() - 3600,
+            "path" => "/",
+            "domain" =>
+                $params["domain"] ?? "",
+            "secure" =>
+                $params["secure"] ?? false,
+            "httponly" =>
+                $params["httponly"] ?? true,
+            "samesite" =>
+                $params["samesite"] ?? "Lax"
         ]
     );
 }
@@ -59,6 +95,16 @@ setcookie(
         "samesite" => "Lax"
     ]
 );
+
+/*
+ * IMPORTANT:
+ * Do NOT clear FOODCONNECT_OWNER_TRUST here.
+ *
+ * Logout ends the active session, but "Trust this device for
+ * 30 days" remains valid. On the next intentional owner login,
+ * email + password are still required; a valid trusted device
+ * may then skip the emailed verification code.
+ */
 
 header(
     "Location: /FoodConnect/frontend/html/index.html"

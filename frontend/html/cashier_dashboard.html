@@ -18,6 +18,7 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   />
+  <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 </head>
 
 <body>
@@ -97,7 +98,7 @@
 
   <div class="cashier-profile">
     <i class="fa-solid fa-user"></i>
-    <span>Cashier</span>
+    <span id="cashierProfileName">Cashier</span>
   </div>
 </div>
       </header>
@@ -273,10 +274,22 @@
       <!-- NOTIFICATIONS SECTION -->
       <section class="content-section" id="notificationsSection">
         <div class="section-card">
-          <div class="section-header">
+          <div class="section-header notification-section-header">
             <div>
               <h2>Order Notifications</h2>
-              <p>New order alerts will appear here</p>
+              <p>Stay updated on new orders, cancellations, and stock alerts.</p>
+            </div>
+            <div class="notification-header-actions">
+              <div class="notification-filters" aria-label="Notification filters">
+                <button type="button" class="notification-filter-btn active" data-notification-filter="all">All</button>
+                <button type="button" class="notification-filter-btn" data-notification-filter="unread">Unread</button>
+                <button type="button" class="notification-filter-btn" data-notification-filter="read">Read</button>
+              </div>
+
+              <button type="button" class="mark-all-read-btn" id="markAllNotificationsReadBtn">
+                <i class="fa-solid fa-check-double"></i>
+                Mark all as read
+              </button>
             </div>
           </div>
 
@@ -1040,6 +1053,7 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="../js/libraries/html5-qrcode.min.js"></script>
+<script src="../js/ph-phone.js?v=20260816"></script>
 <script src="../js/cashier_dashboard.js"></script>
 
 </body>

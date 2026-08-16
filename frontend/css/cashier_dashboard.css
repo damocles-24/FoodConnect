@@ -3128,3 +3128,83 @@ button {
     transform: scale(1);
   }
 }
+
+/* =========================================
+   CASHIER PROFILE + NOTIFICATION UX
+========================================= */
+.cashier-profile { max-width: 220px; }
+.cashier-profile span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--text-primary); }
+.notification-section-header { gap: 18px; flex-wrap: wrap; }
+.notification-filters { display: flex; gap: 7px; margin-left: auto; flex-wrap: wrap; }
+.notification-filter-btn { border: 1px solid var(--border-color); background: var(--card-color); color: var(--text-secondary); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 12px; cursor: pointer; }
+.notification-filter-btn:hover, .notification-filter-btn.active { border-color: var(--gold); background: rgba(214,168,0,.13); color: var(--gold); }
+.notifications-list { display: grid; gap: 10px; padding: 18px 24px 24px; }
+.notification-item { margin: 0; padding: 14px 16px; gap: 12px; align-items: flex-start; }
+.notification-icon { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px; display: grid; place-items: center; background: rgba(214,168,0,.12); }
+.notification-icon i { margin: 0; }
+.notification-content { min-width: 0; flex: 1; }
+.notification-title-row, .notification-meta { display: flex; align-items: center; gap: 10px; }
+.notification-title-row { justify-content: space-between; }
+.notification-item h4 { font-size: 14px; font-weight: 700; }
+.notification-item p { font-size: 13px; line-height: 1.5; margin-top: 4px; }
+.notification-meta { margin-top: 9px; justify-content: space-between; flex-wrap: wrap; }
+.notification-item small, .notification-read-label, .mark-read-btn { margin-top: 0; }
+.notification-new-dot { padding: 3px 7px; border-radius: 999px; background: var(--gold); color: #111; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.mark-read-btn { padding: 6px 10px; font-size: 11px; }
+.notification-item.is-read { opacity: .62; border-left-width: 1px; }
+.notification-empty-state { min-height: 150px; display: grid; place-items: center; align-content: center; gap: 10px; color: var(--text-secondary); text-align: center; }
+.notification-empty-state i { color: var(--gold); font-size: 24px; }
+@media (max-width: 640px) {
+  .notification-filters { width: 100%; margin-left: 0; }
+  .notification-filter-btn { flex: 1; }
+  .notifications-list { padding: 14px; }
+  .cashier-profile { max-width: 150px; padding: 0 11px; }
+}
+
+
+/* MARK ALL NOTIFICATIONS AS READ */
+.notification-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.notification-header-actions .notification-filters { margin-left: 0; }
+.mark-all-read-btn {
+  min-height: 34px;
+  border: 1px solid var(--border-color);
+  background: var(--card-color);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.mark-all-read-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-1px);
+}
+.mark-all-read-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+@media (max-width: 720px) {
+  .notification-header-actions {
+    width: 100%;
+    margin-left: 0;
+    align-items: stretch;
+  }
+  .notification-header-actions .notification-filters { width: 100%; }
+  .mark-all-read-btn { width: 100%; }
+}

@@ -154,7 +154,7 @@ async function readJsonResponse(response) {
         );
 
         throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
         );
     }
 }
@@ -463,12 +463,12 @@ if (
             full_name: fullName,
             email,
             contact_number:
-            `+63${contactNumber}`,
+            window.FoodConnectPhone.normalize(contactNumber),
             password,
             restaurant_name: restaurantName,
             restaurant_address: restaurantAddress,
             restaurant_contact:
-            `+63${restaurantContact}`,
+            window.FoodConnectPhone.normalize(restaurantContact),
             cuisine
         };
 

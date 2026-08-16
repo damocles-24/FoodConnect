@@ -23,15 +23,15 @@ function respond_json(array $data, int $statusCode = 200): void
 if (!isset($_SESSION["user_id"], $_SESSION["restaurant_id"])) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access.",
+        "message" => "Your session has expired or you do not have access. Please log in again.",
         "deliveries" => []
     ], 401);
 }
 
-$rider_id = (int) $_SESSION["user_id"];
+$delivery_staff_id = (int) $_SESSION["user_id"];
 $restaurant_id = (int) $_SESSION["restaurant_id"];
 
-if ($rider_id <= 0 || $restaurant_id <= 0) {
+if ($delivery_staff_id <= 0 || $restaurant_id <= 0) {
     respond_json([
         "success" => false,
         "message" => "Invalid delivery staff session.",
@@ -67,7 +67,7 @@ if (!$userStmt) {
     ], 500);
 }
 
-$userStmt->bind_param("ii", $rider_id, $restaurant_id);
+$userStmt->bind_param("ii", $delivery_staff_id, $restaurant_id);
 $userStmt->execute();
 
 $userResult = $userStmt->get_result();
@@ -100,12 +100,12 @@ $sql = "
         da.assignment_id,
         da.order_id,
         da.restaurant_id,
-        da.rider_id,
-        da.assigned_by,
+        da.delivery_staff_id,
+        da.assigned_by_user_id,
         da.assignment_type,
         da.delivery_status,
         da.delivery_fee AS assignment_delivery_fee,
-        da.rider_payment,
+        da.delivery_staff_payment,
         da.assigned_at,
         da.accepted_at,
         da.picked_up_at,
@@ -135,7 +135,7 @@ $sql = "
         oi.quantity,
         oi.price,
         oi.product_name,
-        oi.base_text,
+        oi.variant_text,
         oi.addon_text,
         oi.combo_choice_text
 
@@ -148,7 +148,7 @@ $sql = "
     LEFT JOIN tbl_order_items oi
         ON oi.order_id = o.order_id
 
-    WHERE da.rider_id = ?
+    WHERE da.delivery_staff_id = ?
       AND da.restaurant_id = ?
 
     ORDER BY
@@ -177,7 +177,7 @@ if (!$stmt) {
     ], 500);
 }
 
-$stmt->bind_param("ii", $rider_id, $restaurant_id);
+$stmt->bind_param("ii", $delivery_staff_id, $restaurant_id);
 $stmt->execute();
 
 $result = $stmt->get_result();
@@ -192,8 +192,8 @@ while ($row = $result->fetch_assoc()) {
             "assignment_id" => $assignment_id,
             "order_id" => (int) $row["order_id"],
             "restaurant_id" => (int) $row["restaurant_id"],
-            "rider_id" => (int) $row["rider_id"],
-            "assigned_by" => (int) $row["assigned_by"],
+            "delivery_staff_id" => (int) $row["delivery_staff_id"],
+            "assigned_by_user_id" => (int) $row["assigned_by_user_id"],
 
             "assignment_type" => $row["assignment_type"],
             "delivery_status" => $row["delivery_status"],
@@ -215,9 +215,9 @@ while ($row = $result->fetch_assoc()) {
         $row["assignment_delivery_fee"] ?? 0
     ),
 
-"rider_payment" =>
+"delivery_staff_payment" =>
     (float)(
-        $row["rider_payment"] ?? 0
+        $row["delivery_staff_payment"] ?? 0
     ),
 
             "assigned_at" => $row["assigned_at"],
@@ -298,8 +298,8 @@ while ($row = $result->fetch_assoc()) {
             $row["product_name"] ??
             "Unnamed Item",
 
-        "base_text" =>
-            $row["base_text"] ?? "",
+        "variant_text" =>
+            $row["variant_text"] ?? "",
 
         "addon_text" =>
             $row["addon_text"] ?? "",
@@ -316,7 +316,7 @@ $conn->close();
 respond_json([
     "success" => true,
     "rider" => [
-        "user_id" => $rider_id,
+        "user_id" => $delivery_staff_id,
         "full_name" => $user["full_name"]
     ],
     "deliveries" => array_values($deliveries)

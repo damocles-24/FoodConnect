@@ -5,6 +5,7 @@ session_set_cookie_params(0, "/FoodConnect", "", false, true);
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 function respond_json($arr, $code = 200) {
   http_response_code($code);
@@ -23,6 +24,16 @@ if ($restaurant_id <= 0 || $code === "") {
     "message" => "Restaurant and access code are required."
   ], 400);
 }
+
+rate_limit_enforce(
+  $conn,
+  "staff-access-code",
+  rate_limit_identifier(rate_limit_client_ip(), (string)$restaurant_id),
+  10,
+  600,
+  600,
+  "Too many access-code attempts. Please wait 10 minutes and try again."
+);
 
 $stmt = $conn->prepare("
   SELECT

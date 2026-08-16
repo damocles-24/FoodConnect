@@ -15,7 +15,7 @@ function respond_json(array $data, int $status = 200): void
 }
 
 if (strtoupper((string)($_SERVER["REQUEST_METHOD"] ?? "")) !== "POST") {
-    respond_json(["success" => false, "message" => "Method not allowed."], 405);
+    respond_json(["success" => false, "message" => "This action is not available."], 405);
 }
 
 $userId = (int)($_SESSION["user_id"] ?? 0);
@@ -28,7 +28,7 @@ if ($userId <= 0 || $restaurantId <= 0 || $role !== "owner") {
 
 $data = json_decode(file_get_contents("php://input"), true);
 if (!is_array($data)) {
-    respond_json(["success" => false, "message" => "Invalid request."], 400);
+    respond_json(["success" => false, "message" => "Please check the information and try again."], 400);
 }
 
 $name = trim((string)($data["name"] ?? ""));

@@ -10,7 +10,7 @@ if (!isset($_SESSION["user_id"])) {
     http_response_code(401);
     echo json_encode([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ]);
     exit;
 }
@@ -23,7 +23,7 @@ if ($restaurant_id <= 0) {
     http_response_code(400);
     echo json_encode([
         "success" => false,
-        "message" => "Invalid or missing restaurant_id in session."
+        "message" => "Your restaurant session has expired. Please log in again."
     ]);
     exit;
 }

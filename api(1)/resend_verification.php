@@ -1,6 +1,7 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 $input = json_decode(file_get_contents("php://input"), true);
@@ -11,6 +12,16 @@ if ($email === "") {
   echo json_encode(["error" => "Email is required"]);
   exit;
 }
+
+rate_limit_enforce(
+  $conn,
+  "verification-email-resend",
+  rate_limit_identifier(rate_limit_client_ip(), strtolower($email)),
+  3,
+  600,
+  600,
+  "Too many verification email requests. Please wait 10 minutes and try again."
+);
 
 $stmt = $conn->prepare("
   SELECT user_id, full_name, is_verified

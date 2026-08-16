@@ -9,6 +9,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", "0");
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/paymongo_order_notification_helper.php";
 
 function webhook_json(array $data, int $statusCode = 200): void
 {
@@ -414,7 +415,10 @@ try {
                 p.reference_number,
                 p.checkout_session_id,
                 o.payment_method,
-                o.order_status
+                o.order_status,
+                o.user_id,
+                o.customer_name,
+                o.queue_number
             FROM tbl_payments AS p
             INNER JOIN tbl_orders AS o
                 ON o.order_id = p.order_id
@@ -542,6 +546,15 @@ try {
             )
         ) === "paid"
     ) {
+        ensure_paid_order_cashier_notification(
+            $conn,
+            $restaurantId,
+            (int)($paymentRow["user_id"] ?? 0),
+            trim((string)($paymentRow["customer_name"] ?? "Customer")),
+            $orderId,
+            (int)($paymentRow["queue_number"] ?? 0)
+        );
+
         $conn->commit();
 
         webhook_json([
@@ -631,6 +644,15 @@ try {
     }
 
     $updateOrderStmt->close();
+
+    ensure_paid_order_cashier_notification(
+        $conn,
+        $restaurantId,
+        (int)($paymentRow["user_id"] ?? 0),
+        trim((string)($paymentRow["customer_name"] ?? "Customer")),
+        $orderId,
+        (int)($paymentRow["queue_number"] ?? 0)
+    );
 
     $conn->commit();
 

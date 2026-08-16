@@ -66,7 +66,7 @@ if (
     ) !== "GET"
 ) {
     fail_export(
-        "Method not allowed.",
+        "This action is not available.",
         405
     );
 }
@@ -94,7 +94,7 @@ if (
     $restaurantId <= 0
 ) {
     fail_export(
-        "Unauthorized access.",
+        "Your session has expired or you do not have access. Please log in again.",
         401
     );
 }

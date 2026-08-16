@@ -2,6 +2,7 @@
 header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 function respond(array $data, int $status = 200): void
 {
@@ -23,12 +24,13 @@ if ($userId <= 0 || $role !== "customer") {
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {
-    respond(["success" => false, "message" => "Invalid request."], 400);
+    respond(["success" => false, "message" => "Please check the information and try again."], 400);
 }
 
 $fullName = trim((string) ($data["full_name"] ?? ""));
 $email = strtolower(trim((string) ($data["email"] ?? "")));
-$contact = trim((string) ($data["contact_number"] ?? ""));
+$contactRaw = trim((string) ($data["contact_number"] ?? ""));
+$contact = $contactRaw === "" ? "" : normalize_ph_mobile($contactRaw);
 $address = trim((string) ($data["address"] ?? ""));
 
 if ($fullName === "" || mb_strlen($fullName) > 150) {
@@ -45,10 +47,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) {
     );
 }
 
-if ($contact !== "" && !preg_match('/^(09\d{9}|\+639\d{9})$/', $contact)) {
+if ($contactRaw !== "" && $contact === "") {
     respond([
         "success" => false,
-        "message" => "Use a valid Philippine mobile number, such as 09123456789 or +639123456789."
+        "message" => "Enter a valid Philippine mobile number. Accepted formats include 09123456789 and +639123456789."
     ], 400);
 }
 

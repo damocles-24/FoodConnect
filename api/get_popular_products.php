@@ -75,7 +75,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Database connection is unavailable.",
+            "Service is temporarily unavailable. Please try again shortly.",
         "products" => []
     ], 500);
 }

@@ -1,6 +1,7 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 $input = json_decode(file_get_contents("php://input"), true);
@@ -17,6 +18,16 @@ if ($full_name === "" || $email === "" || $password === "" || $confirm === "") {
   echo json_encode(["error" => "Please fill in all fields."]);
   exit;
 }
+
+rate_limit_enforce(
+  $conn,
+  "customer-signup",
+  rate_limit_identifier(rate_limit_client_ip(), strtolower($email)),
+  5,
+  3600,
+  1800,
+  "Too many signup attempts. Please wait before trying again."
+);
 
 if ($password !== $confirm) {
   http_response_code(400);

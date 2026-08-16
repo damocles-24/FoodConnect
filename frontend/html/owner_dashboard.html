@@ -6,6 +6,7 @@
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
   <title>Owner Dashboard | FoodConnect</title>
 <link rel="stylesheet" href="../css/owner_dashboard.css" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+  <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 </head>
 <body>
   <div class="dashboard">
@@ -1957,21 +1958,24 @@
             <span aria-hidden="true">*</span>
           </label>
 
-          <input
-            type="tel"
-            id="settingsContactNumber"
-            minlength="11"
-            maxlength="13"
-            autocomplete="tel"
-            inputmode="numeric"
-            placeholder="Example: 09123456789"
-            aria-describedby="settingsContactNumberHelp"
-            required
-          />
+          <div class="ph-phone-field">
+            <span class="ph-phone-prefix">+63</span>
+            <input
+              type="tel"
+              id="settingsContactNumber"
+              maxlength="10"
+              autocomplete="tel"
+              inputmode="numeric"
+              placeholder="9123456789"
+              aria-describedby="settingsContactNumberHelp"
+              data-ph-phone-local
+              required
+            />
+          </div>
 
           <small id="settingsContactNumberHelp">
-            Enter an 11-digit Philippine mobile number such as
-            09123456789.
+            Enter the 10-digit Philippine mobile number after +63,
+            starting with 9.
           </small>
         </div>
 
@@ -3541,14 +3545,18 @@
 
       <div class="form-group">
   <label>Contact Number</label>
+  <div class="ph-phone-field">
+  <span class="ph-phone-prefix">+63</span>
   <input
-  type="text"
-  id="userContactNumber"
-  inputmode="numeric"
-  maxlength="11"
-  pattern="[0-9]{11}"
-  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
->
+    type="tel"
+    id="userContactNumber"
+    inputmode="numeric"
+    maxlength="10"
+    placeholder="9123456789"
+    autocomplete="tel"
+    data-ph-phone-local
+  >
+</div>
 </div>
 
 <div class="form-group">
@@ -3613,14 +3621,18 @@
 
       <div class="form-group">
   <label>Contact Number</label>
+  <div class="ph-phone-field">
+  <span class="ph-phone-prefix">+63</span>
   <input
-  type="text"
-  id="editUserContactNumber"
-  inputmode="numeric"
-  maxlength="11"
-  pattern="[0-9]{11}"
-  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
->
+    type="tel"
+    id="editUserContactNumber"
+    inputmode="numeric"
+    maxlength="10"
+    placeholder="9123456789"
+    autocomplete="tel"
+    data-ph-phone-local
+  >
+</div>
 </div>
 
 <div class="form-group">
@@ -3658,7 +3670,8 @@
 </div>
 
   <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
-  <script src="../js/owner_dashboard.js"></script>
+  <script src="../js/ph-phone.js?v=20260816"></script>
+<script src="../js/owner_dashboard.js"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

@@ -20,6 +20,8 @@ session_set_cookie_params(
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
+require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/addon_helper.php";
 
 /* =========================================================
@@ -145,6 +147,19 @@ if (!is_array($data)) {
     ], 400);
 }
 
+rate_limit_enforce(
+    $conn,
+    "customer-checkout",
+    rate_limit_identifier(
+        (string)$user_id,
+        rate_limit_client_ip()
+    ),
+    8,
+    60,
+    60,
+    "Too many order submissions. Please wait one minute and try again."
+);
+
 $order_type = strtolower(
     trim(
         (string)(
@@ -174,6 +189,9 @@ $contact_number = trim(
         $data["contact_number"] ?? ""
     )
 );
+
+$contact_number_raw = $contact_number;
+$contact_number = normalize_ph_mobile($contact_number_raw);
 
 $payment_method = trim(
     (string)(
@@ -205,11 +223,6 @@ $table_number = trim(
     )
 );
 
-$pickup_time = trim(
-    (string)(
-        $data["pickup_time"] ?? ""
-    )
-);
 
 $notes = trim(
     (string)(
@@ -304,15 +317,12 @@ if ($customer_name === "") {
 ========================================================= */
 
 if (
-    !preg_match(
-        '/^9\d{9}$/',
-        $contact_number
-    )
+    $contact_number === ""
 ) {
     respond_json([
         "success" => false,
         "message" =>
-            "Enter a valid 10-digit mobile number after +63, starting with 9."
+            "Enter a valid Philippine mobile number starting with 9."
     ], 400);
 }
 
@@ -381,7 +391,6 @@ if ($order_type === "delivery") {
     }
 
     $table_number = "";
-    $pickup_time = "";
 
 } elseif ($order_type === "takeout") {
     $allowedPaymentMethods = [
@@ -393,14 +402,6 @@ if ($order_type === "delivery") {
         respond_json([
             "success" => false,
             "message" => "Select a valid takeout payment method."
-        ], 400);
-    }
-
-    if ($pickup_time === "") {
-        respond_json([
-            "success" => false,
-            "message" =>
-                "Pickup time is required for takeout."
         ], 400);
     }
 
@@ -430,7 +431,6 @@ if ($order_type === "delivery") {
     $landmark = "";
     $customer_latitude = null;
     $customer_longitude = null;
-    $pickup_time = "";
 }
 
 /* =========================================================
@@ -452,7 +452,7 @@ try {
             cart_id,
             restaurant_id,
             product_id,
-            addon_ids,
+            addon_ids_json AS addon_ids,
             combo_choice_ids_json,
             quantity
 
@@ -1798,7 +1798,7 @@ $total +=
                     FROM tbl_delivery_assignments
                         AS assignments
 
-                    WHERE assignments.rider_id =
+                    WHERE assignments.delivery_staff_id =
                             riders.user_id
 
                       AND assignments.restaurant_id =
@@ -2085,7 +2085,6 @@ $payment_status =
         customer_latitude,
         customer_longitude,
         table_number,
-        pickup_time,
         notes,
         order_status,
         subtotal,
@@ -2108,7 +2107,7 @@ $payment_status =
         ?,
         ?,
         ?,
-        ?,
+        
         ?,
         'pending',
         ?,
@@ -2124,7 +2123,7 @@ if (!$insertOrderStmt) {
 }
 
 $insertOrderStmt->bind_param(
-"issiisssssssddsssddd",
+"issiisssssssddssddd",
     $queue_number,
     $order_qr_token,
     $order_qr_expires_at,
@@ -2140,7 +2139,6 @@ $insertOrderStmt->bind_param(
     $customer_latitude,
     $customer_longitude,
     $table_number,
-    $pickup_time,
     $notes,
     $subtotal,
     $delivery_fee,
@@ -2220,7 +2218,7 @@ $insertOrderStmt->bind_param(
         discount_savings,
         discount_applied,
         product_name,
-        base_text,
+        variant_text,
         addon_text,
         addon_ids_json,
         combo_choice_text,
@@ -2638,6 +2636,13 @@ $addonIdsJson = encode_id_array(
        not cancel an already successful customer order.
     ===================================================== */
 
+    /*
+     * PayMongo orders are not announced to the cashier until
+     * PayMongo has actually confirmed payment. The webhook /
+     * return-sync creates this same New Customer Order log
+     * after payment is confirmed.
+     */
+    if ($payment_method !== "PayMongo QR Ph") {
     $logStmt = $conn->prepare("
         INSERT INTO tbl_activity_logs (
             restaurant_id,
@@ -2685,6 +2690,7 @@ $addonIdsJson = encode_id_array(
         }
 
         $logStmt->close();
+    }
     }
 
     /* =====================================================

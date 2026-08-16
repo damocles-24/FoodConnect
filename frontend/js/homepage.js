@@ -111,6 +111,11 @@ document.addEventListener(
         "staffLoginMsg"
       );
 
+    const staffPortalMessage =
+      document.getElementById(
+        "staffPortalMessage"
+      );
+
     const staffAccessCard =
       staffModal?.querySelector(
         ".staff-access-card"
@@ -349,17 +354,34 @@ let restaurantsPageCards = [];
       message = "",
       type = "error"
     ) {
-      if (!staffLoginMsg) {
+      const messageTarget =
+        staffPortalMessage ||
+        staffLoginMsg;
+
+      if (!messageTarget) {
         return;
       }
 
-      staffLoginMsg.textContent =
+      messageTarget.textContent =
         message;
 
-      staffLoginMsg.style.color =
+      messageTarget.classList.remove(
+        "error",
+        "success",
+        "info"
+      );
+
+      if (!message) {
+        return;
+      }
+
+      messageTarget.classList.add(
         type === "success"
-          ? "#65d68a"
-          : "#ff777b";
+          ? "success"
+          : type === "info"
+            ? "info"
+            : "error"
+      );
     }
 
         /* =========================
@@ -629,7 +651,7 @@ let restaurantsPageCards = [];
         );
 
         throw new Error(
-          "The server returned an invalid response."
+          "Something went wrong. Please try again."
         );
       }
     }
@@ -2264,6 +2286,11 @@ if (
           }
 
           showStaffCredentialsView();
+
+          setStaffMessage(
+            "Access code verified. Enter your staff account credentials.",
+            "success"
+          );
         } catch (error) {
           console.error(
             "Staff access verification failed:",
@@ -2271,8 +2298,7 @@ if (
           );
 
           setStaffMessage(
-            error.message ||
-            "Cannot connect to server."
+            "Unable to connect. Please check your connection and try again."
           );
         } finally {
           verifyStaffCodeBtn.disabled =
@@ -2415,8 +2441,7 @@ setStaffMessage(
           );
 
           setStaffMessage(
-            error.message ||
-            "Cannot connect to the server."
+            "Unable to connect. Please check your connection and try again."
           );
         } finally {
           ownerLoginBtn.disabled =
@@ -2541,8 +2566,7 @@ verifyOwnerCodeBtn?.addEventListener(
       );
 
       setStaffMessage(
-        error.message ||
-        "Cannot connect to the server."
+        "Unable to connect. Please check your connection and try again."
       );
     } finally {
       verifyOwnerCodeBtn.disabled =
@@ -2626,8 +2650,7 @@ resendOwnerCodeBtn?.addEventListener(
       );
 
       setStaffMessage(
-        error.message ||
-        "Cannot connect to the server."
+        "Unable to connect. Please check your connection and try again."
       );
     } finally {
       resendOwnerCodeBtn.disabled =
@@ -2765,8 +2788,15 @@ ownerVerificationCode?.addEventListener(
 
           switch (role) {
             case "admin":
-              window.location.href =
-                "admin.html";
+              setStaffMessage(
+                "Login successful. Opening the admin dashboard...",
+                "success"
+              );
+
+              window.setTimeout(() => {
+                window.location.href =
+                  "admin.html";
+              }, 450);
               break;
 
             case "owner":
@@ -2776,13 +2806,27 @@ ownerVerificationCode?.addEventListener(
               break;
 
             case "cashier":
-              window.location.href =
-                "cashier_dashboard.html";
+              setStaffMessage(
+                "Login successful. Opening the cashier dashboard...",
+                "success"
+              );
+
+              window.setTimeout(() => {
+                window.location.href =
+                  "cashier_dashboard.html";
+              }, 450);
               break;
 
             case "delivery_staff":
-              window.location.href =
-                "delivery_dashboard.html";
+              setStaffMessage(
+                "Login successful. Opening the delivery dashboard...",
+                "success"
+              );
+
+              window.setTimeout(() => {
+                window.location.href =
+                  "delivery_dashboard.html";
+              }, 450);
               break;
 
             default:
@@ -2797,8 +2841,7 @@ ownerVerificationCode?.addEventListener(
           );
 
           setStaffMessage(
-            error.message ||
-            "Cannot connect to server."
+            "Unable to connect. Please check your connection and try again."
           );
         } finally {
           staffLoginBtn.disabled =

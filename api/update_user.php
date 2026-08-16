@@ -5,12 +5,13 @@ header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 if (!isset($_SESSION["user_id"])) {
     http_response_code(401);
     echo json_encode([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ]);
     exit;
 }
@@ -23,7 +24,7 @@ if ($restaurant_id <= 0) {
     http_response_code(400);
     echo json_encode([
         "success" => false,
-        "message" => "Invalid or missing restaurant_id in session."
+        "message" => "Your restaurant session has expired. Please log in again."
     ]);
     exit;
 }
@@ -33,7 +34,8 @@ $data = json_decode(file_get_contents("php://input"), true);
 $user_id = isset($data["user_id"]) ? (int) $data["user_id"] : 0;
 $full_name = trim($data["full_name"] ?? "");
 $email = trim($data["email"] ?? "");
-$contact_number = trim($data["contact_number"] ?? "");
+$contact_number_raw = trim((string)($data["contact_number"] ?? ""));
+$contact_number = $contact_number_raw === "" ? "" : normalize_ph_mobile($contact_number_raw);
 $address = trim($data["address"] ?? "");
 $role = trim($data["role"] ?? "");
 $status = isset($data["status"]) ? (int) $data["status"] : 1;
@@ -60,10 +62,10 @@ if (
     exit;
 }
 
-if ($contact_number !== "" && !preg_match('/^[0-9]{11}$/', $contact_number)) {
+if ($contact_number_raw !== "" && $contact_number === "") {
     echo json_encode([
         "success" => false,
-        "message" => "Contact number must be exactly 11 digits."
+        "message" => "Enter a valid Philippine mobile number starting with 9."
     ]);
     exit;
 }

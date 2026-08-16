@@ -21,7 +21,7 @@ function escape_html(string $value): string {
 
 if (strtoupper((string) ($_SERVER["REQUEST_METHOD"] ?? "")) !== "POST") {
     header("Allow: POST");
-    respond_json(["success" => false, "message" => "Method not allowed."], 405);
+    respond_json(["success" => false, "message" => "This action is not available."], 405);
 }
 
 if (empty($_SESSION["user_id"]) || strtolower(trim((string) ($_SESSION["role"] ?? ""))) !== "admin") {

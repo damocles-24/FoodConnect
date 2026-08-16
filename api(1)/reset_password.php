@@ -4,6 +4,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", 0);
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 
 $input = json_decode(file_get_contents("php://input"), true);
 $email = trim($input["email"] ?? "");
@@ -15,6 +16,16 @@ if ($email === "" || $token === "" || $new_password === "") {
   echo json_encode(["error" => "Missing required fields."]);
   exit;
 }
+
+rate_limit_enforce(
+  $conn,
+  "password-reset-submit",
+  rate_limit_identifier(rate_limit_client_ip(), strtolower($email)),
+  6,
+  900,
+  900,
+  "Too many password reset attempts. Please wait 15 minutes and try again."
+);
 
 if (strlen($new_password) < 6) {
   http_response_code(400);

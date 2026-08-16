@@ -45,7 +45,7 @@ $requestMethod = strtoupper(
 if ($requestMethod !== "GET") {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -60,7 +60,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Database connection is unavailable."
+            "Service is temporarily unavailable. Please try again shortly."
     ], 500);
 }
 

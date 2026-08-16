@@ -37,7 +37,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -51,7 +51,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -100,7 +100,7 @@ $ownerStmt = $conn->prepare("
     pa.application_status,
     pa.rejection_reason,
     pa.business_hours_json,
-    pa.delivery_options_json
+    pa.order_types_json
 
 FROM tbl_users u
 

@@ -107,7 +107,7 @@ $cartStmt = $conn->prepare("
         c.user_id,
         c.restaurant_id,
         c.product_id,
-        c.addon_ids,
+        c.addon_ids_json AS addon_ids,
         c.combo_choice_ids_json,
         c.quantity,
         c.price_at_time,
@@ -750,12 +750,12 @@ foreach ($cartRows as $row) {
        BASE OR SIZE TEXT
     ===================================================== */
 
-    $base_text = trim(
+    $variant_text = trim(
         (string)($row["size"] ?? "")
     );
 
-    if ($base_text === "") {
-        $base_text = "Default";
+    if ($variant_text === "") {
+        $variant_text = "Default";
     }
 
     /* =====================================================
@@ -1061,8 +1061,8 @@ foreach ($cartRows as $row) {
         "category" =>
             $row["category"],
 
-        "base_text" =>
-            $base_text,
+        "variant_text" =>
+            $variant_text,
 
                 "regular_base_price" =>
             round(

@@ -24,6 +24,7 @@ ini_set(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/order_stock_helper.php";
 
 /* =========================================================
@@ -164,6 +165,19 @@ if ($orderId <= 0) {
         400
     );
 }
+
+rate_limit_enforce(
+    $conn,
+    "customer-order-cancel",
+    rate_limit_identifier(
+        (string)$customerId,
+        rate_limit_client_ip()
+    ),
+    10,
+    600,
+    600,
+    "Too many cancellation requests. Please wait 10 minutes and try again."
+);
 
 $reasonLength =
     mb_strlen(

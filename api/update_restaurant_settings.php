@@ -6,6 +6,7 @@ header(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -34,7 +35,7 @@ if (!isset($_SESSION["user_id"])) {
     respond_json(
         [
             "success" => false,
-            "message" => "Unauthorized access."
+            "message" => "Your session has expired or you do not have access. Please log in again."
         ],
         401
     );
@@ -53,7 +54,7 @@ if ($restaurant_id <= 0) {
         [
             "success" => false,
             "message" =>
-                "Invalid restaurant session."
+                "Your restaurant session has expired. Please log in again."
         ],
         403
     );
@@ -113,13 +114,7 @@ $address = preg_replace(
     $address
 ) ?? "";
 
-$contact_number = preg_replace(
-    "/\D+/",
-    "",
-    (string) (
-        $data["contact_number"] ?? ""
-    )
-) ?? "";
+$contact_number = normalize_ph_mobile($data["contact_number"] ?? "");
 
 $opening_hours =
     normalize_single_line_text(
@@ -181,7 +176,7 @@ if (
         [
             "success" => false,
             "message" =>
-                "Enter a valid 11-digit Philippine mobile number starting with 09."
+                "Enter a valid Philippine mobile number starting with 9."
         ],
         422
     );

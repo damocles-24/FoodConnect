@@ -117,7 +117,7 @@ if (
         [
             "success" => false,
             "message" =>
-                "Method not allowed."
+                "This action is not available."
         ],
         405
     );

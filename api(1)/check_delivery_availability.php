@@ -49,7 +49,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Database connection is unavailable.",
+            "Service is temporarily unavailable. Please try again shortly.",
         "delivery_available" => false,
         "available_rider_count" => 0
     ], 500);
@@ -217,7 +217,7 @@ $riderStmt = $conn->prepare("
 
             FROM tbl_delivery_assignments AS assignments
 
-            WHERE assignments.rider_id =
+            WHERE assignments.delivery_staff_id =
                     riders.user_id
 
               AND assignments.restaurant_id =

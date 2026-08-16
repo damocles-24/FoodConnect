@@ -210,7 +210,7 @@ if (!$connected) {
     );
     echo json_encode([
         "error" =>
-            "Database connection failed."
+            "Service is temporarily unavailable. Please try again shortly."
     ]);
     exit;
 }

@@ -17,7 +17,7 @@ if (!isset($_SESSION["user_id"])) {
 
     echo json_encode([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ]);
 
     exit;
@@ -38,7 +38,7 @@ if ($restaurant_id <= 0) {
 
     echo json_encode([
         "success" => false,
-        "message" => "Invalid or missing restaurant_id in session."
+        "message" => "Your restaurant session has expired. Please log in again."
     ]);
 
     exit;
@@ -73,7 +73,7 @@ if (!$stmt) {
 
     echo json_encode([
         "success" => false,
-        "message" => "Failed to prepare query."
+        "message" => "Unable to complete your request right now. Please try again."
     ]);
 
     exit;

@@ -4,6 +4,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", 0);
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 $input = json_decode(file_get_contents("php://input"), true);
@@ -14,6 +15,16 @@ if ($email === "") {
   echo json_encode(["error" => "Email is required."]);
   exit;
 }
+
+rate_limit_enforce(
+    $conn,
+    "forgot-password",
+    rate_limit_identifier(rate_limit_client_ip(), strtolower($email)),
+    3,
+    900,
+    900,
+    "Too many password reset requests. Please wait 15 minutes and try again."
+);
 
 // ✅ Generic message for security (don't reveal if email exists)
 $generic = ["success" => true, "message" => "If that email exists, a reset link has been sent."];

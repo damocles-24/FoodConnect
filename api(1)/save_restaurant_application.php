@@ -25,6 +25,7 @@ session_set_cookie_params(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 /* =========================================================
    RESPONSE HELPERS
@@ -142,7 +143,7 @@ if (
         [
             "success" => false,
             "message" =>
-                "Method not allowed."
+                "This action is not available."
         ],
         405
     );
@@ -208,6 +209,9 @@ $restaurantContact =
         "restaurant_contact"
     );
 
+$restaurantContactRaw = $restaurantContact;
+$restaurantContact = normalize_ph_mobile($restaurantContactRaw);
+
 $businessEmail =
     strtolower(
         clean_text(
@@ -215,8 +219,6 @@ $businessEmail =
             "business_email"
         )
     );
-
-$taxRegistrationType = "";
 
 $restaurantDescription =
     clean_text(
@@ -257,11 +259,6 @@ $postalCode =
 /* =========================================================
    MONEY VALUES
    ========================================================= */
-
-// Minimum order is no longer part of FoodConnect onboarding.
-// Keep the existing database column for backward compatibility,
-// but reset it to zero whenever this setup is saved.
-$minimumOrder = 0.0;
 
 $deliveryFeeRaw =
     $data["delivery_fee"] ?? 0;
@@ -364,9 +361,12 @@ if ($cuisine === "") {
         "Restaurant type or cuisine is required.";
 }
 
-if ($restaurantContact === "") {
+if ($restaurantContactRaw === "") {
     $errors["restaurant_contact"] =
         "Business contact number is required.";
+} elseif ($restaurantContact === "") {
+    $errors["restaurant_contact"] =
+        "Enter a valid Philippine mobile number starting with 9.";
 }
 
 if ($businessEmail === "") {
@@ -928,14 +928,12 @@ try {
                 restaurant_description = ?,
                 logo_path = ?,
                 business_email = ?,
-                tax_registration_type = ?,
                 province = ?,
                 city_municipality = ?,
                 barangay = ?,
                 postal_code = ?,
                 business_hours_json = ?,
-                delivery_options_json = ?,
-                minimum_order = ?,
+                order_types_json = ?,
                 delivery_fee = ?,
                 application_status = 'draft',
                 rejection_reason = NULL,
@@ -954,7 +952,7 @@ try {
     }
 
     $stmt->bind_param(
-        "ssssssssssssssddii",
+        "sssssssssssssdii",
         $restaurantName,
         $restaurantAddress,
         $restaurantContact,
@@ -962,14 +960,12 @@ try {
         $restaurantDescription,
         $logoPath,
         $businessEmail,
-        $taxRegistrationType,
         $province,
         $cityMunicipality,
         $barangay,
         $postalCode,
         $businessHoursJson,
         $deliveryOptionsJson,
-        $minimumOrder,
         $deliveryFee,
         $applicationId,
         $ownerId
@@ -1114,7 +1110,6 @@ try {
                     contact_number,
                     opening_hours,
                     delivery_fee,
-                    tax_registration_type,
                     order_types_json,
                     business_status,
                     owner_id,
@@ -1130,7 +1125,7 @@ try {
                     ?,
                     ?,
                     ?,
-                    ?,
+                    
                     ?,
                     ?,
                     ?,
@@ -1147,7 +1142,7 @@ try {
         }
 
         $createRestaurantStmt->bind_param(
-            "ssssssdsssiss",
+            "ssssssdssiss",
             $restaurantName,
             $restaurantDescription,
             $logoPath,
@@ -1155,7 +1150,6 @@ try {
             $restaurantContact,
             $openingHours,
             $deliveryFee,
-            $taxRegistrationType,
             $deliveryOptionsJson,
             $businessStatus,
             $ownerId,

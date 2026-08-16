@@ -1247,7 +1247,7 @@ $discount_savings = round(
           AND restaurant_id = ?
           AND product_id = ?
           AND COALESCE(
-                addon_ids,
+                addon_ids_json,
                 '[]'
               ) = ?
           AND COALESCE(
@@ -1582,7 +1582,7 @@ $discount_savings = round(
             user_id,
             restaurant_id,
             product_id,
-            addon_ids,
+            addon_ids_json,
             combo_choice_ids_json,
             quantity,
             price_at_time,

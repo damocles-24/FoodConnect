@@ -23,14 +23,14 @@ function respond_json(array $data, int $status = 200): void
 if (!isset($_SESSION["user_id"], $_SESSION["restaurant_id"])) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
-$rider_id = (int) $_SESSION["user_id"];
+$delivery_staff_id = (int) $_SESSION["user_id"];
 $restaurant_id = (int) $_SESSION["restaurant_id"];
 
-if ($rider_id <= 0 || $restaurant_id <= 0) {
+if ($delivery_staff_id <= 0 || $restaurant_id <= 0) {
     respond_json([
         "success" => false,
         "message" => "Invalid delivery staff session."
@@ -57,7 +57,7 @@ $new_status = strtolower(
 if ($assignment_id <= 0 || $new_status === "") {
     respond_json([
         "success" => false,
-        "message" => "Invalid request."
+        "message" => "Please check the information and try again."
     ], 400);
 }
 
@@ -94,11 +94,11 @@ try {
     assignment_id,
     order_id,
     restaurant_id,
-    rider_id,
+    delivery_staff_id,
     delivery_status
 FROM tbl_delivery_assignments
         WHERE assignment_id = ?
-          AND rider_id = ?
+          AND delivery_staff_id = ?
           AND restaurant_id = ?
         LIMIT 1
         FOR UPDATE
@@ -116,7 +116,7 @@ FROM tbl_delivery_assignments
     $assignmentStmt->bind_param(
         "iii",
         $assignment_id,
-        $rider_id,
+        $delivery_staff_id,
         $restaurant_id
     );
 
@@ -195,7 +195,7 @@ FROM tbl_delivery_assignments
             delivery_status = ?,
             {$timestampColumn} = NOW()
         WHERE assignment_id = ?
-          AND rider_id = ?
+          AND delivery_staff_id = ?
           AND restaurant_id = ?
           AND delivery_status = ?
     ";
@@ -215,7 +215,7 @@ FROM tbl_delivery_assignments
         "siiis",
         $new_status,
         $assignment_id,
-        $rider_id,
+        $delivery_staff_id,
         $restaurant_id,
         $current_status
     );
@@ -370,7 +370,7 @@ FROM tbl_delivery_assignments
     $logStmt->bind_param(
         "iisss",
         $restaurant_id,
-        $rider_id,
+        $delivery_staff_id,
         $action_type,
         $action_title,
         $action_description

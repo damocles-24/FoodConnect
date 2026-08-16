@@ -34,7 +34,7 @@ function respond_json(
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 

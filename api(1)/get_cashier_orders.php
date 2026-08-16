@@ -135,7 +135,7 @@ function normalize_ids_json($value): string
 if (empty($_SESSION["user_id"])) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -203,7 +203,6 @@ $sql = "
         o.address,
         o.landmark,
         o.table_number,
-        o.pickup_time,
         o.notes,
         o.created_at,
 
@@ -213,7 +212,7 @@ $sql = "
         oi.quantity,
         oi.price,
         oi.product_name,
-        oi.base_text,
+        oi.variant_text,
         oi.addon_text,
         oi.addon_ids_json,
         oi.combo_choice_text,
@@ -246,6 +245,11 @@ LEFT JOIN tbl_order_items AS oi
             )
 
             AND o.qr_verified_at IS NOT NULL
+
+            AND (
+                LOWER(TRIM(COALESCE(o.payment_method, ''))) <> 'paymongo qr ph'
+                OR LOWER(TRIM(COALESCE(o.payment_status, ''))) = 'paid'
+            )
         )
       )
 
@@ -430,13 +434,6 @@ while ($row = $result->fetch_assoc()) {
                     )
                 ),
 
-            "pickup_time" =>
-                trim(
-                    (string)(
-                        $row["pickup_time"] ?? ""
-                    )
-                ),
-
             "notes" =>
                 trim(
                     (string)(
@@ -518,10 +515,10 @@ while ($row = $result->fetch_assoc()) {
                 )
             ),
 
-        "base_text" =>
+        "variant_text" =>
             trim(
                 (string)(
-                    $row["base_text"] ?? ""
+                    $row["variant_text"] ?? ""
                 )
             ),
 

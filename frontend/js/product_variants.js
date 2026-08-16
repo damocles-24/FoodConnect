@@ -490,7 +490,7 @@
       ) {
         throw new Error(
           result.message ||
-          "Unable to save product variants."
+          "Changes could not be saved product variants."
         );
       }
 
@@ -638,7 +638,7 @@
 
         alert(
           error.message ||
-          "Unable to save product variants."
+          "Changes could not be saved product variants."
         );
       }
     },

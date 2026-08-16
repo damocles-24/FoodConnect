@@ -27,7 +27,7 @@ function respond_json(array $data, int $statusCode = 200): void
 if (!isset($conn) || !($conn instanceof mysqli)) {
     respond_json([
         "success" => false,
-        "message" => "Database connection is unavailable."
+        "message" => "Service is temporarily unavailable. Please try again shortly."
     ], 500);
 }
 
@@ -36,7 +36,7 @@ if (empty($_SESSION["user_id"]) || empty($_SESSION["restaurant_id"])) {
 
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 

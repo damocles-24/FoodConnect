@@ -90,7 +90,7 @@ if ($customerId <= 0) {
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access. Please log in again."
+            "Your session has expired or you do not have access. Please log in again. Please log in again."
     ], 401);
 }
 
@@ -116,7 +116,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Database connection is unavailable."
+            "Service is temporarily unavailable. Please try again shortly."
     ], 500);
 }
 
@@ -157,7 +157,6 @@ try {
             o.customer_latitude,
             o.customer_longitude,
             o.table_number,
-            o.pickup_time,
             o.notes,
             o.created_at,
 
@@ -172,13 +171,13 @@ try {
             r.business_status,
 
             da.assignment_id,
-            da.rider_id,
-            da.assigned_by,
+            da.delivery_staff_id,
+            da.assigned_by_user_id,
             da.assignment_type,
             da.delivery_status,
             da.delivery_fee
                 AS assigned_delivery_fee,
-            da.rider_payment,
+            da.delivery_staff_payment,
             da.assigned_at,
             da.accepted_at,
             da.picked_up_at,
@@ -210,7 +209,7 @@ try {
 
         LEFT JOIN tbl_users rider
             ON rider.user_id =
-               da.rider_id
+               da.delivery_staff_id
 
         WHERE o.user_id = ?
 
@@ -280,10 +279,10 @@ try {
                         "restaurant_id"
                     ],
 
-                "rider_id" =>
-                    $row["rider_id"] !== null
+                "delivery_staff_id" =>
+                    $row["delivery_staff_id"] !== null
                         ? (int)$row[
-                            "rider_id"
+                            "delivery_staff_id"
                         ]
                         : null,
 
@@ -303,10 +302,10 @@ try {
                         ]
                         : null,
 
-                "assigned_by" =>
-                    $row["assigned_by"] !== null
+                "assigned_by_user_id" =>
+                    $row["assigned_by_user_id"] !== null
                         ? (int)$row[
-                            "assigned_by"
+                            "assigned_by_user_id"
                         ]
                         : null,
 
@@ -336,11 +335,11 @@ try {
                         ""
                     ),
 
-                "rider_payment" =>
+                "delivery_staff_payment" =>
                     number_format(
                         (float)(
                             $row[
-                                "rider_payment"
+                                "delivery_staff_payment"
                             ] ?? 0
                         ),
                         2,
@@ -615,11 +614,6 @@ try {
                         "table_number"
                     ],
 
-            "pickup_time" =>
-                $row[
-                    "pickup_time"
-                ],
-
             "notes" =>
                 $row["notes"],
 
@@ -717,7 +711,7 @@ try {
                 oi.discount_savings,
                 oi.discount_applied,
                 oi.product_name,
-                oi.base_text,
+                oi.variant_text,
                 oi.combo_choice_text,
                 oi.combo_choice_ids_json,
                 oi.addon_text,
@@ -1018,9 +1012,9 @@ $discountApplied =
                         ""
                     ),
 
-                "base_text" =>
+                "variant_text" =>
                     $item[
-                        "base_text"
+                        "variant_text"
                     ],
 
                 "combo_choice_text" =>

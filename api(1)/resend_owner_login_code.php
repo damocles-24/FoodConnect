@@ -24,6 +24,8 @@ ini_set(
 );
 
 require_once __DIR__ . "/session_config.php";
+require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 
 /* =========================================================
@@ -61,7 +63,7 @@ if (
     respond_json(
         [
             "success" => false,
-            "message" => "Method not allowed."
+            "message" => "This action is not available."
         ],
         405
     );
@@ -149,6 +151,19 @@ if (
         401
     );
 }
+
+rate_limit_enforce(
+    $conn,
+    "owner-otp-resend",
+    rate_limit_identifier(
+        rate_limit_client_ip(),
+        strtolower($email)
+    ),
+    3,
+    600,
+    600,
+    "Too many verification-code requests. Please wait 10 minutes and try again."
+);
 
 /* =========================================================
    CREATE NEW CODE

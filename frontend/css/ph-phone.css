@@ -1,0 +1,32 @@
+.ph-phone-prefix {
+  flex: 0 0 auto;
+  font-weight: 800;
+  color: #6b7280;
+  white-space: nowrap;
+  user-select: none;
+}
+.ph-phone-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid rgba(148,163,184,.34);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: inherit;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.ph-phone-field:focus-within {
+  border-color: #d7a900;
+  box-shadow: 0 0 0 3px rgba(215,169,0,.12);
+}
+.ph-phone-field > input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}

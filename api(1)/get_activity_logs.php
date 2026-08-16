@@ -54,7 +54,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Method not allowed.",
+            "This action is not available.",
         "logs" => []
     ], 405);
 }
@@ -70,7 +70,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access.",
+            "Your session has expired or you do not have access. Please log in again.",
         "logs" => []
     ], 401);
 }

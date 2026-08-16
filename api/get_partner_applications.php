@@ -83,7 +83,6 @@ $sql = "
         pa.city_municipality,
         pa.barangay,
         pa.postal_code,
-        pa.minimum_order,
         pa.delivery_fee,
         pa.application_status,
         pa.rejection_reason,
@@ -208,9 +207,6 @@ while ($row = $result->fetch_assoc()) {
 
         "postal_code" =>
             $row["postal_code"],
-
-        "minimum_order" =>
-            (float) $row["minimum_order"],
 
         "delivery_fee" =>
             (float) $row["delivery_fee"],

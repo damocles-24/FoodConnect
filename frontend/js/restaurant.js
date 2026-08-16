@@ -266,10 +266,6 @@ const restaurantServiceTags =
     "restaurantServiceTags"
   );
 
-const restaurantMinimumOrder =
-  document.getElementById(
-    "restaurantMinimumOrder"
-  );
 
 const restaurantPreviewDeliveryFee =
   document.getElementById(
@@ -637,7 +633,7 @@ async function loadRestaurantIdentity() {
         );
     } catch (parseError) {
       throw new Error(
-        "The restaurant API returned invalid JSON."
+        "Unable to load the restaurant right now. Please try again."
       );
     }
 
@@ -685,10 +681,10 @@ if (
       ).trim();
 
     const contactNumber =
-      String(
-        restaurant.contact_number ||
+      window.FoodConnectPhone.format(
+        restaurant.contact_number,
         "Contact number unavailable"
-      ).trim();
+      );
 
     const description =
       String(
@@ -862,14 +858,6 @@ if (
         formatPesoAmount(
           restaurant.delivery_fee,
           "Free"
-        );
-    }
-
-    if (restaurantMinimumOrder) {
-      restaurantMinimumOrder.textContent =
-        formatPesoAmount(
-          restaurant.minimum_order,
-          "None"
         );
     }
 
@@ -2536,7 +2524,7 @@ async function loadComboDetails(productId) {
   const safeProductId = Number(productId || 0);
 
   if (safeProductId <= 0) {
-    throw new Error("Invalid product selection.");
+    throw new Error("Please select a valid product option.");
   }
 
   const response = await fetch(
@@ -2562,14 +2550,14 @@ async function loadComboDetails(productId) {
     );
 
     throw new Error(
-      "The combo server returned an invalid response."
+      "Unable to load this item right now. Please try again."
     );
   }
 
   if (!response.ok || !data.success) {
     throw new Error(
       data.message ||
-      "Unable to load the combo information."
+      "Unable to load this item right now. Please try again."
     );
   }
 
@@ -3176,7 +3164,7 @@ productOptionsCategory.textContent =
 
       alert(
         error.message ||
-        "Unable to load this combo."
+        "Unable to load this item right now. Please try again."
       );
 
       activeProductGroup = null;
@@ -3301,13 +3289,13 @@ const response = await fetch(
       data = JSON.parse(rawText);
     } catch (parseError) {
       throw new Error(
-        "The products API returned invalid JSON."
+        "Unable to load the menu right now. Please try again."
       );
     }
 
     if (!response.ok) {
       throw new Error(
-        data.message || "Unable to load products."
+        data.message || "Unable to load the menu right now. Please try again."
       );
     }
 
@@ -3441,7 +3429,7 @@ return databaseProductGroups;
     menuGrid.innerHTML = `
       <div class="orders-empty">
         ${escapeMenuText(
-          error.message || "Failed to load menu."
+          error.message || "Unable to load the menu right now. Please try again."
         )}
       </div>
     `;
@@ -3498,7 +3486,7 @@ async function loadPopularProducts() {
       );
 
       throw new Error(
-        "The popular-products API returned invalid JSON."
+        "Unable to load popular items right now. Please try again."
       );
     }
 
@@ -3982,7 +3970,7 @@ function matchesCurrentFilters(
     : [];
 
   if (safeProductId <= 0) {
-    alert("Invalid product selection.");
+    alert("Please select a valid product option.");
     return false;
   }
 
@@ -4030,14 +4018,14 @@ if (!restaurantAcceptingOrders) {
       data = JSON.parse(rawText);
     } catch (error) {
       throw new Error(
-        "The cart API returned invalid JSON."
+        "Unable to update your cart right now. Please try again."
       );
     }
 
     if (!response.ok || !data.success) {
       throw new Error(
         data.message ||
-        "Failed to add product to cart."
+        "Unable to add this item to your cart. Please try again."
       );
     }
 
@@ -4056,7 +4044,7 @@ if (!restaurantAcceptingOrders) {
 
     alert(
       error.message ||
-      "Something went wrong while adding to cart."
+      "Unable to add this item to your cart. Please try again."
     );
 
     return false;

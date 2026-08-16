@@ -34,7 +34,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -55,7 +55,7 @@ if ($role !== "owner") {
 if ($restaurant_id <= 0) {
     respond_json([
         "success" => false,
-        "message" => "Invalid restaurant session."
+        "message" => "Your restaurant session has expired. Please log in again."
     ], 400);
 }
 
@@ -193,8 +193,7 @@ FROM tbl_products
     $updateStmt->close();
 
     /*
-     * Record the stock change when tbl_stock_logs
-     * supports these columns in the current schema.
+     * Record the stock movement for inventory accountability.
      */
     $logStmt = $conn->prepare("
         INSERT INTO tbl_stock_logs (

@@ -22,6 +22,7 @@ ini_set(
 );
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/ph_phone.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -62,7 +63,7 @@ if (
 ) {
     respond_json(
         false,
-        "Method not allowed.",
+        "This action is not available.",
         405
     );
 }
@@ -114,6 +115,9 @@ $contactNumber =
             $data["contact_number"] ?? ""
         )
     );
+
+$contactNumberRaw = $contactNumber;
+$contactNumber = normalize_ph_mobile($contactNumberRaw);
 
 $intendedRestaurant =
     trim(
@@ -174,13 +178,7 @@ if (mb_strlen($email) > 190) {
     );
 }
 
-if (mb_strlen($contactNumber) > 30) {
-    respond_json(
-        false,
-        "Contact number must not exceed 30 characters.",
-        422
-    );
-}
+
 
 if (
     mb_strlen(
@@ -235,15 +233,10 @@ if (
    CONTACT NUMBER VALIDATION
 ========================================================= */
 
-if (
-    !preg_match(
-        '/^[0-9+\-\s()]{7,30}$/',
-        $contactNumber
-    )
-) {
+if ($contactNumber === "") {
     respond_json(
         false,
-        "Enter a valid contact number.",
+        "Enter a valid Philippine mobile number starting with 9.",
         422
     );
 }

@@ -82,7 +82,7 @@ if (
 
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -293,8 +293,7 @@ try {
                 barangay,
                 postal_code,
                 business_hours_json,
-                delivery_options_json,
-                minimum_order,
+                order_types_json,
                 delivery_fee,
                 application_status
             FROM tbl_partner_applications

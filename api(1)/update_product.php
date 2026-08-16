@@ -46,7 +46,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -1058,7 +1058,7 @@ try {
 
     if (!$stmt) {
         throw new RuntimeException(
-            "Unable to prepare the product update."
+            "Unable to update the product right now. Please try again."
         );
     }
 
@@ -1408,7 +1408,7 @@ if (!$stmt) {
     respond_json([
         "success" => false,
         "message" =>
-            "Unable to prepare the product update."
+            "Unable to update the product right now. Please try again."
     ], 500);
 }
 

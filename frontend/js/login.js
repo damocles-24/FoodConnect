@@ -130,12 +130,12 @@ async function readJsonResponse(response) {
         return JSON.parse(raw);
     } catch {
         console.error(
-            "Non-JSON server response:",
+            "Unexpected server response:",
             raw
         );
 
         throw new Error(
-            "The server returned an invalid response."
+            "Something went wrong. Please try again."
         );
     }
 }

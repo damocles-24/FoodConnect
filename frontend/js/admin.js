@@ -1123,7 +1123,7 @@ async function checkAdminSetupStatus() {
     ) {
       throw new Error(
         data.message ||
-        "Unable to check administrator setup."
+        "Unable to check the administrator setup right now. Please try again."
       );
     }
 
@@ -1180,6 +1180,14 @@ async function handleAdminSetup(
     return;
   }
 
+  if (!window.FoodConnectPhone.isValid(contactNumber)) {
+    setAdminSetupMessage(
+      "Enter a valid Philippine mobile number after +63, starting with 9."
+    );
+    setupContactNumber?.focus();
+    return;
+  }
+
   if (password !== confirmPassword) {
     setAdminSetupMessage(
       "The password confirmation does not match."
@@ -1218,7 +1226,7 @@ async function handleAdminSetup(
           email,
 
           contact_number:
-            contactNumber,
+            window.FoodConnectPhone.normalize(contactNumber),
 
           password,
 
@@ -1237,7 +1245,7 @@ async function handleAdminSetup(
     ) {
       setAdminSetupMessage(
         data.message ||
-        "Unable to create administrator."
+        "Unable to create the administrator account. Please try again."
       );
 
       return;
@@ -1720,7 +1728,7 @@ async function loadPartnerRequests() {
 
     if (partnerRequestResultCount) {
   partnerRequestResultCount.textContent =
-    "Unable to load requests";
+    "Unable to load partner requests right now. Please try again.";
 }
 
     loadedPartnerRequests = [];
@@ -2218,8 +2226,7 @@ function renderPartnerRequests(
 
           <span class="table-secondary">
             ${escapeHtml(
-              request.contact_number ||
-              "No contact number"
+              window.FoodConnectPhone.format(request.contact_number, "No contact number")
             )}
           </span>
         </td>
@@ -2889,14 +2896,14 @@ async function reviewPartnerRequest({ requestId, decision, rejectionReason = "",
     const response = await fetch(`${API_BASE}/review_partner_invitation_request.php`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(payload) });
     const data = await readJson(response);
     if (response.status === 401 || response.status === 403) { closePartnerRequestModal(); showAdminAccess(); throw new Error("Administrator session expired."); }
-    if (!response.ok || !data.success) throw new Error(data.message || "Unable to review the partner request.");
+    if (!response.ok || !data.success) throw new Error(data.message || "Unable to review this partner request. Please try again.");
     await loadPartnerRequests();
     if (decision === "approve") { showPartnerRequestApprovalResult({ data, requestId }); return; }
     setPartnerRequestReviewMessage(data.message || "Partner request rejected successfully.", "success");
     window.setTimeout(() => closePartnerRequestModal(), 1200);
   } catch (error) {
     console.error("Partner request review error:", error);
-    setPartnerRequestReviewMessage(error.message || "Unable to review the partner request.", "error");
+    setPartnerRequestReviewMessage(error.message || "Unable to review this partner request. Please try again.", "error");
     modalButtons.forEach((actionButton) => { actionButton.disabled = false; });
     if (button) button.innerHTML = originalButtonHtml;
   }
@@ -3352,7 +3359,7 @@ function bindRestaurantStatusControls() {
 
             setRestaurantsMessage(
               error.message ||
-              "Unable to update restaurant status.",
+              "Unable to update the restaurant status. Please try again.",
               "error"
             );
           } finally {
@@ -3460,7 +3467,7 @@ function bindRestaurantStatusControls() {
 
             setRestaurantsMessage(
               error.message ||
-              "Unable to update restaurant access.",
+              "Unable to update restaurant access. Please try again.",
               "error"
             );
 
@@ -3523,7 +3530,7 @@ async function updateRestaurantStatus(
   ) {
     throw new Error(
       data.message ||
-      "Unable to update restaurant status."
+      "Unable to update the restaurant status. Please try again."
     );
   }
 
@@ -3580,7 +3587,7 @@ async function updateRestaurantAccess(
   ) {
     throw new Error(
       data.message ||
-      "Unable to update restaurant access."
+      "Unable to update restaurant access. Please try again."
     );
   }
 
@@ -3731,7 +3738,7 @@ if (status && status !== "all") {
     ) {
       throw new Error(
         data.message ||
-        "Unable to load platform users."
+        "Unable to load user accounts right now. Please try again."
       );
     }
 
@@ -3897,9 +3904,10 @@ function renderPlatformUsers(users) {
       ).trim();
 
     const contactNumber =
-      String(
-        user.contact_number || ""
-      ).trim();
+      window.FoodConnectPhone.format(
+        user.contact_number,
+        ""
+      );
 
     const isVerified =
       Number(
@@ -4093,7 +4101,7 @@ function bindPlatformUserActions() {
 
         const confirmed =
           window.confirm(
-            `Are you sure you want to ${actionWord} ${userName}?`
+            `${actionWord.charAt(0).toUpperCase() + actionWord.slice(1)} ${userName}?`
           );
 
         if (!confirmed) {
@@ -4132,7 +4140,7 @@ setPlatformUsersMessage(
 
           setPlatformUsersMessage(
             error.message ||
-            "Unable to update the user account.",
+            "Unable to update this account. Please try again.",
             "error"
           );
         } finally {
@@ -4195,7 +4203,7 @@ async function updatePlatformUserStatus(
   ) {
     throw new Error(
       data.message ||
-      "Unable to update the user account."
+      "Unable to update this account. Please try again."
     );
   }
 
@@ -4343,7 +4351,7 @@ async function loadActivityLogs() {
     ) {
       throw new Error(
         data.message ||
-        "Unable to load platform activity logs."
+        "Unable to load activity logs right now. Please try again."
       );
     }
 
@@ -4862,7 +4870,7 @@ async function loadApplications() {
     ) {
       throw new Error(
         data.message ||
-        "Unable to load applications."
+        "Unable to load applications right now. Please try again."
       );
     }
 
@@ -5122,15 +5130,7 @@ function openApplicationDetails(
         application.business_email ||
         "—"
       )}
-
-      ${createDetail(
-        "Minimum Order",
-        formatCurrency(
-          application.minimum_order
-        )
-      )}
-
-      ${createDetail(
+${createDetail(
         "Delivery Fee",
         formatCurrency(
           application.delivery_fee
@@ -5757,7 +5757,7 @@ const cancelReviewButton =
     ) {
       throw new Error(
         data.message ||
-        "Unable to review the application."
+        "Unable to review this application. Please try again."
       );
     }
 
@@ -5787,7 +5787,7 @@ const cancelReviewButton =
 
     setApplicationReviewMessage(
       error.message ||
-      "Unable to review the application."
+      "Unable to review this application. Please try again."
     );
 
     reviewButtons.forEach(
@@ -6045,7 +6045,7 @@ async function readJson(
     );
 
     throw new Error(
-      "The server returned invalid JSON."
+      "Something went wrong. Please try again."
     );
   }
 }

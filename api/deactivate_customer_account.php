@@ -60,7 +60,7 @@ if ($userId <= 0 || $role !== "customer") {
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {
-    respond(["success" => false, "message" => "Invalid request."], 400);
+    respond(["success" => false, "message" => "Please check the information and try again."], 400);
 }
 
 $password = (string) ($data["password"] ?? "");

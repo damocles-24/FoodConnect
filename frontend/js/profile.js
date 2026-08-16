@@ -61,7 +61,7 @@ async function readJson(response) {
   try {
     return text ? JSON.parse(text) : {};
   } catch (_) {
-    throw new Error("The server returned an invalid response.");
+    throw new Error("Something went wrong. Please try again.");
   }
 }
 
@@ -91,7 +91,7 @@ async function loadProfile() {
 
     fullName.value = data.user.full_name || "";
     email.value = data.user.email || "";
-    contactNumber.value = data.user.contact_number || "";
+    contactNumber.value = window.FoodConnectPhone.toLocalDigits(data.user.contact_number);
     address.value = data.user.address || "";
   } catch (error) {
     showStatus(
@@ -109,7 +109,7 @@ profileForm?.addEventListener("submit", async (event) => {
   const payload = {
     full_name: fullName.value.trim(),
     email: email.value.trim(),
-    contact_number: contactNumber.value.trim(),
+    contact_number: contactNumber.value.trim() ? window.FoodConnectPhone.normalize(contactNumber.value) : "",
     address: address.value.trim()
   };
 
@@ -131,7 +131,7 @@ profileForm?.addEventListener("submit", async (event) => {
   ) {
     showStatus(
       profileStatus,
-      "Use a valid Philippine mobile number, such as 09123456789 or +639123456789.",
+      "Enter a valid Philippine mobile number after +63, starting with 9.",
       "error"
     );
     contactNumber.focus();
@@ -161,7 +161,7 @@ profileForm?.addEventListener("submit", async (event) => {
     }
 
     if (!response.ok || !data.success) {
-      throw new Error(data.message || "Unable to save account settings.");
+      throw new Error(data.message || "Changes could not be saved account settings.");
     }
 
     showStatus(
@@ -172,7 +172,7 @@ profileForm?.addEventListener("submit", async (event) => {
   } catch (error) {
     showStatus(
       profileStatus,
-      error.message || "Unable to save account settings.",
+      error.message || "Changes could not be saved account settings.",
       "error"
     );
   } finally {

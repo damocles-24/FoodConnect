@@ -53,7 +53,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Method not allowed."
+            "This action is not available."
     ], 405);
 }
 
@@ -80,7 +80,7 @@ if ($customerId <= 0) {
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access. Please log in again."
+            "Your session has expired or you do not have access. Please log in again. Please log in again."
     ], 401);
 }
 
@@ -199,7 +199,7 @@ $orderStmt =
             o.order_status,
 
             da.assignment_id,
-            da.rider_id,
+            da.delivery_staff_id,
             da.delivery_status
 
         FROM tbl_orders o
@@ -215,7 +215,7 @@ $orderStmt =
           AND o.order_type = 'delivery'
           AND da.delivery_status =
               'out_for_delivery'
-          AND da.rider_id IS NOT NULL
+          AND da.delivery_staff_id IS NOT NULL
 
         ORDER BY
             da.assignment_id DESC
@@ -267,7 +267,7 @@ $assignmentId =
     (int)$delivery["assignment_id"];
 
 $riderId =
-    (int)$delivery["rider_id"];
+    (int)$delivery["delivery_staff_id"];
 
 if (
     $restaurantId <= 0 ||
@@ -438,7 +438,7 @@ $payload = [
         "assignment_id" =>
             $assignmentId,
 
-        "rider_id" =>
+        "delivery_staff_id" =>
             $riderId,
 
         /*
@@ -512,7 +512,7 @@ respond_json([
         "restaurant_id" =>
             $restaurantId,
 
-        "rider_id" =>
+        "delivery_staff_id" =>
             $riderId,
 
         "rider_uid" =>

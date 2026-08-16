@@ -24,6 +24,7 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   >
+  <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 </head>
 
 <body>
@@ -88,12 +89,19 @@
           Contact number
         </label>
 
-        <input
-          type="tel"
-          id="setupContactNumber"
-          autocomplete="tel"
-          required
-        >
+        <div class="ph-phone-field">
+          <span class="ph-phone-prefix">+63</span>
+          <input
+            type="tel"
+            id="setupContactNumber"
+            autocomplete="tel"
+            inputmode="numeric"
+            maxlength="10"
+            placeholder="9123456789"
+            data-ph-phone-local
+            required
+          >
+        </div>
       </div>
 
       <div class="admin-form-group">
@@ -1388,6 +1396,7 @@
   </div>
 </div>
 
+<script src="../js/ph-phone.js?v=20260816"></script>
 <script src="../js/admin.js?v=20260728-1"></script>
 </body>
 </html>

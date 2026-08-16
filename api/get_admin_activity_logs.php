@@ -44,7 +44,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access.",
+        "message" => "Your session has expired or you do not have access. Please log in again.",
         "logs" => []
     ], 401);
 }

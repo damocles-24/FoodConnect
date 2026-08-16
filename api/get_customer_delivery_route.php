@@ -45,7 +45,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -63,7 +63,7 @@ if ($customerId <= 0) {
     respond_json([
         "success" => false,
         "message" =>
-            "Unauthorized access."
+            "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -200,7 +200,7 @@ $deliveryStmt =
             da.assignment_id,
             da.order_id,
             da.restaurant_id,
-            da.rider_id,
+            da.delivery_staff_id,
             da.delivery_status,
 
             o.user_id,
@@ -530,9 +530,9 @@ respond_json([
                 "restaurant_id"
             ],
 
-        "rider_id" =>
+        "delivery_staff_id" =>
             (int)$delivery[
-                "rider_id"
+                "delivery_staff_id"
             ]
     ]
 ]);

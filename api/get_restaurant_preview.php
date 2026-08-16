@@ -38,7 +38,7 @@ if (
     respond_json(
         [
             "success" => false,
-            "message" => "Method not allowed."
+            "message" => "This action is not available."
         ],
         405
     );
@@ -173,8 +173,7 @@ if ($previewMode === "owner") {
             pa.barangay,
             pa.postal_code,
             pa.business_hours_json,
-            pa.delivery_options_json,
-            pa.minimum_order,
+            pa.order_types_json,
             pa.delivery_fee,
             pa.application_status
 
@@ -231,8 +230,7 @@ if ($previewMode === "owner") {
             pa.barangay,
             pa.postal_code,
             pa.business_hours_json,
-            pa.delivery_options_json,
-            pa.minimum_order,
+            pa.order_types_json,
             pa.delivery_fee,
             pa.application_status
 
@@ -416,15 +414,7 @@ respond_json(
 
             "delivery_options" =>
                 decode_json_array(
-                    $application["delivery_options_json"] ?? ""
-                ),
-
-            "minimum_order" =>
-                round(
-                    (float) (
-                        $application["minimum_order"] ?? 0
-                    ),
-                    2
+                    $application["order_types_json"] ?? ""
                 ),
 
             "delivery_fee" =>

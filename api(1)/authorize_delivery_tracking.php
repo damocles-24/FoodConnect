@@ -39,7 +39,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Method not allowed."
+        "message" => "This action is not available."
     ], 405);
 }
 
@@ -53,7 +53,7 @@ if (
 ) {
     respond_json([
         "success" => false,
-        "message" => "Unauthorized access."
+        "message" => "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 
@@ -169,7 +169,7 @@ $trackingStmt = $conn->prepare("
         da.assignment_id,
         da.order_id,
         da.restaurant_id,
-        da.rider_id,
+        da.delivery_staff_id,
         da.delivery_status,
 
         o.order_type,
@@ -189,7 +189,7 @@ $trackingStmt = $conn->prepare("
            da.restaurant_id
 
     WHERE da.assignment_id = ?
-      AND da.rider_id = ?
+      AND da.delivery_staff_id = ?
       AND da.restaurant_id = ?
       AND o.order_type = 'delivery'
 
@@ -380,9 +380,9 @@ respond_json([
                 "restaurant_id"
             ],
 
-        "rider_id" =>
+        "delivery_staff_id" =>
             (int)$delivery[
-                "rider_id"
+                "delivery_staff_id"
             ],
 
         "customer_id" =>
