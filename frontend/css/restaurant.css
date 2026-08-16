@@ -814,8 +814,8 @@ header{
    Target only the product image (direct child), so icons won't be affected */
 .menu-item > img{
   width: 100%;
-  height: 190px;                    /* fallback for older browsers */
-  object-fit: cover;
+  height: 170px;                    /* fallback for older browsers */
+  object-fit: contain;
   object-position: center;
   background: #101010;
 }
@@ -827,7 +827,7 @@ header{
 .menu-item-image-wrap {
   position: relative;
   width: 100%;
-  height: 190px;
+  height: 170px;
 
   overflow: hidden;
   background: #101010;
@@ -837,7 +837,7 @@ header{
   width: 100%;
   height: 100%;
 
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -943,6 +943,48 @@ header{
   font-size: 0.74rem;
   font-weight: 700;
   line-height: 1.4;
+}
+
+@supports (
+  height: clamp(
+    140px,
+    18vw,
+    190px
+  )
+) {
+  .menu-item-image-wrap {
+    height:
+      clamp(
+        140px,
+        18vw,
+        190px
+      );
+  }
+}
+
+@media (
+  min-width: 768px
+) {
+  .menu-item-image-wrap {
+    height: 180px;
+  }
+}
+
+@media (
+  min-width: 1024px
+) and (
+  max-width: 1366px
+) {
+  .menu-item-image-wrap {
+    height: 175px;
+  }
+}
+
+/* Modern browsers: responsive image height without being huge */
+@supports (height: clamp(140px, 18vw, 190px)){
+  .menu-item > img{
+    height: clamp(140px, 18vw, 190px);
+  }
 }
 
 .menu-item-info{
@@ -3046,4 +3088,95 @@ opacity:1;
 
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+/* =========================================================
+   CUSTOMER PRODUCT IMAGE — NEVER CROP ON ANY DEVICE
+   Use the uploaded image's natural aspect ratio.
+========================================================= */
+
+.menu-item-image-wrap {
+  width: 100%;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  overflow: hidden;
+  background: #101010;
+}
+
+.menu-item-image-wrap > img,
+.menu-item > img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+
+  display: block;
+
+  object-fit: contain !important;
+  object-position: center center !important;
+
+  aspect-ratio: auto !important;
+}
+
+/* Keep cards clean and responsive on every screen size. */
+@media (max-width: 900px) {
+  .menu-item-image-wrap > img,
+  .menu-item > img {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .menu-item-image-wrap > img,
+  .menu-item > img {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* =========================================================
+   CUSTOMER PRODUCT IMAGE — COMPACT + NO CROP
+   Whole image stays visible without making cards too tall.
+========================================================= */
+
+.menu-item-image-wrap {
+  width: 100% !important;
+  height: clamp(170px, 16vw, 220px) !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #101010;
+}
+
+.menu-item-image-wrap > img,
+.menu-item > img {
+  width: 100% !important;
+  height: clamp(170px, 16vw, 220px) !important;
+  max-height: 220px !important;
+  display: block !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  aspect-ratio: auto !important;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .menu-item-image-wrap,
+  .menu-item-image-wrap > img,
+  .menu-item > img {
+    height: 190px !important;
+    max-height: 190px !important;
+  }
+}
+
+/* Phone */
+@media (max-width: 520px) {
+  .menu-item-image-wrap,
+  .menu-item-image-wrap > img,
+  .menu-item > img {
+    height: 175px !important;
+    max-height: 175px !important;
+  }
 }

@@ -4362,14 +4362,22 @@ if (IS_PREVIEW_MODE) {
 await loadDatabaseProducts();
 
 /*
- * Must run after products because the popular API results
- * are matched to databaseProductGroups.
+ * The primary menu is ready now.
+ * Do not let optional customer widgets delay it.
  */
-await loadPopularProducts();
-
 showCorrectSubfilters();
 applyFilters();
-await updateCartBadge();
+
+/*
+ * Popular Products requires databaseProductGroups, so it
+ * starts after the main menu but does not block the page.
+ */
+void loadPopularProducts();
+
+/*
+ * Cart badge is secondary UI and may update independently.
+ */
+void updateCartBadge();
 
 
 
