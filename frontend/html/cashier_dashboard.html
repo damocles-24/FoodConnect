@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,7 @@
 
   <title>FoodConnect | Cashier Dashboard</title>
 
-  <link rel="stylesheet" href="../css/cashier_dashboard.css" />
+  <link rel="stylesheet" href="../css/cashier_dashboard.css?v=20260817-7" />
 
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
@@ -19,9 +19,11 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   />
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
-<body>
+<body data-fc-page="cashier">
   <div class="dashboard-wrapper">
 
     <!-- SIDEBAR -->
@@ -96,7 +98,23 @@
     <i class="fa-solid fa-volume-high"></i>
   </button>
 
-  <div class="cashier-profile">
+<button
+            type="button"
+            class="theme-icon-toggle"
+            data-theme-toggle
+            aria-label="Switch to dark mode"
+            title="Switch to dark mode"
+          >
+            <svg class="theme-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20.5 15.1A8.5 8.5 0 0 1 8.9 3.5 8.5 8.5 0 1 0 20.5 15.1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <svg class="theme-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+    <div class="cashier-profile">
     <i class="fa-solid fa-user"></i>
     <span id="cashierProfileName">Cashier</span>
   </div>

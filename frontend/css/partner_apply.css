@@ -1124,3 +1124,13 @@ a {
     text-decoration: underline;
 }
 
+
+
+/* FC_THEME_PARTNER_APPLY_CSS_V5 */
+html[data-theme="dark"] body { background:#0f1115!important; color:#f5f7fa!important; }
+html[data-theme="dark"] :is(.auth-card,.login-card,.signup-card,.form-card,.application-card,.wizard-card,.card,.modal-content) {
+  background:#181b20!important; color:#f5f7fa!important; border-color:#30343b!important;
+}
+html[data-theme="dark"] :is(input,select,textarea) { background:#20242a!important; color:#f5f7fa!important; border-color:#343942!important; }
+html[data-theme="dark"] :is(h1,h2,h3,h4,label,strong) { color:#f5f7fa; }
+html[data-theme="dark"] :is(p,.helper-text,.subtitle,.muted) { color:#a4acb9; }

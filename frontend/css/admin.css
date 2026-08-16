@@ -2554,3 +2554,64 @@ button {
     min-height: 280px;
   }
 }
+
+/* FOODCONNECT ADMIN THEME START */
+html[data-theme="light"] body[data-fc-page="admin"] {
+  --sidebar: #ffffff;
+  --sidebar-light: #f8fafc;
+  --text: #25333a;
+  --muted: #718087;
+  --border: #e4e8eb;
+  --background: #f5f7f8;
+  --surface: #ffffff;
+}
+
+html[data-theme="light"] body[data-fc-page="admin"] {
+  background: var(--background);
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="admin"] :is(
+  .admin-sidebar,
+  .admin-header,
+  .admin-login-card,
+  .summary-card,
+  .content-card,
+  .table-wrapper,
+  .modal-content
+) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] {
+  --sidebar: #111318;
+  --sidebar-light: #1d222b;
+  --text: #f5f7fa;
+  --muted: #a0a8b3;
+  --border: #30343b;
+  --background: #0f1115;
+  --surface: #191c21;
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] {
+  background: var(--background);
+  color: var(--text);
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] :is(
+  .admin-sidebar,
+  .admin-header,
+  .admin-login-card,
+  .summary-card,
+  .content-card,
+  .table-wrapper,
+  .modal-content,
+  .admin-table
+) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+/* FOODCONNECT ADMIN THEME END */

@@ -3001,3 +3001,274 @@ body.order-qr-modal-open {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* FOODCONNECT CART THEME START */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] {
+  --fc-heading: #f5f7fa;
+  --fc-text: #d0d5dd;
+  --fc-muted: #98a2b3;
+  --fc-background: #101216;
+  --fc-surface: #181b20;
+  --fc-input: #20242a;
+  --fc-border: #30343b;
+  --fc-orange-soft: #2b1c12;
+  --fc-danger-soft: #2b1719;
+  --fc-danger-border: #6b2930;
+  --fc-success-soft: #13251b;
+  --fc-success-border: #25583a;
+  --fc-info-soft: #172235;
+  --fc-info-border: #294a78;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] {
+  color: var(--fc-text);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(247,128,33,.09), transparent 28%),
+    linear-gradient(135deg,#0f1115 0%,#12151a 48%,#101216 100%);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .cart-header,
+  .cart-content-card,
+  .checkout-form-card,
+  .checkout-reminder-card,
+  .bottom-summary,
+  .order-qr-modal-dialog,
+  .customer-cancel-modal-dialog,
+  .customer-live-tracking-card,
+  .cart-item,
+  .order-card
+) {
+  background: var(--fc-surface);
+  color: var(--fc-heading);
+  border-color: var(--fc-border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  input,
+  select,
+  textarea
+) {
+  background: var(--fc-input);
+  color: var(--fc-heading);
+  border-color: var(--fc-border);
+}
+/* FOODCONNECT CART THEME END */
+
+/* =========================================================
+   FOODCONNECT CART DARK/LIGHT UI POLISH — 2026-08-17
+========================================================= */
+body[data-fc-page="customer-cart"] {
+  --fc-orange: #f47c1e;
+  --fc-orange-dark: #df6810;
+}
+
+/* DARK: no white islands/cards. */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .cart-content-card,
+  .cart-content-card-header,
+  .cart-item,
+  .bottom-summary,
+  .bottom-summary-left,
+  .bottom-summary-right,
+  .checkout-form-card,
+  .checkout-reminder-card,
+  .customer-orders-shell,
+  .customer-orders-toolbar,
+  .customer-orders-content,
+  .customer-order-card,
+  .customer-order-card-header,
+  .customer-order-details
+) {
+  background: #181b20 !important;
+  color: #f5f7fa !important;
+  border-color: #30343b !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .cart-content-card h1, .cart-content-card h2, .cart-content-card h3,
+  .cart-item h3, .cart-item strong,
+  .customer-order-number, .customer-order-item-name,
+  .customer-order-summary strong
+) {
+  color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .cart-content-card p, .cart-item p, .cart-item small,
+  .customer-order-date, .customer-order-item,
+  .customer-order-summary span
+) {
+  color: #98a2b3 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .cart-addon-box, .cart-item-addons, .cart-item-addon,
+  .customer-order-summary, .customer-order-total-box
+) {
+  background: #111317 !important;
+  color: #d0d5dd !important;
+  border-color: #30343b !important;
+}
+
+/* LIGHT: explicitly restore clean surfaces. */
+html[data-theme="light"] body[data-fc-page="customer-cart"] :is(
+  .cart-content-card,
+  .cart-content-card-header,
+  .cart-item,
+  .bottom-summary,
+  .checkout-form-card,
+  .checkout-reminder-card,
+  .customer-orders-shell,
+  .customer-orders-toolbar,
+  .customer-orders-content,
+  .customer-order-card,
+  .customer-order-card-header,
+  .customer-order-details
+) {
+  background: #fff !important;
+  color: #1c2434 !important;
+  border-color: #e4e7ec !important;
+}
+
+/* Keep primary customer actions on the same FoodConnect orange. */
+body[data-fc-page="customer-cart"] :is(
+  .checkout-button,
+  .proceed-checkout-button,
+  .customer-orders-tab.active
+) {
+  background: var(--fc-orange) !important;
+  border-color: var(--fc-orange) !important;
+  color: #fff !important;
+}
+
+/* Responsive protection for cart and My Orders. */
+@media (max-width: 760px) {
+  body[data-fc-page="customer-cart"] .bottom-summary {
+    grid-template-columns: 1fr !important;
+  }
+  body[data-fc-page="customer-cart"] .customer-order-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  body[data-fc-page="customer-cart"] .customer-order-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+
+/* FOODCONNECT CART COMPLETE DARK-SURFACE FIX — 2026-08-17 */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-card-header,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-bottom-bar {
+  background: #181b20 !important;
+  color: #f5f7fa !important;
+  border-color: #30343b !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-card-header h2,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-bottom-bar strong {
+  color: #f5f7fa !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-card-header p,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-bottom-bar span {
+  color: #98a2b3 !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-item-addons,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-addon-box {
+  background: #20242a !important;
+  border-color: #30343b !important;
+  color: #d0d5dd !important;
+}
+html[data-theme="light"] body[data-fc-page="customer-cart"] .cart-card-header {
+  background: #fff9f3 !important;
+  color: #1c2434 !important;
+}
+html[data-theme="light"] body[data-fc-page="customer-cart"] .cart-bottom-bar {
+  background: #fff !important;
+  color: #1c2434 !important;
+}
+@media (max-width: 760px) {
+  body[data-fc-page="customer-cart"] .cart-bottom-bar {
+    padding: 16px !important;
+    align-items: stretch !important;
+  }
+}
+
+/* FOODCONNECT CART DARK MICRO POLISH START */
+
+/* Add-ons box follows the selected theme */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-addons {
+  background: #20242a !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-addons > strong {
+  color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-addon-line {
+  color: #a7b0bd !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .cart-addons {
+  background: #fafafa !important;
+  border-color: #eef0f2 !important;
+}
+
+/* Quantity selector no longer creates white islands in Dark mode */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .qty-controls {
+  background: #111317 !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .qty-btn {
+  background: #24282e !important;
+  color: #f47c1e !important;
+  border-color: #3a4048 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .qty-btn:hover {
+  background: #f47c1e !important;
+  color: #ffffff !important;
+  border-color: #f47c1e !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .qty-number {
+  color: #f5f7fa !important;
+}
+
+/*
+ * Keep disabled actions visually readable.
+ * Functionality remains disabled because this changes CSS only.
+ */
+body[data-fc-page="customer-cart"] .checkout-button:disabled,
+body[data-fc-page="customer-cart"] .clear-cart-button:disabled {
+  opacity: 1 !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .checkout-button:disabled {
+  background: rgba(244, 124, 30, .38) !important;
+  color: rgba(255, 255, 255, .72) !important;
+  border-color: rgba(244, 124, 30, .38) !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .clear-cart-button:disabled {
+  background: #20242a !important;
+  color: #7f8997 !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .checkout-button:disabled {
+  background: rgba(244, 124, 30, .42) !important;
+  color: rgba(255, 255, 255, .84) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .clear-cart-button:disabled {
+  background: #f8fafc !important;
+  color: #98a2b3 !important;
+  border-color: #e4e7ec !important;
+}
+
+/* FOODCONNECT CART DARK MICRO POLISH END */

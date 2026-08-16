@@ -816,3 +816,25 @@
     opacity: 0.65;
     cursor: wait;
 }
+
+/* =========================================================
+   FOODCONNECT MY ORDERS THEME POLISH — 2026-08-17
+========================================================= */
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-card,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-card-header,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-details {
+  background: #181b20 !important;
+  border-color: #30343b !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-number,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-item-name {
+  color: #f5f7fa !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-date,
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-item {
+  color: #98a2b3 !important;
+}
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .customer-order-toggle {
+  background: #101216;
+  color: #d0d5dd;
+}

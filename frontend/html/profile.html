@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,13 +20,15 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/profile.css">
+  <link rel="stylesheet" href="../css/profile.css?v=20260817-8">
   <title>Account Settings | FoodConnect</title>
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
-<body>
+<body data-fc-page="customer-account">
 
 <header class="site-header">
   <div class="header-container">
@@ -92,6 +94,14 @@
           <span>
             <strong>Password & Security</strong>
             <small>Change your password</small>
+          </span>
+        </button>
+
+        <button class="settings-nav-item" type="button" data-target="appearanceSection">
+          <span class="nav-icon"><i class="fa-regular fa-sun"></i></span>
+          <span>
+            <strong>Appearance</strong>
+            <small>Light or dark mode</small>
           </span>
         </button>
 
@@ -312,6 +322,42 @@
               </button>
             </div>
           </form>
+        </section>
+
+        <section class="settings-card settings-panel" id="appearanceSection">
+          <div class="theme-settings-card">
+            <div class="theme-settings-copy">
+              <div class="theme-settings-icon">
+                <i class="fa-regular fa-sun"></i>
+              </div>
+
+              <div>
+                <h3>Appearance</h3>
+                <p>
+                  Choose how FoodConnect looks on this device.
+                  Your choice is saved automatically.
+                </p>
+              </div>
+            </div>
+
+            <div class="theme-choice-group" role="group" aria-label="Choose FoodConnect appearance">
+              <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="true">
+                <span class="theme-choice-icon"><i class="fa-regular fa-sun"></i></span>
+                <span>
+                  <strong>Light mode</strong>
+                  <span>Bright and clean</span>
+                </span>
+              </button>
+
+              <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="false">
+                <span class="theme-choice-icon"><i class="fa-regular fa-moon"></i></span>
+                <span>
+                  <strong>Dark mode</strong>
+                  <span>Comfortable in low light</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </section>
 
         <section class="settings-card compact-card settings-panel" id="sessionSection">

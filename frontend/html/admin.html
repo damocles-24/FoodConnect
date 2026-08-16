@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="light">
 <head>
   <meta charset="UTF-8">
 
@@ -17,7 +17,7 @@
 
 <link
   rel="stylesheet"
-  href="../css/admin.css?v=20260728-1"
+  href="../css/admin.css?v=20260817-7"
 >
 
   <link
@@ -25,9 +25,11 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   >
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
-<body>
+<body data-fc-page="admin">
 
   <!-- =========================
        ADMIN LOGIN
@@ -392,7 +394,23 @@
           </h1>
         </div>
 
-        <div class="admin-profile">
+<button
+            type="button"
+            class="theme-icon-toggle"
+            data-theme-toggle
+            aria-label="Switch to dark mode"
+            title="Switch to dark mode"
+          >
+            <svg class="theme-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20.5 15.1A8.5 8.5 0 0 1 8.9 3.5 8.5 8.5 0 1 0 20.5 15.1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <svg class="theme-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+                <div class="admin-profile">
         <div class="profile-avatar logo-avatar">
     <img
         src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png"

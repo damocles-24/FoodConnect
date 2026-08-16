@@ -1176,3 +1176,234 @@ a {
     min-width: 0;
   }
 }
+
+/* FOODCONNECT PROFILE THEME START */
+html[data-theme="dark"] body[data-fc-page="customer-account"] {
+  --text: #f5f7fa;
+  --muted: #a0a8b3;
+  --subtle: #7f8997;
+  --surface: #181b20;
+  --background: #101216;
+  --border: #30343b;
+  --primary-soft: #2b1c12;
+  --danger-soft: #2b1719;
+  --success-soft: #13251b;
+  --shadow: 0 12px 32px rgba(0,0,0,.26);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .site-header {
+  background: rgba(20,22,27,.97);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  .settings-nav,
+  .settings-card,
+  .confirm-modal
+) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item {
+  color: var(--text);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  .settings-nav-item:hover,
+  .settings-nav-item.active
+) {
+  background: var(--primary-soft);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  .settings-nav-item .nav-icon,
+  .card-icon,
+  .country-fixed,
+  .secondary-btn
+) {
+  background: #20242a;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  input,
+  textarea,
+  select
+) {
+  background: #20242a;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice > span:last-child > span {
+  color: var(--muted);
+  opacity: 1;
+}
+/* FOODCONNECT PROFILE THEME END */
+
+/* FOODCONNECT PROFILE DARK UI LEFTOVER FIX START */
+html[data-theme="dark"] body[data-fc-page="customer-account"] .back-button {
+  background: #20242a;
+  color: #d0d5dd;
+  border-color: #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .back-button:hover {
+  background: #2a2e35;
+  color: #ff9547;
+  border-color: rgba(247,128,33,.45);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  .field-label,
+  .page-intro h2,
+  .card-header h3
+) {
+  color: #f5f7fa;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
+  .page-intro p,
+  .card-header p,
+  .field-hint
+) {
+  color: #98a2b3;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .ph-phone-prefix {
+  color: #aab2bf;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .form-actions {
+  border-color: #30343b;
+}
+/* FOODCONNECT PROFILE DARK UI LEFTOVER FIX END */
+
+/* FOODCONNECT PROFILE PHONE UI FIX START */
+/*
+ * Keep +63 inside the same input shell.
+ * HTML is unchanged:
+ * icon -> +63 -> input
+ */
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix) {
+  position: relative;
+}
+
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+.ph-phone-prefix {
+  position: absolute;
+  top: 50%;
+  left: 40px;
+  z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+
+  height: 20px;
+  margin: 0;
+
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+input[data-ph-phone-local] {
+  padding-left: 72px;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+.ph-phone-prefix {
+  color: #b4bdca;
+}
+
+html[data-theme="light"]
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+.ph-phone-prefix {
+  color: #667085;
+}
+
+/* Keep phone icon visually centered with the prefix */
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+> i:first-child {
+  left: 15px;
+}
+
+/* Smaller screens retain the same clean alignment */
+@media (max-width: 560px) {
+  body[data-fc-page="customer-account"]
+  .input-wrap:has(.ph-phone-prefix)
+  .ph-phone-prefix {
+    left: 39px;
+    font-size: 11px;
+  }
+
+  body[data-fc-page="customer-account"]
+  .input-wrap:has(.ph-phone-prefix)
+  input[data-ph-phone-local] {
+    padding-left: 68px;
+  }
+}
+/* FOODCONNECT PROFILE PHONE UI FIX END */
+
+/* =========================================================
+   MOBILE ACCOUNT SETTINGS MENU BUTTON VISIBILITY FIX
+   2026-08-17
+========================================================= */
+@media (max-width: 640px) {
+  body[data-fc-page="customer-account"] .mobile-menu-button {
+    background: #ffffff !important;
+    border: 1px solid #dfe3e8 !important;
+    color: #182230 !important;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, .08);
+  }
+
+  body[data-fc-page="customer-account"] .mobile-menu-button i {
+    display: block !important;
+    color: inherit !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  html[data-theme="dark"] body[data-fc-page="customer-account"] .mobile-menu-button {
+    background: #22262d !important;
+    border-color: #343a43 !important;
+    color: #f5f7fa !important;
+    box-shadow: none;
+  }
+
+  html[data-theme="dark"] body[data-fc-page="customer-account"] .mobile-menu-button:hover {
+    background: #2a2f37 !important;
+  }
+
+  html[data-theme="light"] body[data-fc-page="customer-account"] .mobile-menu-button:hover {
+    background: #f7f8fa !important;
+  }
+}

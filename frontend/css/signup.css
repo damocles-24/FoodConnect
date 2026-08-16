@@ -954,3 +954,44 @@ a {
         height: 42px;
     }
 }
+
+/* FOODCONNECT SIGNUP THEME START */
+html[data-theme="dark"] body[data-fc-page="customer-auth"] {
+  --fc-heading: #f5f7fa;
+  --fc-text: #d0d5dd;
+  --fc-muted: #98a2b3;
+  --fc-surface: #181b20;
+  --fc-background: #101216;
+  --fc-input: #20242a;
+  --fc-border: #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-auth"] {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(247,128,33,.11), transparent 29%),
+    linear-gradient(135deg,#0f1115 0%,#12151a 48%,#101216 100%);
+  color: var(--fc-text);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-auth"] :is(
+  .auth-card,
+  .login-card,
+  .signup-card,
+  .form-card,
+  .modal-content
+) {
+  background: var(--fc-surface);
+  color: var(--fc-heading);
+  border-color: var(--fc-border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-auth"] :is(
+  input,
+  select,
+  textarea
+) {
+  background: var(--fc-input);
+  color: var(--fc-heading);
+  border-color: var(--fc-border);
+}
+/* FOODCONNECT SIGNUP THEME END */

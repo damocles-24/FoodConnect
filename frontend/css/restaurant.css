@@ -358,7 +358,7 @@ header{
 }
 
 .hero .highlight {
-    color: #cc9900;
+    color: #f47c1e;
     font-weight: bold;    /* make text bold */
     text-shadow: 1px 1px 2px #000;  /* subtle shadow for contrast */
 }
@@ -482,7 +482,7 @@ header{
   display: inline-block;
   margin-bottom: 7px;
 
-  color: #cc9900;
+  color: #f47c1e;
 
   font-size: 12px;
   font-weight: 900;
@@ -1021,7 +1021,7 @@ header{
 
   border: 0;
   border-radius: 14px;
-  background: #cc9900;
+  background: #f47c1e;
   color: #fff;
 
   font-weight: 900;
@@ -1057,7 +1057,7 @@ header{
   .add-to-cart{ transition: transform .18s ease, background .18s ease; }
   .add-to-cart:hover{
     transform: translateY(-2px);
-    background: #997300;
+    background: #e66f12;
   }
 }
 
@@ -3304,5 +3304,421 @@ opacity:1;
   .header-icons .icon {
     width: 27px !important;
     height: 27px !important;
+  }
+}
+
+/* FOODCONNECT RESTAURANT THEME START */
+html[data-theme="light"] body[data-fc-page="restaurant"] {
+  --bg: #f7f8fa;
+  --section: #f7f8fa;
+  --card: #ffffff;
+  --card2: #f8fafc;
+  --border: #e3e7ed;
+  --text: #182230;
+  --muted: #667085;
+  --shadow: 0 14px 36px rgba(24,34,48,.09);
+  --shadow2: 0 8px 22px rgba(24,34,48,.07);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] header {
+  background: rgba(255,255,255,.97);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .search-bar input {
+  background: #f8fafc;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .search-icon,
+  .search-bar input::placeholder
+) {
+  color: #98a2b3;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .hero {
+  background: linear-gradient(180deg,#ffffff 0%,#f7f8fa 100%);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .restaurant-information-section,
+  .popular-section,
+  .menu-section
+) {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .restaurant-about-card,
+  .restaurant-services-card,
+  .popular-card,
+  .menu-item,
+  .product-options-dialog,
+  .variant-option-card,
+  .addon-option-card,
+  .orders-panel,
+  .order-track-card,
+  .search-results,
+  .account-dropdown
+) {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: var(--shadow2);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .popular-section-heading h2,
+  .menu-section h2,
+  .menu-item h3,
+  .restaurant-about-card h2,
+  .order-track-top h4
+) {
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .popular-section-heading p,
+  .popular-loading,
+  .popular-empty,
+  .orders-loading,
+  .orders-empty,
+  .order-track-top small
+) {
+  color: var(--muted);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .filter-btn,
+  .option-select
+) {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .filter-btn.active {
+  background: #d6a600;
+  color: #111;
+  border-color: #d6a600;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] :is(
+  .menu-item > img,
+  .menu-item-image-wrap
+) {
+  background: #f5f7f9;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .menu-item-info {
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] footer {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] #goProfile {
+  background: #f1f3f5;
+  color: var(--text);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .account-dropdown {
+  background: #171717;
+  color: #fff;
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] #goProfile {
+  background: #252525;
+  color: #fff;
+}
+/* FOODCONNECT RESTAURANT THEME END */
+
+/* FOODCONNECT RESTAURANT DARK DROPDOWN FIX START */
+html[data-theme="dark"] body[data-fc-page="restaurant"] .account-dropdown {
+  background: #17191d;
+  color: #f5f7fa;
+  border: 1px solid #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .account-dropdown p,
+html[data-theme="dark"] body[data-fc-page="restaurant"] #accountName {
+  color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] #goProfile {
+  background: #25292f;
+  color: #f5f7fa;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] #goProfile:hover {
+  background: #2c3138;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .account-dropdown {
+  background: #ffffff;
+  color: #182230;
+  border: 1px solid #e3e7ed;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .account-dropdown p,
+html[data-theme="light"] body[data-fc-page="restaurant"] #accountName {
+  color: #182230 !important;
+}
+/* FOODCONNECT RESTAURANT DARK DROPDOWN FIX END */
+
+/* FOODCONNECT RESTAURANT ACCOUNT DROPDOWN POLISH START */
+body[data-fc-page="restaurant"] .account-dropdown {
+  width: 250px;
+  min-width: 250px;
+  padding: 16px;
+
+  border-radius: 18px;
+}
+
+body[data-fc-page="restaurant"] .account-dropdown p {
+  margin: 0 0 12px;
+  padding: 3px 3px 12px;
+
+  border-bottom: 1px solid currentColor;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  opacity: 1;
+}
+
+body[data-fc-page="restaurant"] .account-dropdown button {
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 11px 14px;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+body[data-fc-page="restaurant"] #goProfile {
+  background: #f3f4f6;
+  color: #182230;
+  border-color: #e4e7ec;
+}
+
+body[data-fc-page="restaurant"] #goProfile:hover {
+  background: #e9ecf0;
+}
+
+body[data-fc-page="restaurant"] #logoutBtn {
+  background: #f78021;
+  color: #ffffff;
+  border-color: #f78021;
+}
+
+body[data-fc-page="restaurant"] #logoutBtn:hover {
+  background: #e86f14;
+  border-color: #e86f14;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="restaurant"]
+.account-dropdown p {
+  border-bottom-color: #30343b;
+  color: #f5f7fa !important;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="restaurant"]
+#goProfile {
+  background: #24282e;
+  color: #f5f7fa;
+  border-color: #343941;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="restaurant"]
+#goProfile:hover {
+  background: #2c3138;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="restaurant"]
+#logoutBtn {
+  background: #f78021;
+  color: #ffffff;
+  border-color: #f78021;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="restaurant"]
+#logoutBtn:hover {
+  background: #e86f14;
+  border-color: #e86f14;
+}
+
+html[data-theme="light"]
+body[data-fc-page="restaurant"]
+.account-dropdown p {
+  border-bottom-color: #e4e7ec;
+  color: #182230 !important;
+}
+
+@media (max-width: 480px) {
+  body[data-fc-page="restaurant"] .account-dropdown {
+    width: min(250px, calc(100vw - 28px));
+    min-width: 0;
+  }
+}
+/* FOODCONNECT RESTAURANT ACCOUNT DROPDOWN POLISH END */
+/* =========================================================
+   FOODCONNECT CUSTOMER UI POLISH — 2026-08-17
+   Consistent FoodConnect orange + complete modal theming
+========================================================= */
+body[data-fc-page="restaurant"] {
+  --fc-customer-orange: #f47c1e;
+  --fc-customer-orange-hover: #df6810;
+}
+
+/* Remove remaining mustard/gold accents. */
+body[data-fc-page="restaurant"] .popular-rank,
+body[data-fc-page="restaurant"] .popular-badge,
+body[data-fc-page="restaurant"] .rank-badge,
+body[data-fc-page="restaurant"] .filter-btn.active,
+body[data-fc-page="restaurant"] .add-to-cart,
+body[data-fc-page="restaurant"] #confirmProductAddToCart {
+  background: var(--fc-customer-orange) !important;
+  border-color: var(--fc-customer-orange) !important;
+  color: #fff !important;
+}
+
+body[data-fc-page="restaurant"] .filter-btn.active {
+  color: #fff !important;
+}
+
+body[data-fc-page="restaurant"] .popular-eyebrow,
+body[data-fc-page="restaurant"] .product-options-header small,
+body[data-fc-page="restaurant"] .product-options-summary strong,
+body[data-fc-page="restaurant"] .hero .highlight {
+  color: var(--fc-customer-orange) !important;
+}
+
+body[data-fc-page="restaurant"] .variant-option-card:has(input:checked),
+body[data-fc-page="restaurant"] .addon-option-card:has(input:checked) {
+  border-color: var(--fc-customer-orange) !important;
+}
+
+body[data-fc-page="restaurant"] .variant-option-card input,
+body[data-fc-page="restaurant"] .addon-option-card input {
+  accent-color: var(--fc-customer-orange) !important;
+}
+
+body[data-fc-page="restaurant"] .add-to-cart:hover,
+body[data-fc-page="restaurant"] #confirmProductAddToCart:hover {
+  background: var(--fc-customer-orange-hover) !important;
+  border-color: var(--fc-customer-orange-hover) !important;
+}
+
+/* Product options modal — LIGHT */
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-dialog {
+  background: #fff;
+  color: #182230;
+  border: 1px solid #e4e7ec;
+  box-shadow: 0 24px 70px rgba(16,24,40,.22);
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-header {
+  border-bottom-color: #e4e7ec;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-header h3,
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-option-section h4,
+html[data-theme="light"] body[data-fc-page="restaurant"] .variant-option-content strong,
+html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card strong {
+  color: #182230 !important;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .variant-option-card,
+html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card {
+  background: #fff;
+  border-color: #dfe3e8;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .variant-option-card:has(input:checked),
+html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card:has(input:checked) {
+  background: #fff4eb;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .variant-option-content small,
+html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card small,
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-summary span,
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-variant-summary {
+  color: #667085 !important;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-quantity-control {
+  border-color: #dfe3e8;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-quantity-control button,
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-quantity-control input {
+  background: #f7f8fa;
+  color: #182230;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-summary {
+  border-top-color: #e4e7ec;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .close-product-options {
+  background: #f2f4f7;
+  color: #344054;
+}
+
+/* Product options modal — DARK */
+html[data-theme="dark"] body[data-fc-page="restaurant"] .product-options-dialog {
+  background: #17191d;
+  color: #f5f7fa;
+  border-color: #30343b;
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .product-options-header {
+  border-bottom-color: #30343b;
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .variant-option-card,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .addon-option-card {
+  background: #111317;
+  border-color: #30343b;
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .variant-option-card:has(input:checked),
+html[data-theme="dark"] body[data-fc-page="restaurant"] .addon-option-card:has(input:checked) {
+  background: rgba(244,124,30,.12);
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .product-options-header h3,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .product-option-section h4,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .variant-option-content strong,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .addon-option-card strong {
+  color: #f5f7fa !important;
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .product-options-summary {
+  border-top-color: #30343b;
+}
+
+
+/* FOODCONNECT STOREFRONT HEADER WORDMARK — 2026-08-17 */
+body[data-fc-page="restaurant"] .foodconnect-header-wordmark h1 {
+  margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+body[data-fc-page="restaurant"] .fc-word-food { color: #f47c1e !important; }
+body[data-fc-page="restaurant"] .fc-word-connect { color: #49ad4d !important; }
+@media (max-width: 640px) {
+  body[data-fc-page="restaurant"] .foodconnect-header-wordmark h1 {
+    font-size: 1rem !important;
   }
 }

@@ -1437,3 +1437,42 @@ button {
 
   font-size: 12px;
 }
+
+/* FOODCONNECT DELIVERY THEME START */
+html[data-theme="light"] body[data-fc-page="delivery"] {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --surface-light: #f8fafc;
+  --border: #e3e7ed;
+  --text-primary: #182230;
+  --text-secondary: #667085;
+}
+
+html[data-theme="light"] body[data-fc-page="delivery"] {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-header {
+  background: rgba(255,255,255,.97);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="delivery"] :is(
+  .delivery-card,
+  .summary-card,
+  .delivery-modal,
+  .route-summary-item,
+  .delivery-detail-section
+) {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+body[data-fc-page="delivery"] .delivery-user-chip {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+/* FOODCONNECT DELIVERY THEME END */

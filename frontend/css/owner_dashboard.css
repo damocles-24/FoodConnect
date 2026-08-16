@@ -8426,3 +8426,55 @@ font-size: 1rem;
    OWNER PRODUCT IMAGE SIZE — MATCH CUSTOMER RESTAURANT CARDS
    Uses the same responsive image-height behavior as restaurant.css.
 ========================================================= */
+
+/* FOODCONNECT OWNER THEME START */
+html[data-theme="light"] body[data-fc-page="owner"] {
+  --bg: #f5f7f9;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card2: #f8fafc;
+  --border: #e3e7ed;
+  --text: #182230;
+  --muted: #667085;
+  --shadow: 0 12px 30px rgba(24,34,48,.08);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .sidebar,
+  .topbar,
+  .settings-panel,
+  .panel,
+  .product-card,
+  .go-live-card,
+  .modal-content,
+  .analytics-kpi-card,
+  .performance-panel,
+  .inventory-overview-card,
+  .inventory-table-panel
+) {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  input,
+  textarea,
+  select
+) {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+/* FOODCONNECT OWNER THEME END */

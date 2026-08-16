@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
   <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260817-7" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
-<body>
+<body data-fc-page="owner">
   <div class="dashboard">
 
     <aside class="sidebar" id="sidebar">
@@ -1899,6 +1901,43 @@
   </div>
 
   <div class="settings-workspace">
+
+    <section class="settings-panel owner-appearance-panel">
+      <div class="theme-settings-card">
+        <div class="theme-settings-copy">
+          <div class="theme-settings-icon">
+            <i class="fa-regular fa-sun"></i>
+          </div>
+
+          <div>
+            <span class="settings-step-label">Display</span>
+            <h3>Appearance</h3>
+            <p>
+              Choose light or dark mode for the Owner Dashboard.
+              This preference is saved on this device.
+            </p>
+          </div>
+        </div>
+
+        <div class="theme-choice-group" role="group" aria-label="Choose Owner Dashboard appearance">
+          <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="true">
+            <span class="theme-choice-icon"><i class="fa-regular fa-sun"></i></span>
+            <span>
+              <strong>Light mode</strong>
+              <span>Default FoodConnect view</span>
+            </span>
+          </button>
+
+          <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="false">
+            <span class="theme-choice-icon"><i class="fa-regular fa-moon"></i></span>
+            <span>
+              <strong>Dark mode</strong>
+              <span>Reduced brightness</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
 
     <!-- LEFT SIDE: SETTINGS FORM -->
     <div class="settings-main-column">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,11 +7,13 @@
 <title>Restaurant | FoodConnect</title>
 <link
   rel="stylesheet"
-  href="../css/restaurant.css?v=20260725-1"
+  href="../css/restaurant.css?v=20260817-ui3"
 >
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
-<body>
+<body data-fc-page="restaurant">
 
 <div
   class="restaurant-preview-banner"
@@ -45,10 +47,8 @@
     class="logo-img"
   >
 
-  <div class="brand-info">
-    <h1 id="restaurantName">
-      Loading restaurant...
-    </h1>
+  <div class="brand-info foodconnect-header-wordmark" aria-label="FoodConnect">
+    <h1><span class="fc-word-food">Food</span><span class="fc-word-connect">Connect</span></h1>
   </div>
 </div>
 

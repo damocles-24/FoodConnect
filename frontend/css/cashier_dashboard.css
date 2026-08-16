@@ -3208,3 +3208,48 @@ button {
   .notification-header-actions .notification-filters { width: 100%; }
   .mark-all-read-btn { width: 100%; }
 }
+
+/* FOODCONNECT CASHIER THEME START */
+html[data-theme="light"] body[data-fc-page="cashier"] {
+  --bg-color: #f5f7f9;
+  --sidebar-color: #ffffff;
+  --card-color: #ffffff;
+  --card-hover: #f8fafc;
+  --border-color: #e3e7ed;
+  --text-primary: #182230;
+  --text-secondary: #667085;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] {
+  background: var(--bg-color);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] :is(
+  .sidebar,
+  .topbar,
+  .summary-card,
+  .section-card,
+  .orders-table-container,
+  .notification-card,
+  .modal-content,
+  .qr-scanner-modal,
+  .assign-rider-modal,
+  .cancel-reason-modal,
+  .confirm-modal
+) {
+  background: var(--card-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] :is(
+  input,
+  select,
+  textarea
+) {
+  background: #ffffff;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+/* FOODCONNECT CASHIER THEME END */

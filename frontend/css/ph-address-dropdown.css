@@ -189,3 +189,105 @@
 .field-grid > .ph-address-dropdown {
   min-width: 0 !important;
 }
+
+/* FOODCONNECT PH ADDRESS THEME START */
+html[data-theme="dark"] .ph-address-field > label {
+  color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] :is(
+  .ph-search-select-input,
+  .ph-address-field > input
+) {
+  background: #20242a !important;
+  color: #f5f7fa !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="dark"] :is(
+  .ph-search-select-input::placeholder,
+  .ph-address-field > input::placeholder
+) {
+  color: #8f98a6 !important;
+}
+
+html[data-theme="dark"] .ph-search-select-input:disabled {
+  background: #191c21 !important;
+  color: #707987 !important;
+  border-color: #2d3239 !important;
+}
+
+html[data-theme="dark"] .ph-search-select-arrow {
+  border-color: #9da6b3 !important;
+}
+
+html[data-theme="dark"] .ph-search-select-menu {
+  background: #1b1f24 !important;
+  border-color: #343941 !important;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.42),
+    0 4px 12px rgba(0,0,0,.30) !important;
+}
+
+html[data-theme="dark"] .ph-search-select-option {
+  color: #e9edf2 !important;
+}
+
+html[data-theme="dark"] .ph-search-select-option:hover,
+html[data-theme="dark"] .ph-search-select-option.active {
+  background: #342115 !important;
+  color: #ff9547 !important;
+}
+
+html[data-theme="dark"] .ph-search-select-empty {
+  color: #8f98a6 !important;
+}
+
+html[data-theme="dark"] .ph-address-country {
+  background: #20242a !important;
+  color: #f5f7fa !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="dark"] .ph-address-country span {
+  color: #9da6b3 !important;
+}
+
+html[data-theme="dark"] .ph-address-status {
+  color: #8f98a6 !important;
+}
+
+html[data-theme="dark"] .ph-address-saved {
+  background: #1b1f24 !important;
+  color: #b4bcc8 !important;
+  border-color: #343941 !important;
+}
+
+html[data-theme="light"] .ph-address-field > label {
+  color: #20242a !important;
+}
+
+html[data-theme="light"] :is(
+  .ph-search-select-input,
+  .ph-address-field > input
+) {
+  background: #ffffff !important;
+  color: #20242a !important;
+  border-color: #d7dbe1 !important;
+}
+
+html[data-theme="light"] .ph-address-country {
+  background: #fafafa !important;
+  color: #20242a !important;
+  border-color: #e0e3e8 !important;
+}
+
+html[data-theme="light"] .ph-search-select-menu {
+  background: #ffffff !important;
+  border-color: #e0e3e8 !important;
+}
+
+html[data-theme="light"] .ph-search-select-option {
+  color: #20242a !important;
+}
+/* FOODCONNECT PH ADDRESS THEME END */
