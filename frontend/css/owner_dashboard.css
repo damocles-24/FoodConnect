@@ -8181,3 +8181,248 @@ font-size: 1rem;
     min-width: 0;
   }
 }
+
+
+/* =========================================================
+   OWNER SETTINGS — EDITABLE BUSINESS HOURS
+   ========================================================= */
+.settings-hours-editor {
+  width: 100%;
+}
+
+.settings-hours-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.settings-hours-toolbar > div {
+  display: grid;
+  gap: 4px;
+}
+
+.settings-hours-toolbar strong {
+  color: #f5f5f5;
+  font-size: 0.96rem;
+}
+
+.settings-hours-toolbar small,
+.settings-hours-help {
+  color: #929292;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.settings-hours-copy-btn {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid #4a3d12;
+  border-radius: 10px;
+  background: #231f12;
+  color: #f0b900;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.settings-hours-copy-btn:hover {
+  background: #2d2714;
+  border-color: #7b6110;
+}
+
+.settings-hours-copy-btn:active { transform: translateY(1px); }
+.settings-hours-copy-btn:focus-visible { outline: 2px solid #f0b900; outline-offset: 2px; }
+
+.settings-hours-table-head,
+.settings-hours-row {
+  display: grid;
+  grid-template-columns: minmax(125px, 1.15fr) minmax(145px, 1fr) minmax(145px, 1fr) minmax(120px, .8fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.settings-hours-table-head {
+  padding: 0 16px 9px;
+  color: #777;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.settings-business-hours {
+  overflow: hidden;
+  border: 1px solid #303030;
+  border-radius: 14px;
+  background: #171717;
+}
+
+.settings-hours-row {
+  min-height: 68px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #292929;
+  transition: background .18s ease;
+}
+
+.settings-hours-row:last-child { border-bottom: 0; }
+.settings-hours-row:hover { background: #1b1b1b; }
+.settings-hours-row.is-closed { background: #151515; }
+
+.settings-hours-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f2f2f2;
+}
+
+.settings-hours-day strong { font-size: .92rem; }
+.settings-hours-mobile-status,
+.settings-hours-mobile-label { display: none; }
+
+.settings-hours-time-field { display: block; }
+
+.settings-hours-time {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 11px;
+  border: 1px solid #3b3b3b;
+  border-radius: 9px;
+  background: #202020;
+  color: #f2f2f2;
+  color-scheme: dark;
+  font: inherit;
+  font-size: .88rem;
+  outline: none;
+}
+
+.settings-hours-time:focus {
+  border-color: #d7a900;
+  box-shadow: 0 0 0 3px rgba(224, 170, 0, .09);
+}
+
+.settings-hours-time:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+  background: #181818;
+}
+
+.settings-hours-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: max-content;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-hours-toggle-wrap input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-hours-toggle {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border: 1px solid #454545;
+  border-radius: 999px;
+  background: #2d2d2d;
+  transition: .18s ease;
+}
+
+.settings-hours-toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f0b900;
+  transition: transform .18s ease, background .18s ease;
+}
+
+.settings-hours-toggle-wrap input:checked + .settings-hours-toggle {
+  border-color: #4a4a4a;
+  background: #252525;
+}
+
+.settings-hours-toggle-wrap input:checked + .settings-hours-toggle::after {
+  transform: translateX(16px);
+  background: #888;
+}
+
+.settings-hours-toggle-wrap input:focus-visible + .settings-hours-toggle {
+  outline: 2px solid #f0b900;
+  outline-offset: 2px;
+}
+
+.settings-hours-status-text {
+  min-width: 42px;
+  color: #d9d9d9;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.settings-hours-row.is-closed .settings-hours-status-text { color: #8e8e8e; }
+.settings-hours-help { display: block; margin-top: 10px; }
+.settings-hours-error { display: block; min-height: 18px; margin-top: 5px; color: #ff6666; font-size: .78rem; }
+
+@media (max-width: 760px) {
+  .settings-hours-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .settings-hours-copy-btn { width: 100%; }
+  .settings-hours-table-head { display: none; }
+  .settings-hours-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 15px;
+  }
+  .settings-hours-day {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+  .settings-hours-mobile-status {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #26220f;
+    color: #e4b40d;
+    font-size: .72rem;
+    font-weight: 750;
+  }
+  .settings-hours-row.is-closed .settings-hours-mobile-status {
+    background: #242424;
+    color: #8d8d8d;
+  }
+  .settings-hours-mobile-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #777;
+    font-size: .7rem;
+    font-weight: 750;
+    text-transform: uppercase;
+  }
+  .settings-hours-toggle-wrap {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 460px) {
+  .settings-hours-row { grid-template-columns: 1fr; }
+  .settings-hours-day,
+  .settings-hours-toggle-wrap { grid-column: auto; }
+}
+
+/* =========================================================
+   OWNER PRODUCT IMAGE SIZE — MATCH CUSTOMER RESTAURANT CARDS
+   Uses the same responsive image-height behavior as restaurant.css.
+========================================================= */

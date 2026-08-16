@@ -503,24 +503,9 @@ function restore_order_stock(
             |--------------------------------------------------------------------------
             | Add-ons
             |--------------------------------------------------------------------------
+            | Add-ons do not carry stock or quantity, so cancellation does not
+            | restore add-on inventory.
             */
-
-            $addonIds = decode_order_ids(
-                $item["addon_ids_json"] ?? null
-            );
-
-            foreach ($addonIds as $addonId) {
-                restore_product_stock(
-                    $restoreStockStmt,
-                    $addonId,
-                    $restaurantId,
-                    $quantity,
-                    "selected add-on"
-                );
-
-                $summary["addons"] +=
-                    $quantity;
-            }
         }
 
     } finally {

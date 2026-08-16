@@ -178,6 +178,7 @@ try {
             SELECT COUNT(*) AS product_count
             FROM tbl_products
             WHERE restaurant_id = ?
+              AND item_type = 'menu_item'
         ");
 
     if (!$productStmt) {

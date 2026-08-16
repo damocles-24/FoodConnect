@@ -2118,27 +2118,42 @@
           </div>
         </div>
 
-        <div class="settings-form-grid">
-          <div class="settings-field settings-field-full">
-            <label for="settingsOpeningHours">
-              Opening Hours
-              <span aria-hidden="true">*</span>
-            </label>
+        <div class="settings-hours-editor" id="settingsHoursEditor">
+          <div class="settings-hours-toolbar">
+            <div>
+              <strong>Weekly schedule</strong>
+              <small>Choose the days your restaurant is open, then set the opening and closing time.</small>
+            </div>
 
-           <input
-              type="text"
-              id="settingsOpeningHours"
-              minlength="5"
-              maxlength="100"
-              placeholder="Example: Monday–Sunday, 8:00 AM–10:00 PM"
-              aria-describedby="settingsOpeningHoursHelp"
-              required
-            />
-
-            <small id="settingsOpeningHoursHelp">
-              Enter a clear schedule that customers can easily understand.
-            </small> 
+            <button
+              type="button"
+              class="settings-hours-copy-btn"
+              id="settingsApplyMondayHours"
+            >
+              Apply Monday to all days
+            </button>
           </div>
+
+          <div class="settings-hours-table-head" aria-hidden="true">
+            <span>Day</span>
+            <span>Opening</span>
+            <span>Closing</span>
+            <span>Status</span>
+          </div>
+
+          <div class="settings-business-hours" id="settingsBusinessHours"></div>
+
+          <input
+            type="hidden"
+            id="settingsOpeningHours"
+            name="opening_hours"
+            required
+          />
+
+          <small class="settings-hours-help" id="settingsOpeningHoursHelp">
+            Changes are saved with the rest of your restaurant settings. Mark a day Closed when you do not accept orders.
+          </small>
+          <small class="settings-hours-error" id="settingsHoursError" aria-live="polite"></small>
         </div>
       </section>
 
@@ -2878,6 +2893,8 @@
       </div>
 
       <div class="addon-no-stock-note">
+        Add-ons do not use stock or quantity tracking.
+      </div>
 
       <div class="modal-actions">
         <button

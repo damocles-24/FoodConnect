@@ -728,6 +728,9 @@ const settingsRestaurantName = document.getElementById("settingsRestaurantName")
 const settingsContactNumber = document.getElementById("settingsContactNumber");
 const settingsAddress = document.getElementById("settingsAddress");
 const settingsOpeningHours = document.getElementById("settingsOpeningHours");
+const settingsBusinessHours = document.getElementById("settingsBusinessHours");
+const settingsApplyMondayHours = document.getElementById("settingsApplyMondayHours");
+const settingsHoursError = document.getElementById("settingsHoursError");
 const settingsDeliveryFee = document.getElementById("settingsDeliveryFee");
 const settingsBusinessStatus =
   document.getElementById(
@@ -4736,7 +4739,8 @@ ${
             <button
               type="button"
               class="product-action-btn product-edit-btn"
-              onclick="openEditProductModal(${product.id})"
+              data-product-action="edit"
+              data-product-id="${Number(product.id)}"
             >
               <span>✎</span>
               Edit
@@ -4745,7 +4749,8 @@ ${
             <button
               type="button"
               class="product-action-btn product-delete-btn"
-              onclick="deleteProduct(${product.id})"
+              data-product-action="delete"
+              data-product-id="${Number(product.id)}"
             >
               <span>⌫</span>
               Delete
@@ -4756,6 +4761,26 @@ ${
     })
     .join("");
 }
+
+/* Product card actions: delegated so dynamically-rendered cards stay clickable. */
+productsGrid?.addEventListener("click", event => {
+  const actionButton = event.target.closest("[data-product-action][data-product-id]");
+  if (!actionButton || !productsGrid.contains(actionButton)) return;
+
+  const productId = Number(actionButton.dataset.productId);
+  if (!Number.isInteger(productId) || productId <= 0) return;
+
+  const action = actionButton.dataset.productAction;
+
+  if (action === "edit") {
+    window.openEditProductModal?.(productId);
+    return;
+  }
+
+  if (action === "delete") {
+    window.deleteProduct?.(productId);
+  }
+});
 
 function normalizeCategoryKey(
   value
@@ -8679,6 +8704,15 @@ window.openEditProductModal = function(id) {
     return;
   }
 
+  // Open first so a secondary preview/helper can never block the editor itself.
+  if (!editProductModal) {
+    console.error("Edit Product modal element was not found.");
+    alert("Unable to open the Edit Product form. Please refresh the page.");
+    return;
+  }
+
+  editProductModal.classList.add("show");
+
   const editIdInput =
     document.getElementById(
       "editProductId"
@@ -8890,9 +8924,6 @@ window.openEditProductModal = function(id) {
     p.addonIds || []
   );
 
-  editProductModal?.classList.add(
-    "show"
-  );
 };
 
 window.openOrderModal = function(id) {
@@ -9294,6 +9325,256 @@ function updateSettingsAddressCounter() {
   settingsAddressCount.textContent =
     `${currentLength} / 255`;
 }
+
+const SETTINGS_DAYS = [
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+];
+
+const SETTINGS_DAY_SHORT = {
+  Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thu",
+  Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
+};
+
+function settingsTimeToMinutes(value) {
+  const match = String(value || "").trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  if (!match) return null;
+  let hour = Number(match[1]);
+  const minute = Number(match[2] || 0);
+  if (hour < 1 || hour > 12 || minute > 59) return null;
+  const meridiem = match[3].toUpperCase();
+  if (hour === 12) hour = 0;
+  if (meridiem === "PM") hour += 12;
+  return hour * 60 + minute;
+}
+
+function settingsMinutesToInput(minutes) {
+  if (minutes == null) return "08:00";
+  const hour = Math.floor(minutes / 60) % 24;
+  const minute = minutes % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function settingsInputToDisplay(value) {
+  const [hourRaw, minuteRaw] = String(value || "08:00").split(":");
+  let hour = Number(hourRaw || 0);
+  const minute = Number(minuteRaw || 0);
+  const meridiem = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour}:${String(minute).padStart(2, "0")} ${meridiem}`;
+}
+
+function createDefaultSettingsSchedule() {
+  return Object.fromEntries(
+    SETTINGS_DAYS.map(day => [day, { closed: false, open: "08:00", close: "20:00" }])
+  );
+}
+
+function expandSettingsDayToken(token) {
+  const normalized = String(token || "").trim().toLowerCase();
+  const map = {
+    mon: 0, monday: 0, tue: 1, tues: 1, tuesday: 1, wed: 2, wednesday: 2,
+    thu: 3, thur: 3, thurs: 3, thursday: 3, fri: 4, friday: 4,
+    sat: 5, saturday: 5, sun: 6, sunday: 6
+  };
+  return map[normalized];
+}
+
+function parseSettingsDayExpression(expression) {
+  const clean = String(expression || "").trim().replace(/\s+/g, " ");
+  const result = [];
+  clean.split(/\s*,\s*/).forEach(part => {
+    const range = part.split(/\s*[-–—]\s*/);
+    if (range.length === 2) {
+      const start = expandSettingsDayToken(range[0]);
+      const end = expandSettingsDayToken(range[1]);
+      if (start != null && end != null) {
+        if (start <= end) {
+          for (let i = start; i <= end; i++) result.push(SETTINGS_DAYS[i]);
+        } else {
+          for (let i = start; i < 7; i++) result.push(SETTINGS_DAYS[i]);
+          for (let i = 0; i <= end; i++) result.push(SETTINGS_DAYS[i]);
+        }
+        return;
+      }
+    }
+    const index = expandSettingsDayToken(part);
+    if (index != null) result.push(SETTINGS_DAYS[index]);
+  });
+  return [...new Set(result)];
+}
+
+function parseSettingsOpeningHours(value) {
+  const schedule = createDefaultSettingsSchedule();
+  const text = String(value || "").trim();
+  if (!text || /^configured\s+(in|during)\b/i.test(text)) return schedule;
+
+  SETTINGS_DAYS.forEach(day => { schedule[day].closed = true; });
+  let matchedAny = false;
+
+  text.split(/\s*;\s*/).forEach(segment => {
+    const part = segment.trim();
+    if (!part) return;
+
+    const closedMatch = part.match(/^(.+?)\s+closed$/i);
+    if (closedMatch) {
+      const days = parseSettingsDayExpression(closedMatch[1]);
+      days.forEach(day => { schedule[day].closed = true; });
+      matchedAny = matchedAny || days.length > 0;
+      return;
+    }
+
+    const timeMatch = part.match(/^(.+?)\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM))\s*[-–—]\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM))$/i);
+    if (!timeMatch) return;
+    const days = parseSettingsDayExpression(timeMatch[1]);
+    const openMinutes = settingsTimeToMinutes(timeMatch[2]);
+    const closeMinutes = settingsTimeToMinutes(timeMatch[3]);
+    if (openMinutes == null || closeMinutes == null) return;
+    days.forEach(day => {
+      schedule[day] = {
+        closed: false,
+        open: settingsMinutesToInput(openMinutes),
+        close: settingsMinutesToInput(closeMinutes)
+      };
+    });
+    matchedAny = matchedAny || days.length > 0;
+  });
+
+  return matchedAny ? schedule : createDefaultSettingsSchedule();
+}
+
+function renderSettingsBusinessHours(schedule = createDefaultSettingsSchedule()) {
+  if (!settingsBusinessHours) return;
+  settingsBusinessHours.innerHTML = SETTINGS_DAYS.map(day => {
+    const item = schedule[day] || { closed: false, open: "08:00", close: "20:00" };
+    const dayKey = day.toLowerCase();
+    return `
+      <div class="settings-hours-row${item.closed ? " is-closed" : ""}" data-day="${day}">
+        <div class="settings-hours-day">
+          <strong>${day}</strong>
+          <span class="settings-hours-mobile-status">${item.closed ? "Closed" : "Open"}</span>
+        </div>
+        <label class="settings-hours-time-field">
+          <span class="settings-hours-mobile-label">Opening</span>
+          <input type="time" class="settings-hours-time settings-hours-open" id="settings${dayKey}Open" value="${item.open}" ${item.closed ? "disabled" : ""} aria-label="${day} opening time">
+        </label>
+        <label class="settings-hours-time-field">
+          <span class="settings-hours-mobile-label">Closing</span>
+          <input type="time" class="settings-hours-time settings-hours-close" id="settings${dayKey}Close" value="${item.close}" ${item.closed ? "disabled" : ""} aria-label="${day} closing time">
+        </label>
+        <label class="settings-hours-toggle-wrap">
+          <input type="checkbox" class="settings-hours-closed" ${item.closed ? "checked" : ""} aria-label="Mark ${day} closed">
+          <span class="settings-hours-toggle" aria-hidden="true"></span>
+          <span class="settings-hours-status-text">${item.closed ? "Closed" : "Open"}</span>
+        </label>
+      </div>`;
+  }).join("");
+
+  settingsBusinessHours.querySelectorAll(".settings-hours-closed").forEach(input => {
+    input.addEventListener("change", handleSettingsClosedDayChange);
+  });
+  settingsBusinessHours.querySelectorAll(".settings-hours-time").forEach(input => {
+    input.addEventListener("input", handleSettingsHoursEdited);
+    input.addEventListener("change", handleSettingsHoursEdited);
+  });
+  syncSettingsOpeningHoursFromEditor(false);
+}
+
+function handleSettingsClosedDayChange(event) {
+  const row = event.currentTarget.closest(".settings-hours-row");
+  if (!row) return;
+  const closed = event.currentTarget.checked;
+  row.classList.toggle("is-closed", closed);
+  row.querySelectorAll(".settings-hours-time").forEach(input => { input.disabled = closed; });
+  const text = row.querySelector(".settings-hours-status-text");
+  const mobile = row.querySelector(".settings-hours-mobile-status");
+  if (text) text.textContent = closed ? "Closed" : "Open";
+  if (mobile) mobile.textContent = closed ? "Closed" : "Open";
+  syncSettingsOpeningHoursFromEditor();
+}
+
+function handleSettingsHoursEdited() {
+  syncSettingsOpeningHoursFromEditor();
+}
+
+function collectSettingsSchedule() {
+  const schedule = {};
+  settingsBusinessHours?.querySelectorAll(".settings-hours-row").forEach(row => {
+    const day = row.dataset.day;
+    schedule[day] = {
+      closed: row.querySelector(".settings-hours-closed")?.checked === true,
+      open: row.querySelector(".settings-hours-open")?.value || "08:00",
+      close: row.querySelector(".settings-hours-close")?.value || "20:00"
+    };
+  });
+  return schedule;
+}
+
+function serializeSettingsSchedule(schedule) {
+  const entries = SETTINGS_DAYS.map(day => ({ day, ...schedule[day] }));
+  const groups = [];
+  let start = 0;
+  while (start < entries.length) {
+    let end = start;
+    const signature = item => item.closed ? "closed" : `${item.open}|${item.close}`;
+    while (end + 1 < entries.length && signature(entries[end + 1]) === signature(entries[start])) end++;
+    const first = entries[start];
+    const dayLabel = start === end
+      ? SETTINGS_DAY_SHORT[entries[start].day]
+      : `${SETTINGS_DAY_SHORT[entries[start].day]}-${SETTINGS_DAY_SHORT[entries[end].day]}`;
+    groups.push(first.closed
+      ? `${dayLabel} Closed`
+      : `${dayLabel} ${settingsInputToDisplay(first.open)}-${settingsInputToDisplay(first.close)}`);
+    start = end + 1;
+  }
+  return groups.join("; ");
+}
+
+function validateSettingsSchedule() {
+  const schedule = collectSettingsSchedule();
+  let hasOpenDay = false;
+  for (const day of SETTINGS_DAYS) {
+    const item = schedule[day];
+    if (!item || item.closed) continue;
+    hasOpenDay = true;
+    if (!item.open || !item.close) return `Set both opening and closing time for ${day}.`;
+    if (item.open === item.close) return `${day}'s opening and closing time cannot be the same.`;
+  }
+  if (!hasOpenDay) return "Keep at least one day open for customers.";
+  return "";
+}
+
+function syncSettingsOpeningHoursFromEditor(triggerChange = true) {
+  if (!settingsOpeningHours || !settingsBusinessHours) return;
+  const schedule = collectSettingsSchedule();
+  settingsOpeningHours.value = serializeSettingsSchedule(schedule);
+  if (settingsHoursError) settingsHoursError.textContent = validateSettingsSchedule();
+  if (triggerChange && typeof handleSettingsChange === "function") handleSettingsChange();
+}
+
+function applySettingsMondayHoursToAll() {
+  const monday = settingsBusinessHours?.querySelector('.settings-hours-row[data-day="Monday"]');
+  if (!monday) return;
+  const closed = monday.querySelector(".settings-hours-closed")?.checked === true;
+  const open = monday.querySelector(".settings-hours-open")?.value || "08:00";
+  const close = monday.querySelector(".settings-hours-close")?.value || "20:00";
+
+  settingsBusinessHours.querySelectorAll(".settings-hours-row").forEach(row => {
+    const checkbox = row.querySelector(".settings-hours-closed");
+    const openInput = row.querySelector(".settings-hours-open");
+    const closeInput = row.querySelector(".settings-hours-close");
+    if (checkbox) checkbox.checked = closed;
+    if (openInput) { openInput.value = open; openInput.disabled = closed; }
+    if (closeInput) { closeInput.value = close; closeInput.disabled = closed; }
+    row.classList.toggle("is-closed", closed);
+    const status = row.querySelector(".settings-hours-status-text");
+    const mobile = row.querySelector(".settings-hours-mobile-status");
+    if (status) status.textContent = closed ? "Closed" : "Open";
+    if (mobile) mobile.textContent = closed ? "Closed" : "Open";
+  });
+  syncSettingsOpeningHoursFromEditor();
+}
+
+settingsApplyMondayHours?.addEventListener("click", applySettingsMondayHoursToAll);
 
 function getCurrentRestaurantSettings() {
   return {
@@ -9983,11 +10264,16 @@ function validateRestaurantSettings(
     return "Enter a more complete restaurant address.";
   }
 
-  if (!settings.opening_hours) {
-    markSettingsFieldInvalid(
-      settingsOpeningHours
-    );
+  const settingsScheduleError = validateSettingsSchedule();
 
+  if (settingsScheduleError) {
+    if (settingsHoursError) {
+      settingsHoursError.textContent = settingsScheduleError;
+    }
+    return settingsScheduleError;
+  }
+
+  if (!settings.opening_hours) {
     return "Opening hours are required.";
   }
 
@@ -10122,6 +10408,10 @@ const loadedSettings = {
     if (settingsOpeningHours) {
       settingsOpeningHours.value =
         loadedSettings.opening_hours;
+      renderSettingsBusinessHours(
+        parseSettingsOpeningHours(loadedSettings.opening_hours)
+      );
+      loadedSettings.opening_hours = settingsOpeningHours.value;
     }
 
     if (settingsDeliveryFee) {
@@ -10188,8 +10478,8 @@ if (settingsAddress) {
 }
 
 if (settingsOpeningHours) {
-  settingsOpeningHours.value =
-    payload.opening_hours;
+  syncSettingsOpeningHoursFromEditor(false);
+  payload.opening_hours = settingsOpeningHours.value;
 }
 
 updateSettingsAddressCounter();

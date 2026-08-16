@@ -20,6 +20,7 @@ session_set_cookie_params(
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/addon_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -1455,19 +1456,13 @@ $baseStatus =
                     product_name,
                     category,
                     price,
-                    stock,
                     status
 
                 FROM tbl_products
 
                 WHERE product_id = ?
                   AND restaurant_id = ?
-                  AND (
-                        LOWER(category)
-                            LIKE '%add-on%'
-                     OR LOWER(category)
-                            LIKE '%addon%'
-                  )
+                  AND item_type = 'add_on'
 
                 LIMIT 1
 
@@ -1515,19 +1510,27 @@ $baseStatus =
                 )
             );
 
-            $addonStock = (int)(
-                $addon["stock"] ?? 0
-            );
-
             if (
                 !status_is_available(
                     $addon["status"] ?? ""
-                ) ||
-                $addonStock < $quantity
+                )
             ) {
                 throw new RuntimeException(
                     $addonName .
-                    " does not have enough stock for this quantity."
+                    " is currently unavailable."
+                );
+            }
+
+            if (
+                !product_allows_addon(
+                    $conn,
+                    $restaurant_id,
+                    $product_id,
+                    (int)$addon["product_id"]
+                )
+            ) {
+                throw new RuntimeException(
+                    "This add-on is not available for the selected menu item."
                 );
             }
 
@@ -2418,48 +2421,11 @@ $insertOrderStmt->bind_param(
         }
 
         /* =================================================
-           ADD-ON STOCK
+           ADD-ONS HAVE NO STOCK / QUANTITY
+
+           Add-ons affect price and the saved order description only.
+           They are intentionally not deducted from inventory.
         ================================================= */
-
-        foreach (
-            $item["addons"] ?? []
-            as $addon
-        ) {
-            $addonProductId = (int)(
-                $addon["product_id"] ?? 0
-            );
-
-            if ($addonProductId <= 0) {
-                throw new RuntimeException(
-                    "An invalid add-on was found."
-                );
-            }
-
-            $deductStockStmt->bind_param(
-                "iiiii",
-                $quantity,
-                $quantity,
-                $addonProductId,
-                $restaurant_id,
-                $quantity
-            );
-
-            if (!$deductStockStmt->execute()) {
-                throw new RuntimeException(
-                    "Unable to deduct add-on stock."
-                );
-            }
-
-            if (
-                $deductStockStmt->affected_rows !== 1
-            ) {
-                throw new RuntimeException(
-                    ($addon["product_name"] ??
-                        "An add-on") .
-                    " no longer has enough stock."
-                );
-            }
-        }
 
         /* =================================================
            PREPARE ORDER ITEM VALUES

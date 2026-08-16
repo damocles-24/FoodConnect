@@ -35,25 +35,193 @@ if ($product_id <= 0) {
   exit;
 }
 
-$stmt = $conn->prepare("
-  DELETE FROM tbl_products
+$productStmt = $conn->prepare("
+  SELECT
+    product_name,
+    category,
+    item_type
+  FROM tbl_products
   WHERE product_id = ?
-  AND restaurant_id = ?
+    AND restaurant_id = ?
+  LIMIT 1
 ");
 
-$stmt->bind_param("ii", $product_id, $restaurant_id);
-
-if ($stmt->execute()) {
-  echo json_encode([
-    "success" => true,
-    "message" => "Product deleted successfully."
-  ]);
-} else {
+if (!$productStmt) {
+  http_response_code(500);
   echo json_encode([
     "success" => false,
-    "message" => "Failed to delete product."
+    "message" => "Unable to validate the product."
+  ]);
+  exit;
+}
+
+$productStmt->bind_param(
+  "ii",
+  $product_id,
+  $restaurant_id
+);
+
+$productStmt->execute();
+
+$product =
+  $productStmt
+    ->get_result()
+    ->fetch_assoc();
+
+$productStmt->close();
+
+if (!$product) {
+  http_response_code(404);
+  echo json_encode([
+    "success" => false,
+    "message" => "Product not found."
+  ]);
+  exit;
+}
+
+$conn->begin_transaction();
+
+try {
+  $stmt = $conn->prepare("
+    DELETE FROM tbl_products
+    WHERE product_id = ?
+      AND restaurant_id = ?
+  ");
+
+  if (!$stmt) {
+    throw new RuntimeException(
+      "Unable to prepare product deletion."
+    );
+  }
+
+  $stmt->bind_param(
+    "ii",
+    $product_id,
+    $restaurant_id
+  );
+
+  if (!$stmt->execute()) {
+    throw new RuntimeException(
+      "Failed to delete product."
+    );
+  }
+
+  $stmt->close();
+
+  /*
+   * Add-on link rows referencing an add-on are removed by
+   * ON DELETE CASCADE.
+   *
+   * For a normal menu product, clear group assignments only
+   * when no other variant of the same product remains.
+   */
+  if (
+    strtolower(
+      trim(
+        (string)($product["item_type"] ?? "menu_item")
+      )
+    ) !== "add_on"
+  ) {
+    $remainingStmt = $conn->prepare("
+      SELECT product_id
+      FROM tbl_products
+      WHERE restaurant_id = ?
+        AND item_type = 'menu_item'
+        AND LOWER(TRIM(product_name)) =
+            LOWER(TRIM(?))
+        AND LOWER(TRIM(category)) =
+            LOWER(TRIM(?))
+      LIMIT 1
+    ");
+
+    if (!$remainingStmt) {
+      throw new RuntimeException(
+        "Unable to check remaining product variants."
+      );
+    }
+
+    $productName =
+      (string)$product["product_name"];
+
+    $productCategory =
+      (string)$product["category"];
+
+    $remainingStmt->bind_param(
+      "iss",
+      $restaurant_id,
+      $productName,
+      $productCategory
+    );
+
+    $remainingStmt->execute();
+
+    $remaining =
+      $remainingStmt
+        ->get_result()
+        ->fetch_assoc();
+
+    $remainingStmt->close();
+
+    if (!$remaining) {
+      $linkStmt = $conn->prepare("
+        DELETE FROM tbl_product_addon_links
+        WHERE restaurant_id = ?
+          AND LOWER(TRIM(product_name)) =
+              LOWER(TRIM(?))
+          AND LOWER(TRIM(product_category)) =
+              LOWER(TRIM(?))
+      ");
+
+      if (!$linkStmt) {
+        throw new RuntimeException(
+          "Unable to clear product add-on links."
+        );
+      }
+
+      $linkStmt->bind_param(
+        "iss",
+        $restaurant_id,
+        $productName,
+        $productCategory
+      );
+
+      $linkStmt->execute();
+      $linkStmt->close();
+    }
+  }
+
+  $conn->commit();
+
+  echo json_encode([
+    "success" => true,
+    "message" =>
+      strtolower(
+        trim(
+          (string)($product["item_type"] ?? "")
+        )
+      ) === "add_on"
+        ? "Add-on deleted successfully."
+        : "Product deleted successfully."
+  ]);
+
+} catch (Throwable $error) {
+  try {
+    $conn->rollback();
+  } catch (Throwable $ignore) {
+  }
+
+  error_log(
+    "delete_product.php: " .
+    $error->getMessage()
+  );
+
+  http_response_code(500);
+
+  echo json_encode([
+    "success" => false,
+    "message" =>
+      "Unable to delete this item."
   ]);
 }
 
-$stmt->close();
 $conn->close();
