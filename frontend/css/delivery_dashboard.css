@@ -772,14 +772,12 @@ button {
 
 }
 
-.delivery-order-left h4{
-
-    font-size:14px;
-
-    margin-bottom:10px;
-
-    color:#fff;
-
+.delivery-order-left h4 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 .delivery-order-meta{
@@ -1476,3 +1474,365 @@ body[data-fc-page="delivery"] .delivery-user-chip {
   border-color: var(--border);
 }
 /* FOODCONNECT DELIVERY THEME END */
+
+/* =========================================================
+   FOODCONNECT DELIVERY FINAL UI/UX CONSISTENCY PASS
+   2026-08-17
+========================================================= */
+body[data-fc-page="delivery"] {
+  --fc-orange: #f97316;
+  --fc-orange-hover: #ea580c;
+  --fc-green: #16a34a;
+  --fc-green-hover: #15803d;
+  --fc-red: #dc2626;
+  --fc-red-hover: #b91c1c;
+}
+
+/* Brand: clean logo holder + official FoodConnect wordmark colors. */
+body[data-fc-page="delivery"] .delivery-logo {
+  width: 48px;
+  height: 48px;
+  padding: 7px;
+  object-fit: contain;
+  background: #ffffff !important;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+}
+body[data-fc-page="delivery"] .foodconnect-brand {
+  display: inline-flex;
+  white-space: nowrap;
+}
+body[data-fc-page="delivery"] .brand-food { color: #f47c1e !important; }
+body[data-fc-page="delivery"] .brand-connect { color: #49ad4d !important; }
+
+/* Replace legacy gold/mustard interaction colors with FoodConnect orange. */
+body[data-fc-page="delivery"] .delivery-tab.active,
+body[data-fc-page="delivery"] .view-details-btn,
+body[data-fc-page="delivery"] .pickup-btn,
+body[data-fc-page="delivery"] .out-for-delivery-btn {
+  background: var(--fc-orange) !important;
+  border-color: var(--fc-orange) !important;
+  color: #ffffff !important;
+}
+body[data-fc-page="delivery"] .delivery-tab.active:hover,
+body[data-fc-page="delivery"] .view-details-btn:hover,
+body[data-fc-page="delivery"] .pickup-btn:hover,
+body[data-fc-page="delivery"] .out-for-delivery-btn:hover {
+  background: var(--fc-orange-hover) !important;
+}
+body[data-fc-page="delivery"] .complete-btn {
+  background: var(--fc-green) !important;
+  color: #ffffff !important;
+}
+body[data-fc-page="delivery"] .complete-btn:hover {
+  background: var(--fc-green-hover) !important;
+}
+
+/* Confirmation modal semantic hierarchy. */
+body[data-fc-page="delivery"] #confirmModal .secondary-btn {
+  background: #ffffff !important;
+  color: #344054 !important;
+  border: 1px solid #d0d5dd !important;
+}
+body[data-fc-page="delivery"] #confirmModal .primary-btn {
+  background: var(--fc-orange) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--fc-orange) !important;
+}
+body[data-fc-page="delivery"] #confirmModal .confirm-icon {
+  background: #fff3e8 !important;
+  color: var(--fc-orange) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-success .primary-btn {
+  background: var(--fc-green) !important;
+  border-color: var(--fc-green) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-success .confirm-icon {
+  background: #ecfdf3 !important;
+  color: var(--fc-green) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-destructive .primary-btn {
+  background: var(--fc-red) !important;
+  border-color: var(--fc-red) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-destructive .confirm-icon {
+  background: #fef2f2 !important;
+  color: var(--fc-red) !important;
+}
+
+/* Toasts: smaller, non-stacking visual weight and semantic success tone. */
+body[data-fc-page="delivery"] .toast-container {
+  max-width: 360px;
+}
+body[data-fc-page="delivery"] .toast {
+  background: #ffffff !important;
+  border: 1px solid #bbf7d0 !important;
+  border-left: 5px solid var(--fc-green) !important;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, .18) !important;
+}
+body[data-fc-page="delivery"] .toast h4 {
+  color: var(--fc-green) !important;
+}
+body[data-fc-page="delivery"] .toast p {
+  color: #475467 !important;
+}
+
+/* Delivery detail modal: clearer footer and action separation. */
+html[data-theme="light"] body[data-fc-page="delivery"] .modal-footer {
+  background: #ffffff !important;
+  border-top-color: #e4e7ec !important;
+}
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-detail-box,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-item {
+  background: #f8fafc !important;
+  border-color: #e4e7ec !important;
+}
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-detail-box strong,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-item-info h4 {
+  color: #111827 !important;
+}
+
+/* Remove purple from the rider workflow. */
+body[data-fc-page="delivery"] .delivery-status-btn.pickup-btn,
+body[data-fc-page="delivery"] .delivery-status-btn.out-for-delivery-btn {
+  background: var(--fc-orange) !important;
+}
+
+@media (max-width: 768px) {
+  body[data-fc-page="delivery"] .delivery-header {
+    gap: 10px;
+  }
+  body[data-fc-page="delivery"] .delivery-header-actions {
+    gap: 8px;
+  }
+  body[data-fc-page="delivery"] .delivery-user-chip span {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 540px) {
+  body[data-fc-page="delivery"] .delivery-logo {
+    width: 42px;
+    height: 42px;
+  }
+  body[data-fc-page="delivery"] .delivery-user-chip span {
+    display: none;
+  }
+  body[data-fc-page="delivery"] .delivery-user-chip {
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+/* =========================================================
+   FOODCONNECT DELIVERY POLISH V2
+   Remaining light-mode UI consistency fixes
+   ========================================================= */
+body[data-fc-page="delivery"] {
+  /* Re-map legacy gold tokens to the FoodConnect orange family. */
+  --gold: #f97316;
+  --gold-hover: #ea580c;
+  --assigned: #f97316;
+  --fc-orange: #f97316;
+  --fc-orange-hover: #ea580c;
+  --fc-orange-soft: #fff1e8;
+  --fc-blue: #2563eb;
+  --fc-blue-soft: #eff6ff;
+  --fc-green: #16a34a;
+  --fc-green-soft: #ecfdf3;
+  --fc-red: #dc2626;
+  --fc-red-soft: #fef2f2;
+}
+
+/* Header logo: crop the transparent padding of the source image instead of
+   showing a large empty placeholder around a tiny mark. */
+body[data-fc-page="delivery"] .delivery-logo-shell {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+body[data-fc-page="delivery"] .delivery-logo-shell .delivery-logo {
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  transform: scale(1.95);
+  transform-origin: center;
+}
+body[data-fc-page="delivery"] .brand-area {
+  gap: 10px;
+}
+body[data-fc-page="delivery"] .delivery-user-chip i {
+  color: var(--fc-orange) !important;
+}
+
+/* Rider identity and dashboard metrics. */
+body[data-fc-page="delivery"] .rider-avatar {
+  color: var(--fc-orange) !important;
+  background: var(--fc-orange-soft) !important;
+}
+body[data-fc-page="delivery"] .summary-card:nth-child(1) > i {
+  color: var(--fc-orange) !important;
+  background: var(--fc-orange-soft) !important;
+}
+body[data-fc-page="delivery"] .summary-card:nth-child(2) > i {
+  color: var(--fc-blue) !important;
+  background: var(--fc-blue-soft) !important;
+}
+body[data-fc-page="delivery"] .summary-card:nth-child(3) > i {
+  color: var(--fc-green) !important;
+  background: var(--fc-green-soft) !important;
+}
+
+/* Tabs and main CTAs: orange means primary FoodConnect action. */
+body[data-fc-page="delivery"] .delivery-tab.active,
+body[data-fc-page="delivery"] .card-action-btn.primary,
+body[data-fc-page="delivery"] .view-details-btn,
+body[data-fc-page="delivery"] .pickup-btn,
+body[data-fc-page="delivery"] .out-for-delivery-btn {
+  background: var(--fc-orange) !important;
+  border-color: var(--fc-orange) !important;
+  color: #fff !important;
+}
+body[data-fc-page="delivery"] .delivery-tab.active:hover,
+body[data-fc-page="delivery"] .card-action-btn.primary:hover,
+body[data-fc-page="delivery"] .view-details-btn:hover,
+body[data-fc-page="delivery"] .pickup-btn:hover,
+body[data-fc-page="delivery"] .out-for-delivery-btn:hover {
+  background: var(--fc-orange-hover) !important;
+  border-color: var(--fc-orange-hover) !important;
+}
+body[data-fc-page="delivery"] .complete-btn {
+  background: var(--fc-green) !important;
+  border-color: var(--fc-green) !important;
+  color: #fff !important;
+}
+
+/* Semantic delivery statuses: no purple in the workflow. */
+body[data-fc-page="delivery"] .delivery-status-badge.accepted,
+body[data-fc-page="delivery"] .delivery-status-badge.picked_up {
+  color: var(--fc-blue) !important;
+  background: var(--fc-blue-soft) !important;
+  border-color: #bfdbfe !important;
+}
+body[data-fc-page="delivery"] .delivery-status-badge.out_for_delivery {
+  color: #c2410c !important;
+  background: #fff7ed !important;
+  border-color: #fed7aa !important;
+}
+body[data-fc-page="delivery"] .delivery-status-badge.completed {
+  color: var(--fc-green) !important;
+  background: var(--fc-green-soft) !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* Orange brand accents that were still mustard/gold in the screenshots. */
+body[data-fc-page="delivery"] :is(
+  .delivery-items-heading,
+  .delivery-items-header > span,
+  .delivery-map-header > div > span
+) {
+  color: var(--fc-orange) !important;
+}
+body[data-fc-page="delivery"] .delivery-order-item-price,
+body[data-fc-page="delivery"] .delivery-detail-box.amount strong,
+body[data-fc-page="delivery"] .delivery-detail-box.total strong {
+  color: var(--fc-orange) !important;
+}
+body[data-fc-page="delivery"] .delivery-map-legend div:first-child i {
+  color: var(--fc-orange) !important;
+}
+body[data-fc-page="delivery"] .rider-map-marker {
+  background: var(--fc-orange) !important;
+  color: #111827 !important;
+}
+
+/* Confirmation dialogs: Cancel is safe/neutral; Confirm follows the action. */
+body[data-fc-page="delivery"] #confirmModal .secondary-btn,
+body[data-fc-page="delivery"] #confirmCancelBtn {
+  background: #ffffff !important;
+  color: #344054 !important;
+  border: 1px solid #d0d5dd !important;
+}
+body[data-fc-page="delivery"] #confirmModal .secondary-btn:hover,
+body[data-fc-page="delivery"] #confirmCancelBtn:hover {
+  background: #f8fafc !important;
+  color: #111827 !important;
+  border-color: #98a2b3 !important;
+}
+body[data-fc-page="delivery"] #confirmModal .primary-btn,
+body[data-fc-page="delivery"] #confirmOkBtn {
+  background: var(--fc-orange) !important;
+  border-color: var(--fc-orange) !important;
+  color: #ffffff !important;
+}
+body[data-fc-page="delivery"] #confirmModal .confirm-icon {
+  color: var(--fc-orange) !important;
+  background: var(--fc-orange-soft) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-success .primary-btn,
+body[data-fc-page="delivery"] #confirmModal.confirm-success #confirmOkBtn {
+  background: var(--fc-green) !important;
+  border-color: var(--fc-green) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-success .confirm-icon {
+  color: var(--fc-green) !important;
+  background: var(--fc-green-soft) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-destructive .primary-btn,
+body[data-fc-page="delivery"] #confirmModal.confirm-destructive #confirmOkBtn {
+  background: var(--fc-red) !important;
+  border-color: var(--fc-red) !important;
+}
+body[data-fc-page="delivery"] #confirmModal.confirm-destructive .confirm-icon {
+  color: var(--fc-red) !important;
+  background: var(--fc-red-soft) !important;
+}
+
+/* Light-mode modal/card contrast and readability. */
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-item,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-detail-box,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-info-item {
+  background: #f8fafc !important;
+  color: #111827 !important;
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-left h4,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-item-info h4,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-order-item-info strong,
+html[data-theme="light"] body[data-fc-page="delivery"] .delivery-info-item strong {
+    color: #111827 !important;
+}
+
+/* Keep map controls above the map but below modal headers/footers. */
+body[data-fc-page="delivery"] .rider-delivery-map .leaflet-control-container {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 540px) {
+  body[data-fc-page="delivery"] .delivery-logo-shell {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  body[data-fc-page="delivery"] .delivery-logo-shell .delivery-logo {
+    width: 42px !important;
+    height: 42px !important;
+    transform: scale(1.95);
+  }
+}

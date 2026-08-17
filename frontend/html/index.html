@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="../css/style.css?v=20260817-7">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
@@ -1226,6 +1226,14 @@
 
         <button
           type="button"
+          id="staffForgotPasswordBtn"
+          class="staff-forgot-password-btn"
+        >
+          Forgot Password?
+        </button>
+
+        <button
+          type="button"
           id="backToAccessCodeBtn"
           class="portal-secondary-btn"
         >
@@ -1246,6 +1254,60 @@
           aria-live="assertive"
         ></p>
 
+      </div>
+
+      <div
+        id="staffPasswordChangeBox"
+        class="staff-password-change-box"
+        style="display: none;"
+      >
+        <div class="owner-login-description staff-password-change-note">
+          <p>
+            Your owner-issued password is temporary. Create a new private password before opening your dashboard.
+          </p>
+        </div>
+
+        <div class="staff-input-group">
+          <label for="staffNewPassword">
+            New Password
+          </label>
+          <input
+            type="password"
+            id="staffNewPassword"
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="At least 8 characters"
+          >
+        </div>
+
+        <div class="staff-input-group">
+          <label for="staffConfirmNewPassword">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            id="staffConfirmNewPassword"
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="Re-enter new password"
+          >
+        </div>
+
+        <button
+          type="button"
+          id="saveStaffNewPasswordBtn"
+          class="staff-login-btn"
+        >
+          Save New Password
+        </button>
+
+        <button
+          type="button"
+          id="backToStaffLoginFromPasswordBtn"
+          class="portal-secondary-btn"
+        >
+          Back to Staff Login
+        </button>
       </div>
 
       <div class="portal-divider">
@@ -1409,7 +1471,7 @@
   </div>
 </div>
 
-<script src="../js/homepage.js" defer></script>
+<script src="../js/homepage.js?v=20260817-staffpw1" defer></script>
 
 </body>
 </html>

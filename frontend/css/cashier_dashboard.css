@@ -1,3 +1,56 @@
+/* =========================================
+   FOODCONNECT ORANGE ICON POLISH
+   ========================================= */
+
+:root {
+  --fc-orange: #f97316;
+}
+
+/* Summary card icons */
+.summary-card i {
+  color: var(--fc-orange) !important;
+}
+
+/* Sidebar navigation icons */
+.nav-item i {
+  color: #64748b;
+}
+
+.nav-item.active i {
+  color: #ffffff !important;
+}
+
+/* Scan QR icon */
+.scan-order-qr-btn i {
+  color: #ffffff !important;
+}
+
+/* Notification sound icon */
+.sound-btn i {
+  color: var(--fc-orange) !important;
+}
+
+/* Cashier profile icon */
+.cashier-profile i {
+  color: var(--fc-orange) !important;
+}
+
+/* Search icon */
+.search-box > i {
+  color: var(--fc-orange) !important;
+}
+
+/* Order / modal section icons */
+.modal-body .fa-solid,
+.modal-body .fa-regular {
+  color: var(--fc-orange);
+}
+
+.summary-card > i,
+.summary-card .summary-icon {
+  color: #f97316 !important;
+  background: #fff1e8 !important;
+}
 
 * {
   margin: 0;
@@ -56,11 +109,12 @@ button {
   gap: 14px;
 }
 
-.logo-img{
-  width: 56px;
-  height: 56px;
+.logo-img {
+  width: 45px;
+  height: 45px;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 0;
+  display: block;
 }
 
 
@@ -92,18 +146,29 @@ button {
 .brand-logo {
   width: 45px;
   height: 45px;
-  border-radius: 12px;
-  background: var(--gold);
-  color: #111;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+
+  flex-shrink: 0;
 }
 
 .sidebar-header h2 {
   font-size: 19px;
   font-weight: 700;
+}
+
+.sidebar-header .brand-food {
+  color: #f47c1e;
+}
+
+.sidebar-header .brand-connect {
+  color: #22a447;
 }
 
 .sidebar-header p {
@@ -3253,3 +3318,499 @@ html[data-theme="light"] body[data-fc-page="cashier"] :is(
   border-color: var(--border-color);
 }
 /* FOODCONNECT CASHIER THEME END */
+
+/* FOODCONNECT CASHIER LIGHT UI POLISH START */
+
+/*
+  Semantic colors:
+  orange = FoodConnect primary/action
+  blue   = workflow/in-progress
+  green  = success/completed
+  red    = destructive/cancel/logout
+  gray   = neutral/utility/printing
+*/
+
+/* Brand/action orange */
+body[data-fc-page="cashier"] .scan-order-qr-btn {
+  background: #f47c1e !important;
+  border-color: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="cashier"] .scan-order-qr-btn:hover {
+  background: #df6810 !important;
+  border-color: #df6810 !important;
+  color: #ffffff !important;
+}
+
+/* Active filters/tabs = orange, not gold */
+body[data-fc-page="cashier"] .status-tab.active,
+body[data-fc-page="cashier"] .notification-filter-btn.active {
+  background: #f47c1e !important;
+  border-color: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="cashier"] .status-tab:hover,
+body[data-fc-page="cashier"] .notification-filter-btn:hover {
+  border-color: #f47c1e !important;
+  color: #f47c1e !important;
+}
+
+/* View = secondary orange outline */
+body[data-fc-page="cashier"] .view-order-btn {
+  background: #fff7ed !important;
+  border-color: #f47c1e !important;
+  color: #d95f0e !important;
+  font-weight: 600;
+}
+
+body[data-fc-page="cashier"] .view-order-btn:hover {
+  background: #f47c1e !important;
+  border-color: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+/* Search/select controls: remove the nested white-block appearance */
+html[data-theme="light"] body[data-fc-page="cashier"] .search-box {
+  background: #ffffff !important;
+  border-color: #dfe3e8 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .search-box input {
+  width: 100% !important;
+  min-width: 0;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .search-box input::placeholder {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .order-tools select {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #dfe3e8 !important;
+}
+
+/* Orders table: Light mode should not keep the legacy black header */
+html[data-theme="light"] body[data-fc-page="cashier"] .orders-table th {
+  background: #f8fafc !important;
+  color: #374151 !important;
+  border-top-color: #e5e7eb !important;
+  font-weight: 700;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .orders-table td {
+  color: #111827;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .orders-table tbody tr:hover {
+  background: #fff8f3 !important;
+}
+
+/* =========================
+   ORDER DETAILS MODAL
+========================= */
+
+/* Remove the dark slab from Light mode */
+html[data-theme="light"] body[data-fc-page="cashier"] #orderModal .modal-body {
+  background: #f5f7f9 !important;
+}
+
+/* Current Order hero = clean white + soft orange accent */
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-identity-card {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(244, 124, 30, .09),
+      rgba(255, 255, 255, .98)
+    ) !important;
+  border-color: rgba(244, 124, 30, .32) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-identity-card::after {
+  background: rgba(244, 124, 30, .06) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-overline,
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-identity-meta i {
+  color: #f47c1e !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-identity-main h2 {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-identity-meta span {
+  color: #667085 !important;
+}
+
+/* Queue card should not be black in Light mode */
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-queue-card {
+  background: #ffffff !important;
+  border-color: rgba(244, 124, 30, .32) !important;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, .05);
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-queue-card span {
+  color: #667085 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-queue-card strong {
+  color: #f47c1e !important;
+}
+
+/* Information sections */
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-section {
+  background: #ffffff !important;
+  border-color: #e3e7ed !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-section-icon {
+  background: #fff3e8 !important;
+  border-color: #ffd5b3 !important;
+  color: #f47c1e !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-section-heading h3 {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-section-heading p {
+  color: #667085 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-info-card,
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-order-item {
+  background: #f8fafc !important;
+  border-color: #e3e7ed !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-info-card span,
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-item-quantity {
+  color: #667085 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-info-card strong,
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-item-heading h4 {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-item-number {
+  background: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-item-subtotal {
+  color: #f47c1e !important;
+}
+
+/* Total/payment summary should remain visually important without a black card */
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-payment-card {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(244, 124, 30, .08),
+      #ffffff
+    ) !important;
+  border-color: rgba(244, 124, 30, .32) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-payment-card span {
+  color: #667085 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-payment-card strong {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .ticket-total strong {
+  color: #f47c1e !important;
+}
+
+/* Modal footer: keep actions readable and logically grouped */
+body[data-fc-page="cashier"] #orderModal .modal-footer {
+  gap: 12px;
+}
+
+body[data-fc-page="cashier"] #orderModal .modal-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Printing = neutral utility actions */
+body[data-fc-page="cashier"] #printReceiptBtn,
+body[data-fc-page="cashier"] #printKitchenTicketBtn {
+  background: #475467 !important;
+  border-color: #475467 !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="cashier"] #printReceiptBtn:hover,
+body[data-fc-page="cashier"] #printKitchenTicketBtn:hover {
+  background: #344054 !important;
+  border-color: #344054 !important;
+  color: #ffffff !important;
+}
+
+/* Workflow/in-progress = blue */
+body[data-fc-page="cashier"] #markPreparingBtn {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="cashier"] #markPreparingBtn:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Completion = green */
+body[data-fc-page="cashier"] #markCompletedBtn {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+}
+
+/* Cancellation = red */
+body[data-fc-page="cashier"] #markCancelledBtn {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="cashier"] #markCancelledBtn:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+/* Close = neutral, not destructive */
+html[data-theme="light"] body[data-fc-page="cashier"] #cancelModalBtn {
+  background: #ffffff !important;
+  border-color: #d0d5dd !important;
+  color: #344054 !important;
+}
+
+/* Notifications */
+html[data-theme="light"] body[data-fc-page="cashier"] .notification-filter-btn {
+  background: #ffffff !important;
+  border-color: #dfe3e8 !important;
+  color: #475467 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .notification-filter-btn.active {
+  background: #f47c1e !important;
+  border-color: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .mark-all-read-btn {
+  background: #ffffff !important;
+  border-color: #d0d5dd !important;
+  color: #344054 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .mark-all-read-btn:disabled {
+  background: #f2f4f7 !important;
+  border-color: #e4e7ec !important;
+  color: #98a2b3 !important;
+  opacity: 1 !important;
+}
+
+/* Responsive modal footer */
+@media (max-width: 760px) {
+  body[data-fc-page="cashier"] #orderModal .modal-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body[data-fc-page="cashier"] #orderModal .modal-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="cashier"] #orderModal .modal-actions button,
+  body[data-fc-page="cashier"] #cancelModalBtn {
+    width: 100%;
+  }
+}
+
+/* FOODCONNECT CASHIER LIGHT UI POLISH END */
+
+/* =========================================
+   LOGOUT CONFIRMATION — DESTRUCTIVE STYLE
+   ========================================= */
+
+#confirmModal.logout-confirmation .confirm-icon {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+}
+
+#confirmModal.logout-confirmation .confirm-ok-btn {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #dc2626 !important;
+}
+
+#confirmModal.logout-confirmation .confirm-ok-btn:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+#confirmModal.logout-confirmation .confirm-cancel-btn {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+#confirmModal.logout-confirmation .confirm-cancel-btn:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+}
+/* =========================================================
+   FOODCONNECT CASHIER FINAL UI/UX CONSISTENCY PASS
+   2026-08-17
+========================================================= */
+body[data-fc-page="cashier"] {
+  --fc-action-orange: #f97316;
+  --fc-action-orange-hover: #ea580c;
+  --fc-danger: #dc2626;
+  --fc-danger-hover: #b91c1c;
+  --fc-success: #16a34a;
+  --fc-info: #2563eb;
+}
+
+/* Generic confirmations: cancel is neutral, primary action is orange. */
+body[data-fc-page="cashier"] #confirmModal:not(.logout-confirmation) .confirm-cancel-btn {
+  background: #ffffff !important;
+  color: #344054 !important;
+  border: 1px solid #d0d5dd !important;
+}
+body[data-fc-page="cashier"] #confirmModal:not(.logout-confirmation) .confirm-cancel-btn:hover {
+  background: #f9fafb !important;
+  color: #111827 !important;
+  border-color: #98a2b3 !important;
+}
+body[data-fc-page="cashier"] #confirmModal:not(.logout-confirmation) .confirm-ok-btn {
+  background: var(--fc-action-orange) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--fc-action-orange) !important;
+}
+body[data-fc-page="cashier"] #confirmModal:not(.logout-confirmation) .confirm-ok-btn:hover {
+  background: var(--fc-action-orange-hover) !important;
+  border-color: var(--fc-action-orange-hover) !important;
+}
+body[data-fc-page="cashier"] #confirmModal:not(.logout-confirmation) .confirm-icon {
+  background: #fff3e8 !important;
+  color: var(--fc-action-orange) !important;
+}
+
+/* Assign rider uses the same light surface system in light mode. */
+html[data-theme="light"] body[data-fc-page="cashier"] .assign-rider-modal {
+  background: #ffffff !important;
+  border-color: #e4e7ec !important;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, .22) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assign-rider-header,
+html[data-theme="light"] body[data-fc-page="cashier"] .assign-rider-footer {
+  background: #ffffff !important;
+  border-color: #e4e7ec !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assign-rider-header-icon,
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-section-icon {
+  background: #fff3e8 !important;
+  border-color: #ffd7ba !important;
+  color: var(--fc-action-orange) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assign-rider-overline,
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-select-wrapper > i:first-child,
+html[data-theme="light"] body[data-fc-page="cashier"] .fixed-fee-content strong {
+  color: var(--fc-action-orange) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-section,
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-summary-item,
+html[data-theme="light"] body[data-fc-page="cashier"] .fixed-delivery-fee-card {
+  background: #f8fafc !important;
+  border-color: #e4e7ec !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-rider-field label,
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-section-heading h3,
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-summary-item strong,
+html[data-theme="light"] body[data-fc-page="cashier"] .fixed-fee-content strong {
+  color: #111827 !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-select-wrapper select {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d0d5dd !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-select-wrapper select:focus {
+  border-color: var(--fc-action-orange) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, .14) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .fixed-fee-icon {
+  background: #ffffff !important;
+  border-color: #ffd7ba !important;
+  color: var(--fc-action-orange) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-note {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-note strong {
+  color: #1e3a8a !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-submit-btn {
+  background: var(--fc-action-orange) !important;
+  border-color: var(--fc-action-orange) !important;
+  color: #ffffff !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-submit-btn:hover:not(:disabled) {
+  background: var(--fc-action-orange-hover) !important;
+  border-color: var(--fc-action-orange-hover) !important;
+}
+html[data-theme="light"] body[data-fc-page="cashier"] .assignment-back-btn {
+  background: #ffffff !important;
+  border-color: #d0d5dd !important;
+  color: #344054 !important;
+}
+
+/* Clear semantic icon treatment across summary cards. */
+body[data-fc-page="cashier"] .summary-icon,
+body[data-fc-page="cashier"] .summary-card i {
+  color: var(--fc-action-orange) !important;
+}
+
+/* Stronger responsive behaviour for action-heavy modals. */
+@media (max-width: 760px) {
+  body[data-fc-page="cashier"] .assign-rider-modal {
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+  }
+  body[data-fc-page="cashier"] .assignment-order-summary {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  body[data-fc-page="cashier"] .assign-rider-footer {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+  body[data-fc-page="cashier"] .assignment-back-btn,
+  body[data-fc-page="cashier"] .assignment-submit-btn {
+    width: 100% !important;
+  }
+}
+@media (max-width: 480px) {
+  body[data-fc-page="cashier"] .assignment-order-summary {
+    grid-template-columns: 1fr !important;
+  }
+  body[data-fc-page="cashier"] .assignment-summary-item.assignment-address {
+    grid-column: auto !important;
+  }
+}

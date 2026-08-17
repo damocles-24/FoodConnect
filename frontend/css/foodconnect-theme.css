@@ -181,3 +181,431 @@ html[data-theme="dark"] .theme-icon-toggle .theme-sun {
     display: none;
   }
 }
+
+/* FOODCONNECT SEMANTIC COLOR SYSTEM V1 START */
+:root {
+  /* Brand / action */
+  --fc-primary: #f47c1e;
+  --fc-primary-hover: #df6810;
+  --fc-primary-soft: #fff4eb;
+  --fc-primary-border: #fdba86;
+
+  /* Success / positive */
+  --fc-success: #15803d;
+  --fc-success-hover: #166534;
+  --fc-success-soft: #f0fdf4;
+  --fc-success-border: #bbf7d0;
+
+  /* Destructive / exit / cancel */
+  --fc-danger: #dc2626;
+  --fc-danger-hover: #b91c1c;
+  --fc-danger-soft: #fef2f2;
+  --fc-danger-border: #fecaca;
+
+  /* Warning / pending */
+  --fc-warning: #d97706;
+  --fc-warning-hover: #b45309;
+  --fc-warning-soft: #fffbeb;
+  --fc-warning-border: #fde68a;
+
+  /* Information / processing */
+  --fc-info: #2563eb;
+  --fc-info-hover: #1d4ed8;
+  --fc-info-soft: #eff6ff;
+  --fc-info-border: #bfdbfe;
+
+  /* Neutral */
+  --fc-neutral: #475467;
+  --fc-neutral-dark: #344054;
+  --fc-neutral-soft: #f8fafc;
+  --fc-neutral-border: #d0d5dd;
+  --fc-disabled: #98a2b3;
+}
+
+html[data-theme="dark"] {
+  --fc-primary-soft: rgba(244,124,30,.12);
+  --fc-primary-border: rgba(244,124,30,.34);
+  --fc-success-soft: rgba(21,128,61,.14);
+  --fc-success-border: rgba(74,222,128,.28);
+  --fc-danger-soft: rgba(220,38,38,.13);
+  --fc-danger-border: rgba(248,113,113,.30);
+  --fc-warning-soft: rgba(217,119,6,.14);
+  --fc-warning-border: rgba(251,191,36,.28);
+  --fc-info-soft: rgba(37,99,235,.15);
+  --fc-info-border: rgba(96,165,250,.30);
+  --fc-neutral-soft: #20242a;
+  --fc-neutral-border: #3a4048;
+  --fc-neutral: #d0d5dd;
+  --fc-neutral-dark: #f5f7fa;
+}
+
+/* ---------------------------------------------------------
+   PRIMARY FOODCONNECT ACTIONS = ORANGE
+--------------------------------------------------------- */
+:is(
+  .primary-btn,
+  .primary-button,
+  .checkout-button,
+  .place-order-button,
+  .partner-apply-button,
+  .assignment-submit-btn,
+  .qr-scanner-start-btn,
+  .register-another-button,
+  .portal-owner-btn,
+  .staff-login-btn,
+  .settings-save-btn,
+  .settings-logo-upload-btn,
+  .settings-hours-copy-btn,
+  .analytics-primary-btn,
+  .inventory-clear-button:not(:disabled),
+  .restock-save-btn,
+  .product-add-btn,
+  .add-to-cart,
+  #confirmProductAddToCart,
+  #regenerateStaffAccessCode,
+  #saveProductBtn,
+  #updateProductBtn,
+  #saveAddonBtn,
+  #saveUserBtn,
+  #updateUserBtn,
+  #submitButton
+) {
+  background: var(--fc-primary) !important;
+  border-color: var(--fc-primary) !important;
+  color: #fff !important;
+}
+
+:is(
+  .primary-btn,
+  .primary-button,
+  .checkout-button,
+  .place-order-button,
+  .partner-apply-button,
+  .assignment-submit-btn,
+  .qr-scanner-start-btn,
+  .register-another-button,
+  .portal-owner-btn,
+  .staff-login-btn,
+  .settings-save-btn,
+  .settings-logo-upload-btn,
+  .settings-hours-copy-btn,
+  .analytics-primary-btn,
+  .restock-save-btn,
+  .product-add-btn,
+  .add-to-cart,
+  #confirmProductAddToCart,
+  #regenerateStaffAccessCode
+):hover:not(:disabled) {
+  background: var(--fc-primary-hover) !important;
+  border-color: var(--fc-primary-hover) !important;
+  color: #fff !important;
+}
+
+/* Active navigation / selected controls = orange brand state */
+:is(
+  .nav-item.active,
+  .status-filter.active,
+  .filter-btn.active,
+  .customer-order-filter.active,
+  .notification-filter-btn.active,
+  .product-management-tab.active,
+  .theme-choice.active
+) {
+  border-color: var(--fc-primary) !important;
+}
+
+.nav-item.active,
+.status-filter.active,
+.filter-btn.active,
+.customer-order-filter.active,
+.product-management-tab.active {
+  background: var(--fc-primary) !important;
+  color: #fff !important;
+}
+
+/* ---------------------------------------------------------
+   DESTRUCTIVE / EXIT / CANCEL = RED
+--------------------------------------------------------- */
+:is(
+  .logout-btn,
+  .logout-button,
+  .danger-dropdown-btn,
+  .danger-btn,
+  .delete-btn,
+  .image-remove-btn,
+  .logo-remove-button,
+  .settings-logo-remove-btn,
+  .clear-cart-button,
+  .clear-completed-orders-button,
+  .confirm-cancel-order-button,
+  .confirm-cancel-order-btn,
+  .status-action-btn.cancel-btn,
+  #markCancelledBtn,
+  #confirmCancelOrderBtn,
+  #confirmCustomerCancelBtn,
+  #confirmDeactivateBtn,
+  #openDeactivateBtn,
+  #logoutSettingsBtn,
+  #adminLogoutButton,
+  #logoutButton,
+  #logoutBtn
+) {
+  background: var(--fc-danger) !important;
+  border-color: var(--fc-danger) !important;
+  color: #fff !important;
+}
+
+:is(
+  .logout-btn,
+  .logout-button,
+  .danger-dropdown-btn,
+  .danger-btn,
+  .delete-btn,
+  .image-remove-btn,
+  .logo-remove-button,
+  .settings-logo-remove-btn,
+  .clear-cart-button,
+  .clear-completed-orders-button,
+  .confirm-cancel-order-button,
+  .confirm-cancel-order-btn,
+  .status-action-btn.cancel-btn,
+  #confirmDeactivateBtn,
+  #openDeactivateBtn,
+  #logoutSettingsBtn,
+  #adminLogoutButton,
+  #logoutButton,
+  #logoutBtn
+):hover:not(:disabled) {
+  background: var(--fc-danger-hover) !important;
+  border-color: var(--fc-danger-hover) !important;
+  color: #fff !important;
+}
+
+/* Explicit Cancel buttons requested as red. */
+:is(
+  #cancelBtn,
+  #cancelDeactivateBtn,
+  #confirmCancelBtn,
+  #cancelAssignRiderBtn,
+  #cancelAddProductBtn,
+  #cancelAddonBtn,
+  #cancelEditProductBtn,
+  #cancelRestockBtn
+) {
+  background: var(--fc-danger) !important;
+  border-color: var(--fc-danger) !important;
+  color: #fff !important;
+}
+
+/* Staff-row destructive secondary buttons */
+#usersList .action-btn.secondary {
+  background: var(--fc-danger-soft) !important;
+  border: 1px solid var(--fc-danger-border) !important;
+  color: var(--fc-danger) !important;
+}
+#usersList .action-btn.secondary:hover:not(:disabled) {
+  background: var(--fc-danger) !important;
+  border-color: var(--fc-danger) !important;
+  color: #fff !important;
+}
+
+/* ---------------------------------------------------------
+   SUCCESS / POSITIVE = GREEN
+--------------------------------------------------------- */
+:is(
+  .status-badge.completed,
+  .status-badge.picked_up_by_customer,
+  .customer-order-status.completed,
+  .customer-order-status.picked-up-by-customer,
+  .customer-order-status.picked_up_by_customer,
+  .status-approved,
+  .activity-log-action-badge.success,
+  .application-review-message.success,
+  .dashboard-message.success,
+  .platform-users-message.success,
+  .activity-logs-message.success,
+  .inline-status.success,
+  .verification-file-status.success,
+  .status-message.success
+) {
+  color: var(--fc-success) !important;
+  background: var(--fc-success-soft) !important;
+  border-color: var(--fc-success-border) !important;
+}
+
+/* Owner semantic positive states */
+:is(
+  .status-pill.active,
+  .availability-badge,
+  .inventory-status-available,
+  .settings-status-card.is-open,
+  .addon-card-status.available
+) {
+  color: var(--fc-success) !important;
+}
+
+/* ---------------------------------------------------------
+   WARNING / PENDING = AMBER
+--------------------------------------------------------- */
+:is(
+  .status-badge.pending,
+  .customer-order-status.waiting_for_qr,
+  .customer-order-status.waiting_for_payment,
+  .status-submitted,
+  .status-needs_changes,
+  .activity-log-action-badge.warning,
+  .inventory-status-warning
+) {
+  color: var(--fc-warning) !important;
+  background: var(--fc-warning-soft) !important;
+  border-color: var(--fc-warning-border) !important;
+}
+
+/* ---------------------------------------------------------
+   INFO / IN PROGRESS = BLUE
+--------------------------------------------------------- */
+:is(
+  .status-badge.preparing,
+  .status-badge.ready,
+  .status-badge.assigned,
+  .status-badge.out_for_delivery,
+  .status-badge.out-for-delivery,
+  .customer-order-status.order-received,
+  .customer-order-status.order_received,
+  .customer-order-status.preparing,
+  .customer-order-status.out-for-delivery,
+  .customer-order-status.out_for_delivery,
+  .status-draft,
+  .status-email_pending
+) {
+  color: var(--fc-info) !important;
+  background: var(--fc-info-soft) !important;
+  border-color: var(--fc-info-border) !important;
+}
+
+/* ---------------------------------------------------------
+   FAILED / REJECTED / CANCELLED = RED SEMANTIC BADGE
+--------------------------------------------------------- */
+:is(
+  .status-badge.cancelled,
+  .customer-order-status.cancelled,
+  .customer-order-status.canceled,
+  .status-rejected,
+  .activity-log-action-badge.danger,
+  .inventory-status-danger,
+  .status-message.error,
+  .status-message.danger
+) {
+  color: var(--fc-danger) !important;
+  background: var(--fc-danger-soft) !important;
+  border-color: var(--fc-danger-border) !important;
+}
+
+/* ---------------------------------------------------------
+   NEUTRAL / NAVIGATION / DISMISS = GRAY
+   Back, Close, Keep Order, Copy, Clear Filters are NOT errors.
+--------------------------------------------------------- */
+:is(
+  .secondary-btn,
+  .secondary-button,
+  .portal-secondary-btn,
+  .secondary-checkout-button,
+  .back-button,
+  .assignment-back-btn,
+  .qr-scanner-close-btn,
+  .cancel-modal-btn,
+  .close-modal-btn,
+  .close-btn,
+  .staff-close-btn,
+  .restock-close-btn,
+  .activity-clear-btn,
+  .partner-request-clear-button,
+  #copyStaffAccessCode,
+  #backCustomerCancelModal
+) {
+  background: var(--fc-neutral-soft) !important;
+  border-color: var(--fc-neutral-border) !important;
+  color: var(--fc-neutral-dark) !important;
+}
+
+/* But explicit red Cancel IDs override the generic secondary rule. */
+:is(
+  #cancelBtn,
+  #cancelDeactivateBtn,
+  #confirmCancelBtn,
+  #cancelAssignRiderBtn,
+  #cancelAddProductBtn,
+  #cancelAddonBtn,
+  #cancelEditProductBtn,
+  #cancelRestockBtn
+) {
+  background: var(--fc-danger) !important;
+  border-color: var(--fc-danger) !important;
+  color: #fff !important;
+}
+
+/* Disabled = gray, regardless of semantic color. */
+button:disabled,
+.button:disabled,
+.btn:disabled,
+.primary-btn:disabled,
+.primary-button:disabled,
+.secondary-btn:disabled,
+.secondary-button:disabled {
+  background: var(--fc-neutral-soft) !important;
+  border-color: var(--fc-neutral-border) !important;
+  color: var(--fc-disabled) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+/* Focus ring: consistent across the product. */
+:is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(244,124,30,.24) !important;
+  outline-offset: 2px;
+}
+
+/* FOODCONNECT SEMANTIC COLOR SYSTEM V1 END */
+
+/* FOODCONNECT SEMANTIC DISABLED ACTION POLISH START */
+
+/*
+  Disabled destructive actions are NEUTRAL, not black and not red.
+  Red communicates that an action can actually destroy something.
+*/
+
+html[data-theme="light"] body[data-fc-page="owner"]
+#usersTableBody .action-btn.secondary:disabled {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+#usersTableBody .action-btn.secondary:disabled {
+  background: #23272d !important;
+  border-color: #343a43 !important;
+  color: #6b7280 !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+/* Enabled destructive Delete = red */
+body[data-fc-page="owner"]
+#usersTableBody .action-btn.secondary:not(:disabled) {
+  background: var(--fc-danger) !important;
+  border-color: var(--fc-danger) !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="owner"]
+#usersTableBody .action-btn.secondary:not(:disabled):hover {
+  background: var(--fc-danger-hover) !important;
+  border-color: var(--fc-danger-hover) !important;
+  color: #ffffff !important;
+}
+
+/* FOODCONNECT SEMANTIC DISABLED ACTION POLISH END */

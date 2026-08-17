@@ -106,6 +106,36 @@ document.addEventListener(
         "staffLoginBtn"
       );
 
+    const staffForgotPasswordBtn =
+      document.getElementById(
+        "staffForgotPasswordBtn"
+      );
+
+    const staffPasswordChangeBox =
+      document.getElementById(
+        "staffPasswordChangeBox"
+      );
+
+    const staffNewPassword =
+      document.getElementById(
+        "staffNewPassword"
+      );
+
+    const staffConfirmNewPassword =
+      document.getElementById(
+        "staffConfirmNewPassword"
+      );
+
+    const saveStaffNewPasswordBtn =
+      document.getElementById(
+        "saveStaffNewPasswordBtn"
+      );
+
+    const backToStaffLoginFromPasswordBtn =
+      document.getElementById(
+        "backToStaffLoginFromPasswordBtn"
+      );
+
     const staffLoginMsg =
       document.getElementById(
         "staffLoginMsg"
@@ -388,7 +418,21 @@ let restaurantsPageCards = [];
        PORTAL VIEWS
     ========================= */
 
+    function setStaffRestaurantSelectorVisible(isVisible) {
+      const restaurantGroup =
+        staffRestaurantId?.closest(
+          ".staff-input-group"
+        );
+
+      if (restaurantGroup) {
+        restaurantGroup.style.display =
+          isVisible ? "block" : "none";
+      }
+    }
+
     function showStaffAccessView() {
+      setStaffRestaurantSelectorVisible(true);
+
       if (staffAccessPanel) {
         staffAccessPanel.style.display =
           "block";
@@ -411,6 +455,11 @@ let restaurantsPageCards = [];
 
       if (staffLoginBox) {
         staffLoginBox.style.display =
+          "none";
+      }
+
+      if (staffPasswordChangeBox) {
+        staffPasswordChangeBox.style.display =
           "none";
       }
 
@@ -441,6 +490,13 @@ let restaurantsPageCards = [];
     }
 
     function showStaffCredentialsView() {
+      /*
+       * The restaurant was already verified by the access code.
+       * Keep its value internally, but do not ask the staff member
+       * to select the same restaurant a second time.
+       */
+      setStaffRestaurantSelectorVisible(false);
+
       if (staffCodeBox) {
         staffCodeBox.style.display =
           "none";
@@ -451,10 +507,71 @@ let restaurantsPageCards = [];
           "block";
       }
 
+      if (staffPasswordChangeBox) {
+        staffPasswordChangeBox.style.display =
+          "none";
+      }
+
       setStaffMessage("");
 
       window.setTimeout(() => {
         staffEmail?.focus();
+      }, 50);
+    }
+
+    function showStaffPasswordChangeView(
+      staffName = ""
+    ) {
+      /* The verified restaurant remains locked in the server session. */
+      setStaffRestaurantSelectorVisible(false);
+
+      if (staffCodeBox) {
+        staffCodeBox.style.display =
+          "none";
+      }
+
+      if (staffLoginBox) {
+        staffLoginBox.style.display =
+          "none";
+      }
+
+      if (staffPasswordChangeBox) {
+        staffPasswordChangeBox.style.display =
+          "block";
+      }
+
+      if (staffPortalTitle) {
+        staffPortalTitle.textContent =
+          "Create New Password";
+      }
+
+      if (staffPortalSubtitle) {
+        staffPortalSubtitle.textContent =
+          staffName
+            ? `${staffName}, secure your staff account`
+            : "Secure your staff account";
+      }
+
+      if (staffPortalIcon) {
+        staffPortalIcon.className =
+          "fa-solid fa-key";
+      }
+
+      if (staffNewPassword) {
+        staffNewPassword.value = "";
+      }
+
+      if (staffConfirmNewPassword) {
+        staffConfirmNewPassword.value = "";
+      }
+
+      setStaffMessage(
+        "Your temporary password was accepted. Create a new private password to continue.",
+        "info"
+      );
+
+      window.setTimeout(() => {
+        staffNewPassword?.focus();
       }, 50);
     }
 
@@ -2781,6 +2898,16 @@ ownerVerificationCode?.addEventListener(
             return;
           }
 
+          if (data.must_change_password === true) {
+            showStaffPasswordChangeView(
+              String(
+                data.user?.full_name || ""
+              )
+            );
+
+            return;
+          }
+
           const role =
             String(
               data.user?.role || ""
@@ -2854,6 +2981,153 @@ ownerVerificationCode?.addEventListener(
     );
 
     /* =========================
+       STAFF PASSWORD RECOVERY
+    ========================= */
+
+    staffForgotPasswordBtn?.addEventListener(
+      "click",
+      () => {
+        setStaffMessage(
+          "Forgot your password? Contact your restaurant owner. The owner can issue a temporary password from Staff Management. FoodConnect never shows your current password.",
+          "info"
+        );
+      }
+    );
+
+    backToStaffLoginFromPasswordBtn?.addEventListener(
+      "click",
+      () => {
+        showStaffCredentialsView();
+      }
+    );
+
+    saveStaffNewPasswordBtn?.addEventListener(
+      "click",
+      async () => {
+        const newPassword =
+          staffNewPassword?.value || "";
+
+        const confirmPassword =
+          staffConfirmNewPassword?.value || "";
+
+        setStaffMessage("");
+
+        if (newPassword.length < 8) {
+          setStaffMessage(
+            "New password must contain at least 8 characters."
+          );
+          staffNewPassword?.focus();
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          setStaffMessage(
+            "New password and confirmation do not match."
+          );
+          staffConfirmNewPassword?.focus();
+          return;
+        }
+
+        const originalText =
+          saveStaffNewPasswordBtn.textContent;
+
+        try {
+          saveStaffNewPasswordBtn.disabled =
+            true;
+
+          saveStaffNewPasswordBtn.textContent =
+            "Saving...";
+
+          const response =
+            await fetch(
+              `${window.API}/change_staff_temporary_password.php`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                  "Accept":
+                    "application/json"
+                },
+                body: JSON.stringify({
+                  new_password:
+                    newPassword,
+                  confirm_password:
+                    confirmPassword
+                })
+              }
+            );
+
+          const data =
+            await readJsonResponse(
+              response
+            );
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+            setStaffMessage(
+              data.message ||
+              "Unable to update the password."
+            );
+
+            return;
+          }
+
+          setStaffMessage(
+            "Password updated successfully. Opening your dashboard...",
+            "success"
+          );
+
+          const role =
+            String(
+              data.user?.role || ""
+            ).toLowerCase();
+
+          window.setTimeout(() => {
+            if (role === "cashier") {
+              window.location.href =
+                "cashier_dashboard.html";
+              return;
+            }
+
+            if (
+              role === "delivery_staff" ||
+              role === "delivery_coordinator"
+            ) {
+              window.location.href =
+                "delivery_dashboard.html";
+              return;
+            }
+
+            setStaffMessage(
+              "Password updated, but this account does not have an available dashboard."
+            );
+          }, 550);
+
+        } catch (error) {
+          console.error(
+            "Staff password change failed:",
+            error
+          );
+
+          setStaffMessage(
+            "Unable to connect. Please check your connection and try again."
+          );
+
+        } finally {
+          saveStaffNewPasswordBtn.disabled =
+            false;
+
+          saveStaffNewPasswordBtn.textContent =
+            originalText;
+        }
+      }
+    );
+
+    /* =========================
        ENTER KEY SHORTCUTS
     ========================= */
 
@@ -2886,6 +3160,26 @@ ownerVerificationCode?.addEventListener(
           event.preventDefault();
 
           staffLoginBtn?.click();
+        }
+      }
+    );
+
+    staffNewPassword?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          staffConfirmNewPassword?.focus();
+        }
+      }
+    );
+
+    staffConfirmNewPassword?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          saveStaffNewPasswordBtn?.click();
         }
       }
     );

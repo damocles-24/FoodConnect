@@ -517,7 +517,47 @@ const closeAddUserModal = document.getElementById("closeAddUserModal");
 const closeEditUserModal = document.getElementById("closeEditUserModal");
 
 const saveUserBtn = document.getElementById("saveUserBtn");
-const updateUserBtn = document.getElementById("updateUserBtn"); 
+const updateUserBtn = document.getElementById("updateUserBtn");
+
+const resetStaffPasswordModal =
+  document.getElementById(
+    "resetStaffPasswordModal"
+  );
+
+const closeResetStaffPasswordModalBtn =
+  document.getElementById(
+    "closeResetStaffPasswordModal"
+  );
+
+const cancelResetStaffPasswordBtn =
+  document.getElementById(
+    "cancelResetStaffPasswordBtn"
+  );
+
+const saveResetStaffPasswordBtn =
+  document.getElementById(
+    "saveResetStaffPasswordBtn"
+  );
+
+const resetStaffUserId =
+  document.getElementById(
+    "resetStaffUserId"
+  );
+
+const resetStaffUserName =
+  document.getElementById(
+    "resetStaffUserName"
+  );
+
+const resetStaffTemporaryPassword =
+  document.getElementById(
+    "resetStaffTemporaryPassword"
+  );
+
+const resetStaffConfirmPassword =
+  document.getElementById(
+    "resetStaffConfirmPassword"
+  );
 
 const logsList =
   document.getElementById(
@@ -2477,6 +2517,11 @@ async function loadProducts() {
       p.category ||
       "Uncategorized",
 
+    description:
+      String(
+        p.description || ""
+      ).trim(),
+
     itemType:
       String(p.item_type || "menu_item").trim().toLowerCase() === "add_on"
         ? "add_on"
@@ -2889,6 +2934,10 @@ async function loadUsers() {
             u.address || "",
           status:
             Number(u.status),
+          must_change_password:
+            Number(
+              u.must_change_password || 0
+            ),
           created_at:
             u.created_at
         }))
@@ -5244,36 +5293,92 @@ function applyInventoryFilters() {
   renderInventory(list);
 }
 
+function formatUserRoleLabel(role) {
+  return String(role || "")
+    .trim()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, character => character.toUpperCase());
+}
+
 function renderUsers(list = users) {
   if (!usersTableBody) return;
 
   usersTableBody.innerHTML = list.length
-    ? list.map(u => `
-      <tr>
-        <td>${u.full_name}</td>
-        <td>${u.email}</td>
-<td>${window.FoodConnectPhone.format(u.contact_number, "-")}</td>
-<td>${u.address || "-"}</td>
-<td>
-  <span class="user-role-badge user-role-${u.role}">
-            ${u.role}
-          </span>
-        </td>
-        <td>
-          <span class="user-status-badge ${u.status == 1 ? "user-status-active" : "user-status-inactive"}">
-            ${u.status == 1 ? "Active" : "Inactive"}
-          </span>
-        </td>
-        <td>${u.created_at}</td>
-        <td>
-          <div class="user-actions">
-            <button class="action-btn" onclick="openEditUserModal(${u.id})">Edit</button>
-            <button class="action-btn secondary" onclick="deleteUser(${u.id})">Delete</button>
-          </div>
-        </td>
-      </tr>
-    `).join("")
-    : `<tr><td colspan="8">No users found.</td></tr>`;
+    ? list.map(u => {
+        const isOwner =
+          String(u.role || "")
+            .toLowerCase() ===
+          "owner";
+
+        const passwordRequired =
+          Number(
+            u.must_change_password || 0
+          ) === 1;
+
+        const roleLabel =
+          formatUserRoleLabel(u.role);
+
+        return `
+          <tr>
+            <td class="user-name-cell">${escapeHtml(u.full_name)}</td>
+            <td class="user-email-cell">${escapeHtml(u.email)}</td>
+            <td class="user-contact-cell">${escapeHtml(window.FoodConnectPhone.format(u.contact_number, "-"))}</td>
+            <td class="user-address-cell">${escapeHtml(u.address || "-")}</td>
+            <td class="user-role-cell">
+              <span class="user-role-badge user-role-${escapeHtml(u.role)}">
+                ${escapeHtml(roleLabel)}
+              </span>
+            </td>
+            <td class="user-status-cell">
+              <span class="user-status-badge ${u.status == 1 ? "user-status-active" : "user-status-inactive"}">
+                ${u.status == 1 ? "Active" : "Inactive"}
+              </span>
+              ${
+                !isOwner && passwordRequired
+                  ? `
+                    <span class="staff-password-required-badge">
+                      Password change required
+                    </span>
+                  `
+                  : ""
+              }
+            </td>
+            <td class="user-created-cell">${escapeHtml(u.created_at || "-")}</td>
+            <td class="user-actions-cell">
+              <div class="user-actions">
+                <button
+                  class="action-btn"
+                  onclick="openEditUserModal(${Number(u.id)})"
+                >
+                  Edit
+                </button>
+
+                ${
+                  !isOwner
+                    ? `
+                      <button
+                        class="action-btn reset-password-btn"
+                        onclick="openResetStaffPasswordModal(${Number(u.id)})"
+                      >
+                        Reset Password
+                      </button>
+                    `
+                    : ""
+                }
+
+                <button
+                  class="action-btn secondary"
+                  onclick="deleteUser(${Number(u.id)})"
+                  ${isOwner ? "disabled" : ""}
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("")
+    : `<tr><td colspan="8" class="users-empty-state">No users found.</td></tr>`;
 }
 
 function formatActivityRole(
@@ -6559,6 +6664,11 @@ if (saveProductBtn) {
           "productCategory"
         );
 
+      const descriptionInput =
+        document.getElementById(
+          "productDescription"
+        );
+
       const sizeInput =
         document.getElementById(
           "productSize"
@@ -6615,6 +6725,9 @@ const discountEnd =
       const category =
         categoryInput?.value.trim() || "";
 
+      const description =
+        descriptionInput?.value.trim() || "";
+
       const size =
         sizeInput?.value.trim() || "";
 
@@ -6641,6 +6754,14 @@ const discountEnd =
           "Product category is required."
         );
         categoryInput?.focus();
+        return;
+      }
+
+      if (description.length > 1000) {
+        alert(
+          "Product description cannot exceed 1000 characters."
+        );
+        descriptionInput?.focus();
         return;
       }
 
@@ -6903,6 +7024,11 @@ const discountEnd =
       );
 
       formData.append(
+        "description",
+        description
+      );
+
+      formData.append(
         "size",
         size
       );
@@ -7009,6 +7135,9 @@ formData.append(
 
         nameInput.value = "";
         categoryInput.value = "";
+        if (descriptionInput) {
+          descriptionInput.value = "";
+        }
         sizeInput.value = "";
         priceInput.value = "";
         stockInput.value = "0";
@@ -7071,6 +7200,11 @@ if (updateProductBtn) {
       const category =
         document.getElementById(
           "editProductCategory"
+        )?.value.trim() || "";
+
+      const description =
+        document.getElementById(
+          "editProductDescription"
         )?.value.trim() || "";
 
       const size =
@@ -7152,6 +7286,16 @@ if (updateProductBtn) {
         return;
       }
 
+      if (description.length > 1000) {
+        alert(
+          "Product description cannot exceed 1000 characters."
+        );
+        document.getElementById(
+          "editProductDescription"
+        )?.focus();
+        return;
+      }
+
       if (
         !Number.isFinite(price) ||
         price <= 0
@@ -7197,6 +7341,11 @@ if (updateProductBtn) {
       formData.append(
         "category",
         category
+      );
+
+      formData.append(
+        "description",
+        description
       );
 
       formData.append(
@@ -8699,6 +8848,276 @@ document.getElementById("editUserAddress").value = user.address || "";
   editUserModal.classList.add("show");
 };
 
+function showOwnerActionToast(message, type = "success") {
+  let toast =
+    document.getElementById(
+      "ownerActionToast"
+    );
+
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "ownerActionToast";
+    toast.className = "owner-action-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    document.body.appendChild(toast);
+  }
+
+  window.clearTimeout(
+    showOwnerActionToast.hideTimer
+  );
+
+  toast.className =
+    `owner-action-toast ${type}`;
+  toast.textContent = String(message || "");
+
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
+
+  showOwnerActionToast.hideTimer =
+    window.setTimeout(() => {
+      toast.classList.remove("show");
+    }, 4200);
+}
+
+function closeResetStaffPasswordDialog() {
+  resetStaffPasswordModal?.classList.remove(
+    "show"
+  );
+
+  if (resetStaffUserId) {
+    resetStaffUserId.value = "";
+  }
+
+  if (resetStaffUserName) {
+    resetStaffUserName.textContent = "—";
+  }
+
+  if (resetStaffTemporaryPassword) {
+    resetStaffTemporaryPassword.value = "";
+  }
+
+  if (resetStaffConfirmPassword) {
+    resetStaffConfirmPassword.value = "";
+  }
+}
+
+window.openResetStaffPasswordModal =
+  function(id) {
+    const user =
+      users.find(
+        item =>
+          Number(item.id) === Number(id)
+      );
+
+    if (!user) {
+      alert("Staff account not found.");
+      return;
+    }
+
+    if (
+      String(user.role || "")
+        .toLowerCase() === "owner"
+    ) {
+      alert(
+        "The restaurant owner's password cannot be reset from Staff Management."
+      );
+      return;
+    }
+
+    if (resetStaffUserId) {
+      resetStaffUserId.value =
+        String(user.id);
+    }
+
+    if (resetStaffUserName) {
+      resetStaffUserName.textContent =
+        `${user.full_name} (${String(user.role || "").replaceAll("_", " ")})`;
+    }
+
+    if (resetStaffTemporaryPassword) {
+      resetStaffTemporaryPassword.value =
+        "";
+    }
+
+    if (resetStaffConfirmPassword) {
+      resetStaffConfirmPassword.value =
+        "";
+    }
+
+    resetStaffPasswordModal?.classList.add(
+      "show"
+    );
+
+    window.setTimeout(() => {
+      resetStaffTemporaryPassword?.focus();
+    }, 80);
+  };
+
+closeResetStaffPasswordModalBtn
+  ?.addEventListener(
+    "click",
+    closeResetStaffPasswordDialog
+  );
+
+cancelResetStaffPasswordBtn
+  ?.addEventListener(
+    "click",
+    closeResetStaffPasswordDialog
+  );
+
+resetStaffPasswordModal?.addEventListener(
+  "click",
+  event => {
+    if (
+      event.target ===
+      resetStaffPasswordModal
+    ) {
+      closeResetStaffPasswordDialog();
+    }
+  }
+);
+
+saveResetStaffPasswordBtn
+  ?.addEventListener(
+    "click",
+    async () => {
+      const userId =
+        Number(
+          resetStaffUserId?.value || 0
+        );
+
+      const temporaryPassword =
+        resetStaffTemporaryPassword
+          ?.value || "";
+
+      const confirmPassword =
+        resetStaffConfirmPassword
+          ?.value || "";
+
+      if (!userId) {
+        alert("Select a valid staff account.");
+        return;
+      }
+
+      if (
+        temporaryPassword.length < 8
+      ) {
+        alert(
+          "Temporary password must contain at least 8 characters."
+        );
+
+        resetStaffTemporaryPassword
+          ?.focus();
+
+        return;
+      }
+
+      if (
+        temporaryPassword !==
+        confirmPassword
+      ) {
+        alert(
+          "Temporary password and confirmation do not match."
+        );
+
+        resetStaffConfirmPassword
+          ?.focus();
+
+        return;
+      }
+
+      const originalText =
+        saveResetStaffPasswordBtn
+          .textContent;
+
+      try {
+        saveResetStaffPasswordBtn
+          .disabled = true;
+
+        saveResetStaffPasswordBtn
+          .textContent =
+          "Saving...";
+
+        const result =
+          await fetchJSON(
+            `${OWNER_API_BASE}/reset_staff_password.php`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                user_id: userId,
+                new_password:
+                  temporaryPassword
+              })
+            }
+          );
+
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+            "Unable to reset the staff password."
+          );
+        }
+
+        closeResetStaffPasswordDialog();
+
+        await loadUsers();
+        await loadActivityLogs();
+
+        showOwnerActionToast(
+          result.message ||
+          "Temporary password saved. The staff member must create a new password at the next login.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error(
+          "Reset staff password failed:",
+          error
+        );
+
+        showOwnerActionToast(
+          error.message ||
+          "Unable to reset the staff password.",
+          "error"
+        );
+
+      } finally {
+        saveResetStaffPasswordBtn
+          .disabled = false;
+
+        saveResetStaffPasswordBtn
+          .textContent =
+          originalText;
+      }
+    }
+  );
+
+resetStaffTemporaryPassword
+  ?.addEventListener(
+    "keydown",
+    event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        resetStaffConfirmPassword
+          ?.focus();
+      }
+    }
+  );
+
+resetStaffConfirmPassword
+  ?.addEventListener(
+    "keydown",
+    event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveResetStaffPasswordBtn
+          ?.click();
+      }
+    }
+  );
+
 window.deleteUser = async function(id) {
   const confirmDelete = confirm("Are you sure you want to delete this user?");
   if (!confirmDelete) return;
@@ -8752,6 +9171,11 @@ window.openEditProductModal = function(id) {
   const editCategoryInput =
     document.getElementById(
       "editProductCategory"
+    );
+
+  const editDescriptionInput =
+    document.getElementById(
+      "editProductDescription"
     );
 
   const editSizeInput =
@@ -8823,6 +9247,11 @@ window.openEditProductModal = function(id) {
   if (editCategoryInput) {
     editCategoryInput.value =
       p.category || "";
+  }
+
+  if (editDescriptionInput) {
+    editDescriptionInput.value =
+      p.description || "";
   }
 
   if (editSizeInput) {

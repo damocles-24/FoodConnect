@@ -14,11 +14,6 @@
   <title>FoodConnect | Delivery Staff</title>
 
   <link
-    rel="stylesheet"
-    href="../css/delivery_dashboard.css?v=20260817-7"
-  />
-
-  <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
@@ -33,7 +28,8 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
+  <link rel="stylesheet" href="../css/delivery_dashboard.css?v=20260817-delivery-polish2">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
@@ -45,14 +41,16 @@
     <header class="delivery-header">
 
       <div class="brand-area">
-        <img
-          src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
-          alt="FoodConnect Logo"
-          class="delivery-logo"
-        />
+        <span class="delivery-logo-shell" aria-hidden="true">
+          <img
+            src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
+            alt=""
+            class="delivery-logo"
+          />
+        </span>
 
         <div>
-          <h1>FoodConnect</h1>
+          <h1 class="foodconnect-brand"><span class="brand-food">Food</span><span class="brand-connect">Connect</span></h1>
           <p>Delivery Staff</p>
         </div>
       </div>

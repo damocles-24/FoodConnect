@@ -4216,3 +4216,55 @@ body[data-fc-page="customer-home"]
   }
 }
 /* FOODCONNECT ACCOUNT DROPDOWN POLISH END */
+
+/* =========================================================
+   RESTAURANT STAFF PORTAL — CLOSE BUTTON POLISH
+========================================================= */
+.staff-access-card .staff-close-btn {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,.07) !important;
+  color: #d0d5dd !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+.staff-access-card .staff-close-btn:hover {
+  background: rgba(247,128,33,.14) !important;
+  border-color: rgba(247,128,33,.45) !important;
+  color: #f78021 !important;
+}
+
+/* =========================================================
+   STAFF PASSWORD RECOVERY / REQUIRED CHANGE
+========================================================= */
+.staff-forgot-password-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: #f47c1e;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+.staff-forgot-password-btn:hover {
+  text-decoration: underline;
+}
+.staff-password-change-box {
+  margin-top: 2px;
+}
+.staff-password-change-note {
+  border-color: rgba(244, 124, 30, .28);
+  background: rgba(244, 124, 30, .07);
+}
+.staff-password-change-note p {
+  color: #d7dce4;
+}

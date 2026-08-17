@@ -1536,6 +1536,11 @@ function groupProducts(products) {
       product.size
     );
 
+    const description =
+      String(
+        product.description || ""
+      ).trim();
+
    const regularPrice =
   Number(
     product.regular_price ??
@@ -1644,11 +1649,17 @@ const status =
 
         allowedAddonIds: [],
 
+        description: "",
+
         variants: []
       });
     }
 
     const group = grouped.get(groupKey);
+
+    if (!group.description && description) {
+      group.description = description;
+    }
 
     const configuredAddonIds =
       Array.isArray(product.addon_ids)
@@ -2234,6 +2245,16 @@ return `
         <div class="menu-item-details">
           <h3>${escapeMenuText(group.name)}</h3>
 
+          ${
+            group.description
+              ? `
+                <p class="product-description">
+                  ${escapeMenuText(group.description)}
+                </p>
+              `
+              : ""
+          }
+
           ${getGroupPromoPriceMarkup(group)}
 
           ${
@@ -2418,6 +2439,16 @@ const isFallback =
           <h3>
             ${escapeMenuText(group.name)}
           </h3>
+
+          ${
+            group.description
+              ? `
+                  <p class="product-description">
+                    ${escapeMenuText(group.description)}
+                  </p>
+                `
+              : ""
+          }
 
           ${getGroupPromoPriceMarkup(group)}
 

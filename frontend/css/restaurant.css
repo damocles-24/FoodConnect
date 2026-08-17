@@ -2308,6 +2308,17 @@ body.product-modal-open {
   cursor: not-allowed;
 }
 
+.product-description {
+  margin-top: 7px;
+  color: rgba(255,255,255,.68);
+  font-size: 13px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .product-variant-summary {
   color: rgba(255,255,255,.62);
   font-size: 13px;
@@ -3658,6 +3669,7 @@ html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card:has(
 html[data-theme="light"] body[data-fc-page="restaurant"] .variant-option-content small,
 html[data-theme="light"] body[data-fc-page="restaurant"] .addon-option-card small,
 html[data-theme="light"] body[data-fc-page="restaurant"] .product-options-summary span,
+html[data-theme="light"] body[data-fc-page="restaurant"] .product-description,
 html[data-theme="light"] body[data-fc-page="restaurant"] .product-variant-summary {
   color: #667085 !important;
 }
@@ -3721,4 +3733,39 @@ body[data-fc-page="restaurant"] .fc-word-connect { color: #49ad4d !important; }
   body[data-fc-page="restaurant"] .foodconnect-header-wordmark h1 {
     font-size: 1rem !important;
   }
+}
+
+/* =========================================================
+   CUSTOMER CART SUCCESS FEEDBACK — SEMANTIC SUCCESS COLOR
+========================================================= */
+body[data-fc-page="restaurant"] .cart-toast .popup {
+  background: #17191d !important;
+  color: #ffffff !important;
+  border: 1px solid #30343b !important;
+}
+body[data-fc-page="restaurant"] .cart-toast .popup .icon,
+body[data-fc-page="restaurant"] .cart-toast .popup i,
+body[data-fc-page="restaurant"] .cart-toast .checkmark {
+  background: #22c55e !important;
+  color: #ffffff !important;
+}
+
+/* Correct selector for the actual add-to-cart success popup markup. */
+body[data-fc-page="restaurant"] .cart-toast .popup-check {
+  background: #22c55e !important;
+  color: #ffffff !important;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .cart-toast .popup {
+  background: #ffffff !important;
+  color: #182230 !important;
+  border: 1px solid #e4e7ec !important;
+  box-shadow: 0 22px 60px rgba(16,24,40,.24) !important;
+}
+html[data-theme="light"] body[data-fc-page="restaurant"] .cart-toast .popup-title {
+  color: #182230 !important;
+}
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-toast .popup {
+  background: #17191d !important;
+  color: #ffffff !important;
+  border-color: #30343b !important;
 }

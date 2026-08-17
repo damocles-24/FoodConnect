@@ -10,6 +10,8 @@ let confirmCallback = null;
 ========================================================= */
 
 let riderLocationWatchId = null;
+let liveTrackingStartPromise = null;
+let liveTrackingStartingAssignmentId = null;
 
 let activeTrackingAssignmentId = null;
 let activeTrackingOrderId = null;
@@ -224,6 +226,12 @@ async function startLiveRiderTracking(
     Number(delivery.order_id);
 
   if (
+    liveTrackingStartingAssignmentId === assignmentId
+  ) {
+    return;
+  }
+
+  if (
     assignmentId <= 0 ||
     orderId <= 0
   ) {
@@ -250,6 +258,9 @@ async function startLiveRiderTracking(
     );
   }
 
+  liveTrackingStartingAssignmentId = assignmentId;
+
+  try {
   /*
    * Server-side authorization FIRST.
    */
@@ -383,6 +394,9 @@ updateRiderMapPosition(
     "Live Tracking Started",
     "Your location is now being shared for this delivery."
   );
+  } finally {
+    liveTrackingStartingAssignmentId = null;
+  }
 }
 
 async function stopLiveRiderTracking(
@@ -484,7 +498,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "Are you sure you want to log out from the delivery dashboard?",
         () => {
           window.location.href = `${API_BASE}/logout.php`;
-        }
+        },
+        "destructive"
       );
     });
 
@@ -2278,7 +2293,8 @@ function confirmDeliveryStatusUpdate(newStatus) {
     "Update Delivery Status",
     messages[newStatus] ||
       "Continue with this delivery status update?",
-    () => updateDeliveryStatus(newStatus)
+    () => updateDeliveryStatus(newStatus),
+    newStatus === "completed" ? "success" : "default"
   );
 }
 
@@ -2491,7 +2507,12 @@ await loadDeliveries(false);
 |--------------------------------------------------------------------------
 */
 
-function openConfirmModal(title, message, callback) {
+function openConfirmModal(
+  title,
+  message,
+  callback,
+  type = "default"
+) {
   document.getElementById("confirmTitle").textContent =
     title;
 
@@ -2500,9 +2521,20 @@ function openConfirmModal(title, message, callback) {
 
   confirmCallback = callback;
 
-  document
-    .getElementById("confirmModal")
-    ?.classList.add("active");
+  const modal = document.getElementById("confirmModal");
+
+  modal?.classList.remove(
+    "confirm-destructive",
+    "confirm-success"
+  );
+
+  if (type === "destructive") {
+    modal?.classList.add("confirm-destructive");
+  } else if (type === "success") {
+    modal?.classList.add("confirm-success");
+  }
+
+  modal?.classList.add("active");
 }
 
 function closeConfirmModal() {
@@ -2510,7 +2542,11 @@ function closeConfirmModal() {
 
   document
     .getElementById("confirmModal")
-    ?.classList.remove("active");
+    ?.classList.remove(
+      "active",
+      "confirm-destructive",
+      "confirm-success"
+    );
 }
 
 /*

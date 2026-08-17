@@ -305,6 +305,11 @@
         "productCategory"
       )?.value.trim() || "";
 
+    const description =
+      document.getElementById(
+        "productDescription"
+      )?.value.trim() || "";
+
     if (!name) {
       throw new Error(
         "Product name is required."
@@ -314,6 +319,12 @@
     if (!category) {
       throw new Error(
         "Product category is required."
+      );
+    }
+
+    if (description.length > 1000) {
+      throw new Error(
+        "Product description cannot exceed 1000 characters."
       );
     }
 
@@ -380,6 +391,11 @@
     formData.append(
       "category",
       category
+    );
+
+    formData.append(
+      "description",
+      description
     );
 
     formData.append(
@@ -547,8 +563,14 @@
           "productCategory"
         );
 
+      const description =
+        document.getElementById(
+          "productDescription"
+        );
+
       if (name) name.value = "";
       if (category) category.value = "";
+      if (description) description.value = "";
 
       if (
         typeof window.loadProducts ===

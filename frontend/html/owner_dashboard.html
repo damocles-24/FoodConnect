@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
   <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260817-7" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260817-staffux2" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-7">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic2">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 <body data-fc-page="owner">
@@ -958,7 +958,7 @@
 
       <p>
         Create staff accounts and manage the restaurant access code
-        staff members must enter before signing in.
+        that staff members must enter before signing in.
       </p>
     </div>
 
@@ -2445,6 +2445,24 @@
       </div>
 
       <div class="form-group">
+        <label for="productDescription">
+          Product Description
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <textarea
+          id="productDescription"
+          maxlength="1000"
+          rows="3"
+          placeholder="Example: Chicken katsu, rice, coleslaw salad, and sushi."
+        ></textarea>
+
+        <small class="form-helper">
+          Shown to customers when provided. Leave blank if this product does not need a description.
+        </small>
+      </div>
+
+      <div class="form-group">
         <label for="productCategory">
           Category
           <span class="required-label">*</span>
@@ -3007,6 +3025,24 @@
 
         <small class="form-helper">
           The name customers will see on your menu.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="editProductDescription">
+          Product Description
+          <span class="optional-label">Optional</span>
+        </label>
+
+        <textarea
+          id="editProductDescription"
+          maxlength="1000"
+          rows="3"
+          placeholder="Example: Chicken katsu, rice, coleslaw salad, and sushi."
+        ></textarea>
+
+        <small class="form-helper">
+          Shown to customers when provided. Leave blank if this product does not need a description.
         </small>
       </div>
 
@@ -3604,8 +3640,16 @@
 </div>
 
       <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="userPassword">
+        <label>Temporary Password</label>
+        <input
+          type="password"
+          id="userPassword"
+          minlength="8"
+          autocomplete="new-password"
+        >
+        <small class="form-helper">
+          The staff member will be required to create a new private password on first login.
+        </small>
       </div>
 
       <div class="form-group">
@@ -3626,7 +3670,15 @@
         </select>
       </div>
 
-      <button class="primary-btn" id="saveUserBtn">Save User</button>
+      <div class="user-modal-actions">
+  <button
+    type="button"
+    class="primary-btn"
+    id="saveUserBtn"
+  >
+    Save User
+  </button>
+</div>
     </div>
   </div>
 </div>
@@ -3697,20 +3749,115 @@
         </select>
       </div>
 
+ <div class="user-modal-actions">
+  <button
+    type="button"
+    class="primary-btn"
+    id="updateUserBtn"
+  >
+    Update User
+  </button>
+</div>     
+    </div>
+  </div>
+</div>
+
+<!-- RESET STAFF PASSWORD MODAL -->
+<div
+  class="modal-overlay"
+  id="resetStaffPasswordModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="resetStaffPasswordTitle"
+>
+  <div class="modal reset-staff-password-modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="resetStaffPasswordTitle">
+          Reset Staff Password
+        </h3>
+        <p class="modal-description">
+          Issue a temporary password. The staff member must replace it at the next login.
+        </p>
+      </div>
+
       <button
+        type="button"
+        id="closeResetStaffPasswordModal"
+        aria-label="Close reset password modal"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input
+        type="hidden"
+        id="resetStaffUserId"
+      >
+
+      <div class="staff-reset-account-card">
+        <span>Staff Account</span>
+        <strong id="resetStaffUserName">—</strong>
+      </div>
+
+      <div class="form-group">
+        <label for="resetStaffTemporaryPassword">
+          Temporary Password
+        </label>
+        <input
+          type="password"
+          id="resetStaffTemporaryPassword"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="At least 8 characters"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="resetStaffConfirmPassword">
+          Confirm Temporary Password
+        </label>
+        <input
+          type="password"
+          id="resetStaffConfirmPassword"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="Re-enter temporary password"
+        >
+      </div>
+
+      <div class="staff-reset-security-note">
+        <strong>Security rule</strong>
+        <p>
+          FoodConnect never reveals the staff member's current password. This action replaces it with a temporary password only.
+        </p>
+      </div>
+
+      <div class="user-modal-actions">
+        <button
+          type="button"
+          class="secondary-btn"
+          id="cancelResetStaffPasswordBtn"
+        >
+          Cancel
+        </button>
+
+        <button
           type="button"
           class="primary-btn"
-          id="updateUserBtn"
+          id="saveResetStaffPasswordBtn"
         >
-  Update User
-</button>
+          Save Temporary Password
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
   <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
   <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/owner_dashboard.js"></script>
+<script src="../js/owner_dashboard.js?v=20260817-staffux2"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

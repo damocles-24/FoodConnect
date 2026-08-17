@@ -183,6 +183,7 @@ body {
 .section-actions select,
 .form-group input,
 .form-group select,
+.form-group textarea,
 .panel-header select {
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -195,7 +196,8 @@ body {
 
 .search-box input::placeholder,
 .section-actions input::placeholder,
-.form-group input::placeholder {
+.form-group input::placeholder,
+.form-group textarea::placeholder {
   color: rgba(255, 255, 255, 0.45);
 }
 
@@ -203,6 +205,7 @@ body {
 .section-actions input:focus,
 .form-group input:focus,
 .form-group select:focus,
+.form-group textarea:focus,
 .panel-header select:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(204, 153, 0, 0.2);
@@ -210,6 +213,14 @@ body {
 
 .search-box input {
   min-width: 250px;
+}
+
+.form-group textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.45;
 }
 
 .owner-profile {
@@ -844,15 +855,50 @@ table th {
   margin-top: 20px;
 }
 
+/* =========================
+   USER MODAL ACTIONS
+========================= */
+
+.user-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 16px;
+
+  border-top: 1px solid var(--border);
+}
+
+.user-modal-actions .primary-btn {
+  min-width: 140px;
+}
+
+@media (max-width: 600px) {
+  .user-modal-actions {
+    justify-content: stretch;
+  }
+
+  .user-modal-actions .primary-btn {
+    width: 100%;
+  }
+}
+
 /* MODAL */
 .modal-overlay {
   position: fixed;
   inset: 0;
+
   background: rgba(0, 0, 0, 0.75);
+
   display: none;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+
   padding: 20px;
+  overflow-y: auto;
+
   z-index: 9999;
 }
 
@@ -863,12 +909,22 @@ table th {
 .modal {
   width: 100%;
   max-width: 620px;
+
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
   background: var(--card);
   color: var(--text);
+
   border-radius: var(--radius);
   padding: 22px;
+
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
 }
 
 .modal-header {
@@ -8478,3 +8534,1090 @@ body[data-fc-page="owner"] .owner-appearance-panel .theme-choice {
   border-color: var(--border);
 }
 /* FOODCONNECT OWNER THEME END */
+
+/* =========================================================
+   FOODCONNECT OWNER DASHBOARD — 2026 UI CONSISTENCY PATCH
+   Visual-only patch. Keeps existing IDs, JS hooks and logic.
+========================================================= */
+body[data-fc-page="owner"] {
+  --gold: #f47c1e;
+  --gold-dark: #d9650d;
+  --orange: #f47c1e;
+}
+
+body[data-fc-page="owner"] .food-text { color: #f47c1e; }
+body[data-fc-page="owner"] .connect-text { color: #2eaf55; }
+
+body[data-fc-page="owner"] .nav-item:hover,
+body[data-fc-page="owner"] .nav-item.active {
+  background: #f47c1e;
+  border-color: #f47c1e;
+  color: #fff;
+}
+
+body[data-fc-page="owner"] .logout-btn {
+  background: #f47c1e;
+  border-color: #f47c1e;
+  color: #fff;
+}
+body[data-fc-page="owner"] .logout-btn:hover {
+  background: #d9650d;
+  border-color: #d9650d;
+}
+
+body[data-fc-page="owner"] .product-management-tab.is-active,
+body[data-fc-page="owner"] .addon-form-modal .modal-actions .primary-btn {
+  background: #f47c1e;
+  border-color: #f47c1e;
+  color: #fff;
+}
+body[data-fc-page="owner"] .addon-management-price strong,
+body[data-fc-page="owner"] .product-addon-choice strong {
+  color: #f47c1e;
+}
+body[data-fc-page="owner"] .product-addon-choice input {
+  accent-color: #f47c1e;
+}
+
+/* Light mode: remove legacy dark islands and restore contrast. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .settings-business-hours,
+  .settings-hours-row,
+  .settings-status-card,
+  .product-management-tabs,
+  .addon-management-card,
+  .addon-management-price,
+  .product-addon-assignment,
+  .product-addon-choice,
+  .discount-price-preview > div,
+  .product-image-preview,
+  .product-card-image-empty,
+  .analytics-secondary-btn
+) {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-row:hover {
+  background: #f8fafc;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-row.is-closed {
+  background: #f8fafc;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-day,
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-status-text,
+html[data-theme="light"] body[data-fc-page="owner"] .addon-management-main h3,
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice-name {
+  color: var(--text);
+}
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .addon-management-main p,
+  .addon-management-price span,
+  .addon-no-stock-note,
+  .addon-no-stock-inline
+) {
+  color: var(--muted);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-time {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+  color-scheme: light;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-time:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle {
+  background: #e4e7ec;
+  border-color: #d0d5dd;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle::after {
+  background: #f47c1e;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle {
+  background: #fff1e8;
+  border-color: #f47c1e;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle::after {
+  background: #f47c1e;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-management-tabs {
+  background: #182230;
+  border-color: #182230;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .product-management-tab {
+  color: #d0d5dd;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .product-management-tab.is-active {
+  color: #fff;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .addon-no-stock-note,
+  .addon-no-stock-inline,
+  .availability-guide,
+  .product-form-notice
+) {
+  background: #fff8f2;
+  border-color: #ffd6b5;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-assignment {
+  background: #f8fafc;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice:hover {
+  background: #fff8f2;
+  border-color: #f47c1e;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-image-field input[type="file"] {
+  background: #fff;
+  color: var(--text);
+  border-color: #f6b783;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .product-card-image-empty {
+  background: #f8fafc;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-period-control select {
+  background: #fff;
+  color: var(--text);
+}
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-secondary-btn {
+  color: var(--text);
+}
+
+/* Business availability: readable cards even when not selected. */
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card {
+  background: #fff;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card strong {
+  color: var(--text);
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card small {
+  color: var(--muted);
+}
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-option:hover .settings-status-card {
+  background: #f8fafc;
+  border-color: #cfd6df;
+}
+
+/* Keep danger red only for destructive actions. */
+body[data-fc-page="owner"] :is(.delete-btn, .danger-btn, .image-remove-btn) {
+  --danger: #e5484d;
+}
+
+/* Dashboard chart: less empty-looking while preserving generated values. */
+body[data-fc-page="owner"] .fake-chart {
+  height: 210px;
+}
+body[data-fc-page="owner"] .chart-bars {
+  height: 190px;
+}
+
+/* Clearer focus state throughout owner controls. */
+body[data-fc-page="owner"] :is(button, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(244, 124, 30, .24);
+  outline-offset: 2px;
+}
+
+/* FOODCONNECT OWNER LIGHT READABILITY AND UI BUG FIX START */
+
+/* Light mode: prioritize strong readable text. */
+html[data-theme="light"] body[data-fc-page="owner"] {
+  --text: #111827;
+  --muted: #374151;
+  --soft-muted: #4b5563;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  h1, h2, h3, h4, h5, h6,
+  p,
+  label,
+  td,
+  th,
+  .section-description,
+  .summary-description,
+  .form-helper,
+  .modal-description,
+  .stock-management-helper,
+  .settings-helper,
+  .settings-description,
+  .analytics-panel-description,
+  .performance-header .section-description,
+  .staff-access-code-content p,
+  .staff-access-code-warning,
+  .inventory-loading-cell
+) {
+  color: #111827;
+}
+
+/* Secondary copy remains readable charcoal, not pale gray. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  small,
+  .field-hint,
+  .form-note,
+  .meta-text,
+  .settings-subtext,
+  .table-subtext
+) {
+  color: #374151;
+}
+
+/* Placeholders and disabled states stay gray intentionally. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(input, textarea)::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  button:disabled
+) {
+  color: #6b7280 !important;
+}
+
+/* Sidebar */
+html[data-theme="light"] body[data-fc-page="owner"] .nav-item:not(.active) {
+  color: #374151;
+}
+
+/* Inventory table header: remove the black legacy strip in Light mode. */
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-table thead th {
+  background: #f8fafc !important;
+  color: #111827 !important;
+  border-bottom: 1px solid #dfe3e8;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-table tbody tr:nth-child(even) {
+  background: #fbfcfd;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-table tbody tr:hover {
+  background: #fff4eb;
+}
+
+/* Staff Verification card: fix white/light text on cream background. */
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-card {
+  background: linear-gradient(
+    135deg,
+    rgba(244,124,30,.08),
+    rgba(255,255,255,.94)
+  );
+  border-color: rgba(244,124,30,.32);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-eyebrow {
+  color: #f47c1e !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-content h3 {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-content p,
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-warning {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-warning strong {
+  color: #f47c1e !important;
+}
+
+/* Code display intentionally remains dark for separation. */
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value {
+  background: #111317;
+  border-color: #2f343b;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value > span {
+  color: #ffffff !important;
+}
+
+/* Appearance icon bug: render reliable symbols even if the icon font glyph is unavailable. */
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice-icon {
+  position: relative;
+  color: #f47c1e !important;
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice-icon i {
+  display: none !important;
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel
+.theme-choice[data-theme-choice="light"] .theme-choice-icon::before {
+  content: "☀";
+  font-size: 22px;
+  line-height: 1;
+  color: #f47c1e;
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel
+.theme-choice[data-theme-choice="dark"] .theme-choice-icon::before {
+  content: "☾";
+  font-size: 24px;
+  line-height: 1;
+  color: #f47c1e;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .owner-appearance-panel .theme-choice strong {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .owner-appearance-panel .theme-choice small {
+  color: #374151 !important;
+}
+
+/* Primary owner actions use FoodConnect orange. */
+body[data-fc-page="owner"] :is(
+  .primary-btn,
+  .add-product-btn,
+  .add-addon-btn,
+  .restock-btn,
+  .edit-btn,
+  .settings-hours-copy-btn,
+  .analytics-primary-btn
+) {
+  background: #f47c1e;
+  border-color: #f47c1e;
+  color: #ffffff;
+}
+
+body[data-fc-page="owner"] :is(
+  .primary-btn,
+  .add-product-btn,
+  .add-addon-btn,
+  .restock-btn,
+  .edit-btn,
+  .settings-hours-copy-btn,
+  .analytics-primary-btn
+):hover {
+  background: #df6810;
+  border-color: #df6810;
+  color: #ffffff;
+}
+
+/* Secondary actions remain readable in Light mode. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .secondary-btn,
+  .analytics-secondary-btn,
+  .clear-filter-btn
+) {
+  background: #ffffff;
+  color: #111827 !important;
+  border-color: #cfd6df;
+}
+
+/* Business Availability cards */
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #dfe3e8 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card strong {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-status-card small {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+.settings-status-option input:checked + .settings-status-card.is-open {
+  background: #eefbf3 !important;
+  border-color: #92e2b2 !important;
+}
+
+/* Product modal Add-ons area */
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-assignment {
+  background: #ffffff !important;
+  border-color: #dfe3e8 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-assignment :is(
+  h3, h4, strong, p, span
+) {
+  color: #111827;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #dfe3e8 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice strong {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice .price,
+html[data-theme="light"] body[data-fc-page="owner"] .product-addon-choice [class*="price"] {
+  color: #f47c1e !important;
+}
+
+/* Destructive actions stay red. */
+body[data-fc-page="owner"] :is(.delete-btn, .danger-btn, .image-remove-btn) {
+  color: #dc2626;
+}
+
+/* FOODCONNECT OWNER LIGHT READABILITY AND UI BUG FIX END */
+
+/* FOODCONNECT OWNER FINAL BUTTON CONTRAST FIX START */
+
+/* Sidebar Logout: orange button must always keep white text. */
+body[data-fc-page="owner"] .logout-btn,
+html[data-theme="light"] body[data-fc-page="owner"] .logout-btn,
+html[data-theme="dark"] body[data-fc-page="owner"] .logout-btn {
+  background: #f47c1e !important;
+  border-color: #f47c1e !important;
+  color: #ffffff !important;
+}
+
+body[data-fc-page="owner"] .logout-btn:hover {
+  background: #df6810 !important;
+  border-color: #df6810 !important;
+  color: #ffffff !important;
+}
+
+/* Modal Cancel: dark neutral button with clearly readable white text. */
+html[data-theme="light"] body[data-fc-page="owner"]
+.modal-form-actions .action-btn.secondary {
+  background: #20242a !important;
+  border: 1px solid #20242a !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+.modal-form-actions .action-btn.secondary:hover {
+  background: #2b3037 !important;
+  border-color: #2b3037 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.modal-form-actions .action-btn.secondary {
+  background: #252a31 !important;
+  border-color: #373d46 !important;
+  color: #f5f7fa !important;
+}
+
+/* Staff Delete is destructive: use a readable red treatment instead of black-on-black. */
+html[data-theme="light"] body[data-fc-page="owner"]
+#usersList .action-btn.secondary {
+  background: #fff5f5 !important;
+  border: 1px solid #f5b8b8 !important;
+  color: #c62828 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+#usersList .action-btn.secondary:hover {
+  background: #fee2e2 !important;
+  border-color: #ef9a9a !important;
+  color: #b91c1c !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+#usersList .action-btn.secondary {
+  background: rgba(220, 38, 38, .10) !important;
+  border: 1px solid rgba(248, 113, 113, .30) !important;
+  color: #fca5a5 !important;
+}
+
+/* Keep orange primary-action text readable everywhere. */
+body[data-fc-page="owner"] :is(
+  .primary-btn,
+  .product-edit-btn,
+  .add-product-btn,
+  .add-addon-btn,
+  .restock-btn,
+  .edit-btn,
+  .settings-hours-copy-btn,
+  .analytics-primary-btn
+) {
+  color: #ffffff !important;
+}
+
+/* Copy Code is a secondary action, so use normal dark text in Light mode. */
+html[data-theme="light"] body[data-fc-page="owner"]
+#copyStaffAccessCode:not(:disabled) {
+  background: #ffffff !important;
+  border-color: #bfc7d2 !important;
+  color: #111827 !important;
+}
+
+/* Disabled Copy Code remains obviously disabled but readable. */
+html[data-theme="light"] body[data-fc-page="owner"]
+#copyStaffAccessCode:disabled {
+  background: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* FOODCONNECT OWNER FINAL BUTTON CONTRAST FIX END */
+
+/* FOODCONNECT OWNER REMAINING UI POLISH START */
+
+/* =========================================================
+   SALES REPORT — PERFORMANCE TABLE
+   Desktop: fit naturally without forced horizontal scrolling.
+   Smaller screens: horizontal scrolling remains available.
+========================================================= */
+
+body[data-fc-page="owner"] .performance-range-label strong,
+body[data-fc-page="owner"] .performance-money {
+  color: #f47c1e !important;
+}
+
+body[data-fc-page="owner"] .performance-avatar {
+  background: rgba(244, 124, 30, .10);
+  border-color: rgba(244, 124, 30, .25);
+  color: #f47c1e;
+}
+
+body[data-fc-page="owner"] .completion-progress-bar {
+  background: #f47c1e;
+}
+
+@media (min-width: 1180px) {
+  body[data-fc-page="owner"] .performance-panel .table-wrapper {
+    overflow-x: visible;
+  }
+
+  body[data-fc-page="owner"] .performance-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  body[data-fc-page="owner"] .performance-table th,
+  body[data-fc-page="owner"] .performance-table td {
+    padding: 14px 10px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  body[data-fc-page="owner"] .performance-table th:first-child,
+  body[data-fc-page="owner"] .performance-table td:first-child {
+    width: 22%;
+  }
+
+  body[data-fc-page="owner"] .performance-person,
+  body[data-fc-page="owner"] .completion-cell {
+    min-width: 0;
+  }
+
+  body[data-fc-page="owner"] .performance-person-info strong {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 1179px) {
+  body[data-fc-page="owner"] .performance-panel .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body[data-fc-page="owner"] .performance-table {
+    min-width: 900px;
+  }
+}
+
+/* =========================================================
+   SETTINGS — HEADER + APPEARANCE
+========================================================= */
+
+body[data-fc-page="owner"] .settings-page-header > div:first-child {
+  min-width: 0;
+  flex: 1 1 620px;
+}
+
+body[data-fc-page="owner"] .settings-page-header .section-description {
+  width: 100%;
+  max-width: 900px;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+/* Reliable icon for the Appearance card even if FA Regular is unavailable. */
+body[data-fc-page="owner"] .theme-settings-icon {
+  position: relative;
+  background: rgba(244, 124, 30, .10);
+  color: #f47c1e;
+}
+
+body[data-fc-page="owner"] .theme-settings-icon i {
+  display: none !important;
+}
+
+body[data-fc-page="owner"] .theme-settings-icon::before {
+  content: "☀";
+  display: block;
+  color: #f47c1e;
+  font-size: 23px;
+  line-height: 1;
+}
+
+/* Appearance cards: keep text contained on all widths. */
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice {
+  min-width: 0;
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice > span:last-child {
+  min-width: 0;
+}
+
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice strong,
+body[data-fc-page="owner"] .owner-appearance-panel .theme-choice span {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 760px) {
+  body[data-fc-page="owner"] .theme-choice-group {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="owner"] .settings-page-header {
+    align-items: flex-start;
+  }
+
+  body[data-fc-page="owner"] .settings-save-state {
+    max-width: 100%;
+  }
+}
+
+/* FOODCONNECT OWNER REMAINING UI POLISH END */
+
+/* =========================================================
+   STAFF PASSWORD RESET WORKFLOW
+========================================================= */
+.user-actions {
+  flex-wrap: wrap;
+}
+.reset-password-btn {
+  border: 1px solid #f47c1e !important;
+  background: #fff7ed !important;
+  color: #c2410c !important;
+}
+.reset-password-btn:hover {
+  background: #f47c1e !important;
+  color: #ffffff !important;
+}
+.staff-password-required-badge {
+  display: inline-flex;
+  margin-top: 5px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 9px;
+  font-weight: 700;
+}
+.reset-staff-password-modal {
+  max-width: 560px;
+}
+.staff-reset-account-card {
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--soft);
+}
+.staff-reset-account-card span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.staff-reset-account-card strong {
+  color: var(--text);
+  font-size: 14px;
+}
+.staff-reset-security-note {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: #fff7ed;
+}
+.staff-reset-security-note strong {
+  color: #c2410c;
+  font-size: 11px;
+}
+.staff-reset-security-note p {
+  margin-top: 4px;
+  color: #374151;
+  font-size: 10px;
+  line-height: 1.55;
+}
+html[data-theme="dark"] body[data-fc-page="owner"] .reset-password-btn {
+  background: rgba(244,124,30,.10) !important;
+  color: #fdba74 !important;
+}
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-reset-security-note {
+  background: rgba(244,124,30,.08);
+  border-color: rgba(244,124,30,.28);
+}
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-reset-security-note p {
+  color: #d0d5dd;
+}
+@media (max-width: 600px) {
+  .reset-staff-password-modal .user-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .reset-staff-password-modal .user-modal-actions button {
+    width: 100%;
+  }
+}
+\n\n/* =========================================\n   OWNER ACTION TOAST\n   ========================================= */\n.owner-action-toast {\n  position: fixed;\n  right: 24px;\n  top: 24px;\n  z-index: 10050;\n  max-width: min(420px, calc(100vw - 32px));\n  padding: 14px 18px;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111827;\n  border: 1px solid #d1d5db;\n  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);\n  font-weight: 600;\n  line-height: 1.45;\n  opacity: 0;\n  transform: translateY(-10px);\n  pointer-events: none;\n  transition: opacity 0.2s ease, transform 0.2s ease;\n}\n\n.owner-action-toast.show {\n  opacity: 1;\n  transform: translateY(0);\n}\n\n.owner-action-toast.success {\n  border-color: #86efac;\n  background: #f0fdf4;\n  color: #166534;\n}\n\n.owner-action-toast.error {\n  border-color: #fecaca;\n  background: #fef2f2;\n  color: #b91c1c;\n}\n\nhtml[data-theme="dark"] .owner-action-toast {\n  background: #171a20;\n  color: #f8fafc;\n  border-color: #343a46;\n}\n\nhtml[data-theme="dark"] .owner-action-toast.success {\n  background: #10251a;\n  color: #86efac;\n  border-color: #247a45;\n}\n\nhtml[data-theme="dark"] .owner-action-toast.error {\n  background: #2b1517;\n  color: #fca5a5;\n  border-color: #991b1b;\n}\n\n@media (max-width: 600px) {\n  .owner-action-toast {\n    top: 14px;\n    left: 16px;\n    right: 16px;\n    max-width: none;\n  }\n}\n
+
+/* =========================================================
+   STAFF MANAGEMENT UI/UX POLISH
+   Scoped to the owner Staff Management section and reset modal.
+========================================================= */
+
+#usersSection .panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+#usersSection .table-wrapper {
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+
+#usersSection .users-table {
+  min-width: 1120px;
+}
+
+#usersSection .users-table th,
+#usersSection .users-table td {
+  padding: 16px 14px;
+  vertical-align: middle;
+}
+
+#usersSection .users-table th {
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+#usersSection .user-name-cell {
+  min-width: 110px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+#usersSection .user-email-cell {
+  min-width: 175px;
+  overflow-wrap: anywhere;
+}
+
+#usersSection .user-contact-cell {
+  min-width: 132px;
+  white-space: nowrap;
+}
+
+#usersSection .user-address-cell {
+  min-width: 190px;
+  max-width: 250px;
+  line-height: 1.45;
+}
+
+#usersSection .user-role-cell {
+  min-width: 135px;
+  white-space: nowrap;
+}
+
+#usersSection .user-status-cell {
+  min-width: 120px;
+}
+
+#usersSection .user-created-cell {
+  min-width: 160px;
+  white-space: nowrap;
+}
+
+#usersSection .user-actions-cell {
+  min-width: 250px;
+}
+
+#usersSection .user-role-badge,
+#usersSection .user-status-badge {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#usersSection .user-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+#usersSection .user-actions .action-btn {
+  min-height: 40px;
+  padding: 9px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+#usersSection .user-actions .reset-password-btn {
+  min-width: 118px;
+}
+
+#usersSection .user-actions .action-btn.secondary {
+  border: 1px solid rgba(229, 72, 77, .35);
+  background: rgba(229, 72, 77, .08);
+  color: #c62828;
+}
+
+#usersSection .user-actions .action-btn.secondary:hover:not(:disabled) {
+  border-color: rgba(229, 72, 77, .55);
+  background: rgba(229, 72, 77, .14);
+  color: #b91c1c;
+}
+
+#usersSection .user-actions .action-btn:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+#usersSection .staff-password-required-badge {
+  display: flex;
+  width: max-content;
+  max-width: 150px;
+  margin-top: 7px;
+  line-height: 1.25;
+}
+
+#usersSection .users-empty-state {
+  padding: 34px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Password reset dialog: clearer spacing, hierarchy and actions. */
+.reset-staff-password-modal {
+  width: min(100%, 620px);
+  max-width: 620px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.reset-staff-password-modal .modal-header {
+  margin: 0;
+  padding: 22px 24px 18px;
+  align-items: flex-start;
+  gap: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.reset-staff-password-modal .modal-header > div {
+  min-width: 0;
+}
+
+.reset-staff-password-modal .modal-header h3 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.reset-staff-password-modal .modal-description {
+  max-width: 470px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.reset-staff-password-modal .modal-header > button {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.reset-staff-password-modal .modal-header > button:hover {
+  border-color: var(--border);
+  background: var(--soft);
+}
+
+.reset-staff-password-modal .modal-body {
+  padding: 20px 24px 22px;
+}
+
+.reset-staff-password-modal .staff-reset-account-card {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+}
+
+.reset-staff-password-modal .staff-reset-account-card span {
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.reset-staff-password-modal .staff-reset-account-card strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.reset-staff-password-modal .form-group + .form-group {
+  margin-top: 16px;
+}
+
+.reset-staff-password-modal .form-group label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reset-staff-password-modal .form-group input {
+  width: 100%;
+  min-height: 48px;
+}
+
+.reset-staff-password-modal .staff-reset-security-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+}
+
+.reset-staff-password-modal .staff-reset-security-note strong {
+  display: block;
+  font-size: 12px;
+}
+
+.reset-staff-password-modal .staff-reset-security-note p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.reset-staff-password-modal .user-modal-actions {
+  margin-top: 20px;
+  padding-top: 18px;
+  gap: 10px;
+}
+
+.reset-staff-password-modal .user-modal-actions button {
+  min-height: 44px;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.reset-staff-password-modal .user-modal-actions .secondary-btn {
+  min-width: 96px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+
+.reset-staff-password-modal .user-modal-actions .secondary-btn:hover {
+  border-color: #f47c1e;
+  background: rgba(244, 124, 30, .08);
+  color: #c2410c;
+}
+
+.reset-staff-password-modal .user-modal-actions .primary-btn {
+  min-width: 205px;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+.reset-staff-password-modal .staff-reset-account-card {
+  background: #f8fafc;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+.reset-staff-password-modal .user-modal-actions .secondary-btn {
+  background: #ffffff;
+  color: #111827 !important;
+  border-color: #cfd6df;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"]
+.reset-staff-password-modal .user-modal-actions .secondary-btn:hover {
+  background: #fff7ed;
+  color: #c2410c !important;
+  border-color: #f47c1e;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+#usersSection .user-actions .action-btn.secondary {
+  border-color: rgba(248, 113, 113, .30);
+  background: rgba(220, 38, 38, .10);
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.reset-staff-password-modal .user-modal-actions .secondary-btn {
+  background: #23262c;
+  color: #f5f7fa;
+  border-color: #3a3f48;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.reset-staff-password-modal .user-modal-actions .secondary-btn:hover {
+  background: rgba(244, 124, 30, .10);
+  color: #fdba74;
+  border-color: rgba(244, 124, 30, .55);
+}
+
+@media (max-width: 1180px) {
+  #usersSection .user-actions-cell {
+    min-width: 160px;
+  }
+
+  #usersSection .user-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .reset-staff-password-modal .modal-header {
+    padding: 18px 18px 15px;
+  }
+
+  .reset-staff-password-modal .modal-body {
+    padding: 18px;
+  }
+
+  .reset-staff-password-modal .user-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .reset-staff-password-modal .user-modal-actions button,
+  .reset-staff-password-modal .user-modal-actions .primary-btn,
+  .reset-staff-password-modal .user-modal-actions .secondary-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

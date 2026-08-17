@@ -868,18 +868,19 @@ message.textContent = text;
      LOGOUT
   ========================================= */
 
-  document
-    .getElementById("logoutBtn")
-    ?.addEventListener("click", () => {
-      openConfirmModal(
-        "Logout Account",
-        "Log out of the cashier dashboard?",
-        () => {
-          window.location.href =
-            `${API_BASE}/logout.php`;
-        }
-      );
-    });
+ document
+  .getElementById("logoutBtn")
+  ?.addEventListener("click", () => {
+    openConfirmModal(
+      "Logout Account",
+      "Log out of the cashier dashboard?",
+      () => {
+        window.location.href =
+          `${API_BASE}/logout.php`;
+      },
+      "destructive"
+    );
+  });
 
   /* =========================================
      ORDER DETAILS MODAL
@@ -967,12 +968,13 @@ message.textContent = text;
           confirmCallback;
 
         document
-          .getElementById(
-            "confirmModal"
-          )
-          ?.classList.remove(
-            "active"
-          );
+  .getElementById(
+    "confirmModal"
+  )
+  ?.classList.remove(
+    "active",
+    "logout-confirmation"
+  );
 
         confirmCallback = null;
         restoreAssignModalAfterConfirm =
@@ -2348,13 +2350,36 @@ function updateModalButtons(status) {
    */
 }
 
-function openConfirmModal(title, message, callback) {
-  document.getElementById("confirmTitle").textContent = title;
-  document.getElementById("confirmMessage").textContent = message;
+function openConfirmModal(
+  title,
+  message,
+  callback,
+  type = "default"
+) {
+  const modal =
+    document.getElementById("confirmModal");
+
+  document.getElementById("confirmTitle").textContent =
+    title;
+
+  document.getElementById("confirmMessage").textContent =
+    message;
 
   confirmCallback = callback;
 
-  document.getElementById("confirmModal").classList.add("active");
+  /*
+   * Destructive confirmations such as Logout
+   * use a red visual treatment.
+   *
+   * Other confirmation dialogs keep their
+   * existing default appearance.
+   */
+  modal?.classList.toggle(
+    "logout-confirmation",
+    type === "destructive"
+  );
+
+  modal?.classList.add("active");
 }
 
 function closeConfirmModal() {
@@ -2363,6 +2388,13 @@ function closeConfirmModal() {
   document
     .getElementById("confirmModal")
     ?.classList.remove("active");
+
+    document
+  .getElementById("confirmModal")
+  ?.classList.remove(
+    "active",
+    "logout-confirmation"
+  );
 
   if (restoreAssignModalAfterConfirm) {
     document
