@@ -337,6 +337,96 @@ if ($userId <= 0) {
 }
 
 /* =========================================================
+   RE-CHECK OWNER ACCOUNT BEFORE AUTHENTICATING
+   ========================================================= */
+
+$ownerStateStmt =
+    $conn->prepare("
+        SELECT
+            role,
+            status,
+            is_verified,
+            must_change_password
+        FROM tbl_users
+        WHERE user_id = ?
+        LIMIT 1
+    ");
+
+if (!$ownerStateStmt) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to verify the owner account."
+        ],
+        500
+    );
+}
+
+$ownerStateStmt->bind_param(
+    "i",
+    $userId
+);
+
+if (!$ownerStateStmt->execute()) {
+    $ownerStateStmt->close();
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to verify the owner account."
+        ],
+        500
+    );
+}
+
+$ownerState =
+    $ownerStateStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$ownerStateStmt->close();
+
+if (
+    !$ownerState ||
+    strtolower(trim((string)$ownerState["role"])) !== "owner" ||
+    (int)$ownerState["status"] !== 1 ||
+    (int)$ownerState["is_verified"] !== 1
+) {
+    unset(
+        $_SESSION["pending_owner_login"]
+    );
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "This owner account is no longer available for login.",
+            "login_required" => true
+        ],
+        403
+    );
+}
+
+if ((int)$ownerState["must_change_password"] === 1) {
+    unset(
+        $_SESSION["pending_owner_login"]
+    );
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "A temporary owner password has been issued. Log in again using the temporary password and create a new private password first.",
+            "login_required" => true,
+            "password_change_required" => true
+        ],
+        409
+    );
+}
+
+/* =========================================================
    OPTIONAL TRUSTED DEVICE
    ========================================================= */
 

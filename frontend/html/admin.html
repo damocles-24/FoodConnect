@@ -16,7 +16,7 @@
 
   <link
     rel="stylesheet"
-    href="../css/admin.css?v=20260817-8"
+    href="../css/admin.css?v=20260818-ownerrecovery1"
   >
 
   <link
@@ -341,6 +341,21 @@
         >
           <i class="fa-solid fa-building"></i>
           <span>Approved Restaurants</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-section="ownerPasswordResetsSection"
+        >
+          <i class="fa-solid fa-key"></i>
+          <span>Owner Password Resets</span>
+
+          <span
+            id="pendingOwnerPasswordResetsBadge"
+            class="nav-badge hidden"
+          >
+            0
+          </span>
         </button>
 
         <button
@@ -974,6 +989,150 @@
 </section>
 
       <section
+  id="ownerPasswordResetsSection"
+  class="dashboard-section"
+>
+  <div class="owner-reset-summary-grid">
+
+    <article class="owner-reset-summary-card">
+      <div class="owner-reset-summary-icon pending">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div>
+        <span>Pending</span>
+        <strong id="pendingOwnerPasswordResetsCount">0</strong>
+      </div>
+    </article>
+
+    <article class="owner-reset-summary-card">
+      <div class="owner-reset-summary-icon approved">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <span>Approved</span>
+        <strong id="approvedOwnerPasswordResetsCount">0</strong>
+      </div>
+    </article>
+
+    <article class="owner-reset-summary-card">
+      <div class="owner-reset-summary-icon rejected">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </div>
+      <div>
+        <span>Rejected</span>
+        <strong id="rejectedOwnerPasswordResetsCount">0</strong>
+      </div>
+    </article>
+
+    <article class="owner-reset-summary-card">
+      <div class="owner-reset-summary-icon total">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <div>
+        <span>Total Requests</span>
+        <strong id="totalOwnerPasswordResetsCount">0</strong>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="content-card">
+    <div class="card-heading applications-heading">
+      <div>
+        <h2>Owner Password Reset Requests</h2>
+        <p>
+          Review owner-submitted recovery requests. Approved requests issue a one-time temporary password that the owner must replace at the next login.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="refreshOwnerPasswordResetsButton"
+        class="secondary-button"
+      >
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+    </div>
+
+    <div class="owner-reset-toolbar">
+      <div class="owner-reset-search-group">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+          type="search"
+          id="ownerPasswordResetSearchInput"
+          placeholder="Search owner, restaurant, email, or reason..."
+          autocomplete="off"
+          maxlength="100"
+        >
+      </div>
+
+      <select
+        id="ownerPasswordResetStatusFilter"
+        class="owner-reset-filter"
+        aria-label="Filter owner password reset requests"
+      >
+        <option value="all">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <button
+        type="button"
+        id="clearOwnerPasswordResetFiltersButton"
+        class="secondary-button"
+      >
+        Clear
+      </button>
+    </div>
+
+    <p
+      id="ownerPasswordResetsMessage"
+      class="owner-password-resets-message"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <div
+      id="ownerPasswordResetsLoading"
+      class="table-loading hidden"
+    >
+      Loading password reset requests...
+    </div>
+
+    <div
+      id="ownerPasswordResetsEmpty"
+      class="empty-placeholder hidden"
+    >
+      <i class="fa-solid fa-key"></i>
+      <h3>No password reset requests found</h3>
+      <p>Owner recovery requests will appear here.</p>
+    </div>
+
+    <div
+      id="ownerPasswordResetsTableWrapper"
+      class="table-wrapper hidden"
+    >
+      <table class="admin-table owner-password-resets-table">
+        <thead>
+          <tr>
+            <th>Owner / Restaurant</th>
+            <th>Submitted Details</th>
+            <th>Reason</th>
+            <th>Requested</th>
+            <th>Status</th>
+            <th>Reviewed</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ownerPasswordResetsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+      <section
   id="platformUsersSection"
   class="dashboard-section"
 >
@@ -1292,6 +1451,10 @@
           User Accounts
         </option>
 
+        <option value="owner_password_reset">
+          Owner Password Resets
+        </option>
+
         <option value="system">
           System Actions
         </option>
@@ -1391,6 +1554,55 @@
     </div>
   </div>
 
+<!-- OWNER TEMPORARY PASSWORD MODAL -->
+
+<div
+  id="ownerTemporaryPasswordModal"
+  class="modal-overlay hidden"
+>
+  <div class="application-modal owner-temp-password-modal">
+    <button
+      type="button"
+      id="closeOwnerTemporaryPasswordModal"
+      class="modal-close"
+      aria-label="Close temporary password"
+    >
+      &times;
+    </button>
+
+    <div class="owner-temp-password-content">
+      <span class="section-eyebrow">Owner Account Recovery</span>
+      <h2>Temporary Password Issued</h2>
+      <p id="ownerTemporaryPasswordSummary">
+        Give this password directly to the verified restaurant owner.
+      </p>
+
+      <div class="owner-temp-password-warning">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>
+          This password is shown only in this approval response. Do not store it in notes, logs, screenshots, or chat messages.
+        </span>
+      </div>
+
+      <div class="owner-temp-password-value-row">
+        <code id="ownerTemporaryPasswordValue"></code>
+        <button
+          type="button"
+          id="copyOwnerTemporaryPasswordButton"
+          class="secondary-button"
+        >
+          <i class="fa-regular fa-copy"></i>
+          Copy
+        </button>
+      </div>
+
+      <p class="owner-temp-password-footnote">
+        The owner must log in using this temporary password and immediately create a new private password before normal owner verification continues.
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- PARTNER REQUEST MODAL -->
 
 <div
@@ -1414,6 +1626,6 @@
 </div>
 
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/admin.js?v=20260728-1"></script>
+<script src="../js/admin.js?v=20260818-ownerrecovery1"></script>
 </body>
 </html>

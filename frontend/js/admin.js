@@ -411,6 +411,107 @@ const unavailableRestaurantsCount =
 let loadedRestaurants = [];
 
 /* =========================
+   OWNER PASSWORD RESET ELEMENTS
+========================= */
+
+const pendingOwnerPasswordResetsBadge =
+  document.getElementById(
+    "pendingOwnerPasswordResetsBadge"
+  );
+
+const refreshOwnerPasswordResetsButton =
+  document.getElementById(
+    "refreshOwnerPasswordResetsButton"
+  );
+
+const ownerPasswordResetSearchInput =
+  document.getElementById(
+    "ownerPasswordResetSearchInput"
+  );
+
+const ownerPasswordResetStatusFilter =
+  document.getElementById(
+    "ownerPasswordResetStatusFilter"
+  );
+
+const clearOwnerPasswordResetFiltersButton =
+  document.getElementById(
+    "clearOwnerPasswordResetFiltersButton"
+  );
+
+const ownerPasswordResetsMessage =
+  document.getElementById(
+    "ownerPasswordResetsMessage"
+  );
+
+const ownerPasswordResetsLoading =
+  document.getElementById(
+    "ownerPasswordResetsLoading"
+  );
+
+const ownerPasswordResetsEmpty =
+  document.getElementById(
+    "ownerPasswordResetsEmpty"
+  );
+
+const ownerPasswordResetsTableWrapper =
+  document.getElementById(
+    "ownerPasswordResetsTableWrapper"
+  );
+
+const ownerPasswordResetsTableBody =
+  document.getElementById(
+    "ownerPasswordResetsTableBody"
+  );
+
+const pendingOwnerPasswordResetsCount =
+  document.getElementById(
+    "pendingOwnerPasswordResetsCount"
+  );
+
+const approvedOwnerPasswordResetsCount =
+  document.getElementById(
+    "approvedOwnerPasswordResetsCount"
+  );
+
+const rejectedOwnerPasswordResetsCount =
+  document.getElementById(
+    "rejectedOwnerPasswordResetsCount"
+  );
+
+const totalOwnerPasswordResetsCount =
+  document.getElementById(
+    "totalOwnerPasswordResetsCount"
+  );
+
+const ownerTemporaryPasswordModal =
+  document.getElementById(
+    "ownerTemporaryPasswordModal"
+  );
+
+const closeOwnerTemporaryPasswordModalButton =
+  document.getElementById(
+    "closeOwnerTemporaryPasswordModal"
+  );
+
+const ownerTemporaryPasswordSummary =
+  document.getElementById(
+    "ownerTemporaryPasswordSummary"
+  );
+
+const ownerTemporaryPasswordValue =
+  document.getElementById(
+    "ownerTemporaryPasswordValue"
+  );
+
+const copyOwnerTemporaryPasswordButton =
+  document.getElementById(
+    "copyOwnerTemporaryPasswordButton"
+  );
+
+let loadedOwnerPasswordResetRequests = [];
+
+/* =========================
    PLATFORM USER ELEMENTS
 ========================= */
 
@@ -588,6 +689,7 @@ async function initializeAdmin() {
     );
 
     await loadApplications();
+    await loadOwnerPasswordResetRequests();
     return;
   }
 
@@ -838,6 +940,81 @@ partnerRequestNextButton
           loadRestaurants();
         }
       }
+    );
+
+      refreshOwnerPasswordResetsButton
+    ?.addEventListener(
+      "click",
+      loadOwnerPasswordResetRequests
+    );
+
+  ownerPasswordResetSearchInput
+    ?.addEventListener(
+      "input",
+      renderOwnerPasswordResetRequests
+    );
+
+  ownerPasswordResetSearchInput
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          renderOwnerPasswordResetRequests();
+        }
+      }
+    );
+
+  ownerPasswordResetStatusFilter
+    ?.addEventListener(
+      "change",
+      renderOwnerPasswordResetRequests
+    );
+
+  clearOwnerPasswordResetFiltersButton
+    ?.addEventListener(
+      "click",
+      () => {
+        if (ownerPasswordResetSearchInput) {
+          ownerPasswordResetSearchInput.value =
+            "";
+        }
+
+        if (ownerPasswordResetStatusFilter) {
+          ownerPasswordResetStatusFilter.value =
+            "all";
+        }
+
+        renderOwnerPasswordResetRequests();
+      }
+    );
+
+  ownerPasswordResetsTableBody
+    ?.addEventListener(
+      "click",
+      handleOwnerPasswordResetAction
+    );
+
+  closeOwnerTemporaryPasswordModalButton
+    ?.addEventListener(
+      "click",
+      closeOwnerTemporaryPasswordModal
+    );
+
+  ownerTemporaryPasswordModal
+    ?.addEventListener(
+      "click",
+      (event) => {
+        if (event.target === ownerTemporaryPasswordModal) {
+          closeOwnerTemporaryPasswordModal();
+        }
+      }
+    );
+
+  copyOwnerTemporaryPasswordButton
+    ?.addEventListener(
+      "click",
+      copyOwnerTemporaryPassword
     );
 
       refreshPlatformUsersButton
@@ -1614,6 +1791,13 @@ function openDashboardSection(navItem) {
     "restaurantsSection"
   ) {
     loadRestaurants();
+  }
+
+    if (
+    sectionId ===
+    "ownerPasswordResetsSection"
+  ) {
+    loadOwnerPasswordResetRequests();
   }
 
     if (
@@ -3666,6 +3850,749 @@ function setRestaurantsMessage(
 }
 
 /* =========================
+   OWNER PASSWORD RESETS
+========================= */
+
+async function loadOwnerPasswordResetRequests() {
+  ownerPasswordResetsLoading
+    ?.classList.remove(
+      "hidden"
+    );
+
+  ownerPasswordResetsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  ownerPasswordResetsTableWrapper
+    ?.classList.add(
+      "hidden"
+    );
+
+  setOwnerPasswordResetsMessage(
+    "",
+    ""
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/get_owner_password_reset_requests.php`,
+      {
+        credentials: "include",
+        headers: {
+          "Accept":
+            "application/json"
+        }
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load owner password reset requests."
+      );
+    }
+
+    loadedOwnerPasswordResetRequests =
+      Array.isArray(data.requests)
+        ? data.requests
+        : [];
+
+    updateOwnerPasswordResetSummary(
+      data.summary || {}
+    );
+
+    renderOwnerPasswordResetRequests();
+  } catch (error) {
+    console.error(
+      "Load owner password reset requests error:",
+      error
+    );
+
+    ownerPasswordResetsTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    ownerPasswordResetsEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    if (ownerPasswordResetsEmpty) {
+      ownerPasswordResetsEmpty.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h3>Unable to load password reset requests</h3>
+        <p>${escapeHtml(
+          error.message ||
+          "Please try again."
+        )}</p>
+      `;
+    }
+
+    setOwnerPasswordResetsMessage(
+      error.message ||
+      "Unable to load password reset requests.",
+      "error"
+    );
+  } finally {
+    ownerPasswordResetsLoading
+      ?.classList.add(
+        "hidden"
+      );
+  }
+}
+
+function updateOwnerPasswordResetSummary(
+  summary
+) {
+  const pending = Number(
+    summary.pending_requests || 0
+  );
+
+  setText(
+    pendingOwnerPasswordResetsCount,
+    pending
+  );
+
+  setText(
+    approvedOwnerPasswordResetsCount,
+    Number(
+      summary.approved_requests || 0
+    )
+  );
+
+  setText(
+    rejectedOwnerPasswordResetsCount,
+    Number(
+      summary.rejected_requests || 0
+    )
+  );
+
+  setText(
+    totalOwnerPasswordResetsCount,
+    Number(
+      summary.total_requests || 0
+    )
+  );
+
+  if (pendingOwnerPasswordResetsBadge) {
+    pendingOwnerPasswordResetsBadge.textContent =
+      String(pending);
+
+    pendingOwnerPasswordResetsBadge.classList.toggle(
+      "hidden",
+      pending <= 0
+    );
+  }
+}
+
+function getFilteredOwnerPasswordResetRequests() {
+  const search =
+    ownerPasswordResetSearchInput
+      ?.value
+      ?.trim()
+      ?.toLowerCase() || "";
+
+  const status =
+    ownerPasswordResetStatusFilter
+      ?.value || "all";
+
+  return loadedOwnerPasswordResetRequests
+    .filter((request) => {
+      if (
+        status !== "all" &&
+        String(
+          request.request_status || ""
+        ).toLowerCase() !== status
+      ) {
+        return false;
+      }
+
+      if (!search) {
+        return true;
+      }
+
+      const haystack = [
+        request.owner_name,
+        request.owner_email,
+        request.owner_contact_number,
+        request.actual_restaurant_name,
+        request.submitted_restaurant_name,
+        request.submitted_email,
+        request.submitted_contact_number,
+        request.reason,
+        request.review_note,
+        request.reviewer_name
+      ]
+        .map((value) =>
+          String(value || "")
+            .toLowerCase()
+        )
+        .join(" ");
+
+      return haystack.includes(search);
+    });
+}
+
+function renderOwnerPasswordResetRequests() {
+  if (!ownerPasswordResetsTableBody) {
+    return;
+  }
+
+  const requests =
+    getFilteredOwnerPasswordResetRequests();
+
+  ownerPasswordResetsTableBody.innerHTML =
+    "";
+
+  if (requests.length === 0) {
+    ownerPasswordResetsEmpty
+      ?.classList.remove(
+        "hidden"
+      );
+
+    ownerPasswordResetsTableWrapper
+      ?.classList.add(
+        "hidden"
+      );
+
+    if (ownerPasswordResetsEmpty) {
+      ownerPasswordResetsEmpty.innerHTML = `
+        <i class="fa-solid fa-key"></i>
+        <h3>No password reset requests found</h3>
+        <p>Try another filter or wait for an owner recovery request.</p>
+      `;
+    }
+
+    return;
+  }
+
+  ownerPasswordResetsEmpty
+    ?.classList.add(
+      "hidden"
+    );
+
+  ownerPasswordResetsTableWrapper
+    ?.classList.remove(
+      "hidden"
+    );
+
+  requests.forEach((request) => {
+    const row =
+      document.createElement("tr");
+
+    const requestId = Number(
+      request.request_id || 0
+    );
+
+    const status = String(
+      request.request_status ||
+      "pending"
+    ).toLowerCase();
+
+    const ownerName =
+      String(
+        request.owner_name ||
+        "Unnamed Owner"
+      );
+
+    const actualRestaurantName =
+      String(
+        request.actual_restaurant_name ||
+        request.submitted_restaurant_name ||
+        "Restaurant not linked"
+      );
+
+    const submittedRestaurantName =
+      String(
+        request.submitted_restaurant_name ||
+        "—"
+      );
+
+    const ownerContact =
+      window.FoodConnectPhone?.format
+        ? window.FoodConnectPhone.format(
+            request.owner_contact_number,
+            ""
+          )
+        : String(
+            request.owner_contact_number ||
+            ""
+          );
+
+    const submittedContact =
+      window.FoodConnectPhone?.format
+        ? window.FoodConnectPhone.format(
+            request.submitted_contact_number,
+            ""
+          )
+        : String(
+            request.submitted_contact_number ||
+            ""
+          );
+
+    const reviewedMarkup =
+      status === "pending"
+        ? `
+          <span class="table-secondary">
+            Not reviewed
+          </span>
+        `
+        : `
+          <span class="owner-reset-review-meta">
+            <strong>${escapeHtml(
+              request.reviewer_name ||
+              "Administrator"
+            )}</strong>
+            <br>
+            ${escapeHtml(
+              formatDate(
+                request.reviewed_at
+              )
+            )}
+            ${
+              request.review_note
+                ? `<br>${escapeHtml(
+                    request.review_note
+                  )}`
+                : ""
+            }
+          </span>
+        `;
+
+    const actionMarkup =
+      status === "pending"
+        ? `
+          <div class="owner-reset-action-group">
+            <button
+              type="button"
+              class="owner-reset-action-button approve"
+              data-owner-reset-action="approve"
+              data-request-id="${requestId}"
+              data-owner-name="${escapeHtml(ownerName)}"
+              data-restaurant-name="${escapeHtml(actualRestaurantName)}"
+            >
+              Approve
+            </button>
+
+            <button
+              type="button"
+              class="owner-reset-action-button reject"
+              data-owner-reset-action="reject"
+              data-request-id="${requestId}"
+              data-owner-name="${escapeHtml(ownerName)}"
+              data-restaurant-name="${escapeHtml(actualRestaurantName)}"
+            >
+              Reject
+            </button>
+          </div>
+        `
+        : `
+          <span class="table-secondary">
+            Completed
+          </span>
+        `;
+
+    row.innerHTML = `
+      <td data-label="Owner / Restaurant">
+        <span class="owner-reset-owner-name">
+          ${escapeHtml(ownerName)}
+        </span>
+        <span class="owner-reset-restaurant-name">
+          ${escapeHtml(actualRestaurantName)}
+        </span>
+      </td>
+
+      <td data-label="Submitted Details">
+        <span class="owner-reset-submitted-detail">
+          <strong>Restaurant:</strong>
+          ${escapeHtml(submittedRestaurantName)}
+        </span>
+        <span class="owner-reset-submitted-detail">
+          <strong>Email:</strong>
+          ${escapeHtml(
+            request.submitted_email ||
+            "—"
+          )}
+        </span>
+        <span class="owner-reset-submitted-detail">
+          <strong>Mobile:</strong>
+          ${escapeHtml(
+            submittedContact || "—"
+          )}
+        </span>
+        <span class="owner-reset-submitted-detail table-secondary">
+          Registered: ${escapeHtml(
+            request.owner_email || "—"
+          )}${
+            ownerContact
+              ? ` • ${escapeHtml(ownerContact)}`
+              : ""
+          }
+        </span>
+      </td>
+
+      <td data-label="Reason">
+        <span class="owner-reset-reason">
+          ${escapeHtml(
+            request.reason || "—"
+          )}
+        </span>
+      </td>
+
+      <td data-label="Requested">
+        ${escapeHtml(
+          formatDate(
+            request.created_at
+          )
+        )}
+      </td>
+
+      <td data-label="Status">
+        <span class="owner-reset-status-badge ${escapeHtml(status)}">
+          ${escapeHtml(status)}
+        </span>
+      </td>
+
+      <td data-label="Reviewed">
+        ${reviewedMarkup}
+      </td>
+
+      <td data-label="Action">
+        ${actionMarkup}
+      </td>
+    `;
+
+    ownerPasswordResetsTableBody
+      .appendChild(row);
+  });
+}
+
+async function handleOwnerPasswordResetAction(
+  event
+) {
+  const button =
+    event.target.closest(
+      "[data-owner-reset-action]"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  const requestId = Number(
+    button.dataset.requestId || 0
+  );
+
+  const action = String(
+    button.dataset.ownerResetAction ||
+    ""
+  ).toLowerCase();
+
+  const ownerName =
+    button.dataset.ownerName ||
+    "this owner";
+
+  const restaurantName =
+    button.dataset.restaurantName ||
+    "this restaurant";
+
+  if (!requestId || !["approve", "reject"].includes(action)) {
+    return;
+  }
+
+  let reviewNote = "";
+
+  if (action === "approve") {
+    const confirmed = window.confirm(
+      `Approve password recovery for ${ownerName} (${restaurantName})?\n\nFoodConnect will immediately replace the current owner password with a temporary password and revoke trusted owner devices.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+  } else {
+    const rejectionReason = window.prompt(
+      `Why are you rejecting the password recovery request for ${ownerName}?`,
+      "Account details require further verification."
+    );
+
+    if (rejectionReason === null) {
+      return;
+    }
+
+    reviewNote = rejectionReason.trim();
+
+    if (reviewNote.length < 3) {
+      setOwnerPasswordResetsMessage(
+        "Enter a short reason before rejecting the request.",
+        "error"
+      );
+      return;
+    }
+  }
+
+  const row = button.closest("tr");
+  const rowButtons =
+    row?.querySelectorAll(
+      ".owner-reset-action-button"
+    ) || [];
+
+  rowButtons.forEach((rowButton) => {
+    rowButton.disabled = true;
+  });
+
+  const originalText =
+    button.textContent;
+
+  button.textContent =
+    action === "approve"
+      ? "Approving..."
+      : "Rejecting...";
+
+  setOwnerPasswordResetsMessage(
+    "",
+    ""
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/review_owner_password_reset_request.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type":
+            "application/json",
+          "Accept":
+            "application/json"
+        },
+        body: JSON.stringify({
+          request_id: requestId,
+          action,
+          review_note: reviewNote
+        })
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      showAdminAccess();
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to review this password recovery request."
+      );
+    }
+
+    if (action === "approve") {
+      if (!data.temporary_password) {
+        throw new Error(
+          "The temporary password was not returned by the server."
+        );
+      }
+
+      showOwnerTemporaryPasswordModal(
+        data
+      );
+    }
+
+    await loadOwnerPasswordResetRequests();
+
+    setOwnerPasswordResetsMessage(
+      data.message ||
+      `Password recovery request ${action === "approve" ? "approved" : "rejected"}.`,
+      "success"
+    );
+  } catch (error) {
+    console.error(
+      "Owner password reset review error:",
+      error
+    );
+
+    setOwnerPasswordResetsMessage(
+      error.message ||
+      "Unable to review this password recovery request.",
+      "error"
+    );
+  } finally {
+    rowButtons.forEach((rowButton) => {
+      rowButton.disabled = false;
+    });
+
+    button.textContent = originalText;
+  }
+}
+
+function showOwnerTemporaryPasswordModal(
+  data
+) {
+  if (!ownerTemporaryPasswordModal) {
+    return;
+  }
+
+  if (ownerTemporaryPasswordValue) {
+    ownerTemporaryPasswordValue.textContent =
+      data.temporary_password || "";
+  }
+
+  if (ownerTemporaryPasswordSummary) {
+    const owner =
+      data.owner_name ||
+      "Restaurant owner";
+
+    const restaurant =
+      data.restaurant_name ||
+      "the restaurant";
+
+    ownerTemporaryPasswordSummary.textContent =
+      `${owner} (${restaurant}) must use this temporary password once, then create a new private password.`;
+  }
+
+  if (copyOwnerTemporaryPasswordButton) {
+    copyOwnerTemporaryPasswordButton.innerHTML =
+      '<i class="fa-regular fa-copy"></i> Copy';
+  }
+
+  ownerTemporaryPasswordModal.classList.remove(
+    "hidden"
+  );
+}
+
+function closeOwnerTemporaryPasswordModal() {
+  ownerTemporaryPasswordModal?.classList.add(
+    "hidden"
+  );
+
+  if (ownerTemporaryPasswordValue) {
+    ownerTemporaryPasswordValue.textContent =
+      "";
+  }
+
+  if (ownerTemporaryPasswordSummary) {
+    ownerTemporaryPasswordSummary.textContent =
+      "Give this password directly to the verified restaurant owner.";
+  }
+
+  if (copyOwnerTemporaryPasswordButton) {
+    copyOwnerTemporaryPasswordButton.innerHTML =
+      '<i class="fa-regular fa-copy"></i> Copy';
+  }
+}
+
+async function copyOwnerTemporaryPassword() {
+  const password =
+    ownerTemporaryPasswordValue
+      ?.textContent
+      ?.trim() || "";
+
+  if (!password) {
+    return;
+  }
+
+  let copied = false;
+
+  try {
+    if (
+      navigator.clipboard &&
+      window.isSecureContext
+    ) {
+      await navigator.clipboard.writeText(
+        password
+      );
+      copied = true;
+    } else {
+      const temporaryInput =
+        document.createElement("textarea");
+
+      temporaryInput.value = password;
+      temporaryInput.setAttribute(
+        "readonly",
+        ""
+      );
+      temporaryInput.style.position =
+        "fixed";
+      temporaryInput.style.opacity =
+        "0";
+
+      document.body.appendChild(
+        temporaryInput
+      );
+      temporaryInput.select();
+      copied = document.execCommand(
+        "copy"
+      );
+      temporaryInput.remove();
+    }
+  } catch (error) {
+    console.error(
+      "Copy temporary password error:",
+      error
+    );
+  }
+
+  if (copyOwnerTemporaryPasswordButton) {
+    copyOwnerTemporaryPasswordButton.innerHTML =
+      copied
+        ? '<i class="fa-solid fa-check"></i> Copied'
+        : '<i class="fa-solid fa-triangle-exclamation"></i> Copy manually';
+
+    if (copied) {
+      window.setTimeout(() => {
+        if (copyOwnerTemporaryPasswordButton) {
+          copyOwnerTemporaryPasswordButton.innerHTML =
+            '<i class="fa-regular fa-copy"></i> Copy';
+        }
+      }, 1800);
+    }
+  }
+}
+
+function setOwnerPasswordResetsMessage(
+  message,
+  type = ""
+) {
+  if (!ownerPasswordResetsMessage) {
+    return;
+  }
+
+  ownerPasswordResetsMessage.textContent =
+    message;
+
+  ownerPasswordResetsMessage.className =
+    "owner-password-resets-message";
+
+  if (type) {
+    ownerPasswordResetsMessage.classList.add(
+      type
+    );
+  }
+}
+
+/* =========================
    PLATFORM USERS
 ========================= */
 
@@ -4469,7 +5396,9 @@ function updateActivityLogSummary(
       actionType ===
       "user_status" ||
       actionType ===
-      "owner_verification"
+      "owner_verification" ||
+      actionType ===
+      "owner_password_reset"
     ) {
       userCount += 1;
     }

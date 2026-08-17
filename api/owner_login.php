@@ -272,6 +272,7 @@ $accountStmt =
             full_name,
             email,
             password_hash,
+            must_change_password,
             status,
             is_verified
         FROM
@@ -413,6 +414,66 @@ $restaurantId =
 
 $restaurant =
     null;
+
+/* =========================================================
+   ADMIN-ASSISTED OWNER PASSWORD RECOVERY
+   ========================================================= */
+
+if ((int)($user["must_change_password"] ?? 0) === 1) {
+    /*
+     * A temporary password has been issued by a FoodConnect
+     * administrator. Do not create a normal owner session yet.
+     * The owner must replace the temporary password first.
+     */
+    unset(
+        $_SESSION["pending_owner_login"],
+        $_SESSION["user_id"],
+        $_SESSION["role"],
+        $_SESSION["restaurant_id"],
+        $_SESSION["full_name"],
+        $_SESSION["logged_in"],
+        $_SESSION["authenticated_at"],
+        $_SESSION["owner_email_verified_at"],
+        $_SESSION["owner_trusted_device"]
+    );
+
+    session_regenerate_id(true);
+
+    $_SESSION["owner_password_change_user_id"] =
+        $userId;
+
+    $_SESSION["owner_password_change_restaurant_id"] =
+        $restaurantId ?? 0;
+
+    $_SESSION["owner_password_change_full_name"] =
+        (string)$user["full_name"];
+
+    $_SESSION["owner_password_change_email"] =
+        (string)$user["email"];
+
+    $_SESSION["owner_password_change_started_at"] =
+        time();
+
+    clear_owner_trusted_cookie();
+    session_write_close();
+
+    respond_json(
+        [
+            "success" => true,
+            "password_change_required" => true,
+            "verification_required" => false,
+            "message" =>
+                "Temporary password accepted. Create a new private password before continuing.",
+            "user" => [
+                "user_id" => $userId,
+                "restaurant_id" => $restaurantId,
+                "role" => "owner",
+                "full_name" => (string)$user["full_name"],
+                "email" => (string)$user["email"]
+            ]
+        ]
+    );
+}
 
 /* =========================================================
    CHECK FOR OWNER RESTAURANT

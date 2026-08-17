@@ -3118,3 +3118,423 @@ html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result
     padding: 8px 10px;
   }
 }
+/* =========================
+   OWNER PASSWORD RESETS
+========================= */
+
+.owner-reset-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.owner-reset-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-reset-summary-icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.owner-reset-summary-icon.pending {
+  background: var(--primary);
+}
+
+.owner-reset-summary-icon.approved {
+  background: var(--green);
+}
+
+.owner-reset-summary-icon.rejected {
+  background: var(--red);
+}
+
+.owner-reset-summary-icon.total {
+  background: var(--blue);
+}
+
+.owner-reset-summary-card span,
+.owner-reset-summary-card strong {
+  display: block;
+}
+
+.owner-reset-summary-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.owner-reset-summary-card strong {
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.owner-reset-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.owner-reset-search-group {
+  position: relative;
+  flex: 1 1 320px;
+  min-width: 220px;
+}
+
+.owner-reset-search-group i {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  color: var(--muted-light);
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 13px;
+}
+
+.owner-reset-search-group input,
+.owner-reset-filter {
+  min-height: 38px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  font-size: 12px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.owner-reset-search-group input {
+  width: 100%;
+  padding: 0 12px 0 36px;
+}
+
+.owner-reset-filter {
+  padding: 0 30px 0 10px;
+}
+
+.owner-reset-search-group input:focus,
+.owner-reset-filter:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+}
+
+.owner-password-resets-message {
+  min-height: 20px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.owner-password-resets-message.success {
+  color: var(--green);
+}
+
+.owner-password-resets-message.error {
+  color: var(--red);
+}
+
+.owner-password-resets-table {
+  min-width: 1240px;
+}
+
+.owner-reset-owner-name,
+.owner-reset-restaurant-name {
+  display: block;
+  font-weight: 700;
+}
+
+.owner-reset-restaurant-name {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.owner-reset-submitted-detail {
+  display: block;
+  max-width: 250px;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.owner-reset-submitted-detail + .owner-reset-submitted-detail {
+  margin-top: 2px;
+}
+
+.owner-reset-reason {
+  display: block;
+  max-width: 300px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.owner-reset-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.owner-reset-status-badge.pending {
+  color: #9a5700;
+  background: #fff1d5;
+}
+
+.owner-reset-status-badge.approved {
+  color: #176b35;
+  background: #dcf7e7;
+}
+
+.owner-reset-status-badge.rejected {
+  color: #a61b2b;
+  background: #ffe1e5;
+}
+
+.owner-reset-review-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.owner-reset-review-meta strong {
+  color: var(--text);
+  font-size: 10px;
+}
+
+.owner-reset-action-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.owner-reset-action-button {
+  min-width: 68px;
+  padding: 5px 9px;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition), opacity var(--transition), background var(--transition);
+}
+
+.owner-reset-action-button:hover {
+  transform: translateY(-1px);
+}
+
+.owner-reset-action-button.approve {
+  background: var(--green);
+}
+
+.owner-reset-action-button.approve:hover {
+  background: var(--green-dark);
+}
+
+.owner-reset-action-button.reject {
+  background: var(--red);
+}
+
+.owner-reset-action-button.reject:hover {
+  background: var(--red-dark);
+}
+
+.owner-reset-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.owner-temp-password-modal {
+  max-width: 560px;
+}
+
+.owner-temp-password-content h2 {
+  margin: 6px 0 8px;
+  color: var(--text);
+}
+
+.owner-temp-password-content > p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.owner-temp-password-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 18px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 175, 51, 0.35);
+  border-radius: var(--radius);
+  background: var(--primary-subtle);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.owner-temp-password-warning i {
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.owner-temp-password-value-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.owner-temp-password-value-row code {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 13px 14px;
+  border: 1px dashed var(--border-strong, var(--border));
+  border-radius: var(--radius);
+  background: var(--surface-soft, var(--background));
+  color: var(--text);
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.owner-temp-password-footnote {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 10px !important;
+  line-height: 1.55 !important;
+}
+
+@media (max-width: 900px) {
+  .owner-reset-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .owner-reset-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-reset-toolbar {
+    align-items: stretch;
+  }
+
+  .owner-reset-search-group,
+  .owner-reset-filter,
+  .owner-reset-toolbar .secondary-button {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .owner-password-resets-table {
+    min-width: 0;
+  }
+
+  .owner-password-resets-table thead {
+    display: none;
+  }
+
+  .owner-password-resets-table,
+  .owner-password-resets-table tbody,
+  .owner-password-resets-table tr,
+  .owner-password-resets-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .owner-password-resets-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .owner-password-resets-table tr {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .owner-password-resets-table td {
+    display: grid;
+    grid-template-columns: minmax(92px, 32%) minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .owner-password-resets-table td:last-child {
+    border-bottom: none;
+  }
+
+  .owner-password-resets-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .owner-temp-password-value-row {
+    flex-direction: column;
+  }
+
+  .owner-temp-password-value-row .secondary-button {
+    width: 100%;
+  }
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] .owner-reset-status-badge.pending {
+  color: #ffd58d;
+  background: rgba(255, 175, 51, 0.15);
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] .owner-reset-status-badge.approved {
+  color: #9ce6b7;
+  background: rgba(26, 127, 75, 0.2);
+}
+
+html[data-theme="dark"] body[data-fc-page="admin"] .owner-reset-status-badge.rejected {
+  color: #ffadb5;
+  background: rgba(190, 45, 60, 0.2);
+}

@@ -20,7 +20,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/style.css?v=20260817-7">
+  <link rel="stylesheet" href="../css/style.css?v=20260818-ownerrecovery1">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
@@ -1386,12 +1386,172 @@
 
       <button
         type="button"
+        id="ownerForgotPasswordBtn"
+        class="owner-recovery-link"
+      >
+        Forgot your password? Request admin assistance
+      </button>
+
+      <button
+        type="button"
         id="backToStaffPortalBtn"
         class="portal-secondary-btn"
       >
         <i class="fa-solid fa-arrow-left"></i>
 
         Back to Staff Portal
+      </button>
+    </div>
+
+    <!-- OWNER PASSWORD RECOVERY REQUEST -->
+
+    <div
+      id="ownerPasswordResetRequestBox"
+      style="display: none;"
+    >
+      <div class="owner-login-description">
+        <p>
+          Send a recovery request to the FoodConnect administrator.
+          The admin will verify your account details before issuing a temporary password.
+        </p>
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerResetRestaurantName">
+          Restaurant Name
+        </label>
+
+        <input
+          type="text"
+          id="ownerResetRestaurantName"
+          placeholder="Enter your restaurant name"
+          autocomplete="organization"
+          maxlength="180"
+        >
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerResetEmail">
+          Owner Email Address
+        </label>
+
+        <input
+          type="email"
+          id="ownerResetEmail"
+          placeholder="Enter the registered owner email"
+          autocomplete="email"
+          maxlength="190"
+        >
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerResetContactNumber">
+          Registered Mobile Number
+        </label>
+
+        <input
+          type="tel"
+          id="ownerResetContactNumber"
+          placeholder="e.g. 09171234567"
+          autocomplete="tel"
+          inputmode="tel"
+          maxlength="20"
+        >
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerResetReason">
+          Reason for Recovery
+        </label>
+
+        <textarea
+          id="ownerResetReason"
+          rows="4"
+          maxlength="500"
+          placeholder="Briefly explain why you cannot access the owner account."
+        ></textarea>
+
+        <small class="owner-recovery-help">
+          10–500 characters. Never include your old password.
+        </small>
+      </div>
+
+      <button
+        type="button"
+        id="submitOwnerPasswordResetRequestBtn"
+        class="staff-login-btn"
+      >
+        Send Request to Admin
+      </button>
+
+      <button
+        type="button"
+        id="backToOwnerLoginFromResetRequestBtn"
+        class="portal-secondary-btn"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Owner Login
+      </button>
+    </div>
+
+    <!-- OWNER FORCED PASSWORD CHANGE -->
+
+    <div
+      id="ownerPasswordChangeBox"
+      style="display: none;"
+    >
+      <div class="owner-login-description owner-password-change-note">
+        <p>
+          Your administrator-issued password is temporary. Create a new private password before continuing to owner verification.
+        </p>
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerNewPassword">
+          New Password
+        </label>
+
+        <input
+          type="password"
+          id="ownerNewPassword"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="At least 8 characters"
+        >
+      </div>
+
+      <div class="staff-input-group">
+        <label for="ownerConfirmNewPassword">
+          Confirm New Password
+        </label>
+
+        <input
+          type="password"
+          id="ownerConfirmNewPassword"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="Re-enter your new password"
+        >
+      </div>
+
+      <small class="owner-recovery-help owner-password-requirements">
+        Use at least 8 characters with uppercase, lowercase, and a number.
+      </small>
+
+      <button
+        type="button"
+        id="saveOwnerNewPasswordBtn"
+        class="staff-login-btn"
+      >
+        Save New Password
+      </button>
+
+      <button
+        type="button"
+        id="backToOwnerLoginFromPasswordChangeBtn"
+        class="portal-secondary-btn"
+      >
+        Back to Owner Login
       </button>
     </div>
 
@@ -1471,7 +1631,7 @@
   </div>
 </div>
 
-<script src="../js/homepage.js?v=20260817-staffpw1" defer></script>
+<script src="../js/homepage.js?v=20260818-ownerrecovery1" defer></script>
 
 </body>
 </html>

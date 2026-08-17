@@ -4268,3 +4268,86 @@ body[data-fc-page="customer-home"]
 .staff-password-change-note p {
   color: #d7dce4;
 }
+
+/* ===========================
+   OWNER PASSWORD RECOVERY
+=========================== */
+
+.owner-recovery-link {
+  width: 100%;
+  margin-top: 10px;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.owner-recovery-link:hover {
+  color: #ffb15d;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.owner-recovery-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.staff-input-group textarea {
+  width: 100%;
+  min-height: 104px;
+  padding: 13px 14px;
+  border: 1px solid #344054;
+  border-radius: 12px;
+  outline: none;
+  resize: vertical;
+  background: #1b2534;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.staff-input-group textarea::placeholder {
+  color: #7d8795;
+}
+
+.staff-input-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(247, 128, 33, 0.15);
+}
+
+.owner-recovery-help {
+  display: block;
+  margin-top: 7px;
+  color: #8d98a8;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.owner-password-requirements {
+  margin: -4px 0 12px;
+}
+
+.owner-password-change-note {
+  border-color: rgba(255, 175, 51, 0.3);
+  background: rgba(255, 175, 51, 0.06);
+}
+
+@media (max-width: 480px) {
+  .owner-recovery-link {
+    font-size: 10.5px;
+  }
+
+  .staff-input-group textarea {
+    min-height: 96px;
+  }
+}

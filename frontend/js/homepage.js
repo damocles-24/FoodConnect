@@ -231,6 +231,71 @@ const backToOwnerLoginBtn =
         "ownerLoginBtn"
       );
 
+    const ownerForgotPasswordBtn =
+      document.getElementById(
+        "ownerForgotPasswordBtn"
+      );
+
+    const ownerPasswordResetRequestBox =
+      document.getElementById(
+        "ownerPasswordResetRequestBox"
+      );
+
+    const ownerResetRestaurantName =
+      document.getElementById(
+        "ownerResetRestaurantName"
+      );
+
+    const ownerResetEmail =
+      document.getElementById(
+        "ownerResetEmail"
+      );
+
+    const ownerResetContactNumber =
+      document.getElementById(
+        "ownerResetContactNumber"
+      );
+
+    const ownerResetReason =
+      document.getElementById(
+        "ownerResetReason"
+      );
+
+    const submitOwnerPasswordResetRequestBtn =
+      document.getElementById(
+        "submitOwnerPasswordResetRequestBtn"
+      );
+
+    const backToOwnerLoginFromResetRequestBtn =
+      document.getElementById(
+        "backToOwnerLoginFromResetRequestBtn"
+      );
+
+    const ownerPasswordChangeBox =
+      document.getElementById(
+        "ownerPasswordChangeBox"
+      );
+
+    const ownerNewPassword =
+      document.getElementById(
+        "ownerNewPassword"
+      );
+
+    const ownerConfirmNewPassword =
+      document.getElementById(
+        "ownerConfirmNewPassword"
+      );
+
+    const saveOwnerNewPasswordBtn =
+      document.getElementById(
+        "saveOwnerNewPasswordBtn"
+      );
+
+    const backToOwnerLoginFromPasswordChangeBtn =
+      document.getElementById(
+        "backToOwnerLoginFromPasswordChangeBtn"
+      );
+
     const staffPortalTitle =
       document.getElementById(
         "staffPortalTitle"
@@ -443,6 +508,16 @@ let restaurantsPageCards = [];
           "none";
       }
 
+      if (ownerPasswordResetRequestBox) {
+        ownerPasswordResetRequestBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordChangeBox) {
+        ownerPasswordChangeBox.style.display =
+          "none";
+      }
+
       if (ownerVerificationBox) {
   ownerVerificationBox.style.display =
     "none";
@@ -575,6 +650,133 @@ let restaurantsPageCards = [];
       }, 50);
     }
 
+    function showOwnerPasswordResetRequestView() {
+      if (staffAccessPanel) {
+        staffAccessPanel.style.display =
+          "none";
+      }
+
+      if (ownerLoginBox) {
+        ownerLoginBox.style.display =
+          "none";
+      }
+
+      if (ownerVerificationBox) {
+        ownerVerificationBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordChangeBox) {
+        ownerPasswordChangeBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordResetRequestBox) {
+        ownerPasswordResetRequestBox.style.display =
+          "block";
+      }
+
+      staffAccessCard?.classList.add(
+        "partner-mode"
+      );
+
+      if (staffPortalTitle) {
+        staffPortalTitle.textContent =
+          "Request Password Recovery";
+      }
+
+      if (staffPortalSubtitle) {
+        staffPortalSubtitle.textContent =
+          "Administrator-assisted owner account recovery";
+      }
+
+      if (staffPortalIcon) {
+        staffPortalIcon.className =
+          "fa-solid fa-life-ring";
+      }
+
+      if (ownerResetEmail && ownerEmail?.value) {
+        ownerResetEmail.value =
+          ownerEmail.value.trim();
+      }
+
+      setStaffMessage(
+        "Enter the details registered to your owner account. For security, FoodConnect will not confirm whether an account exists.",
+        "info"
+      );
+
+      window.setTimeout(() => {
+        ownerResetRestaurantName?.focus();
+      }, 50);
+    }
+
+    function showOwnerPasswordChangeView(
+      ownerName = ""
+    ) {
+      if (staffAccessPanel) {
+        staffAccessPanel.style.display =
+          "none";
+      }
+
+      if (ownerLoginBox) {
+        ownerLoginBox.style.display =
+          "none";
+      }
+
+      if (ownerVerificationBox) {
+        ownerVerificationBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordResetRequestBox) {
+        ownerPasswordResetRequestBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordChangeBox) {
+        ownerPasswordChangeBox.style.display =
+          "block";
+      }
+
+      staffAccessCard?.classList.add(
+        "partner-mode"
+      );
+
+      if (staffPortalTitle) {
+        staffPortalTitle.textContent =
+          "Create New Owner Password";
+      }
+
+      if (staffPortalSubtitle) {
+        staffPortalSubtitle.textContent =
+          ownerName
+            ? `${ownerName}, secure your owner account`
+            : "Secure your owner account";
+      }
+
+      if (staffPortalIcon) {
+        staffPortalIcon.className =
+          "fa-solid fa-key";
+      }
+
+      if (ownerNewPassword) {
+        ownerNewPassword.value = "";
+      }
+
+      if (ownerConfirmNewPassword) {
+        ownerConfirmNewPassword.value = "";
+      }
+
+      setStaffMessage(
+        "Temporary password accepted. Create a new private password before continuing.",
+        "info"
+      );
+
+      window.setTimeout(() => {
+        ownerNewPassword?.focus();
+      }, 50);
+    }
+
     function showOwnerVerificationView(
   maskedEmail = ""
 ) {
@@ -586,6 +788,16 @@ let restaurantsPageCards = [];
 
   if (ownerLoginBox) {
     ownerLoginBox.style.display =
+      "none";
+  }
+
+  if (ownerPasswordResetRequestBox) {
+    ownerPasswordResetRequestBox.style.display =
+      "none";
+  }
+
+  if (ownerPasswordChangeBox) {
+    ownerPasswordChangeBox.style.display =
       "none";
   }
 
@@ -640,6 +852,16 @@ let restaurantsPageCards = [];
   ownerVerificationBox.style.display =
     "none";
 }
+
+      if (ownerPasswordResetRequestBox) {
+        ownerPasswordResetRequestBox.style.display =
+          "none";
+      }
+
+      if (ownerPasswordChangeBox) {
+        ownerPasswordChangeBox.style.display =
+          "none";
+      }
 
       if (ownerLoginBox) {
         ownerLoginBox.style.display =
@@ -718,6 +940,30 @@ let restaurantsPageCards = [];
 
       if (ownerPassword) {
         ownerPassword.value = "";
+      }
+
+      if (ownerResetRestaurantName) {
+        ownerResetRestaurantName.value = "";
+      }
+
+      if (ownerResetEmail) {
+        ownerResetEmail.value = "";
+      }
+
+      if (ownerResetContactNumber) {
+        ownerResetContactNumber.value = "";
+      }
+
+      if (ownerResetReason) {
+        ownerResetReason.value = "";
+      }
+
+      if (ownerNewPassword) {
+        ownerNewPassword.value = "";
+      }
+
+      if (ownerConfirmNewPassword) {
+        ownerConfirmNewPassword.value = "";
       }
 
       if (ownerVerificationCode) {
@@ -2309,6 +2555,21 @@ if (
       showStaffAccessView
     );
 
+    ownerForgotPasswordBtn?.addEventListener(
+      "click",
+      showOwnerPasswordResetRequestView
+    );
+
+    backToOwnerLoginFromResetRequestBtn?.addEventListener(
+      "click",
+      showOwnerLoginView
+    );
+
+    backToOwnerLoginFromPasswordChangeBtn?.addEventListener(
+      "click",
+      showOwnerLoginView
+    );
+
     backToAccessCodeBtn?.addEventListener(
       "click",
       showStaffAccessView
@@ -2503,6 +2764,14 @@ if (
             return;
           }
 
+          if (data.password_change_required === true) {
+            showOwnerPasswordChangeView(
+              data.user?.full_name || ""
+            );
+
+            return;
+          }
+
          /*
 A trusted browser may be authenticated immediately
 without sending another email code.
@@ -2566,6 +2835,280 @@ setStaffMessage(
 
           ownerLoginBtn.textContent =
             "Login as Restaurant Owner";
+        }
+      }
+    );
+
+    /* =========================
+       OWNER PASSWORD RECOVERY REQUEST
+    ========================= */
+
+    submitOwnerPasswordResetRequestBtn?.addEventListener(
+      "click",
+      async () => {
+        const restaurantName =
+          ownerResetRestaurantName?.value.trim() ||
+          "";
+
+        const email =
+          ownerResetEmail?.value.trim() ||
+          "";
+
+        const contactNumber =
+          ownerResetContactNumber?.value.trim() ||
+          "";
+
+        const reason =
+          ownerResetReason?.value.trim() ||
+          "";
+
+        setStaffMessage("");
+
+        if (!restaurantName || !email || !contactNumber || !reason) {
+          setStaffMessage(
+            "Complete the restaurant name, owner email, registered mobile number, and recovery reason."
+          );
+          return;
+        }
+
+        if (reason.length < 10) {
+          setStaffMessage(
+            "Please provide at least 10 characters explaining the recovery request."
+          );
+          ownerResetReason?.focus();
+          return;
+        }
+
+        submitOwnerPasswordResetRequestBtn.disabled =
+          true;
+
+        submitOwnerPasswordResetRequestBtn.textContent =
+          "Sending request...";
+
+        try {
+          const response =
+            await fetch(
+              `${window.API}/request_owner_password_reset.php`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                  "Accept":
+                    "application/json"
+                },
+                body: JSON.stringify({
+                  restaurant_name:
+                    restaurantName,
+                  email,
+                  contact_number:
+                    contactNumber,
+                  reason
+                })
+              }
+            );
+
+          const data =
+            await readJsonResponse(
+              response
+            );
+
+          if (!response.ok || !data.success) {
+            setStaffMessage(
+              data.message ||
+              "Unable to submit the password recovery request."
+            );
+            return;
+          }
+
+          if (ownerResetRestaurantName) {
+            ownerResetRestaurantName.value =
+              "";
+          }
+
+          if (ownerResetEmail) {
+            ownerResetEmail.value =
+              "";
+          }
+
+          if (ownerResetContactNumber) {
+            ownerResetContactNumber.value =
+              "";
+          }
+
+          if (ownerResetReason) {
+            ownerResetReason.value =
+              "";
+          }
+
+          setStaffMessage(
+            data.message ||
+            "Your recovery request was submitted for administrator review.",
+            "success"
+          );
+        } catch (error) {
+          console.error(
+            "Owner password recovery request failed:",
+            error
+          );
+
+          setStaffMessage(
+            "Unable to connect. Please check your connection and try again."
+          );
+        } finally {
+          submitOwnerPasswordResetRequestBtn.disabled =
+            false;
+
+          submitOwnerPasswordResetRequestBtn.textContent =
+            "Send Request to Admin";
+        }
+      }
+    );
+
+    /* =========================
+       OWNER FORCED PASSWORD CHANGE
+    ========================= */
+
+    saveOwnerNewPasswordBtn?.addEventListener(
+      "click",
+      async () => {
+        const newPassword =
+          ownerNewPassword?.value ||
+          "";
+
+        const confirmPassword =
+          ownerConfirmNewPassword?.value ||
+          "";
+
+        setStaffMessage("");
+
+        if (newPassword.length < 8) {
+          setStaffMessage(
+            "New password must contain at least 8 characters."
+          );
+          ownerNewPassword?.focus();
+          return;
+        }
+
+        if (
+          !/[A-Z]/.test(newPassword) ||
+          !/[a-z]/.test(newPassword) ||
+          !/\d/.test(newPassword)
+        ) {
+          setStaffMessage(
+            "Use at least one uppercase letter, one lowercase letter, and one number."
+          );
+          ownerNewPassword?.focus();
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          setStaffMessage(
+            "New password and confirmation do not match."
+          );
+          ownerConfirmNewPassword?.focus();
+          return;
+        }
+
+        saveOwnerNewPasswordBtn.disabled =
+          true;
+
+        saveOwnerNewPasswordBtn.textContent =
+          "Saving password...";
+
+        try {
+          const response =
+            await fetch(
+              `${window.API}/change_owner_temporary_password.php`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                  "Accept":
+                    "application/json"
+                },
+                body: JSON.stringify({
+                  new_password:
+                    newPassword,
+                  confirm_password:
+                    confirmPassword
+                })
+              }
+            );
+
+          const data =
+            await readJsonResponse(
+              response
+            );
+
+          if (!response.ok || !data.success) {
+            setStaffMessage(
+              data.message ||
+              "Unable to save the new owner password."
+            );
+
+            if (data.login_required) {
+              window.setTimeout(() => {
+                showOwnerLoginView();
+              }, 1400);
+            }
+
+            return;
+          }
+
+          if (ownerPassword) {
+            ownerPassword.value =
+              "";
+          }
+
+          showOwnerLoginView();
+
+          setStaffMessage(
+            data.message ||
+            "New password saved. Log in again to continue.",
+            "success"
+          );
+        } catch (error) {
+          console.error(
+            "Owner password change failed:",
+            error
+          );
+
+          setStaffMessage(
+            "Unable to connect. Please check your connection and try again."
+          );
+        } finally {
+          saveOwnerNewPasswordBtn.disabled =
+            false;
+
+          saveOwnerNewPasswordBtn.textContent =
+            "Save New Password";
+        }
+      }
+    );
+
+    ownerConfirmNewPassword?.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          saveOwnerNewPasswordBtn?.click();
+        }
+      }
+    );
+
+    ownerResetReason?.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key === "Enter" &&
+          (event.ctrlKey || event.metaKey)
+        ) {
+          event.preventDefault();
+          submitOwnerPasswordResetRequestBtn?.click();
         }
       }
     );
