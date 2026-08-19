@@ -4342,6 +4342,287 @@ body[data-fc-page="customer-home"]
   background: rgba(255, 175, 51, 0.06);
 }
 
+
+.owner-recovery-intro {
+  border-color: rgba(255, 175, 51, 0.22);
+  background: rgba(255, 175, 51, 0.055);
+}
+
+.owner-recovery-status-view {
+  padding-top: 2px;
+  text-align: center;
+  animation: ownerRecoveryStateIn 0.22s ease-out both;
+}
+
+.owner-recovery-status-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 13px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--fc-warning-border);
+  border-radius: 50%;
+  background: var(--fc-warning-soft);
+  color: var(--fc-warning);
+  font-size: 25px;
+}
+
+.owner-recovery-status-view.is-approved .owner-recovery-status-icon {
+  border-color: var(--fc-success-border);
+  background: var(--fc-success-soft);
+  color: var(--fc-success);
+}
+
+.owner-recovery-status-view.is-rejected .owner-recovery-status-icon {
+  border-color: var(--fc-danger-border);
+  background: var(--fc-danger-soft);
+  color: var(--fc-danger);
+}
+
+.owner-recovery-status-view.is-unavailable .owner-recovery-status-icon {
+  border-color: var(--fc-neutral-border);
+  background: var(--fc-neutral-soft);
+  color: var(--fc-neutral-dark);
+}
+
+.owner-recovery-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 5px 10px;
+  border: 1px solid var(--fc-warning-border);
+  border-radius: 999px;
+  background: var(--fc-warning-soft);
+  color: var(--fc-warning);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.owner-recovery-status-view.is-approved .owner-recovery-status-badge {
+  border-color: var(--fc-success-border);
+  background: var(--fc-success-soft);
+  color: var(--fc-success);
+}
+
+.owner-recovery-status-view.is-rejected .owner-recovery-status-badge {
+  border-color: var(--fc-danger-border);
+  background: var(--fc-danger-soft);
+  color: var(--fc-danger);
+}
+
+.owner-recovery-status-view.is-unavailable .owner-recovery-status-badge {
+  border-color: var(--fc-neutral-border);
+  background: var(--fc-neutral-soft);
+  color: var(--fc-neutral-dark);
+}
+
+.owner-recovery-status-title {
+  margin: 13px 0 7px;
+  color: #f8fafc;
+  font-size: 19px;
+  line-height: 1.3;
+  outline: none;
+}
+
+.owner-recovery-status-text {
+  max-width: 340px;
+  margin: 0 auto;
+  color: #a9b2c0;
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+.owner-recovery-email-card {
+  margin: 17px 0 4px;
+  padding: 12px 14px;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--fc-success-border);
+  border-radius: 12px;
+  background: var(--fc-success-soft);
+  text-align: left;
+}
+
+.owner-recovery-email-card span {
+  color: #a9b2c0;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.owner-recovery-email-card strong {
+  overflow-wrap: anywhere;
+  color: #dff8e6;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.owner-recovery-progress {
+  position: relative;
+  margin: 20px 0 16px;
+  padding: 0;
+  list-style: none;
+  gap: 0;
+  text-align: left;
+}
+
+.owner-recovery-progress li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: 54px;
+  padding: 0 0 14px;
+}
+
+.owner-recovery-progress li:last-child {
+  min-height: 34px;
+  padding-bottom: 0;
+}
+
+.owner-recovery-progress li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 30px;
+  left: 14px;
+  width: 2px;
+  height: calc(100% - 22px);
+  border-radius: 2px;
+  background: #344054;
+}
+
+.owner-recovery-progress li.is-complete:not(:last-child)::after {
+  background: var(--fc-success);
+}
+
+.owner-recovery-step-icon {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #3a4658;
+  border-radius: 50%;
+  background: #182233;
+  color: #8d98a8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.owner-recovery-progress li.is-complete .owner-recovery-step-icon {
+  border-color: var(--fc-success-border);
+  background: var(--fc-success-soft);
+  color: var(--fc-success);
+}
+
+.owner-recovery-progress li.is-current .owner-recovery-step-icon {
+  border-color: var(--fc-warning-border);
+  background: var(--fc-warning-soft);
+  color: var(--fc-warning);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.08);
+}
+
+.owner-recovery-progress li.is-stopped .owner-recovery-step-icon {
+  border-color: var(--fc-danger-border);
+  background: var(--fc-danger-soft);
+  color: var(--fc-danger);
+}
+
+.owner-recovery-step-copy {
+  min-width: 0;
+  padding-top: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.owner-recovery-step-copy strong {
+  color: #e7ebf2;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.owner-recovery-step-copy small {
+  color: #8d98a8;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.owner-recovery-next-step {
+  margin: 17px 0 14px;
+  padding: 12px 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--fc-info-border);
+  border-radius: 12px;
+  background: var(--fc-info-soft);
+  color: #c7d7ff;
+  text-align: left;
+}
+
+.owner-recovery-next-step.is-success {
+  border-color: var(--fc-success-border);
+  background: var(--fc-success-soft);
+  color: #bdeecb;
+}
+
+.owner-recovery-next-step.is-danger {
+  border-color: var(--fc-danger-border);
+  background: var(--fc-danger-soft);
+  color: #ffc2c4;
+}
+
+.owner-recovery-next-step.is-warning {
+  border-color: var(--fc-warning-border);
+  background: var(--fc-warning-soft);
+  color: #f7d59b;
+}
+
+.owner-recovery-next-step > i {
+  margin-top: 2px;
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+
+.owner-recovery-next-step p {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.owner-recovery-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@keyframes ownerRecoveryStateIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .owner-recovery-status-view {
+    animation: none;
+  }
+}
+
 @media (max-width: 480px) {
   .owner-recovery-link {
     font-size: 10.5px;
@@ -4349,5 +4630,181 @@ body[data-fc-page="customer-home"]
 
   .staff-input-group textarea {
     min-height: 96px;
+  }
+
+  .owner-recovery-status-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 22px;
+  }
+
+  .owner-recovery-status-title {
+    font-size: 17px;
+  }
+
+  .owner-recovery-progress {
+    margin-top: 17px;
+  }
+}
+
+
+/* =========================================================
+   OWNER RECOVERY STATUS — COMPACT SUCCESS / STATUS POLISH
+   Keeps the working recovery flow unchanged; this only improves
+   readability, hierarchy, and viewport fit after a request is sent.
+========================================================= */
+.staff-access-card.owner-recovery-status-active {
+  padding: 20px 28px 22px;
+}
+
+.staff-access-card.owner-recovery-status-active > .staff-lock-icon,
+.staff-access-card.owner-recovery-status-active > #staffPortalTitle,
+.staff-access-card.owner-recovery-status-active > #staffPortalSubtitle,
+.staff-access-card.owner-recovery-status-active > #staffPortalMessage {
+  display: none !important;
+}
+
+/* Keep dismissal available even if a small viewport still needs scrolling. */
+.staff-access-card.owner-recovery-status-active .staff-close-btn {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 8;
+  margin-left: auto;
+  margin-bottom: -40px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-status-view {
+  padding-top: 1px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-status-icon {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 9px;
+  font-size: 21px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-status-badge {
+  min-height: 23px;
+  padding: 4px 9px;
+  font-size: 9px;
+  letter-spacing: 0.3px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-status-title {
+  margin: 9px 0 5px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-status-text {
+  max-width: 330px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* The old success-soft token becomes too pale inside this always-dark portal. */
+.staff-access-card.owner-recovery-status-approved .owner-recovery-email-card {
+  margin: 13px 0 2px;
+  padding: 9px 12px;
+  align-items: center;
+  gap: 2px;
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(34, 197, 94, 0.09);
+  text-align: center;
+}
+
+.staff-access-card.owner-recovery-status-approved .owner-recovery-email-card span {
+  color: #a6b5c7;
+  font-size: 8.5px;
+  letter-spacing: 0.42px;
+}
+
+.staff-access-card.owner-recovery-status-approved .owner-recovery-email-card strong {
+  color: #f2fff6;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-progress {
+  margin: 14px 0 11px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-progress li {
+  min-height: 43px;
+  gap: 9px;
+  padding-bottom: 9px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-progress li:last-child {
+  min-height: 29px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-progress li:not(:last-child)::after {
+  top: 26px;
+  left: 12px;
+  height: calc(100% - 18px);
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-step-icon {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  font-size: 9px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-step-copy strong {
+  font-size: 10.5px;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-step-copy small {
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-next-step {
+  margin: 12px 0 11px;
+  padding: 10px 11px;
+  gap: 9px;
+}
+
+.staff-access-card.owner-recovery-status-approved .owner-recovery-next-step.is-success {
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(34, 197, 94, 0.09);
+  color: #e9fff0;
+}
+
+.staff-access-card.owner-recovery-status-approved .owner-recovery-next-step.is-success > i {
+  color: #6ee797;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-next-step p {
+  color: inherit;
+  font-size: 9.7px;
+  line-height: 1.5;
+}
+
+.staff-access-card.owner-recovery-status-active .owner-recovery-primary-action {
+  min-height: 43px;
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .staff-access-card.owner-recovery-status-active {
+    padding: 17px 18px 19px;
+  }
+
+  .staff-access-card.owner-recovery-status-active .owner-recovery-status-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .staff-access-card.owner-recovery-status-active .owner-recovery-status-title {
+    font-size: 17px;
+  }
+
+  .staff-access-card.owner-recovery-status-active .owner-recovery-progress {
+    margin-top: 12px;
   }
 }

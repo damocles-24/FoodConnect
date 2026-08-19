@@ -7,6 +7,7 @@ header("Pragma: no-cache");
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set("display_errors", "0");
 
+require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/ph_phone.php";
@@ -85,9 +86,28 @@ rate_limit_enforce(
     "Too many password recovery requests. Please wait before trying again."
 );
 
+/*
+ * Create a session-scoped recovery tracker for every syntactically valid
+ * submission, including non-matching account details. This preserves the
+ * endpoint's anti-enumeration behavior: the initial response does not reveal
+ * whether an owner account matched.
+ */
+$trackingToken = bin2hex(random_bytes(24));
+$trackingTokenHash = hash("sha256", $trackingToken);
+$trackingLifetimeSeconds = 86400;
+
+$_SESSION["owner_password_reset_tracker"] = [
+    "token_hash" => $trackingTokenHash,
+    "request_id" => 0,
+    "owner_id" => 0,
+    "created_at" => time()
+];
+
 $genericSuccess = [
     "success" => true,
-    "message" => "If the account details match an active FoodConnect owner account, your request has been sent to the administrator for review."
+    "message" => "If the account details match an active FoodConnect owner account, your request has been sent to the administrator for review. If approved, FoodConnect will automatically email the temporary password to the registered owner email.",
+    "tracking_token" => $trackingToken,
+    "tracking_expires_in" => $trackingLifetimeSeconds
 ];
 
 try {
@@ -176,6 +196,8 @@ try {
     $pendingRequest = $pendingStmt->get_result()->fetch_assoc();
     $pendingStmt->close();
 
+    $trackedRequestId = 0;
+
     if (!$pendingRequest) {
         $insertStmt = $conn->prepare("
             INSERT INTO tbl_owner_password_reset_requests (
@@ -208,10 +230,25 @@ try {
             throw new RuntimeException("Unable to save owner recovery request.");
         }
 
+        $trackedRequestId = (int)$insertStmt->insert_id;
         $insertStmt->close();
+    } else {
+        $trackedRequestId = (int)$pendingRequest["request_id"];
     }
 
     $conn->commit();
+
+    /*
+     * Bind the opaque browser tracker to the real request only after the
+     * transaction commits. The token never grants password-reset authority;
+     * it can only read this request's review status in the same PHP session.
+     */
+    $_SESSION["owner_password_reset_tracker"] = [
+        "token_hash" => $trackingTokenHash,
+        "request_id" => $trackedRequestId,
+        "owner_id" => $ownerId,
+        "created_at" => time()
+    ];
 
     owner_reset_request_respond($genericSuccess);
 } catch (Throwable $error) {

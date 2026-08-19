@@ -1861,7 +1861,10 @@ $total +=
         r.restaurant_id,
         r.delivery_fee,
         r.business_status,
-        owner.status AS owner_status
+        r.setup_completed,
+        r.customer_visibility,
+        owner.status AS owner_status,
+        owner.is_verified AS owner_is_verified
 
     FROM tbl_restaurants AS r
 
@@ -1913,10 +1916,29 @@ $total +=
     (int) (
         $restaurantRow["owner_status"]
         ?? 0
+    ) !== 1 ||
+    (int) (
+        $restaurantRow["owner_is_verified"]
+        ?? 0
     ) !== 1
 ) {
     throw new RuntimeException(
-        "This restaurant has been deactivated from FoodConnect."
+        "This restaurant is currently unavailable on FoodConnect."
+    );
+}
+
+if (
+    (int) (
+        $restaurantRow["setup_completed"]
+        ?? 0
+    ) !== 1 ||
+    strcasecmp(
+        trim((string)($restaurantRow["customer_visibility"] ?? "Hidden")),
+        "Visible"
+    ) !== 0
+) {
+    throw new RuntimeException(
+        "This restaurant is not currently available for public ordering."
     );
 }
 

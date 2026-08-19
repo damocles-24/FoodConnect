@@ -2486,7 +2486,7 @@ if (readinessToggleBtn) {
    PRODUCTS
 ========================= */
 async function loadProducts() {
-  const data = await fetchJSON("http://localhost/FoodConnect/api/get_products.php");
+  const data = await fetchJSON(`${OWNER_API_BASE}/get_products.php`);
   const list = Array.isArray(data) ? data : data.products || [];
 
  products = list.map(p => {
@@ -2916,7 +2916,7 @@ regenerateStaffAccessCodeButton
 
 async function loadUsers() {
   const data = await fetchJSON(
-    "http://localhost/FoodConnect/api/get_users.php"
+    `${OWNER_API_BASE}/get_users.php`
   );
 
   users =
@@ -9122,7 +9122,7 @@ window.deleteUser = async function(id) {
   const confirmDelete = confirm("Are you sure you want to delete this user?");
   if (!confirmDelete) return;
 
-  const result = await fetchJSON("http://localhost/FoodConnect/api/delete_user.php", {
+  const result = await fetchJSON(`${OWNER_API_BASE}/delete_user.php`, {
     method: "POST",
     body: JSON.stringify({
       user_id: id
@@ -9410,7 +9410,7 @@ window.deleteProduct = async function(id) {
   if (!confirmDelete) return;
 
   try {
-    const result = await fetchJSON("http://localhost/FoodConnect/api/delete_product.php", {
+    const result = await fetchJSON(`${OWNER_API_BASE}/delete_product.php`, {
       method: "POST",
       body: JSON.stringify({
         product_id: id

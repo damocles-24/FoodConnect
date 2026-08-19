@@ -6828,6 +6828,12 @@ function destroyCustomerTrackingMap(
             numericOrderId
         );
 
+    if (mapData?.staleStatusInterval) {
+        window.clearInterval(
+            mapData.staleStatusInterval
+        );
+    }
+
     if (mapData?.map) {
         mapData.map.remove();
     }
@@ -6979,7 +6985,9 @@ if (
         routeLayer: null,
         lastRouteRequestAt: 0,
         lastRouteCoordinates: null,
-        routeRequestInProgress: false
+        routeRequestInProgress: false,
+        lastRiderLocationAt: 0,
+        staleStatusInterval: null
     }
 );
 
@@ -7113,9 +7121,25 @@ if (
                             `customerTrackingUpdated-${orderId}`
                         );
 
+                    const locationUpdatedAt =
+                        Number(data?.updated_at || 0);
+
+                    const effectiveUpdatedAt =
+                        Number.isFinite(locationUpdatedAt) && locationUpdatedAt > 0
+                            ? locationUpdatedAt
+                            : Date.now();
+
+                    const trackingMapData =
+                        customerTrackingMaps.get(orderId);
+
+                    if (trackingMapData) {
+                        trackingMapData.lastRiderLocationAt =
+                            effectiveUpdatedAt;
+                    }
+
                     if (updatedElement) {
                         updatedElement.textContent =
-                            "Rider location updated just now";
+                            "Live • updated just now";
                     }
                 },
                 (error) => {
@@ -7135,6 +7159,51 @@ if (
                 callback
             }
         );
+
+        const trackingMapData =
+            customerTrackingMaps.get(orderId);
+
+        if (trackingMapData) {
+            trackingMapData.staleStatusInterval =
+                window.setInterval(() => {
+                    const updatedElement =
+                        document.getElementById(
+                            `customerTrackingUpdated-${orderId}`
+                        );
+
+                    if (!updatedElement) {
+                        return;
+                    }
+
+                    const lastUpdatedAt =
+                        Number(trackingMapData.lastRiderLocationAt || 0);
+
+                    if (lastUpdatedAt <= 0) {
+                        updatedElement.textContent =
+                            "Waiting for rider location…";
+                        return;
+                    }
+
+                    const ageSeconds = Math.max(
+                        0,
+                        Math.floor((Date.now() - lastUpdatedAt) / 1000)
+                    );
+
+                    if (ageSeconds <= 15) {
+                        updatedElement.textContent =
+                            ageSeconds <= 2
+                                ? "Live • updated just now"
+                                : `Live • updated ${ageSeconds}s ago`;
+                    } else if (ageSeconds <= 60) {
+                        updatedElement.textContent =
+                            `Location delayed • last update ${ageSeconds}s ago`;
+                    } else {
+                        const ageMinutes = Math.floor(ageSeconds / 60);
+                        updatedElement.textContent =
+                            `Location signal interrupted • last update ${ageMinutes}m ago`;
+                    }
+                }, 5000);
+        }
 
         window.setTimeout(
             () => {

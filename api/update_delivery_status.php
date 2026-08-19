@@ -2,7 +2,6 @@
 
 header("Content-Type: application/json; charset=utf-8");
 
-session_set_cookie_params(0, "/FoodConnect", "", false, true);
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
@@ -37,6 +36,35 @@ if ($delivery_staff_id <= 0 || $restaurant_id <= 0) {
     ], 400);
 }
 
+$staffStmt = $conn->prepare("
+    SELECT user_id
+    FROM tbl_users
+    WHERE user_id = ?
+      AND restaurant_id = ?
+      AND role = 'delivery_staff'
+      AND status = 1
+    LIMIT 1
+");
+
+if (!$staffStmt) {
+    respond_json([
+        "success" => false,
+        "message" => "Unable to verify the delivery staff account."
+    ], 500);
+}
+
+$staffStmt->bind_param("ii", $delivery_staff_id, $restaurant_id);
+$staffStmt->execute();
+$staff = $staffStmt->get_result()->fetch_assoc();
+$staffStmt->close();
+
+if (!$staff) {
+    respond_json([
+        "success" => false,
+        "message" => "This account is not authorized to update deliveries."
+    ], 403);
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {
@@ -54,11 +82,38 @@ $new_status = strtolower(
     trim($data["delivery_status"] ?? "")
 );
 
+$rider_latitude = isset($data["rider_latitude"]) && is_numeric($data["rider_latitude"])
+    ? (float)$data["rider_latitude"]
+    : null;
+
+$rider_longitude = isset($data["rider_longitude"]) && is_numeric($data["rider_longitude"])
+    ? (float)$data["rider_longitude"]
+    : null;
+
 if ($assignment_id <= 0 || $new_status === "") {
     respond_json([
         "success" => false,
         "message" => "Please check the information and try again."
     ], 400);
+}
+
+function coordinate_distance_meters(
+    float $lat1,
+    float $lon1,
+    float $lat2,
+    float $lon2
+): float {
+    $earthRadius = 6371000.0;
+    $lat1Rad = deg2rad($lat1);
+    $lat2Rad = deg2rad($lat2);
+    $deltaLat = deg2rad($lat2 - $lat1);
+    $deltaLon = deg2rad($lon2 - $lon1);
+
+    $a = sin($deltaLat / 2) ** 2 +
+        cos($lat1Rad) * cos($lat2Rad) *
+        sin($deltaLon / 2) ** 2;
+
+    return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
 }
 
 /*
@@ -162,6 +217,70 @@ FROM tbl_delivery_assignments
         );
     }
 
+    $orderDetailStmt = $conn->prepare("
+        SELECT
+            order_id,
+            order_type,
+            order_status,
+            payment_method,
+            payment_status,
+            customer_latitude,
+            customer_longitude
+        FROM tbl_orders
+        WHERE order_id = ?
+          AND restaurant_id = ?
+        LIMIT 1
+        FOR UPDATE
+    ");
+
+    if (!$orderDetailStmt) {
+        throw new Exception("Unable to validate the delivery order.");
+    }
+
+    $orderDetailStmt->bind_param("ii", $assignment["order_id"], $restaurant_id);
+    $orderDetailStmt->execute();
+    $order = $orderDetailStmt->get_result()->fetch_assoc();
+    $orderDetailStmt->close();
+
+    if (!$order || strtolower(trim((string)$order["order_type"])) !== "delivery") {
+        throw new Exception("The delivery order could not be verified.");
+    }
+
+    if ($new_status === "completed") {
+        if (
+            $rider_latitude === null ||
+            $rider_longitude === null ||
+            $rider_latitude < -90 || $rider_latitude > 90 ||
+            $rider_longitude < -180 || $rider_longitude > 180
+        ) {
+            throw new Exception("Your current GPS location is required before completing this delivery.");
+        }
+
+        $customerLatitude = $order["customer_latitude"] !== null
+            ? (float)$order["customer_latitude"]
+            : null;
+        $customerLongitude = $order["customer_longitude"] !== null
+            ? (float)$order["customer_longitude"]
+            : null;
+
+        if ($customerLatitude === null || $customerLongitude === null) {
+            throw new Exception("The customer's pinned delivery location is unavailable.");
+        }
+
+        $distanceMeters = coordinate_distance_meters(
+            $rider_latitude,
+            $rider_longitude,
+            $customerLatitude,
+            $customerLongitude
+        );
+
+        if ($distanceMeters > 100.0) {
+            throw new Exception(
+                "Move within 100 meters of the customer's pinned location before completing the delivery."
+            );
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Determine timestamp column
@@ -257,12 +376,23 @@ FROM tbl_delivery_assignments
         $orderStatusMap[$new_status] ?? null;
 
     if ($order_status !== null) {
-        $orderSql = "
-            UPDATE tbl_orders
-            SET order_status = ?
-            WHERE order_id = ?
-              AND restaurant_id = ?
-        ";
+        $isCodCompletion =
+            $new_status === "completed" &&
+            strcasecmp(trim((string)($order["payment_method"] ?? "")), "Cash on Delivery") === 0;
+
+        $orderSql = $isCodCompletion
+            ? "
+                UPDATE tbl_orders
+                SET order_status = ?, payment_status = 'paid'
+                WHERE order_id = ?
+                  AND restaurant_id = ?
+              "
+            : "
+                UPDATE tbl_orders
+                SET order_status = ?
+                WHERE order_id = ?
+                  AND restaurant_id = ?
+              ";
 
         $orderStmt = $conn->prepare($orderSql);
 
@@ -327,7 +457,11 @@ FROM tbl_delivery_assignments
     "completed" =>
         "Delivery Order #" .
         $assignment["order_id"] .
-        " was completed successfully."
+        (
+            strcasecmp(trim((string)($order["payment_method"] ?? "")), "Cash on Delivery") === 0
+                ? " was delivered and the COD cash payment was confirmed."
+                : " was completed successfully."
+        )
 ];
 
     $action_type = "delivery_status";
@@ -413,10 +547,21 @@ FROM tbl_delivery_assignments
 
 } catch (Throwable $error) {
     $conn->rollback();
+    error_log("update_delivery_status.php error: " . $error->getMessage());
+
+    $safeMessage = $error->getMessage();
+    if (
+        stripos($safeMessage, "prepare") !== false ||
+        stripos($safeMessage, "execute") !== false ||
+        stripos($safeMessage, "sql") !== false ||
+        stripos($safeMessage, "query") !== false
+    ) {
+        $safeMessage = "The delivery could not be updated right now. Please try again.";
+    }
 
     respond_json([
         "success" => false,
-        "message" => $error->getMessage()
+        "message" => $safeMessage
     ], 409);
 
 } finally {

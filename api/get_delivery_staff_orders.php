@@ -122,6 +122,7 @@ $sql = "
         o.delivery_fee AS order_delivery_fee,
         o.total_amount,
         o.payment_method,
+        o.payment_status,
         o.address,
         o.landmark,
         o.customer_latitude,
@@ -248,6 +249,9 @@ while ($row = $result->fetch_assoc()) {
 
 "payment_method" =>
     $row["payment_method"],
+
+"payment_status" =>
+    $row["payment_status"] ?? "",
 
                         "address" => $row["address"],
             "landmark" => $row["landmark"],

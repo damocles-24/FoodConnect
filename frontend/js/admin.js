@@ -499,16 +499,6 @@ const ownerTemporaryPasswordSummary =
     "ownerTemporaryPasswordSummary"
   );
 
-const ownerTemporaryPasswordValue =
-  document.getElementById(
-    "ownerTemporaryPasswordValue"
-  );
-
-const copyOwnerTemporaryPasswordButton =
-  document.getElementById(
-    "copyOwnerTemporaryPasswordButton"
-  );
-
 let loadedOwnerPasswordResetRequests = [];
 
 /* =========================
@@ -1009,12 +999,6 @@ partnerRequestNextButton
           closeOwnerTemporaryPasswordModal();
         }
       }
-    );
-
-  copyOwnerTemporaryPasswordButton
-    ?.addEventListener(
-      "click",
-      copyOwnerTemporaryPassword
     );
 
       refreshPlatformUsersButton
@@ -4320,7 +4304,7 @@ async function handleOwnerPasswordResetAction(
 
   if (action === "approve") {
     const confirmed = window.confirm(
-      `Approve password recovery for ${ownerName} (${restaurantName})?\n\nFoodConnect will immediately replace the current owner password with a temporary password and revoke trusted owner devices.`
+      `Approve password recovery for ${ownerName} (${restaurantName})?\n\nFoodConnect will replace the current owner password with a temporary password, revoke trusted owner devices, and automatically email the temporary password to the registered owner email.`
     );
 
     if (!confirmed) {
@@ -4409,9 +4393,9 @@ async function handleOwnerPasswordResetAction(
     }
 
     if (action === "approve") {
-      if (!data.temporary_password) {
+      if (!data.email_sent) {
         throw new Error(
-          "The temporary password was not returned by the server."
+          "The password reset was approved, but email delivery was not confirmed."
         );
       }
 
@@ -4454,11 +4438,6 @@ function showOwnerTemporaryPasswordModal(
     return;
   }
 
-  if (ownerTemporaryPasswordValue) {
-    ownerTemporaryPasswordValue.textContent =
-      data.temporary_password || "";
-  }
-
   if (ownerTemporaryPasswordSummary) {
     const owner =
       data.owner_name ||
@@ -4468,13 +4447,12 @@ function showOwnerTemporaryPasswordModal(
       data.restaurant_name ||
       "the restaurant";
 
-    ownerTemporaryPasswordSummary.textContent =
-      `${owner} (${restaurant}) must use this temporary password once, then create a new private password.`;
-  }
+    const email =
+      data.owner_email ||
+      "the registered owner email";
 
-  if (copyOwnerTemporaryPasswordButton) {
-    copyOwnerTemporaryPasswordButton.innerHTML =
-      '<i class="fa-regular fa-copy"></i> Copy';
+    ownerTemporaryPasswordSummary.textContent =
+      `${owner} (${restaurant}) was issued a temporary password. FoodConnect sent it automatically to ${email}.`;
   }
 
   ownerTemporaryPasswordModal.classList.remove(
@@ -4487,87 +4465,9 @@ function closeOwnerTemporaryPasswordModal() {
     "hidden"
   );
 
-  if (ownerTemporaryPasswordValue) {
-    ownerTemporaryPasswordValue.textContent =
-      "";
-  }
-
   if (ownerTemporaryPasswordSummary) {
     ownerTemporaryPasswordSummary.textContent =
-      "Give this password directly to the verified restaurant owner.";
-  }
-
-  if (copyOwnerTemporaryPasswordButton) {
-    copyOwnerTemporaryPasswordButton.innerHTML =
-      '<i class="fa-regular fa-copy"></i> Copy';
-  }
-}
-
-async function copyOwnerTemporaryPassword() {
-  const password =
-    ownerTemporaryPasswordValue
-      ?.textContent
-      ?.trim() || "";
-
-  if (!password) {
-    return;
-  }
-
-  let copied = false;
-
-  try {
-    if (
-      navigator.clipboard &&
-      window.isSecureContext
-    ) {
-      await navigator.clipboard.writeText(
-        password
-      );
-      copied = true;
-    } else {
-      const temporaryInput =
-        document.createElement("textarea");
-
-      temporaryInput.value = password;
-      temporaryInput.setAttribute(
-        "readonly",
-        ""
-      );
-      temporaryInput.style.position =
-        "fixed";
-      temporaryInput.style.opacity =
-        "0";
-
-      document.body.appendChild(
-        temporaryInput
-      );
-      temporaryInput.select();
-      copied = document.execCommand(
-        "copy"
-      );
-      temporaryInput.remove();
-    }
-  } catch (error) {
-    console.error(
-      "Copy temporary password error:",
-      error
-    );
-  }
-
-  if (copyOwnerTemporaryPasswordButton) {
-    copyOwnerTemporaryPasswordButton.innerHTML =
-      copied
-        ? '<i class="fa-solid fa-check"></i> Copied'
-        : '<i class="fa-solid fa-triangle-exclamation"></i> Copy manually';
-
-    if (copied) {
-      window.setTimeout(() => {
-        if (copyOwnerTemporaryPasswordButton) {
-          copyOwnerTemporaryPasswordButton.innerHTML =
-            '<i class="fa-regular fa-copy"></i> Copy';
-        }
-      }, 1800);
-    }
+      "The temporary password was sent automatically to the owner's registered email.";
   }
 }
 

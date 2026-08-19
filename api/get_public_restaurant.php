@@ -90,6 +90,8 @@ $stmt = $conn->prepare("
         AND owner.is_verified = 1
 
     WHERE r.restaurant_id = ?
+      AND r.setup_completed = 1
+      AND r.customer_visibility = 'Visible'
 
     LIMIT 1
 ");

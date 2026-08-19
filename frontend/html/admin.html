@@ -1041,7 +1041,7 @@
       <div>
         <h2>Owner Password Reset Requests</h2>
         <p>
-          Review owner-submitted recovery requests. Approved requests issue a one-time temporary password that the owner must replace at the next login.
+          Review owner-submitted recovery requests. When approved, FoodConnect automatically emails a one-time temporary password to the registered owner email. The owner must replace it at the next login.
         </p>
       </div>
 
@@ -1554,7 +1554,7 @@
     </div>
   </div>
 
-<!-- OWNER TEMPORARY PASSWORD MODAL -->
+<!-- OWNER PASSWORD RESET APPROVAL MODAL -->
 
 <div
   id="ownerTemporaryPasswordModal"
@@ -1565,39 +1565,27 @@
       type="button"
       id="closeOwnerTemporaryPasswordModal"
       class="modal-close"
-      aria-label="Close temporary password"
+      aria-label="Close password reset confirmation"
     >
       &times;
     </button>
 
     <div class="owner-temp-password-content">
       <span class="section-eyebrow">Owner Account Recovery</span>
-      <h2>Temporary Password Issued</h2>
+      <h2>Password Reset Approved</h2>
       <p id="ownerTemporaryPasswordSummary">
-        Give this password directly to the verified restaurant owner.
+        The temporary password was sent automatically to the owner's registered email.
       </p>
 
       <div class="owner-temp-password-warning">
-        <i class="fa-solid fa-triangle-exclamation"></i>
+        <i class="fa-solid fa-envelope"></i>
         <span>
-          This password is shown only in this approval response. Do not store it in notes, logs, screenshots, or chat messages.
+          FoodConnect delivered the temporary password directly to the registered owner email. The admin does not need to copy, view, or forward the password.
         </span>
       </div>
 
-      <div class="owner-temp-password-value-row">
-        <code id="ownerTemporaryPasswordValue"></code>
-        <button
-          type="button"
-          id="copyOwnerTemporaryPasswordButton"
-          class="secondary-button"
-        >
-          <i class="fa-regular fa-copy"></i>
-          Copy
-        </button>
-      </div>
-
       <p class="owner-temp-password-footnote">
-        The owner must log in using this temporary password and immediately create a new private password before normal owner verification continues.
+        The owner must log in using the emailed temporary password and immediately create a new private password before normal owner verification continues.
       </p>
     </div>
   </div>

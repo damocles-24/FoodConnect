@@ -241,6 +241,86 @@ const backToOwnerLoginBtn =
         "ownerPasswordResetRequestBox"
       );
 
+    const ownerPasswordResetFormView =
+      document.getElementById(
+        "ownerPasswordResetFormView"
+      );
+
+    const ownerPasswordResetStatusView =
+      document.getElementById(
+        "ownerPasswordResetStatusView"
+      );
+
+    const ownerRecoveryStatusIcon =
+      document.getElementById(
+        "ownerRecoveryStatusIcon"
+      );
+
+    const ownerRecoveryStatusBadge =
+      document.getElementById(
+        "ownerRecoveryStatusBadge"
+      );
+
+    const ownerRecoveryStatusTitle =
+      document.getElementById(
+        "ownerRecoveryStatusTitle"
+      );
+
+    const ownerRecoveryStatusText =
+      document.getElementById(
+        "ownerRecoveryStatusText"
+      );
+
+    const ownerRecoveryEmailCard =
+      document.getElementById(
+        "ownerRecoveryEmailCard"
+      );
+
+    const ownerRecoveryMaskedEmail =
+      document.getElementById(
+        "ownerRecoveryMaskedEmail"
+      );
+
+    const ownerRecoveryProgress =
+      document.getElementById(
+        "ownerRecoveryProgress"
+      );
+
+    const ownerRecoveryStepRequest =
+      document.getElementById(
+        "ownerRecoveryStepRequest"
+      );
+
+    const ownerRecoveryStepReview =
+      document.getElementById(
+        "ownerRecoveryStepReview"
+      );
+
+    const ownerRecoveryStepEmail =
+      document.getElementById(
+        "ownerRecoveryStepEmail"
+      );
+
+    const ownerRecoveryNextStep =
+      document.getElementById(
+        "ownerRecoveryNextStep"
+      );
+
+    const ownerRecoveryNextStepText =
+      document.getElementById(
+        "ownerRecoveryNextStepText"
+      );
+
+    const ownerRecoveryPrimaryActionBtn =
+      document.getElementById(
+        "ownerRecoveryPrimaryActionBtn"
+      );
+
+    const ownerRecoverySecondaryActionBtn =
+      document.getElementById(
+        "ownerRecoverySecondaryActionBtn"
+      );
+
     const ownerResetRestaurantName =
       document.getElementById(
         "ownerResetRestaurantName"
@@ -270,6 +350,26 @@ const backToOwnerLoginBtn =
       document.getElementById(
         "backToOwnerLoginFromResetRequestBtn"
       );
+
+    const OWNER_RESET_TRACKING_STORAGE_KEY =
+      "foodconnect_owner_reset_tracking_token";
+
+    let ownerPasswordResetTrackingToken = "";
+    let ownerPasswordResetStatusTimer = null;
+    let ownerPasswordResetStatusNotice = null;
+    let ownerPasswordResetStatusFailures = 0;
+
+    try {
+      ownerPasswordResetTrackingToken =
+        window.sessionStorage.getItem(
+          OWNER_RESET_TRACKING_STORAGE_KEY
+        ) || "";
+    } catch (error) {
+      console.warn(
+        "Owner recovery status storage is unavailable:",
+        error
+      );
+    }
 
     const ownerPasswordChangeBox =
       document.getElementById(
@@ -557,6 +657,7 @@ let restaurantsPageCards = [];
           "fa-solid fa-lock";
       }
 
+      stopOwnerPasswordResetStatusPolling();
       setStaffMessage("");
 
       window.setTimeout(() => {
@@ -700,14 +801,25 @@ let restaurantsPageCards = [];
           ownerEmail.value.trim();
       }
 
-      setStaffMessage(
-        "Enter the details registered to your owner account. For security, FoodConnect will not confirm whether an account exists.",
-        "info"
-      );
+      if (ownerPasswordResetTrackingToken) {
+        if (!ownerPasswordResetStatusNotice) {
+          ownerPasswordResetStatusNotice = {
+            status: "pending",
+            message:
+              "Checking the latest recovery request status...",
+            type: "info",
+            ownerEmailMasked: "",
+            reviewedAt: null
+          };
+        }
 
-      window.setTimeout(() => {
-        ownerResetRestaurantName?.focus();
-      }, 50);
+        renderOwnerPasswordResetRecoveryState();
+        startOwnerPasswordResetStatusPolling();
+        return;
+      }
+
+      ownerPasswordResetStatusNotice = null;
+      showOwnerPasswordResetFormState(true);
     }
 
     function showOwnerPasswordChangeView(
@@ -843,6 +955,14 @@ let restaurantsPageCards = [];
 }
 
     function showOwnerLoginView() {
+      staffAccessCard?.classList.remove(
+        "owner-recovery-status-active",
+        "owner-recovery-status-approved",
+        "owner-recovery-status-rejected",
+        "owner-recovery-status-unavailable",
+        "owner-recovery-status-pending"
+      );
+
       if (staffAccessPanel) {
         staffAccessPanel.style.display =
           "none";
@@ -887,7 +1007,11 @@ let restaurantsPageCards = [];
           "fa-solid fa-store";
       }
 
-      setStaffMessage("");
+      renderOwnerPasswordResetStatusNotice();
+
+      if (ownerPasswordResetTrackingToken) {
+        startOwnerPasswordResetStatusPolling();
+      }
 
       window.setTimeout(() => {
         ownerEmail?.focus();
@@ -988,10 +1112,16 @@ let restaurantsPageCards = [];
 
       syncModalScrollLock();
 
+      stopOwnerPasswordResetStatusPolling();
       setStaffMessage("");
 
       staffAccessCard?.classList.remove(
-        "partner-mode"
+        "partner-mode",
+        "owner-recovery-status-active",
+        "owner-recovery-status-approved",
+        "owner-recovery-status-rejected",
+        "owner-recovery-status-unavailable",
+        "owner-recovery-status-pending"
       );
     }
 
@@ -1015,6 +1145,699 @@ let restaurantsPageCards = [];
 
         throw new Error(
           "Something went wrong. Please try again."
+        );
+      }
+    }
+
+    /* =========================
+       OWNER PASSWORD RECOVERY STATUS
+    ========================= */
+
+    function isOwnerPasswordResetRequestViewVisible() {
+      return Boolean(
+        ownerPasswordResetRequestBox &&
+        ownerPasswordResetRequestBox.style.display !== "none"
+      );
+    }
+
+    function setOwnerRecoveryStepState(
+      stepElement,
+      state = "waiting",
+      stepNumber = ""
+    ) {
+      if (!stepElement) {
+        return;
+      }
+
+      stepElement.classList.remove(
+        "is-complete",
+        "is-current",
+        "is-stopped",
+        "is-waiting"
+      );
+
+      const normalizedState =
+        ["complete", "current", "stopped"].includes(state)
+          ? state
+          : "waiting";
+
+      stepElement.classList.add(
+        `is-${normalizedState}`
+      );
+
+      const icon =
+        stepElement.querySelector(
+          ".owner-recovery-step-icon"
+        );
+
+      if (!icon) {
+        return;
+      }
+
+      if (normalizedState === "complete") {
+        icon.innerHTML =
+          '<i class="fa-solid fa-check"></i>';
+      } else if (normalizedState === "stopped") {
+        icon.innerHTML =
+          '<i class="fa-solid fa-minus"></i>';
+      } else {
+        icon.textContent =
+          String(stepNumber || "");
+      }
+    }
+
+    function setOwnerRecoveryAction(
+      button,
+      label,
+      iconClass = "fa-solid fa-arrow-left"
+    ) {
+      if (!button) {
+        return;
+      }
+
+      const icon = button.querySelector("i");
+      const text = button.querySelector("span");
+
+      if (icon) {
+        icon.className = iconClass;
+      }
+
+      if (text) {
+        text.textContent = label;
+      } else {
+        button.textContent = label;
+      }
+    }
+
+    function showOwnerPasswordResetFormState(
+      focusFirstField = false
+    ) {
+      staffAccessCard?.classList.remove(
+        "owner-recovery-status-active",
+        "owner-recovery-status-approved",
+        "owner-recovery-status-rejected",
+        "owner-recovery-status-unavailable",
+        "owner-recovery-status-pending"
+      );
+
+      if (ownerPasswordResetFormView) {
+        ownerPasswordResetFormView.style.display =
+          "block";
+      }
+
+      if (ownerPasswordResetStatusView) {
+        ownerPasswordResetStatusView.style.display =
+          "none";
+      }
+
+      setStaffMessage("");
+
+      if (focusFirstField) {
+        window.setTimeout(() => {
+          ownerResetRestaurantName?.focus();
+        }, 50);
+      }
+    }
+
+    function renderOwnerPasswordResetRecoveryState(
+      focusStatus = false
+    ) {
+      if (!ownerPasswordResetStatusNotice) {
+        showOwnerPasswordResetFormState(
+          focusStatus
+        );
+        return;
+      }
+
+      const status =
+        String(
+          ownerPasswordResetStatusNotice.status ||
+          "pending"
+        ).toLowerCase();
+
+      if (ownerPasswordResetFormView) {
+        ownerPasswordResetFormView.style.display =
+          "none";
+      }
+
+      if (ownerPasswordResetStatusView) {
+        ownerPasswordResetStatusView.style.display =
+          "block";
+        ownerPasswordResetStatusView.classList.remove(
+          "is-pending",
+          "is-approved",
+          "is-rejected",
+          "is-unavailable"
+        );
+      }
+
+      const isApproved = status === "approved";
+      const isRejected = status === "rejected";
+      const isUnavailable =
+        status === "expired" ||
+        status === "unavailable";
+
+      const viewClass = isApproved
+        ? "is-approved"
+        : isRejected
+          ? "is-rejected"
+          : isUnavailable
+            ? "is-unavailable"
+            : "is-pending";
+
+      ownerPasswordResetStatusView?.classList.add(
+        viewClass
+      );
+
+      staffAccessCard?.classList.remove(
+        "owner-recovery-status-approved",
+        "owner-recovery-status-rejected",
+        "owner-recovery-status-unavailable",
+        "owner-recovery-status-pending"
+      );
+      staffAccessCard?.classList.add(
+        "owner-recovery-status-active",
+        `owner-recovery-status-${
+          isApproved
+            ? "approved"
+            : isRejected
+              ? "rejected"
+              : isUnavailable
+                ? "unavailable"
+                : "pending"
+        }`
+      );
+
+      if (ownerRecoveryStatusIcon) {
+        ownerRecoveryStatusIcon.innerHTML =
+          isApproved
+            ? '<i class="fa-solid fa-check"></i>'
+            : isRejected
+              ? '<i class="fa-solid fa-xmark"></i>'
+              : isUnavailable
+                ? '<i class="fa-solid fa-circle-question"></i>'
+                : '<i class="fa-solid fa-clock"></i>';
+      }
+
+      if (ownerRecoveryStatusBadge) {
+        ownerRecoveryStatusBadge.textContent =
+          isApproved
+            ? "Email sent"
+            : isRejected
+              ? "Not approved"
+              : isUnavailable
+                ? "Status unavailable"
+                : "Waiting for review";
+      }
+
+      if (ownerRecoveryStatusTitle) {
+        ownerRecoveryStatusTitle.textContent =
+          isApproved
+            ? "Password Reset Approved"
+            : isRejected
+              ? "Recovery Request Not Approved"
+              : isUnavailable
+                ? "Recovery Status Unavailable"
+                : "Recovery Request Submitted";
+      }
+
+      if (ownerRecoveryStatusText) {
+        ownerRecoveryStatusText.textContent =
+          isApproved
+            ? "Your temporary password has been sent to your registered owner email."
+            : isRejected
+              ? "The administrator reviewed your recovery request, but it was not approved."
+              : isUnavailable
+                ? (
+                    ownerPasswordResetStatusNotice.message ||
+                    "FoodConnect can no longer display the status of this recovery request in this browser session."
+                  )
+                : "Your request is waiting for administrator review. This screen will update automatically when the review is completed.";
+      }
+
+      const maskedEmail =
+        String(
+          ownerPasswordResetStatusNotice.ownerEmailMasked ||
+          ""
+        ).trim();
+
+      if (ownerRecoveryEmailCard) {
+        ownerRecoveryEmailCard.style.display =
+          isApproved ? "flex" : "none";
+      }
+
+      if (ownerRecoveryMaskedEmail) {
+        ownerRecoveryMaskedEmail.textContent =
+          maskedEmail ||
+          "your registered owner email";
+      }
+
+      if (ownerRecoveryProgress) {
+        ownerRecoveryProgress.style.display =
+          isUnavailable ? "none" : "grid";
+      }
+
+      if (!isUnavailable) {
+        setOwnerRecoveryStepState(
+          ownerRecoveryStepRequest,
+          "complete",
+          "1"
+        );
+
+        if (isApproved) {
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepReview,
+            "complete",
+            "2"
+          );
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepEmail,
+            "complete",
+            "3"
+          );
+        } else if (isRejected) {
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepReview,
+            "complete",
+            "2"
+          );
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepEmail,
+            "stopped",
+            "3"
+          );
+        } else {
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepReview,
+            "current",
+            "2"
+          );
+          setOwnerRecoveryStepState(
+            ownerRecoveryStepEmail,
+            "waiting",
+            "3"
+          );
+        }
+      }
+
+      const reviewCopy =
+        ownerRecoveryStepReview?.querySelector(
+          ".owner-recovery-step-copy small"
+        );
+      const emailCopy =
+        ownerRecoveryStepEmail?.querySelector(
+          ".owner-recovery-step-copy small"
+        );
+
+      if (reviewCopy) {
+        reviewCopy.textContent =
+          isApproved
+            ? "Your owner account details were verified."
+            : isRejected
+              ? "The administrator completed the review."
+              : "Waiting for account verification.";
+      }
+
+      if (emailCopy) {
+        emailCopy.textContent =
+          isApproved
+            ? "Temporary password was sent successfully."
+            : isRejected
+              ? "No temporary password was sent."
+              : "Temporary password will be sent after approval.";
+      }
+
+      if (ownerRecoveryNextStep) {
+        ownerRecoveryNextStep.classList.remove(
+          "is-success",
+          "is-warning",
+          "is-danger",
+          "is-info"
+        );
+        ownerRecoveryNextStep.classList.add(
+          isApproved
+            ? "is-success"
+            : isRejected
+              ? "is-danger"
+              : isUnavailable
+                ? "is-warning"
+                : "is-info"
+        );
+
+        const nextStepIcon =
+          ownerRecoveryNextStep.querySelector("i");
+
+        if (nextStepIcon) {
+          nextStepIcon.className =
+            isApproved
+              ? "fa-solid fa-envelope-circle-check"
+              : isRejected
+                ? "fa-solid fa-circle-exclamation"
+                : isUnavailable
+                  ? "fa-solid fa-triangle-exclamation"
+                  : "fa-solid fa-circle-info";
+        }
+      }
+
+      if (ownerRecoveryNextStepText) {
+        ownerRecoveryNextStepText.textContent =
+          isApproved
+            ? "Check Inbox or Spam/Junk → use the temporary password for your next owner login → create a new private password when FoodConnect prompts you."
+            : isRejected
+              ? "If you still need access, verify your registered account details and contact the FoodConnect administrator before sending another request."
+              : isUnavailable
+                ? "Check your registered email first. If you still cannot access the account, you can start a new recovery request."
+                : "You do not need to submit another request. If approved, FoodConnect will email the temporary password automatically.";
+      }
+
+      setOwnerRecoveryAction(
+        ownerRecoveryPrimaryActionBtn,
+        isApproved
+          ? "Go to Owner Login"
+          : "Back to Owner Login",
+        isApproved
+          ? "fa-solid fa-right-to-bracket"
+          : "fa-solid fa-arrow-left"
+      );
+
+      if (ownerRecoverySecondaryActionBtn) {
+        ownerRecoverySecondaryActionBtn.style.display =
+          isRejected || isUnavailable
+            ? "inline-flex"
+            : "none";
+
+        setOwnerRecoveryAction(
+          ownerRecoverySecondaryActionBtn,
+          isUnavailable
+            ? "Start New Recovery Request"
+            : "Submit Another Request",
+          "fa-solid fa-rotate-right"
+        );
+      }
+
+      /*
+       * The dedicated recovery state replaces the generic portal banner.
+       * Validation/API errors can still use the shared banner while the form
+       * is displayed.
+       */
+      setStaffMessage("");
+
+      if (focusStatus) {
+        window.setTimeout(() => {
+          if (staffAccessCard) {
+            staffAccessCard.scrollTop = 0;
+          }
+
+          ownerRecoveryStatusTitle?.focus();
+        }, 50);
+      }
+    }
+
+    function stopOwnerPasswordResetStatusPolling() {
+      if (ownerPasswordResetStatusTimer) {
+        window.clearTimeout(
+          ownerPasswordResetStatusTimer
+        );
+
+        ownerPasswordResetStatusTimer =
+          null;
+      }
+    }
+
+    function saveOwnerPasswordResetTrackingToken(
+      token = ""
+    ) {
+      const normalizedToken =
+        String(token).trim().toLowerCase();
+
+      if (!/^[a-f0-9]{48}$/.test(normalizedToken)) {
+        return;
+      }
+
+      ownerPasswordResetTrackingToken =
+        normalizedToken;
+
+      try {
+        window.sessionStorage.setItem(
+          OWNER_RESET_TRACKING_STORAGE_KEY,
+          normalizedToken
+        );
+      } catch (error) {
+        console.warn(
+          "Unable to save owner recovery status token:",
+          error
+        );
+      }
+    }
+
+    function clearOwnerPasswordResetTracking() {
+      stopOwnerPasswordResetStatusPolling();
+
+      ownerPasswordResetTrackingToken = "";
+      ownerPasswordResetStatusNotice = null;
+      ownerPasswordResetStatusFailures = 0;
+
+      try {
+        window.sessionStorage.removeItem(
+          OWNER_RESET_TRACKING_STORAGE_KEY
+        );
+      } catch (error) {
+        console.warn(
+          "Unable to clear owner recovery status token:",
+          error
+        );
+      }
+    }
+
+    function setOwnerPasswordResetStatusNotice(
+      status,
+      message,
+      details = {}
+    ) {
+      const previousStatus =
+        ownerPasswordResetStatusNotice?.status ||
+        "";
+
+      const normalizedStatus =
+        String(status || "pending").toLowerCase();
+
+      const messageType =
+        normalizedStatus === "approved"
+          ? "success"
+          : normalizedStatus === "rejected"
+            ? "error"
+            : "info";
+
+      ownerPasswordResetStatusNotice = {
+        status: normalizedStatus,
+        message:
+          String(message || "").trim(),
+        type: messageType,
+        ownerEmailMasked:
+          String(
+            details.owner_email_masked ||
+            details.ownerEmailMasked ||
+            ""
+          ).trim(),
+        reviewedAt:
+          details.reviewed_at ||
+          details.reviewedAt ||
+          null
+      };
+
+      if (isOwnerPasswordResetRequestViewVisible()) {
+        renderOwnerPasswordResetRecoveryState(
+          previousStatus !== normalizedStatus
+        );
+        return;
+      }
+
+      if (ownerPasswordResetStatusNotice.message) {
+        setStaffMessage(
+          ownerPasswordResetStatusNotice.message,
+          ownerPasswordResetStatusNotice.type
+        );
+      }
+    }
+
+    function renderOwnerPasswordResetStatusNotice(
+      fallbackMessage = ""
+    ) {
+      if (isOwnerPasswordResetRequestViewVisible()) {
+        if (ownerPasswordResetStatusNotice) {
+          renderOwnerPasswordResetRecoveryState();
+        } else {
+          showOwnerPasswordResetFormState();
+        }
+
+        return;
+      }
+
+      if (
+        ownerPasswordResetStatusNotice &&
+        ownerPasswordResetStatusNotice.message
+      ) {
+        setStaffMessage(
+          ownerPasswordResetStatusNotice.message,
+          ownerPasswordResetStatusNotice.type
+        );
+
+        return;
+      }
+
+      setStaffMessage(
+        fallbackMessage,
+        "info"
+      );
+    }
+
+    function scheduleOwnerPasswordResetStatusCheck(
+      delay = 8000
+    ) {
+      stopOwnerPasswordResetStatusPolling();
+
+      if (!ownerPasswordResetTrackingToken) {
+        return;
+      }
+
+      ownerPasswordResetStatusTimer =
+        window.setTimeout(
+          checkOwnerPasswordResetStatus,
+          delay
+        );
+    }
+
+    async function checkOwnerPasswordResetStatus() {
+      if (!ownerPasswordResetTrackingToken) {
+        return;
+      }
+
+      try {
+        const response =
+          await fetch(
+            `${window.API}/get_owner_password_reset_status.php`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                "Accept":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                tracking_token:
+                  ownerPasswordResetTrackingToken
+              })
+            }
+          );
+
+        const data =
+          await readJsonResponse(
+            response
+          );
+
+        if (!response.ok || !data.success) {
+          ownerPasswordResetStatusFailures += 1;
+
+          if (ownerPasswordResetStatusFailures >= 3) {
+            setStaffMessage(
+              "Your recovery request is still being tracked, but FoodConnect could not refresh its status right now. Check your email and try again shortly.",
+              "info"
+            );
+          }
+
+          scheduleOwnerPasswordResetStatusCheck(
+            15000
+          );
+
+          return;
+        }
+
+        ownerPasswordResetStatusFailures = 0;
+
+        const status =
+          String(
+            data.status || "pending"
+          ).toLowerCase();
+
+        if (status === "approved") {
+          setOwnerPasswordResetStatusNotice(
+            "approved",
+            data.message ||
+              "Password reset approved. FoodConnect sent the temporary password to your registered owner email. Check your Inbox and Spam/Junk folder, then return to Owner Login.",
+            data
+          );
+
+          stopOwnerPasswordResetStatusPolling();
+          return;
+        }
+
+        if (status === "rejected") {
+          setOwnerPasswordResetStatusNotice(
+            "rejected",
+            data.message ||
+              "Your recovery request was reviewed but was not approved.",
+            data
+          );
+
+          stopOwnerPasswordResetStatusPolling();
+          return;
+        }
+
+        if (
+          status === "expired" ||
+          status === "unavailable"
+        ) {
+          setOwnerPasswordResetStatusNotice(
+            status,
+            data.message ||
+              "Recovery status tracking is no longer available in this browser session. Check your email or submit another request if needed.",
+            data
+          );
+
+          stopOwnerPasswordResetStatusPolling();
+          return;
+        }
+
+        setOwnerPasswordResetStatusNotice(
+          "pending",
+          data.message ||
+            "Your recovery request is waiting for administrator review. If approved, FoodConnect will automatically email the temporary password to your registered owner email.",
+          data
+        );
+
+        scheduleOwnerPasswordResetStatusCheck(
+          8000
+        );
+      } catch (error) {
+        console.error(
+          "Owner password recovery status check failed:",
+          error
+        );
+
+        ownerPasswordResetStatusFailures += 1;
+
+        scheduleOwnerPasswordResetStatusCheck(
+          15000
+        );
+      }
+    }
+
+    function startOwnerPasswordResetStatusPolling(
+      immediate = true
+    ) {
+      stopOwnerPasswordResetStatusPolling();
+
+      if (!ownerPasswordResetTrackingToken) {
+        return;
+      }
+
+      if (immediate) {
+        checkOwnerPasswordResetStatus();
+      } else {
+        scheduleOwnerPasswordResetStatusCheck(
+          3000
         );
       }
     }
@@ -2565,6 +3388,20 @@ if (
       showOwnerLoginView
     );
 
+    ownerRecoveryPrimaryActionBtn?.addEventListener(
+      "click",
+      showOwnerLoginView
+    );
+
+    ownerRecoverySecondaryActionBtn?.addEventListener(
+      "click",
+      () => {
+        clearOwnerPasswordResetTracking();
+        ownerPasswordResetStatusNotice = null;
+        showOwnerPasswordResetRequestView();
+      }
+    );
+
     backToOwnerLoginFromPasswordChangeBtn?.addEventListener(
       "click",
       showOwnerLoginView
@@ -2764,6 +3601,13 @@ if (
             return;
           }
 
+          /*
+           * A successful owner credential check means the recovery email, if
+           * one was being tracked in this browser, has already served its
+           * purpose. Remove the stale approval notice before continuing.
+           */
+          clearOwnerPasswordResetTracking();
+
           if (data.password_change_required === true) {
             showOwnerPasswordChangeView(
               data.user?.full_name || ""
@@ -2922,6 +3766,14 @@ setStaffMessage(
             return;
           }
 
+          saveOwnerPasswordResetTrackingToken(
+            data.tracking_token || ""
+          );
+
+          if (ownerEmail && email) {
+            ownerEmail.value = email;
+          }
+
           if (ownerResetRestaurantName) {
             ownerResetRestaurantName.value =
               "";
@@ -2942,10 +3794,17 @@ setStaffMessage(
               "";
           }
 
-          setStaffMessage(
-            data.message ||
-            "Your recovery request was submitted for administrator review.",
-            "success"
+          setOwnerPasswordResetStatusNotice(
+            "pending",
+            (
+              data.message ||
+              "Your recovery request was submitted for administrator review."
+            ) +
+              " This screen will update automatically when the administrator reviews the request."
+          );
+
+          startOwnerPasswordResetStatusPolling(
+            false
           );
         } catch (error) {
           console.error(

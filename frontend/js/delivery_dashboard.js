@@ -2234,7 +2234,10 @@ function renderDeliveryActions(delivery) {
     },
 
     out_for_delivery: {
-      label: "Complete Delivery",
+      label:
+        String(delivery.payment_method || "").toLowerCase() === "cash on delivery"
+          ? "Confirm Cash Received & Complete"
+          : "Complete Delivery",
       nextStatus: "completed",
       icon: "fa-circle-check",
       className: "complete-btn"
@@ -2286,7 +2289,9 @@ function confirmDeliveryStatusUpdate(newStatus) {
     "Confirm that you are now heading to the customer?",
 
   completed:
-    "Confirm that the order was successfully delivered to the customer?"
+    String(selectedDelivery?.payment_method || "").toLowerCase() === "cash on delivery"
+      ? "Confirm that you received the COD cash payment and successfully delivered the order to the customer?"
+      : "Confirm that the order was successfully delivered to the customer?"
 };
 
   openConfirmModal(
@@ -2433,12 +2438,16 @@ if (newStatus === "completed") {
       );
     }
 
+    const completedCod =
+      newStatus === "completed" &&
+      String(deliverySnapshot.payment_method || "").toLowerCase() === "cash on delivery";
+
     showToast(
-  "Delivery Updated",
-  `Delivery status changed to ${getDeliveryStatusLabel(
-    newStatus
-  )}.`
-);
+      "Delivery Updated",
+      completedCod
+        ? "COD cash received and delivery completed successfully."
+        : `Delivery status changed to ${getDeliveryStatusLabel(newStatus)}.`
+    );
 
 /*
  * Start Firebase GPS only AFTER PHP

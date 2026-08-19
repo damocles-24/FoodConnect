@@ -20,7 +20,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/style.css?v=20260818-ownerrecovery1">
+  <link rel="stylesheet" href="../css/style.css?v=20260818-ownerrecovery3">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
@@ -1409,89 +1409,197 @@
       id="ownerPasswordResetRequestBox"
       style="display: none;"
     >
-      <div class="owner-login-description">
-        <p>
-          Send a recovery request to the FoodConnect administrator.
-          The admin will verify your account details before issuing a temporary password.
+      <div id="ownerPasswordResetFormView">
+        <div class="owner-login-description owner-recovery-intro">
+          <p>
+            Enter the details registered to your owner account. The FoodConnect administrator will verify the request first. If approved, a temporary password will be emailed automatically to the registered owner email.
+          </p>
+        </div>
+
+        <div class="staff-input-group">
+          <label for="ownerResetRestaurantName">
+            Restaurant Name
+          </label>
+
+          <input
+            type="text"
+            id="ownerResetRestaurantName"
+            placeholder="Enter your restaurant name"
+            autocomplete="organization"
+            maxlength="180"
+          >
+        </div>
+
+        <div class="staff-input-group">
+          <label for="ownerResetEmail">
+            Owner Email Address
+          </label>
+
+          <input
+            type="email"
+            id="ownerResetEmail"
+            placeholder="Enter the registered owner email"
+            autocomplete="email"
+            maxlength="190"
+          >
+        </div>
+
+        <div class="staff-input-group">
+          <label for="ownerResetContactNumber">
+            Registered Mobile Number
+          </label>
+
+          <input
+            type="tel"
+            id="ownerResetContactNumber"
+            placeholder="e.g. 09171234567"
+            autocomplete="tel"
+            inputmode="tel"
+            maxlength="20"
+          >
+        </div>
+
+        <div class="staff-input-group">
+          <label for="ownerResetReason">
+            Reason for Recovery
+          </label>
+
+          <textarea
+            id="ownerResetReason"
+            rows="4"
+            maxlength="500"
+            placeholder="Briefly explain why you cannot access the owner account."
+          ></textarea>
+
+          <small class="owner-recovery-help">
+            10–500 characters. Never include your old password.
+          </small>
+        </div>
+
+        <button
+          type="button"
+          id="submitOwnerPasswordResetRequestBtn"
+          class="staff-login-btn"
+        >
+          Send Request to Admin
+        </button>
+
+        <button
+          type="button"
+          id="backToOwnerLoginFromResetRequestBtn"
+          class="portal-secondary-btn"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          Back to Owner Login
+        </button>
+      </div>
+
+      <div
+        id="ownerPasswordResetStatusView"
+        class="owner-recovery-status-view"
+        style="display: none;"
+        aria-live="polite"
+      >
+        <div
+          id="ownerRecoveryStatusIcon"
+          class="owner-recovery-status-icon"
+          aria-hidden="true"
+        >
+          <i class="fa-solid fa-clock"></i>
+        </div>
+
+        <span
+          id="ownerRecoveryStatusBadge"
+          class="owner-recovery-status-badge"
+        >
+          Waiting for review
+        </span>
+
+        <h3
+          id="ownerRecoveryStatusTitle"
+          class="owner-recovery-status-title"
+          tabindex="-1"
+        >
+          Recovery Request Submitted
+        </h3>
+
+        <p
+          id="ownerRecoveryStatusText"
+          class="owner-recovery-status-text"
+        >
+          Your request is waiting for administrator review.
         </p>
-      </div>
 
-      <div class="staff-input-group">
-        <label for="ownerResetRestaurantName">
-          Restaurant Name
-        </label>
-
-        <input
-          type="text"
-          id="ownerResetRestaurantName"
-          placeholder="Enter your restaurant name"
-          autocomplete="organization"
-          maxlength="180"
+        <div
+          id="ownerRecoveryEmailCard"
+          class="owner-recovery-email-card"
+          style="display: none;"
         >
-      </div>
+          <span>Temporary password sent to</span>
+          <strong id="ownerRecoveryMaskedEmail">your registered owner email</strong>
+        </div>
 
-      <div class="staff-input-group">
-        <label for="ownerResetEmail">
-          Owner Email Address
-        </label>
-
-        <input
-          type="email"
-          id="ownerResetEmail"
-          placeholder="Enter the registered owner email"
-          autocomplete="email"
-          maxlength="190"
+        <ol
+          id="ownerRecoveryProgress"
+          class="owner-recovery-progress"
+          aria-label="Password recovery progress"
         >
-      </div>
+          <li id="ownerRecoveryStepRequest" class="is-complete">
+            <span class="owner-recovery-step-icon">
+              <i class="fa-solid fa-check"></i>
+            </span>
+            <span class="owner-recovery-step-copy">
+              <strong>Request submitted</strong>
+              <small>Your recovery request was received.</small>
+            </span>
+          </li>
 
-      <div class="staff-input-group">
-        <label for="ownerResetContactNumber">
-          Registered Mobile Number
-        </label>
+          <li id="ownerRecoveryStepReview" class="is-current">
+            <span class="owner-recovery-step-icon">2</span>
+            <span class="owner-recovery-step-copy">
+              <strong>Administrator review</strong>
+              <small>Waiting for account verification.</small>
+            </span>
+          </li>
 
-        <input
-          type="tel"
-          id="ownerResetContactNumber"
-          placeholder="e.g. 09171234567"
-          autocomplete="tel"
-          inputmode="tel"
-          maxlength="20"
+          <li id="ownerRecoveryStepEmail">
+            <span class="owner-recovery-step-icon">3</span>
+            <span class="owner-recovery-step-copy">
+              <strong>Email delivery</strong>
+              <small>Temporary password will be sent after approval.</small>
+            </span>
+          </li>
+        </ol>
+
+        <div
+          id="ownerRecoveryNextStep"
+          class="owner-recovery-next-step"
         >
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <p id="ownerRecoveryNextStepText">
+            You do not need to submit another request. This window will update automatically.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          id="ownerRecoveryPrimaryActionBtn"
+          class="staff-login-btn owner-recovery-primary-action"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Back to Owner Login</span>
+        </button>
+
+        <button
+          type="button"
+          id="ownerRecoverySecondaryActionBtn"
+          class="portal-secondary-btn"
+          style="display: none;"
+        >
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>Submit Another Request</span>
+        </button>
       </div>
-
-      <div class="staff-input-group">
-        <label for="ownerResetReason">
-          Reason for Recovery
-        </label>
-
-        <textarea
-          id="ownerResetReason"
-          rows="4"
-          maxlength="500"
-          placeholder="Briefly explain why you cannot access the owner account."
-        ></textarea>
-
-        <small class="owner-recovery-help">
-          10–500 characters. Never include your old password.
-        </small>
-      </div>
-
-      <button
-        type="button"
-        id="submitOwnerPasswordResetRequestBtn"
-        class="staff-login-btn"
-      >
-        Send Request to Admin
-      </button>
-
-      <button
-        type="button"
-        id="backToOwnerLoginFromResetRequestBtn"
-        class="portal-secondary-btn"
-      >
-        <i class="fa-solid fa-arrow-left"></i>
-        Back to Owner Login
-      </button>
     </div>
 
     <!-- OWNER FORCED PASSWORD CHANGE -->
@@ -1631,7 +1739,7 @@
   </div>
 </div>
 
-<script src="../js/homepage.js?v=20260818-ownerrecovery1" defer></script>
+<script src="../js/homepage.js?v=20260818-ownerrecovery3" defer></script>
 
 </body>
 </html>

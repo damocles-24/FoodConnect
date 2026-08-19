@@ -33,11 +33,15 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     Compatible with older PHP/XAMPP versions:
     lifetime, path, domain, secure, httponly
     */
+    $isHttps =
+        (!empty($_SERVER["HTTPS"]) && strtolower((string)$_SERVER["HTTPS"]) !== "off") ||
+        ((string)($_SERVER["SERVER_PORT"] ?? "") === "443");
+
     session_set_cookie_params(
         0,
         "/FoodConnect",
         "",
-        false,
+        $isHttps,
         true
     );
 

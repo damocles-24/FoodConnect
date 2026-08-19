@@ -31,6 +31,38 @@ if ($assigned_by_user_id <= 0 || $restaurant_id <= 0) {
     ], 400);
 }
 
+$actorStmt = $conn->prepare("
+    SELECT user_id, role, status
+    FROM tbl_users
+    WHERE user_id = ?
+      AND restaurant_id = ?
+    LIMIT 1
+");
+
+if (!$actorStmt) {
+    respond_json([
+        "success" => false,
+        "message" => "Unable to verify your account permissions."
+    ], 500);
+}
+
+$actorStmt->bind_param("ii", $assigned_by_user_id, $restaurant_id);
+$actorStmt->execute();
+$actor = $actorStmt->get_result()->fetch_assoc();
+$actorStmt->close();
+
+$actorRole = strtolower(trim((string)($actor["role"] ?? "")));
+if (
+    !$actor ||
+    (int)($actor["status"] ?? 0) !== 1 ||
+    !in_array($actorRole, ["owner", "cashier"], true)
+) {
+    respond_json([
+        "success" => false,
+        "message" => "Only an active restaurant owner or cashier can assign delivery riders."
+    ], 403);
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {

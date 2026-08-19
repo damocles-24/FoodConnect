@@ -23,6 +23,16 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
+$sessionRole = strtolower(trim((string)($_SESSION["role"] ?? "")));
+if ($sessionRole !== "owner") {
+    http_response_code(403);
+    echo json_encode([
+        "success" => false,
+        "message" => "Only the restaurant owner can manage staff accounts."
+    ]);
+    exit;
+}
+
 /*
 |--------------------------------------------------------------------------
 | GET RESTAURANT ID
@@ -41,6 +51,38 @@ if ($restaurant_id <= 0) {
         "message" => "Your restaurant session has expired. Please log in again."
     ]);
 
+    exit;
+}
+
+$ownershipStmt = $conn->prepare("
+    SELECT restaurant_id
+    FROM tbl_restaurants
+    WHERE restaurant_id = ?
+      AND owner_id = ?
+    LIMIT 1
+");
+
+if (!$ownershipStmt) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Unable to verify restaurant ownership."
+    ]);
+    exit;
+}
+
+$currentOwnerId = (int)$_SESSION["user_id"];
+$ownershipStmt->bind_param("ii", $restaurant_id, $currentOwnerId);
+$ownershipStmt->execute();
+$ownedRestaurant = $ownershipStmt->get_result()->fetch_assoc();
+$ownershipStmt->close();
+
+if (!$ownedRestaurant) {
+    http_response_code(403);
+    echo json_encode([
+        "success" => false,
+        "message" => "You are not authorized to manage staff for this restaurant."
+    ]);
     exit;
 }
 
@@ -63,6 +105,7 @@ $sql = "
     created_at
     FROM tbl_users
     WHERE restaurant_id = ?
+      AND role IN ('cashier', 'delivery_staff')
     ORDER BY created_at DESC, user_id DESC
 ";
 

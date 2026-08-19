@@ -10,12 +10,78 @@ ini_set("display_errors", "0");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
+require_once __DIR__ . "/mailer.php";
 
 function owner_reset_review_respond(array $payload, int $code = 200): void
 {
     http_response_code($code);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
+}
+
+function build_owner_temporary_password_email(
+    string $ownerName,
+    string $restaurantName,
+    string $temporaryPassword
+): string {
+    $safeOwnerName = htmlspecialchars(
+        $ownerName !== "" ? $ownerName : "Restaurant Owner",
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+    $safeRestaurantName = htmlspecialchars(
+        $restaurantName !== "" ? $restaurantName : "your restaurant",
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+    $safeTemporaryPassword = htmlspecialchars(
+        $temporaryPassword,
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+    return <<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FoodConnect Owner Password Recovery</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:Arial,sans-serif;color:#1f2937;">
+  <div style="max-width:640px;margin:0 auto;padding:28px 16px;">
+    <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:28px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ff8a00;margin-bottom:8px;">
+        Owner Account Recovery
+      </div>
+      <h2 style="margin:0 0 14px;font-size:24px;color:#1f2937;">Password reset approved</h2>
+      <p style="margin:0 0 14px;line-height:1.65;">Hello {$safeOwnerName},</p>
+      <p style="margin:0 0 18px;line-height:1.65;">
+        A FoodConnect administrator approved the password recovery request for
+        <strong>{$safeRestaurantName}</strong>. Your previous owner password has been replaced with the temporary password below.
+      </p>
+
+      <div style="margin:18px 0;padding:16px;border:1px solid #ffd08a;border-radius:12px;background:#fff8ed;">
+        <div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px;">Temporary password</div>
+        <div style="font-family:Consolas,Monaco,monospace;font-size:20px;font-weight:700;letter-spacing:.04em;overflow-wrap:anywhere;color:#111827;">{$safeTemporaryPassword}</div>
+      </div>
+
+      <p style="margin:0 0 12px;line-height:1.65;">
+        Sign in to the FoodConnect Owner Portal using your registered owner email and this temporary password. You will be required to create a new private password before normal owner verification continues.
+      </p>
+      <p style="margin:0 0 12px;line-height:1.65;">
+        For security, do not forward this email or share the temporary password with anyone.
+      </p>
+      <p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#6b7280;">
+        If you did not request this recovery, contact the FoodConnect administrator immediately.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+HTML;
 }
 
 function generate_owner_temporary_password(int $length = 14): string
@@ -318,7 +384,7 @@ try {
 
     $approvalNote = $reviewNote !== ""
         ? $reviewNote
-        : "Temporary password issued by administrator.";
+        : "Temporary password issued and emailed automatically to the registered owner email.";
 
     $approveStmt = $conn->prepare("
         UPDATE tbl_owner_password_reset_requests
@@ -361,7 +427,7 @@ try {
             (string)$admin["full_name"] .
             " approved the owner password recovery request for " .
             ($restaurantName !== "" ? $restaurantName : $ownerName) .
-            ". A temporary password was issued and the owner must create a new private password at the next login.";
+            ". A temporary password was issued and sent automatically to the registered owner email. The owner must create a new private password at the next login.";
 
         $logStmt = $conn->prepare("
             INSERT INTO tbl_activity_logs (
@@ -381,16 +447,36 @@ try {
         }
     }
 
+    $ownerEmail = trim((string)$request["owner_email"]);
+    $emailSubject = "FoodConnect - Owner Password Reset Approved";
+    $emailBody = build_owner_temporary_password_email(
+        $ownerName,
+        $restaurantName,
+        $temporaryPassword
+    );
+
+    /*
+     * Delivery is part of approval. If SMTP fails, roll back the password
+     * replacement and keep the request pending so the owner is never locked
+     * out with a temporary password they did not receive.
+     */
+    if (!sendBrevoSMTP($ownerEmail, $emailSubject, $emailBody)) {
+        throw new RuntimeException(
+            "Unable to send the owner temporary password email."
+        );
+    }
+
     $conn->commit();
 
     owner_reset_review_respond([
         "success" => true,
-        "message" => "Temporary password generated. Give it directly to the verified restaurant owner. It will not be shown again after you close this message.",
+        "message" => "Password reset approved. The temporary password was sent automatically to the owner's registered email.",
         "request_id" => (int)$requestId,
         "request_status" => "approved",
         "owner_name" => $ownerName,
+        "owner_email" => $ownerEmail,
         "restaurant_name" => $restaurantName,
-        "temporary_password" => $temporaryPassword,
+        "email_sent" => true,
         "must_change_password" => true
     ]);
 } catch (Throwable $error) {
@@ -404,8 +490,13 @@ try {
         $error->getMessage()
     );
 
+    $safeMessage = $error->getMessage() ===
+        "Unable to send the owner temporary password email."
+            ? "The temporary password email could not be sent. No password reset was applied and the request remains pending. Please verify the mail service and try again."
+            : "Unable to review the owner password recovery request right now.";
+
     owner_reset_review_respond([
         "success" => false,
-        "message" => "Unable to review the owner password recovery request right now."
+        "message" => $safeMessage
     ], 500);
 }
