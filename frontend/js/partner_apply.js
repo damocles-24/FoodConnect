@@ -232,7 +232,7 @@ function showApplicationForm() {
     }
 
     document
-        .getElementById("full_name")
+        .getElementById("first_name")
         ?.focus();
 }
 
@@ -317,9 +317,21 @@ partnerForm?.addEventListener(
 
         clearMessage();
 
-        const fullName =
+        const firstName =
             document
-                .getElementById("full_name")
+                .getElementById("first_name")
+                ?.value
+                .trim() || "";
+
+        const middleName =
+            document
+                .getElementById("middle_name")
+                ?.value
+                .trim() || "";
+
+        const lastName =
+            document
+                .getElementById("last_name")
                 ?.value
                 .trim() || "";
 
@@ -375,7 +387,8 @@ partnerForm?.addEventListener(
                 ?.checked || false;
 
         if (
-            !fullName ||
+            !firstName ||
+            !lastName ||
             !email ||
             !contactNumber ||
             !password ||
@@ -460,7 +473,9 @@ if (
         }
 
         const payload = {
-            full_name: fullName,
+            first_name: firstName,
+            middle_name: middleName,
+            last_name: lastName,
             email,
             contact_number:
             window.FoodConnectPhone.normalize(contactNumber),

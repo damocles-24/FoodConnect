@@ -9273,13 +9273,12 @@ html[data-theme="dark"] body[data-fc-page="owner"] .staff-reset-security-note p 
   .reset-staff-password-modal .user-modal-actions {
     flex-direction: column-reverse;
     align-items: stretch;
-  }
+  }s
   .reset-staff-password-modal .user-modal-actions button {
     width: 100%;
   }
 }
-\n\n/* =========================================\n   OWNER ACTION TOAST\n   ========================================= */\n.owner-action-toast {\n  position: fixed;\n  right: 24px;\n  top: 24px;\n  z-index: 10050;\n  max-width: min(420px, calc(100vw - 32px));\n  padding: 14px 18px;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111827;\n  border: 1px solid #d1d5db;\n  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);\n  font-weight: 600;\n  line-height: 1.45;\n  opacity: 0;\n  transform: translateY(-10px);\n  pointer-events: none;\n  transition: opacity 0.2s ease, transform 0.2s ease;\n}\n\n.owner-action-toast.show {\n  opacity: 1;\n  transform: translateY(0);\n}\n\n.owner-action-toast.success {\n  border-color: #86efac;\n  background: #f0fdf4;\n  color: #166534;\n}\n\n.owner-action-toast.error {\n  border-color: #fecaca;\n  background: #fef2f2;\n  color: #b91c1c;\n}\n\nhtml[data-theme="dark"] .owner-action-toast {\n  background: #171a20;\n  color: #f8fafc;\n  border-color: #343a46;\n}\n\nhtml[data-theme="dark"] .owner-action-toast.success {\n  background: #10251a;\n  color: #86efac;\n  border-color: #247a45;\n}\n\nhtml[data-theme="dark"] .owner-action-toast.error {\n  background: #2b1517;\n  color: #fca5a5;\n  border-color: #991b1b;\n}\n\n@media (max-width: 600px) {\n  .owner-action-toast {\n    top: 14px;\n    left: 16px;\n    right: 16px;\n    max-width: none;\n  }\n}\n
-
+sss
 /* =========================================================
    STAFF MANAGEMENT UI/UX POLISH
    Scoped to the owner Staff Management section and reset modal.
@@ -9621,3 +9620,52 @@ html[data-theme="dark"] body[data-fc-page="owner"]
     min-width: 0;
   }
 }
+
+/* Password toggle fix */
+
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding-right: 48px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    background: transparent;
+
+    color: var(--muted);
+
+    cursor: pointer;
+    z-index: 5;
+}
+
+.toggle-password:hover {
+    color: var(--gold);
+}
+
+.toggle-password i {
+    font-size: 16px;
+    pointer-events: none;
+}
+
+
+/* Restaurant banner layout */
+.settings-banner-branding { margin-top: 24px; }
+.settings-banner-preview-box { width:100%; min-height:160px; border-radius:12px; overflow:hidden; background:#f8f8f8; display:flex; align-items:center; justify-content:center; }
+.settings-banner-preview-box .settings-logo-placeholder { text-align:center; padding:20px; }

@@ -141,6 +141,12 @@ $logo_path = trim(
     )
 );
 
+$banner_path = trim(
+    (string) (
+        $data["banner_path"] ?? ""
+    )
+);
+
 /* =========================================================
    FIELD VALIDATION
 ========================================================= */
@@ -168,10 +174,11 @@ if (
 
 if (
     !preg_match(
-        "/^09\d{9}$/",
+        "/^\+639\d{9}$/",
         $contact_number
     )
-) {
+)
+{
     respond_json(
         [
             "success" => false,
@@ -336,6 +343,7 @@ try {
         SET
             name = ?,
             logo_path = ?,
+            banner_path = ?,
             address = ?,
             contact_number = ?,
             opening_hours = ?,
@@ -354,17 +362,18 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssdsii",
-        $name,
-        $logo_path,
-        $address,
-        $contact_number,
-        $opening_hours,
-        $delivery_fee,
-        $business_status,
-        $restaurant_id,
-        $owner_id
-    );
+    "ssssssdsii",
+    $name,
+    $logo_path,
+    $banner_path,
+    $address,
+    $contact_number,
+    $opening_hours,
+    $delivery_fee,
+    $business_status,
+    $restaurant_id,
+    $owner_id
+);
 
     $stmt->execute();
 
@@ -422,6 +431,9 @@ try {
 
             "logo_path" =>
                 $logo_path,
+
+            "banner_path" =>
+                $banner_path,
 
             "address" =>
                 $address,

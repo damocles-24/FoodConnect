@@ -1,3 +1,15 @@
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+}
+
 function goToCart() {
   localStorage.setItem(
     "lastPage",
@@ -1889,9 +1901,7 @@ let restaurantsPageCards = [];
 
       if (data.logged_in) {
         const fullName =
-          data.user?.full_name ||
-          data.user?.fullname ||
-          data.user?.name ||
+          formatUserName(data.user) ||
           "User";
 
         const role =
@@ -3610,7 +3620,7 @@ if (
 
           if (data.password_change_required === true) {
             showOwnerPasswordChangeView(
-              data.user?.full_name || ""
+              formatUserName(data.user)
             );
 
             return;
@@ -3627,7 +3637,7 @@ if (
 ) {
   localStorage.setItem(
     "user_full_name",
-    data.user?.full_name || ""
+    formatUserName(data.user)
   );
 
   localStorage.setItem(
@@ -4061,7 +4071,7 @@ verifyOwnerCodeBtn?.addEventListener(
 
       localStorage.setItem(
         "user_full_name",
-        data.user?.full_name || ""
+        formatUserName(data.user)
       );
 
       localStorage.setItem(
@@ -4302,9 +4312,7 @@ ownerVerificationCode?.addEventListener(
 
           if (data.must_change_password === true) {
             showStaffPasswordChangeView(
-              String(
-                data.user?.full_name || ""
-              )
+              formatUserName(data.user)
             );
 
             return;
@@ -4774,3 +4782,19 @@ restaurantsPageCategories.forEach(
 );
   }
 );
+
+
+// Password visibility toggle for normal password fields only.
+document.querySelectorAll(".toggle-password").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.target);
+    const icon = button.querySelector("i");
+
+    if (!input || !icon) return;
+
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    icon.className = show ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+    button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  });
+});

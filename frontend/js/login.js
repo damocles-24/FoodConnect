@@ -1,5 +1,17 @@
 const API = "/FoodConnect/api";
 
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+}
+
 window.addEventListener("load", () => {
     document.body.classList.add("loaded");
 });
@@ -415,7 +427,7 @@ loginForm?.addEventListener(
 
             localStorage.setItem(
                 "user_full_name",
-                data.user?.full_name || ""
+                formatUserName(data.user)
             );
 
             localStorage.setItem(
@@ -649,7 +661,7 @@ verifyReactivationCodeBtn?.addEventListener(
 
             localStorage.setItem(
                 "user_full_name",
-                loginData.user?.full_name || ""
+                formatUserName(loginData.user)
             );
 
             localStorage.setItem(

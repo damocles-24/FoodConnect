@@ -1,4 +1,16 @@
 let products = [];
+
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+}
 let activeProductMode = "menu";
 
 /*
@@ -720,7 +732,12 @@ const deliveryPerformanceBody =
     "deliveryPerformanceBody"
   );
 
-  const settingsLogoPath =
+  const settingsBannerPath = document.getElementById("settingsBannerPath");
+const settingsBannerInput = document.getElementById("settingsBannerInput");
+const settingsBannerPreviewImage = document.getElementById("settingsBannerPreviewImage");
+const settingsBannerPlaceholder = document.getElementById("settingsBannerPlaceholder");
+
+const settingsLogoPath =
   document.getElementById(
     "settingsLogoPath"
   );
@@ -923,6 +940,14 @@ settingsFormControls.forEach(control => {
         ) {
           control.value =
             normalizedContact;
+
+          control.classList.remove(
+           "is-invalid"
+);
+
+control.removeAttribute(
+  "aria-invalid"
+);
         }
       }
 
@@ -1589,7 +1614,7 @@ async function loadOwnerIdentity() {
 
     const ownerName =
       String(
-        user.full_name ||
+        formatUserName(user) ||
         "Restaurant Owner"
       ).trim();
 
@@ -2920,14 +2945,32 @@ async function loadUsers() {
   );
 
   users =
-    data.success &&
-    Array.isArray(data.users)
-      ? data.users.map(u => ({
-          id: u.user_id,
-          restaurant_id: u.restaurant_id,
-          role: u.role,
-          full_name: u.full_name,
-          email: u.email,
+data.success &&
+Array.isArray(data.users)
+? data.users.map(u => ({
+    id: u.user_id,
+
+    restaurant_id:
+      u.restaurant_id,
+
+    role:
+      u.role,
+
+    first_name:
+      u.first_name || "",
+
+    middle_name:
+      u.middle_name || "",
+
+    last_name:
+      u.last_name || "",
+
+    full_name:
+      u.full_name || "",
+
+    email:
+      u.email,
+
           contact_number:
             u.contact_number || "",
           address:
@@ -5320,7 +5363,7 @@ function renderUsers(list = users) {
 
         return `
           <tr>
-            <td class="user-name-cell">${escapeHtml(u.full_name)}</td>
+            <td class="user-name-cell">${escapeHtml(formatUserName(u))}</td>
             <td class="user-email-cell">${escapeHtml(u.email)}</td>
             <td class="user-contact-cell">${escapeHtml(window.FoodConnectPhone.format(u.contact_number, "-"))}</td>
             <td class="user-address-cell">${escapeHtml(u.address || "-")}</td>
@@ -5846,7 +5889,7 @@ function generateActivityLogs() {
       type: "staff",
       icon: "👤",
       title: "Staff Account",
-      message: `${user.full_name} (${user.role}) is registered in the restaurant.`,
+      message: `${formatUserName(user)} (${user.role}) is registered in the restaurant.`,
       time: user.created_at || "Recently"
     });
   });
@@ -5866,7 +5909,7 @@ function applyUserFilters() {
 
   if (search) {
     list = list.filter(u =>
-      String(u.full_name).toLowerCase().includes(search) ||
+      formatUserName(u).toLowerCase().includes(search) ||
       String(u.email).toLowerCase().includes(search) ||
       String(u.contact_number).toLowerCase().includes(search) ||
       String(u.address).toLowerCase().includes(search)
@@ -7793,6 +7836,71 @@ if (saveRestockBtn) {
 }
 
 /* =========================
+   PASSWORD VISIBILITY TOGGLE
+========================= */
+
+document
+  .querySelectorAll(".toggle-password")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const target =
+          button.dataset.target;
+
+        const input =
+          document.getElementById(
+            target
+          );
+
+        if (!input) {
+          return;
+        }
+
+        const icon =
+          button.querySelector("i");
+
+
+        if (
+          input.type === "password"
+        ) {
+
+          input.type = "text";
+
+          if (icon) {
+            icon.className =
+              "fa-regular fa-eye-slash";
+          }
+
+          button.setAttribute(
+            "aria-label",
+            "Hide password"
+          );
+
+        } else {
+
+          input.type = "password";
+
+          if (icon) {
+            icon.className =
+              "fa-regular fa-eye";
+          }
+
+          button.setAttribute(
+            "aria-label",
+            "Show password"
+          );
+
+        }
+
+      }
+    );
+
+  });
+
+/* =========================
    EVENTS
 ========================= */
 
@@ -7868,10 +7976,12 @@ navItems.forEach(btn => {
             savedRestaurantSettings.name;
         }
 
-        if (settingsContactNumber) {
-          settingsContactNumber.value =
-            window.FoodConnectPhone.toLocalDigits(savedRestaurantSettings.contact_number);
-        }
+      if (settingsContactNumber) {
+    settingsContactNumber.value =
+        window.FoodConnectPhone.toLocalDigits(
+            savedRestaurantSettings.contact_number
+        );
+}
 
         if (settingsAddress) {
           settingsAddress.value =
@@ -8152,10 +8262,14 @@ userStatusFilter?.addEventListener("change", applyUserFilters);
 saveUserBtn?.addEventListener(
   "click",
   async () => {
-    const fullNameInput =
-      document.getElementById(
-        "userFullName"
-      );
+    const firstNameInput =
+document.getElementById("userFirstName");
+
+const middleNameInput =
+document.getElementById("userMiddleName");
+
+const lastNameInput =
+document.getElementById("userLastName");
 
     const emailInput =
       document.getElementById(
@@ -8187,8 +8301,14 @@ saveUserBtn?.addEventListener(
         "userStatus"
       );
 
-    const fullName =
-      fullNameInput?.value.trim() || "";
+   const firstName =
+firstNameInput?.value.trim() || "";
+
+const middleName =
+middleNameInput?.value.trim() || "";
+
+const lastName =
+lastNameInput?.value.trim() || "";
 
     const email =
       emailInput?.value.trim().toLowerCase() || "";
@@ -8210,11 +8330,10 @@ saveUserBtn?.addEventListener(
         statusInput?.value ?? 1
       );
 
-    if (!fullName) {
-      alert("Full name is required.");
-      fullNameInput?.focus();
-      return;
-    }
+    if (!firstName || !lastName) {
+ alert("First name and last name are required.");
+ return;
+}
 
     if (!email) {
       alert("Email is required.");
@@ -8256,7 +8375,9 @@ saveUserBtn?.addEventListener(
           method: "POST",
 
           body: JSON.stringify({
-            full_name: fullName,
+            first_name: firstName,
+middle_name: middleName,
+last_name: lastName,
             email,
             contact_number:
               contactNumber
@@ -8281,9 +8402,17 @@ saveUserBtn?.addEventListener(
         "show"
       );
 
-      if (fullNameInput) {
-        fullNameInput.value = "";
-      }
+     if (firstNameInput) {
+  firstNameInput.value = "";
+}
+
+if (middleNameInput) {
+  middleNameInput.value = "";
+}
+
+if (lastNameInput) {
+  lastNameInput.value = "";
+}
 
       if (emailInput) {
         emailInput.value = "";
@@ -8293,9 +8422,9 @@ saveUserBtn?.addEventListener(
         contactInput.value = "";
       }
 
-      if (addressInput) {
-        addressInput.value = "";
-      }
+      if (!addressInput.dataset.savedAddress) {
+    addressInput.value = "";
+}
 
       if (passwordInput) {
         passwordInput.value = "";
@@ -8314,11 +8443,19 @@ saveUserBtn?.addEventListener(
         loadDashboardSummary()
       ]);
 
-      await saveActivityLog(
-        "staff",
-        "Staff Account Created",
-        `${fullName} was added as ${role}.`
-      );
+      const createdFullName = [
+  firstName,
+  middleName,
+  lastName
+]
+.filter(Boolean)
+.join(" ");
+
+await saveActivityLog(
+  "staff",
+  "Staff Account Created",
+  `${createdFullName} was added as ${role}.`
+);
 
       await loadActivityLogs();
 
@@ -8354,10 +8491,20 @@ updateUserBtn?.addEventListener(
         "editUserId"
       );
 
-    const fullNameInput =
-      document.getElementById(
-        "editUserFullName"
-      );
+    const firstNameInput =
+  document.getElementById(
+    "editUserFirstName"
+  );
+
+const middleNameInput =
+  document.getElementById(
+    "editUserMiddleName"
+  );
+
+const lastNameInput =
+  document.getElementById(
+    "editUserLastName"
+  );
 
     const emailInput =
       document.getElementById(
@@ -8387,8 +8534,14 @@ updateUserBtn?.addEventListener(
     const userId =
       Number(userIdInput?.value || 0);
 
-    const fullName =
-      fullNameInput?.value.trim() || "";
+    const firstName =
+  firstNameInput?.value.trim() || "";
+
+const middleName =
+  middleNameInput?.value.trim() || "";
+
+const lastName =
+  lastNameInput?.value.trim() || "";
 
     const email =
       emailInput?.value
@@ -8412,11 +8565,19 @@ updateUserBtn?.addEventListener(
       return;
     }
 
-    if (!fullName) {
-      alert("Full name is required.");
-      fullNameInput?.focus();
-      return;
-    }
+   if (!firstName || !lastName) {
+  alert(
+    "First name and last name are required."
+  );
+
+  if (!firstName) {
+    firstNameInput?.focus();
+  } else {
+    lastNameInput?.focus();
+  }
+
+  return;
+}
 
     if (!email) {
       alert("Email is required.");
@@ -8471,10 +8632,14 @@ updateUserBtn?.addEventListener(
           method: "POST",
 
           body: JSON.stringify({
-            user_id: userId,
-            full_name: fullName,
-            email,
-            contact_number:
+  user_id: userId,
+
+  first_name: firstName,
+  middle_name: middleName,
+  last_name: lastName,
+
+  email,
+  contact_number:
               contactNumber
                 ? window.FoodConnectPhone.normalize(contactNumber)
                 : "",
@@ -8501,11 +8666,19 @@ updateUserBtn?.addEventListener(
         loadDashboardSummary()
       ]);
 
-      await saveActivityLog(
-        "staff",
-        "Staff Account Updated",
-        `${fullName}'s staff account was updated.`
-      );
+      const updatedFullName = [
+  firstName,
+  middleName,
+  lastName
+]
+.filter(Boolean)
+.join(" ");
+
+await saveActivityLog(
+  "staff",
+  "Staff Account Updated",
+  `${updatedFullName}'s staff account was updated.`
+);
 
       await loadActivityLogs();
 
@@ -8838,7 +9011,44 @@ window.openEditUserModal = function(id) {
   }
 
   document.getElementById("editUserId").value = user.id;
-  document.getElementById("editUserFullName").value = user.full_name;
+let firstName =
+  user.first_name || "";
+
+let middleName =
+  user.middle_name || "";
+
+let lastName =
+  user.last_name || "";
+
+/*
+  Legacy accounts may only have full_name. Do not guess how to split
+  multi-part names; require the owner to review the fields once.
+*/
+if (
+  !firstName &&
+  !middleName &&
+  !lastName &&
+  user.full_name
+) {
+  alert(
+    `This is a legacy staff name: “${user.full_name}”. Please enter the First, Middle, and Last Name fields carefully before saving. FoodConnect will not split the name automatically.`
+  );
+}
+
+document.getElementById(
+  "editUserFirstName"
+).value =
+  firstName;
+
+document.getElementById(
+  "editUserMiddleName"
+).value =
+  middleName;
+
+document.getElementById(
+  "editUserLastName"
+).value =
+  lastName;
   document.getElementById("editUserEmail").value = user.email;
   document.getElementById("editUserContactNumber").value = window.FoodConnectPhone.toLocalDigits(user.contact_number);
 document.getElementById("editUserAddress").value = user.address || "";
@@ -8933,7 +9143,7 @@ window.openResetStaffPasswordModal =
 
     if (resetStaffUserName) {
       resetStaffUserName.textContent =
-        `${user.full_name} (${String(user.role || "").replaceAll("_", " ")})`;
+        `${formatUserName(user)} (${String(user.role || "").replaceAll("_", " ")})`;
     }
 
     if (resetStaffTemporaryPassword) {
@@ -9716,7 +9926,12 @@ function normalizeSettingsAddress(value) {
 }
 
 function normalizePhilippineContactNumber(value) {
-  return window.FoodConnectPhone.normalize(value);
+  const local =
+    window.FoodConnectPhone.toLocalDigits(value);
+
+  return /^9\d{9}$/.test(local)
+    ? `+63${local}`
+    : "";
 }
 
 function clearSettingsFieldErrors() {
@@ -9729,6 +9944,12 @@ function clearSettingsFieldErrors() {
       "aria-invalid"
     );
   });
+
+  if (settingsFormMessage) {
+    settingsFormMessage.textContent = "";
+    settingsFormMessage.className =
+      "settings-form-message";
+  }
 }
 
 function markSettingsFieldInvalid(
@@ -10021,6 +10242,10 @@ function getCurrentRestaurantSettings() {
     logo_path:
   String(
     settingsLogoPath?.value || ""
+  ).trim(),
+    banner_path:
+  String(
+    settingsBannerPath?.value || ""
   ).trim(),
     name:
       normalizeSettingsText(
@@ -10674,14 +10899,15 @@ function validateRestaurantSettings(
     return "Contact number is required.";
   }
 
-  const philippineMobilePattern =
-    /^09\d{9}$/;
+ const philippineMobilePattern =
+  /^\+639\d{9}$/;
 
-  if (
-    !philippineMobilePattern.test(
-      settings.contact_number
-    )
-  ) {
+if (
+  !philippineMobilePattern.test(
+    settings.contact_number
+  )
+)
+   {
     markSettingsFieldInvalid(
       settingsContactNumber
     );
@@ -10839,11 +11065,19 @@ const loadedSettings = {
         window.FoodConnectPhone.toLocalDigits(loadedSettings.contact_number);
     }
 
-    if (settingsAddress) {
-  settingsAddress.value =
-    loadedSettings.address;
+   if (settingsAddress) {
+    const savedAddress =
+        String(
+            loadedSettings.address || ""
+        ).trim();
 
-  updateSettingsAddressCounter();
+    settingsAddress.value =
+        savedAddress;
+
+    settingsAddress.dataset.savedAddress =
+        savedAddress;
+
+    updateSettingsAddressCounter();
 }
 
     if (settingsOpeningHours) {
@@ -10902,6 +11136,14 @@ async function saveRestaurantSettings() {
 
   const payload =
     getCurrentRestaurantSettings();
+    clearSettingsFieldErrors();
+
+    if (settingsContactNumber) {
+    settingsContactNumber.value =
+        window.FoodConnectPhone.toLocalDigits(
+            settingsContactNumber.value
+        );
+}
 
     if (settingsRestaurantName) {
   settingsRestaurantName.value =
@@ -10910,9 +11152,10 @@ async function saveRestaurantSettings() {
 
 if (settingsContactNumber) {
   settingsContactNumber.value =
-    payload.contact_number;
+    window.FoodConnectPhone.toLocalDigits(
+      payload.contact_number
+    );
 }
-
 if (settingsAddress) {
   settingsAddress.value =
     payload.address;
@@ -11303,3 +11546,4 @@ initDashboard().then(
     }
   }
 );
+

@@ -1,3 +1,12 @@
+
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ].filter(Boolean).join(" ") || user?.full_name || "";
+}
+
 const API_BASE = "../../api";
 
 let deliveries = [];
@@ -643,7 +652,7 @@ if (
 }
 
     const riderName =
-      data.rider?.full_name || "Delivery Staff";
+      formatUserName(data.rider) || "Delivery Staff";
 
     document.getElementById("riderName").textContent =
       riderName;

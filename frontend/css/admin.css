@@ -3538,3 +3538,16 @@ html[data-theme="dark"] body[data-fc-page="admin"] .owner-reset-status-badge.rej
   color: #ffadb5;
   background: rgba(190, 45, 60, 0.2);
 }
+
+/* UI FIX: admin password toggle */
+.password-input-wrapper{
+  position:relative;
+  width:100%;
+}
+.password-input-wrapper .toggle-password{
+  position:absolute;
+  top:50%;
+  right:10px;
+  transform:translateY(-50%);
+  z-index:2;
+}

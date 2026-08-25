@@ -3,7 +3,9 @@ const API = "/FoodConnect/api";
 const profileForm = document.getElementById("profileForm");
 const passwordForm = document.getElementById("passwordForm");
 
-const fullName = document.getElementById("fullName");
+const firstName = document.getElementById("firstName");
+const middleName = document.getElementById("middleName");
+const lastName = document.getElementById("lastName");
 const email = document.getElementById("email");
 const contactNumber = document.getElementById("contactNumber");
 const address = document.getElementById("address");
@@ -89,8 +91,18 @@ async function loadProfile() {
       throw new Error(data.message || "Unable to load account settings.");
     }
 
-    fullName.value = data.user.full_name || "";
+    firstName.value = data.user.first_name || "";
+    middleName.value = data.user.middle_name || "";
+    lastName.value = data.user.last_name || "";
     email.value = data.user.email || "";
+
+    if (data.user.needs_name_migration && data.user.full_name) {
+      showStatus(
+        globalStatusMessage,
+        `Your existing name is “${data.user.full_name}”. Please enter it into the First, Middle, and Last Name fields once, review it, then save. FoodConnect will not split legacy names automatically.`,
+        "info"
+      );
+    }
     contactNumber.value = window.FoodConnectPhone.toLocalDigits(data.user.contact_number);
     address.value = data.user.address || "";
   } catch (error) {
@@ -107,15 +119,17 @@ profileForm?.addEventListener("submit", async (event) => {
   clearStatus(profileStatus);
 
   const payload = {
-    full_name: fullName.value.trim(),
+    first_name: firstName.value.trim(),
+    middle_name: middleName.value.trim(),
+    last_name: lastName.value.trim(),
     email: email.value.trim(),
     contact_number: contactNumber.value.trim() ? window.FoodConnectPhone.normalize(contactNumber.value) : "",
     address: address.value.trim()
   };
 
-  if (!payload.full_name) {
-    showStatus(profileStatus, "Full name is required.", "error");
-    fullName.focus();
+  if (!payload.first_name || !payload.last_name) {
+    showStatus(profileStatus, "First name and last name are required.", "error");
+    firstName.focus();
     return;
   }
 

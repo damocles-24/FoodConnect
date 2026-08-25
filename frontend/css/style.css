@@ -1973,8 +1973,9 @@ body.modal-scroll-locked {
   border: 1px solid #3a4658;
   border-radius: 12px;
 
-  background: transparent;
-  color: #d7dce4;
+  background: #22c55e;
+border-color: #22c55e;
+color: #ffffff;
 
   font-size: 12px;
   font-weight: 700;
@@ -1999,7 +2000,7 @@ body.modal-scroll-locked {
 }
 
 .portal-owner-btn i {
-  color: var(--primary);
+  color: #ffffff;
 }
 
 .portal-secondary-btn {
@@ -2697,8 +2698,9 @@ body {
   border: 1px solid #3a4658;
   border-radius: 12px;
 
-  background: transparent;
-  color: #d7dce4;
+background: #22c55e;
+color: #ffffff;
+border-color: #22c55e;
 
   font-size: 12px;
   font-weight: 700;
@@ -2723,7 +2725,7 @@ body {
 }
 
 .portal-owner-btn i {
-  color: var(--primary);
+  color: #ffffff;
 }
 
 .portal-secondary-btn {
@@ -4807,4 +4809,98 @@ body[data-fc-page="customer-home"]
   .staff-access-card.owner-recovery-status-active .owner-recovery-progress {
     margin-top: 12px;
   }
+}
+
+.password-input-wrapper{position:relative;width:100%;}
+.password-input-wrapper input[type="password"],.password-input-wrapper input[type="text"]{width:100%;padding-right:52px;}
+.password-input-wrapper .toggle-password{position:absolute;top:50%;right:10px;transform:translateY(-50%);width:36px;height:36px;display:grid;place-items:center;border:0;background:transparent;color:#98a2b3;cursor:pointer;}
+.password-input-wrapper .toggle-password:hover{color:var(--primary);}
+.portal-owner-btn{background:#22c55e;border-color:#22c55e;color:#fff;}
+.portal-owner-btn i{color:#fff;}
+.portal-owner-btn:hover{background:#16a34a;border-color:#16a34a;}
+
+/* UI FIX: password toggle alignment */
+.password-input-wrapper{
+  position:relative;
+  width:100%;
+}
+.password-input-wrapper input[type="password"],
+.password-input-wrapper input[type="text"]{
+  width:100%;
+  padding-right:52px;
+}
+.password-input-wrapper .toggle-password{
+  position:absolute;
+  top:50%;
+  right:10px;
+  transform:translateY(-50%);
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  background:transparent;
+  color:#98a2b3;
+  cursor:pointer;
+  z-index:2;
+}
+.password-input-wrapper .toggle-password:hover{
+  color:var(--primary);
+}
+
+/* UI FIX: partner portal branding */
+.portal-owner-btn{
+  background:#22c55e !important;
+  border-color:#22c55e !important;
+  color:#fff !important;
+}
+.portal-owner-btn:hover{
+  background:#16a34a !important;
+  border-color:#16a34a !important;
+}
+
+/* =========================================================
+   OWNER RECOVERY STATUS READABILITY FIX
+========================================================= */
+
+/* Email delivery = waiting process, not disabled */
+.owner-recovery-progress li:last-child .owner-recovery-step-icon {
+    border-color: var(--fc-info-border);
+    background: var(--fc-info-soft);
+    color: var(--fc-info);
+}
+
+/* Make timeline easier to follow */
+.owner-recovery-progress li:not(:last-child)::after {
+    background: #64748b;
+}
+
+/* Improve recovery text contrast */
+.owner-recovery-step-copy strong {
+    color: #ffffff;
+}
+
+.owner-recovery-step-copy small {
+    color: #cbd5e1;
+}
+
+/* Improve information box readability */
+.owner-recovery-next-step {
+    border-color: rgba(96,165,250,.35);
+    background: rgba(37,99,235,.12);
+}
+
+.owner-recovery-next-step p {
+    color: #dbeafe;
+}
+
+/* Title hierarchy */
+.owner-recovery-status-title {
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.owner-recovery-status-text {
+    color: #cbd5e1;
 }

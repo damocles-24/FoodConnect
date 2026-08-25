@@ -1,3 +1,12 @@
+
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ].filter(Boolean).join(" ") || user?.full_name || "";
+}
+
 const API_BASE = "../../api";
 
 let orders = [];
@@ -2775,7 +2784,7 @@ async function loadAvailableRiders() {
 
       ${riders.map(rider => `
         <option value="${Number(rider.user_id)}">
-          ${escapeHTML(rider.full_name)}
+          ${escapeHTML(formatUserName(rider))}
           ${
             rider.contact_number
               ? ` — ${escapeHTML(window.FoodConnectPhone.format(rider.contact_number, rider.contact_number))}`
@@ -3570,7 +3579,7 @@ async function loadCashierProfile() {
       cache: "no-store"
     });
     const data = await response.json();
-    const fullName = String(data?.user?.full_name || "").trim();
+    const fullName = String(formatUserName(data?.user) || "").trim();
     if (response.ok && data.logged_in && fullName) {
       profileName.textContent = fullName;
       profileName.title = fullName;

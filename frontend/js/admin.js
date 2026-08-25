@@ -42,9 +42,19 @@ const adminLoginForm =
     "adminLoginForm"
   );
 
-const setupFullName =
+const setupFirstName =
   document.getElementById(
-    "setupFullName"
+    "setupFirstName"
+  );
+
+const setupMiddleName =
+  document.getElementById(
+    "setupMiddleName"
+  );
+
+const setupLastName =
+  document.getElementById(
+    "setupLastName"
   );
 
 const setupEmail =
@@ -1307,8 +1317,16 @@ async function handleAdminSetup(
 ) {
   event.preventDefault();
 
-  const fullName =
-    setupFullName?.value.trim() ||
+  const firstName =
+    setupFirstName?.value.trim() ||
+    "";
+
+  const middleName =
+    setupMiddleName?.value.trim() ||
+    "";
+
+  const lastName =
+    setupLastName?.value.trim() ||
     "";
 
   const email =
@@ -1328,7 +1346,8 @@ async function handleAdminSetup(
   setAdminSetupMessage("");
 
   if (
-    !fullName ||
+    !firstName ||
+    !lastName ||
     !email ||
     !contactNumber ||
     !password ||
@@ -1381,8 +1400,14 @@ async function handleAdminSetup(
         },
 
         body: JSON.stringify({
-          full_name:
-            fullName,
+          first_name:
+            firstName,
+
+          middle_name:
+            middleName,
+
+          last_name:
+            lastName,
 
           email,
 
@@ -1655,7 +1680,7 @@ function showAdminSetup() {
 
   setAdminSetupMessage("");
 
-  setupFullName?.focus();
+  setupFirstName?.focus();
 }
 
 function showAdminLogin() {
@@ -1705,11 +1730,10 @@ function showDashboard(user) {
     "hidden"
   );
 
-  if (adminName) {
+ if (adminName) {
     adminName.textContent =
-      user?.full_name ||
-      "Administrator";
-  }
+      formatUserName(user);
+}
 }
 
 /* =========================
@@ -4762,8 +4786,8 @@ function renderPlatformUsers(users) {
             "
             data-user-id="${userId}"
             data-user-name="${escapeHtml(
-              user.full_name
-            )}"
+  formatUserName(user)
+)}"
             data-current-status="${userStatus}"
           >
             ${
@@ -4777,10 +4801,9 @@ function renderPlatformUsers(users) {
     row.innerHTML = `
       <td data-label="Name">
         <span class="platform-user-name">
-          ${escapeHtml(
-            user.full_name ||
-            "Unnamed User"
-          )}
+         ${escapeHtml(
+ formatUserName(user)
+)} 
         </span>
 
         ${
@@ -6818,6 +6841,17 @@ function setAdminLoginMessage(
 /* =========================
    GENERAL HELPERS
 ========================= */
+function formatUserName(user) {
+  return [
+    user.first_name,
+    user.middle_name,
+    user.last_name
+  ]
+  .filter(Boolean)
+  .join(" ")
+  || user.full_name
+  || "Unnamed User";
+}
 
 function setText(
   elementOrId,
@@ -6938,3 +6972,18 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+// Password visibility toggle for normal password fields only.
+document.querySelectorAll(".toggle-password").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.target);
+    const icon = button.querySelector("i");
+
+    if (!input || !icon) return;
+
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    icon.className = show ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+    button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  });
+});

@@ -1,3 +1,15 @@
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+}
+
 function goToCart() {
   localStorage.setItem("lastPage", window.location.href);
   window.location.href = "cart.html";
@@ -24,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (nameEl) {
       nameEl.textContent =
         loggedIn
-          ? (d.user?.full_name || d.user?.fullname || d.user?.name || "User")
+          ? (formatUserName(d.user) || "User")
           : "Guest";
     }
 

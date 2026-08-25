@@ -20,7 +20,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/style.css?v=20260818-ownerrecovery3">
+  <link rel="stylesheet" href="../css/style.css?v=20260818-ownerrecovery5">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
@@ -1208,12 +1208,20 @@
             Password
           </label>
 
-          <input
+          <div class="password-input-wrapper"><input
             type="password"
             id="staffPassword"
             placeholder="Enter password"
             autocomplete="current-password"
           >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="staffPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
         </div>
 
         <button
@@ -1271,26 +1279,42 @@
           <label for="staffNewPassword">
             New Password
           </label>
-          <input
+          <div class="password-input-wrapper"><input
             type="password"
             id="staffNewPassword"
             minlength="8"
             autocomplete="new-password"
             placeholder="At least 8 characters"
           >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="staffNewPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
         </div>
 
         <div class="staff-input-group">
           <label for="staffConfirmNewPassword">
             Confirm New Password
           </label>
-          <input
+          <div class="password-input-wrapper"><input
             type="password"
             id="staffConfirmNewPassword"
             minlength="8"
             autocomplete="new-password"
             placeholder="Re-enter new password"
           >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="staffConfirmNewPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
         </div>
 
         <button
@@ -1358,12 +1382,20 @@
         </label>
 
         <div class="password-input-wrapper">
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="ownerPassword"
           placeholder="Enter password"
           autocomplete="current-password"
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="ownerPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
 
         <button
         type="button"
@@ -1619,13 +1651,21 @@
           New Password
         </label>
 
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="ownerNewPassword"
           minlength="8"
           autocomplete="new-password"
           placeholder="At least 8 characters"
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="ownerNewPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
       </div>
 
       <div class="staff-input-group">
@@ -1633,13 +1673,21 @@
           Confirm New Password
         </label>
 
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="ownerConfirmNewPassword"
           minlength="8"
           autocomplete="new-password"
           placeholder="Re-enter your new password"
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="ownerConfirmNewPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
       </div>
 
       <small class="owner-recovery-help owner-password-requirements">

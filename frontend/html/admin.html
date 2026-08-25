@@ -60,14 +60,42 @@
     <form id="adminSetupForm">
 
       <div class="admin-form-group">
-        <label for="setupFullName">
-          Full name
+        <label for="setupFirstName">
+          First name
         </label>
 
         <input
           type="text"
-          id="setupFullName"
-          autocomplete="name"
+          id="setupFirstName"
+          autocomplete="given-name"
+          maxlength="100"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupMiddleName">
+          Middle name <span aria-hidden="true">(optional)</span>
+        </label>
+
+        <input
+          type="text"
+          id="setupMiddleName"
+          autocomplete="additional-name"
+          maxlength="100"
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="setupLastName">
+          Last name
+        </label>
+
+        <input
+          type="text"
+          id="setupLastName"
+          autocomplete="family-name"
+          maxlength="100"
           required
         >
       </div>
@@ -110,12 +138,20 @@
           Password
         </label>
 
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="setupPassword"
           autocomplete="new-password"
           required
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="setupPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
 
         <small class="form-help">
           Use at least 8 characters with uppercase,
@@ -128,12 +164,20 @@
           Confirm password
         </label>
 
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="setupConfirmPassword"
           autocomplete="new-password"
           required
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="setupConfirmPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
       </div>
 
       <p
@@ -242,12 +286,20 @@
           Password
         </label>
 
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="adminPassword"
           autocomplete="current-password"
           required
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="adminPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
       </div>
 
       <p

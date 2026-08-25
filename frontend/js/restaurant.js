@@ -1,4 +1,16 @@
 
+
+function formatUserName(user) {
+  return [
+    user?.first_name,
+    user?.middle_name,
+    user?.last_name
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+}
 function goToCart() {
   if (
     typeof IS_PREVIEW_MODE !==
@@ -173,8 +185,7 @@ document.addEventListener("click", (e) => {
       if (loggedIn) {
           if (nameEl) {
               nameEl.textContent =
-                  authenticatedUser.full_name ||
-                  authenticatedUser.name ||
+                  formatUserName(authenticatedUser) ||
                   "Customer";
           }
 

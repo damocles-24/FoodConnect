@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/451624685_122096037470380567_6309902776187910968_n-removebg-preview.png">
   <title>Owner Dashboard | FoodConnect</title>
 <link rel="stylesheet" href="../css/owner_dashboard.css?v=20260817-staffux2" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
@@ -2138,6 +2142,26 @@
       ></p>
     </aside>
 
+    <!-- RESTAURANT BANNER -->
+    <aside class="settings-profile-branding settings-banner-branding">
+      <div class="settings-profile-logo-heading">
+        <span>Restaurant Banner</span>
+        <small>Public</small>
+      </div>
+      <div class="settings-banner-preview-box">
+        <div class="settings-logo-placeholder">
+          <span aria-hidden="true">🖼️</span>
+          <strong>No banner uploaded</strong>
+          <small>Upload a banner to personalize your restaurant.</small>
+        </div>
+      </div>
+      <div class="settings-logo-actions">
+        <button type="button" class="settings-logo-upload-btn">Change Banner</button>
+        <button type="button" class="settings-logo-remove-btn">Remove</button>
+      </div>
+    </aside>
+
+
   </div>
 </section>
 
@@ -3609,8 +3633,20 @@
 
     <div class="modal-body">
       <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="userFullName">
+        <div class="form-group">
+  <label>First Name *</label>
+  <input type="text" id="userFirstName">
+</div>
+
+<div class="form-group">
+  <label>Middle Name</label>
+  <input type="text" id="userMiddleName">
+</div>
+
+<div class="form-group">
+  <label>Last Name *</label>
+  <input type="text" id="userLastName">
+</div>
       </div>
 
       <div class="form-group">
@@ -3641,12 +3677,20 @@
 
       <div class="form-group">
         <label>Temporary Password</label>
-        <input
+        <div class="password-input-wrapper"><input
           type="password"
           id="userPassword"
           minlength="8"
           autocomplete="new-password"
         >
+        <button
+            type="button"
+            class="toggle-password"
+            data-target="userPassword"
+            aria-label="Show password"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </button></div>
         <small class="form-helper">
           The staff member will be required to create a new private password on first login.
         </small>
@@ -3701,8 +3745,20 @@
       <input type="hidden" id="editUserId">
 
       <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="editUserFullName">
+        <div class="form-group">
+  <label>First Name *</label>
+  <input type="text" id="editUserFirstName">
+</div>
+
+<div class="form-group">
+  <label>Middle Name</label>
+  <input type="text" id="editUserMiddleName">
+</div>
+
+<div class="form-group">
+  <label>Last Name *</label>
+  <input type="text" id="editUserLastName">
+</div>
       </div>
 
       <div class="form-group">
@@ -3804,26 +3860,50 @@
         <label for="resetStaffTemporaryPassword">
           Temporary Password
         </label>
-        <input
-          type="password"
-          id="resetStaffTemporaryPassword"
-          minlength="8"
-          autocomplete="new-password"
-          placeholder="At least 8 characters"
-        >
+
+      <div class="password-input-wrapper">
+
+    <input
+        type="password"
+        id="resetStaffTemporaryPassword"
+        placeholder="At least 8 characters"
+    >
+
+    <button
+        type="button"
+        class="toggle-password"
+        data-target="resetStaffTemporaryPassword"
+        aria-label="Show password"
+    >
+        <i class="fa-regular fa-eye"></i>
+    </button>
+
+</div>
       </div>
 
       <div class="form-group">
         <label for="resetStaffConfirmPassword">
           Confirm Temporary Password
         </label>
-        <input
-          type="password"
-          id="resetStaffConfirmPassword"
-          minlength="8"
-          autocomplete="new-password"
-          placeholder="Re-enter temporary password"
-        >
+
+       <div class="password-input-wrapper">
+
+    <input
+        type="password"
+        id="resetStaffConfirmPassword"
+        placeholder="Re-enter temporary password"
+    >
+
+    <button
+        type="button"
+        class="toggle-password"
+        data-target="resetStaffConfirmPassword"
+        aria-label="Show password"
+    >
+        <i class="fa-regular fa-eye"></i>
+    </button>
+
+</div>
       </div>
 
       <div class="staff-reset-security-note">

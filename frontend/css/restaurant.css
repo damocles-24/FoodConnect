@@ -3769,3 +3769,6 @@ html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-toast .popup {
   color: #ffffff !important;
   border-color: #30343b !important;
 }
+
+
+.restaurant-banner { width:100%; height:250px; object-fit:cover; border-radius:12px; display:block; }

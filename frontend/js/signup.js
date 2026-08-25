@@ -11,8 +11,14 @@ window.addEventListener("load", () => {
 const signupForm =
     document.getElementById("signupForm");
 
-const usernameInput =
-    document.getElementById("username");
+const firstNameInput =
+    document.getElementById("firstName");
+
+const middleNameInput =
+    document.getElementById("middleName");
+
+const lastNameInput =
+    document.getElementById("lastName");
 
 const emailInput =
     document.getElementById("email");
@@ -295,25 +301,32 @@ signupForm?.addEventListener(
     async (event) => {
         event.preventDefault();
 
-        const username =
-            usernameInput.value.trim();
+        const firstName =
+            firstNameInput?.value.trim() || "";
+
+        const middleName =
+            middleNameInput?.value.trim() || "";
+
+        const lastName =
+            lastNameInput?.value.trim() || "";
 
         const email =
-            emailInput.value.trim();
+            emailInput?.value.trim() || "";
 
         const password =
-            passwordInput.value;
+            passwordInput?.value || "";
 
         const confirmPassword =
-            confirmPasswordInput.value;
+            confirmPasswordInput?.value || "";
 
         const agreement =
-            agreementInput.checked;
+            Boolean(agreementInput?.checked);
 
         setMessage();
 
         if (
-            !username ||
+            !firstName ||
+            !lastName ||
             !email ||
             !password ||
             !confirmPassword
@@ -326,13 +339,41 @@ signupForm?.addEventListener(
             return;
         }
 
-        if (username.length < 2) {
+        if (firstName.length < 2) {
             setMessage(
-                "Please enter your complete name.",
+                "Please enter a valid first name.",
                 "error"
             );
 
-            usernameInput.focus();
+            firstNameInput?.focus();
+            return;
+        }
+
+        if (lastName.length < 2) {
+            setMessage(
+                "Please enter a valid last name.",
+                "error"
+            );
+
+            lastNameInput?.focus();
+            return;
+        }
+
+        const composedName =
+            [firstName, middleName, lastName]
+                .filter(Boolean)
+                .join(" ");
+
+        if (
+            firstName.length > 100 ||
+            middleName.length > 100 ||
+            lastName.length > 100 ||
+            composedName.length > 150
+        ) {
+            setMessage(
+                "Please enter a shorter name.",
+                "error"
+            );
             return;
         }
 
@@ -392,7 +433,9 @@ signupForm?.addEventListener(
                     },
 
                     body: JSON.stringify({
-                        full_name: username,
+                        first_name: firstName,
+                        middle_name: middleName,
+                        last_name: lastName,
                         email,
                         password,
                         confirm: confirmPassword
@@ -464,6 +507,6 @@ createAnotherAccountButton?.addEventListener(
 
         setMessage();
 
-        usernameInput?.focus();
+        firstNameInput?.focus();
     }
 );
