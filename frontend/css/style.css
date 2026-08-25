@@ -4904,3 +4904,22 @@ body[data-fc-page="customer-home"]
 .owner-recovery-status-text {
     color: #cbd5e1;
 }
+
+/* remove edge built-in password reveal icon */
+input[type="password"]::-ms-reveal {
+    display: none !important;
+}
+
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+
+/* chromium password decoration */
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+}
+
+.password-input-wrapper input {
+    appearance: none;
+    -webkit-appearance: none;
+}
