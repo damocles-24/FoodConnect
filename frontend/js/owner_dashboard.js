@@ -11074,6 +11074,26 @@ const loadedSettings = {
     settingsAddress.value =
         savedAddress;
 
+        if (
+  window.PHAddressDropdown &&
+  savedRestaurantSettings.address
+) {
+  const parts =
+    savedRestaurantSettings.address
+      .split(",")
+      .map(item => item.trim());
+
+  window.PHAddressDropdown.setEnhancedValues(
+    "settingsAddress",
+    {
+      barangayName: parts[0] || "",
+      cityName: parts[1] || "",
+      provinceName: parts[2] || "",
+      streetDetails: ""
+    }
+  );
+}
+
     settingsAddress.dataset.savedAddress =
         savedAddress;
 
