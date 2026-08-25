@@ -11084,25 +11084,25 @@ const loadedSettings = {
     settingsAddress.value =
         savedAddress;
 
-        if (
+  if (
   window.PHAddressDropdown &&
-  savedRestaurantSettings.address
+  savedAddress
 ) {
   const parts =
-    savedRestaurantSettings.address
+    savedAddress
       .split(",")
       .map(item => item.trim());
 
-  window.PHAddressDropdown.setEnhancedValues(
-    "settingsAddress",
-    {
-      barangayName: parts[0] || "",
-      cityName: parts[1] || "",
-      provinceName: parts[2] || "",
-      streetDetails: ""
-    }
-  );
-}
+ window.PHAddressDropdown.setEnhancedValues(
+  "settingsAddress",
+  {
+    barangayName: parts[0] || "",
+    localityName: parts[1] || "",
+    provinceName: parts[2] || "",
+    streetDetails: ""
+  }
+);
+}    
 
     settingsAddress.dataset.savedAddress =
         savedAddress;

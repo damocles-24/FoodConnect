@@ -696,21 +696,22 @@
     }
   }
 
-  function normalizeLocationName(value) {
+function normalizeLocationName(value) {
     return String(value || "")
-      .toLowerCase()
-      .replace(/\bprovince\s+of\b/g, " ")
-      .replace(/\bprovince\b/g, " ")
-      .replace(/\bcity\s+of\b/g, " ")
-      .replace(/\bmunicipality\s+of\b/g, " ")
-      .replace(/\bmunicipality\b/g, " ")
-      .replace(/\bcity\b/g, " ")
-      .replace(/\bbarangay\b/g, " ")
-      .replace(/\bbrgy\.?\b/g, " ")
-      .replace(/[^a-z0-9]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+        .toLowerCase()
+        .replace(/\bprovince\s+of\b/g, " ")
+        .replace(/\bprovince\b/g, " ")
+        .replace(/\bcity\s+of\b/g, " ")
+        .replace(/\bcity\b/g, " ")
+        .replace(/\bmunicipality\s+of\b/g, " ")
+        .replace(/\bmunicipality\b/g, " ")
+        .replace(/\bmetro manila\b/g, "national capital region")
+        .replace(/\bncr\b/g, "national capital region")
+        .replace(/\bph\b/g, " ")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
   function findLocationOption(select, wantedName) {
     const wanted =
