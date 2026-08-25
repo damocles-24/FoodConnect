@@ -196,7 +196,7 @@ Access to protected functionality is controlled through role-based authenticatio
 
 ### Database
 
-* MySQL
+* MySQL - Main database used for storing FoodConnect system data such as users, restaurants, products, orders, payments, inventory, and transactions.
 
 ### Development Environment
 
@@ -208,11 +208,13 @@ Access to protected functionality is controlled through role-based authenticatio
 
 ### External Services / Integrations
 
-* Payment Gateway
-* SMTP / Email Service
-* Cloud MySQL Database
-* Delivery and location-related services where applicable
-
+* PayMongo Payment Gateway – Used for online payment processing and transaction handling.
+* PHPMailer and Brevo SMTP Email Service – Used for sending email notifications, verification emails, and system messages.
+* Leaflet - Used as the interactive mapping library for FoodConnect's location-based features. It provides the map interface used for displaying locations, markers, and delivery-related map information within the system.
+* Geoapify - Used as the map and location service provider. It provides geocoding, address searching, map tiles, and location-related services required by FoodConnect's delivery and location features.
+* Firebase Realtime Database – Used for real-time GPS location tracking in the FoodConnect delivery feature, allowing live monitoring of delivery personnel location updates.
+* Aiven – Cloud MySQL Database Hosting Used to host the production MySQL database of FoodConnect in the cloud. It allows the system to store and access its database remotely
+* MySQL Workbench – Database Management Tool Used to connect to, manage, and administer the FoodConnect MySQL database hosted on Aiven. It is used for tasks such as viewing tables, executing SQL queries, modifying database structures, and managing database data.
 ---
 
 # 📂 Project Structure
