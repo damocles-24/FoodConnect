@@ -9716,3 +9716,15 @@ html[data-theme="dark"] body[data-fc-page="owner"]
     line-height: 1;
     pointer-events: none;
 }
+
+/* hide microsoft edge password reveal button */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none !important;
+}
+
+/* hide chromium password controls */
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-webkit-password-reveal-button {
+    display: none !important;
+}
