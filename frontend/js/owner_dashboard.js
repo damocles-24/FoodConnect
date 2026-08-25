@@ -7869,15 +7869,15 @@ document
 
           input.type = "text";
 
-        if (icon) {
-  icon.classList.remove(
-    "fa-eye"
-  );
+                 if (icon) {
+            icon.classList.remove(
+              "fa-eye"
+            );
 
-  icon.classList.add(
-    "fa-eye-slash"
-  );
-}
+            icon.classList.add(
+              "fa-eye-slash"
+            );
+          }
 
           button.setAttribute(
             "aria-label",
@@ -7888,15 +7888,15 @@ document
 
           input.type = "password";
 
-        if (icon) {
-  icon.classList.remove(
-    "fa-eye-slash"
-  );
+              if (icon) {
+            icon.classList.remove(
+              "fa-eye-slash"
+            );
 
-  icon.classList.add(
-    "fa-eye"
-  );
-}
+            icon.classList.add(
+              "fa-eye"
+            );
+          }
 
           button.setAttribute(
             "aria-label",
