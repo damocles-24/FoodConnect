@@ -184,15 +184,17 @@ $hasSeparatedName =
     $lastName !== "";
 
 if ($hasSeparatedName) {
-    $fullName = trim(
-        implode(
-            " ",
-            array_filter(
-                [$firstName, $middleName, $lastName],
-                static fn($part) => $part !== ""
-            )
+   $fullName = trim(
+    implode(
+        " ",
+        array_filter(
+            [$firstName, $middleName, $lastName],
+            function ($part) {
+                return $part !== "";
+            }
         )
-    );
+    )
+);
 } else {
     // Compatibility for older clients that still submit only full_name.
     $fullName = $legacyFullName;
@@ -332,11 +334,8 @@ if (
 }
 
 if (
-    $contactNumber !== "" &&
-    !preg_match(
-        '/^09[0-9]{9}$/',
-        $contactNumber
-    )
+    $contactNumberRaw !== "" &&
+    $contactNumber === ""
 ) {
     respond_json([
         "success" => false,

@@ -6849,7 +6849,7 @@ function formatUserName(user) {
   ]
   .filter(Boolean)
   .join(" ")
-  || user.full_name
+  || user.display_name
   || "Unnamed User";
 }
 

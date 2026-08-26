@@ -280,7 +280,7 @@ $restaurantId =
 $fullName =
     trim(
         (string) (
-            $pendingLogin["full_name"]
+            $pendingLogin["display_name"]
             ?? ""
         )
     );
@@ -687,7 +687,7 @@ $_SESSION["role"] =
 $_SESSION["restaurant_id"] =
     $restaurantId;
 
-$_SESSION["full_name"] =
+$_SESSION["display_name"] =
     $fullName;
 
 $_SESSION["logged_in"] =
@@ -748,7 +748,7 @@ respond_json(
             "last_name" =>
                 $lastName,
 
-            "full_name" =>
+            "display_name" =>
                 $fullName,
 
             "email" =>

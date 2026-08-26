@@ -174,10 +174,11 @@ if (
 
 if (
     !preg_match(
-        "/^09\d{9}$/",
+        "/^\+639\d{9}$/",
         $contact_number
     )
-) {
+)
+{
     respond_json(
         [
             "success" => false,
@@ -361,18 +362,18 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssdsii",
-        $name,
-        $logo_path,
-        $banner_path,
-        $address,
-        $contact_number,
-        $opening_hours,
-        $delivery_fee,
-        $business_status,
-        $restaurant_id,
-        $owner_id
-    );
+    "ssssssdsii",
+    $name,
+    $logo_path,
+    $banner_path,
+    $address,
+    $contact_number,
+    $opening_hours,
+    $delivery_fee,
+    $business_status,
+    $restaurant_id,
+    $owner_id
+);
 
     $stmt->execute();
 

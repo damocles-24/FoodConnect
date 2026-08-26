@@ -366,7 +366,7 @@ function build_logged_in_response(
             "last_name" =>
                 (string)($user["last_name"] ?? ""),
 
-            "full_name" =>
+            "display_name" =>
                 formatUserName($user),
 
             "email" =>
@@ -405,8 +405,7 @@ function load_user_by_id(
             first_name,
             middle_name,
             last_name,
-            full_name,
-            email,
+                email,
             status,
             is_verified
         FROM tbl_users
@@ -483,7 +482,7 @@ if (!empty($_SESSION["user_id"])) {
             ? (int) $user["restaurant_id"]
             : null;
 
-    $_SESSION["full_name"] =
+    $_SESSION["display_name"] =
         formatUserName($user);
 
     respond_json(
@@ -534,7 +533,6 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         email,
         status,
         is_verified,
@@ -605,7 +603,7 @@ $_SESSION["restaurant_id"] =
         ? (int) $user["restaurant_id"]
         : null;
 
-$_SESSION["full_name"] =
+$_SESSION["display_name"] =
     formatUserName($user);
 
 respond_json(

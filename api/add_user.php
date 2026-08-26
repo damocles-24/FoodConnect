@@ -11,6 +11,7 @@ header(
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
+require_once __DIR__ . "/name_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -176,32 +177,12 @@ if (!is_array($data)) {
 $firstName = trim((string)($data["first_name"] ?? ""));
 $middleName = trim((string)($data["middle_name"] ?? ""));
 $lastName = trim((string)($data["last_name"] ?? ""));
-$legacyFullName = trim((string)($data["full_name"] ?? ""));
 
-$hasSeparatedName =
-    $firstName !== "" ||
-    $middleName !== "" ||
-    $lastName !== "";
-
-if ($hasSeparatedName) {
-   $fullName = trim(
-    implode(
-        " ",
-        array_filter(
-            [$firstName, $middleName, $lastName],
-            function ($part) {
-                return $part !== "";
-            }
-        )
-    )
-);
-} else {
-    // Compatibility for older clients that still submit only full_name.
-    $fullName = $legacyFullName;
-    $firstName = null;
-    $middleName = null;
-    $lastName = null;
-}
+$fullName = formatUserName([
+    "first_name" => $firstName,
+    "middle_name" => $middleName,
+    "last_name" => $lastName
+]);
 
 $email = strtolower(
     trim(
@@ -257,14 +238,7 @@ $allowedRoles = [
     "delivery_staff"
 ];
 
-if ($fullName === "") {
-    respond_json([
-        "success" => false,
-        "message" => "First name and last name are required."
-    ], 422);
-}
-
-if ($hasSeparatedName && ($firstName === "" || $lastName === "")) {
+if ($firstName === "" || $lastName === "") {
     respond_json([
         "success" => false,
         "message" => "First name and last name are required."
@@ -272,9 +246,9 @@ if ($hasSeparatedName && ($firstName === "" || $lastName === "")) {
 }
 
 if (
-    ($firstName !== null && mb_strlen($firstName) > 100) ||
-    ($middleName !== null && mb_strlen($middleName) > 100) ||
-    ($lastName !== null && mb_strlen($lastName) > 100) ||
+    mb_strlen($firstName) > 100 ||
+    mb_strlen($middleName) > 100 ||
+    mb_strlen($lastName) > 100 ||
     mb_strlen($fullName) > 150
 ) {
     respond_json([
@@ -438,7 +412,6 @@ $insertStmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         email,
         contact_number,
         address,
@@ -447,7 +420,6 @@ $insertStmt = $conn->prepare("
         is_verified
     )
     VALUES (
-        ?,
         ?,
         ?,
         ?,
@@ -476,13 +448,12 @@ if (!$insertStmt) {
 }
 
 $insertStmt->bind_param(
-    "isssssssssi",
+    "issssssssi",
     $restaurantId,
     $role,
     $firstName,
     $middleName,
     $lastName,
-    $fullName,
     $email,
     $contactNumber,
     $address,
@@ -592,7 +563,7 @@ respond_json([
         "last_name" =>
             $lastName ?? "",
 
-        "full_name" =>
+        "display_name" =>
             $fullName,
 
         "email" =>

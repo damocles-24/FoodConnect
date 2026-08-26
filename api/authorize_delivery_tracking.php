@@ -112,7 +112,7 @@ $riderStmt = $conn->prepare("
     SELECT
         user_id,
         restaurant_id,
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
         role,
         status
     FROM tbl_users

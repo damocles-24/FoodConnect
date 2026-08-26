@@ -46,7 +46,7 @@ $stmt = $conn->prepare("
     SELECT
         user_id,
         role,
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
         email,
         password_hash,
         status,
@@ -115,7 +115,7 @@ $_SESSION["customer_reactivation"] = [
 ];
 
 $escapedName = htmlspecialchars(
-    (string) $user["full_name"],
+    (string) $user["display_name"],
     ENT_QUOTES,
     "UTF-8"
 );

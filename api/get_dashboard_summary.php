@@ -82,7 +82,7 @@ if (
 $ownerStmt = $conn->prepare("
     SELECT
     u.user_id,
-    COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))), ''), NULLIF(TRIM(u.full_name), ''), '') AS full_name,
+    TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))) AS display_name,
 
     r.restaurant_id,
     r.name AS restaurant_name,
@@ -517,7 +517,7 @@ respond_json([
         $owner["restaurant_name"],
 
     "owner_name" =>
-        $owner["full_name"],
+        $owner["display_name"],
 
     "business_status" =>
         $owner["business_status"],

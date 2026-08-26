@@ -28,7 +28,7 @@ rate_limit_enforce(
 $userNameSql = userNameSqlExpression();
 
 $stmt = $conn->prepare("
-  SELECT user_id, {$userNameSql} AS full_name, is_verified
+  SELECT user_id, {$userNameSql} AS display_name, is_verified
   FROM tbl_users
   WHERE email = ?
   LIMIT 1
@@ -74,7 +74,7 @@ $htmlBody = "
       <tr><td align='center' style='padding-bottom:10px'><div style='font-size:22px;font-weight:bold;color:#ff7a00'>FoodConnect</div></td></tr>
       <tr><td style='font-size:20px;font-weight:bold'>Verify your email</td></tr>
       <tr><td style='color:#444;padding-top:12px;line-height:1.6'>
-        Hi ".htmlspecialchars($user["full_name"]).",<br><br>
+        Hi ".htmlspecialchars($user["display_name"]).",<br><br>
         Here is your new verification link (valid for 24 hours).
       </td></tr>
       <tr><td align='center' style='padding:28px 0'>

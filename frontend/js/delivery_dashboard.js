@@ -4,7 +4,7 @@ function formatUserName(user) {
     user?.first_name,
     user?.middle_name,
     user?.last_name
-  ].filter(Boolean).join(" ") || user?.full_name || "";
+  ].filter(Boolean).join(" ") || user?.display_name || "";
 }
 
 const API_BASE = "../../api";

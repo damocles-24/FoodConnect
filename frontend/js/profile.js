@@ -96,13 +96,6 @@ async function loadProfile() {
     lastName.value = data.user.last_name || "";
     email.value = data.user.email || "";
 
-    if (data.user.needs_name_migration && data.user.full_name) {
-      showStatus(
-        globalStatusMessage,
-        `Your existing name is “${data.user.full_name}”. Please enter it into the First, Middle, and Last Name fields once, review it, then save. FoodConnect will not split legacy names automatically.`,
-        "info"
-      );
-    }
     contactNumber.value = window.FoodConnectPhone.toLocalDigits(data.user.contact_number);
     address.value = data.user.address || "";
   } catch (error) {

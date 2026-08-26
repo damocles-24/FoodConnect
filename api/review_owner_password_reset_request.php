@@ -133,7 +133,7 @@ if ($adminId <= 0 || $sessionRole !== "admin") {
 }
 
 $adminStmt = $conn->prepare("
-    SELECT user_id, role, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name, status, is_verified
+    SELECT user_id, role, TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name, status, is_verified
     FROM tbl_users
     WHERE user_id = ?
     LIMIT 1
@@ -223,7 +223,7 @@ try {
             req.restaurant_id,
             req.request_status,
             req.submitted_restaurant_name,
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))), ''), NULLIF(TRIM(owner.full_name), ''), '') AS owner_name,
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))) AS owner_name,
             owner.email AS owner_email,
             owner.role AS owner_role,
             owner.status AS owner_status,
@@ -294,7 +294,7 @@ try {
 
         if ($restaurantId > 0) {
             $logDescription =
-                (string)$admin["full_name"] .
+                (string)$admin["display_name"] .
                 " rejected the owner password recovery request for " .
                 ($restaurantName !== "" ? $restaurantName : $ownerName) .
                 ". Reason: " . $reviewNote;
@@ -424,7 +424,7 @@ try {
 
     if ($restaurantId > 0) {
         $logDescription =
-            (string)$admin["full_name"] .
+            (string)$admin["display_name"] .
             " approved the owner password recovery request for " .
             ($restaurantName !== "" ? $restaurantName : $ownerName) .
             ". A temporary password was issued and sent automatically to the registered owner email. The owner must create a new private password at the next login.";

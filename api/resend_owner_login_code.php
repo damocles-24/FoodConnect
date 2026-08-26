@@ -126,7 +126,7 @@ $email =
 
 $fullName =
     (string) (
-        $pendingLogin["full_name"]
+        $pendingLogin["display_name"]
         ?? "Restaurant Owner"
     );
 

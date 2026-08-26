@@ -79,7 +79,7 @@ if (!$ownedRestaurant) {
 
 /* Restaurant isolation + explicit staff roles only. */
 $staffStmt = $conn->prepare("
-    SELECT user_id, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name, role, status
+    SELECT user_id, TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name, role, status
     FROM tbl_users
     WHERE user_id = ?
       AND restaurant_id = ?
@@ -144,7 +144,7 @@ $logStmt = $conn->prepare("
     VALUES (?, ?, 'owner', 'staff', 'Staff Password Reset', ?)
 ");
 if ($logStmt) {
-    $description = (string)$staff["full_name"] . " was issued a temporary password and must create a new password at the next login.";
+    $description = (string)$staff["display_name"] . " was issued a temporary password and must create a new password at the next login.";
     $logStmt->bind_param("iis", $restaurantId, $ownerId, $description);
     $logStmt->execute();
     $logStmt->close();

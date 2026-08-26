@@ -9,7 +9,7 @@ function formatUserName(user) {
     .map((part) => String(part || "").trim())
     .filter(Boolean)
     .join(" ")
-    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+    || String(user?.display_name || user?.name || "").trim();
 }
 
 window.addEventListener("load", () => {
@@ -426,7 +426,7 @@ loginForm?.addEventListener(
             }
 
             localStorage.setItem(
-                "user_full_name",
+                "user_display_name",
                 formatUserName(data.user)
             );
 
@@ -660,7 +660,7 @@ verifyReactivationCodeBtn?.addEventListener(
             }
 
             localStorage.setItem(
-                "user_full_name",
+                "user_display_name",
                 formatUserName(loginData.user)
             );
 

@@ -209,7 +209,7 @@ try {
     $riderSql = "
         SELECT
             user_id,
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name
         FROM tbl_users
         WHERE user_id = ?
           AND restaurant_id = ?
@@ -408,7 +408,7 @@ $action_type = "delivery_assignment";
 $action_title = "Rider Assigned";
 
 $action_description =
-    $rider["full_name"] .
+    $rider["display_name"] .
     " was assigned and automatically accepted delivery Order #" .
     $order_id .
     ".";
@@ -464,7 +464,7 @@ $logStmt->close();
             "assignment_id" => $assignment_id,
             "order_id" => $order_id,
             "delivery_staff_id" => $delivery_staff_id,
-            "rider_name" => $rider["full_name"],
+            "rider_name" => $rider["display_name"],
             "assignment_type" => "internal",
             "delivery_status" => "accepted",
             "delivery_fee" => $delivery_fee,

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Build the current display name from the canonical separated name fields.
+ */
 function formatUserName(array $user): string
 {
     $parts = [];
@@ -12,21 +15,12 @@ function formatUserName(array $user): string
         }
     }
 
-    $separatedName = trim(implode(" ", $parts));
-
-    if ($separatedName !== "") {
-        return $separatedName;
-    }
-
-    return trim((string)($user["full_name"] ?? ""));
+    return trim(implode(" ", $parts));
 }
 
 /**
- * Returns a safe SQL expression for displaying a tbl_users name during the
- * compatibility migration. New separated fields are preferred; the legacy
- * full_name column is only used when an older account has not been migrated.
- *
- * $alias must be a hard-coded SQL table alias, never user input.
+ * SQL expression for a tbl_users display name using only the canonical
+ * separated name columns. $alias must be hard-coded, never user input.
  */
 function userNameSqlExpression(string $alias = ""): string
 {
@@ -36,13 +30,9 @@ function userNameSqlExpression(string $alias = ""): string
 
     $prefix = $alias !== "" ? $alias . "." : "";
 
-    return "COALESCE(" .
-        "NULLIF(TRIM(CONCAT_WS(' ', " .
-            "NULLIF(TRIM({$prefix}first_name), ''), " .
-            "NULLIF(TRIM({$prefix}middle_name), ''), " .
-            "NULLIF(TRIM({$prefix}last_name), '')" .
-        ")), ''), " .
-        "NULLIF(TRIM({$prefix}full_name), ''), " .
-        "''" .
-    ")";
+    return "TRIM(CONCAT_WS(' ', " .
+        "NULLIF(TRIM({$prefix}first_name), ''), " .
+        "NULLIF(TRIM({$prefix}middle_name), ''), " .
+        "NULLIF(TRIM({$prefix}last_name), '')" .
+    "))";
 }

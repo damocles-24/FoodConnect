@@ -122,7 +122,7 @@ $sql = "
         r.business_status,
         r.owner_id,
 
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))), ''), NULLIF(TRIM(owner.full_name), ''), '') AS owner_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))) AS owner_name,
         owner.email AS owner_email,
         owner.contact_number AS owner_contact,
         owner.status AS owner_status,
@@ -180,7 +180,7 @@ if ($search !== "") {
         WHERE
             r.name LIKE ?
             OR r.address LIKE ?
-            OR COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))), ''), NULLIF(TRIM(owner.full_name), ''), '') LIKE ?
+            OR TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))) LIKE ?
             OR owner.email LIKE ?
     ";
 }

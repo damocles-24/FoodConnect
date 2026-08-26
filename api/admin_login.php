@@ -301,7 +301,6 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         email,
         password_hash,
         status,
@@ -428,7 +427,7 @@ $_SESSION["restaurant_id"] =
 
 $displayName = formatUserName($user);
 
-$_SESSION["full_name"] =
+$_SESSION["display_name"] =
     $displayName;
 
 $_SESSION["admin_authenticated_at"] =
@@ -474,7 +473,7 @@ respond_json([
         "last_name" =>
             (string)($user["last_name"] ?? ""),
 
-        "full_name" =>
+        "display_name" =>
             $displayName,
 
         "email" =>

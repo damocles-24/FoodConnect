@@ -51,7 +51,6 @@ $userSql = "
         first_name,
         middle_name,
         last_name,
-        full_name,
         role,
         status
     FROM tbl_users
@@ -327,7 +326,7 @@ respond_json([
         "first_name" => $user["first_name"] ?? "",
         "middle_name" => $user["middle_name"] ?? "",
         "last_name" => $user["last_name"] ?? "",
-        "full_name" => formatUserName($user)
+        "display_name" => formatUserName($user)
     ],
     "deliveries" => array_values($deliveries)
 ]);

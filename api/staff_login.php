@@ -44,7 +44,7 @@ rate_limit_enforce(
 );
 
 $stmt = $conn->prepare("
-  SELECT user_id, restaurant_id, role, first_name, middle_name, last_name, full_name, email, password_hash, status, is_verified
+  SELECT user_id, restaurant_id, role, first_name, middle_name, last_name, email, password_hash, status, is_verified
   FROM tbl_users
   WHERE email = ?
   LIMIT 1
@@ -107,7 +107,7 @@ $displayName = formatUserName($user);
 $_SESSION["user_id"] = (int)$user["user_id"];
 $_SESSION["role"] = $user["role"];
 $_SESSION["restaurant_id"] = $user["restaurant_id"];
-$_SESSION["full_name"] = $displayName;
+$_SESSION["display_name"] = $displayName;
 
 respond_json([
   "success" => true,
@@ -119,7 +119,7 @@ respond_json([
     "first_name" => (string)($user["first_name"] ?? ""),
     "middle_name" => (string)($user["middle_name"] ?? ""),
     "last_name" => (string)($user["last_name"] ?? ""),
-    "full_name" => $displayName,
+    "display_name" => $displayName,
     "email" => $user["email"]
   ]
 ]);

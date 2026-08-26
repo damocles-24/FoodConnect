@@ -51,7 +51,6 @@ $sql = "
     u.first_name,
     u.middle_name,
     u.last_name,
-    u.full_name,
     u.email,
     u.contact_number,
     u.address,
@@ -77,14 +76,13 @@ $sql = "
     u.first_name,
     u.middle_name,
     u.last_name,
-    u.full_name,
     u.email,
     u.contact_number,
     u.address
 
     HAVING active_delivery_count = 0
 
-    ORDER BY COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))), ''), NULLIF(TRIM(u.full_name), ''), '') ASC
+    ORDER BY TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))) ASC
 ";
 
 $stmt = $conn->prepare($sql);
@@ -110,7 +108,7 @@ while ($row = $result->fetch_assoc()) {
         "first_name" => $row["first_name"] ?? "",
         "middle_name" => $row["middle_name"] ?? "",
         "last_name" => $row["last_name"] ?? "",
-        "full_name" => formatUserName($row),
+        "display_name" => formatUserName($row),
         "email" => $row["email"],
         "contact_number" => $row["contact_number"],
         "address" => $row["address"],

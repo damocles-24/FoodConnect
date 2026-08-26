@@ -9,7 +9,7 @@ function formatUserName(user) {
     .map((part) => String(part || "").trim())
     .filter(Boolean)
     .join(" ")
-    || String(user?.full_name || user?.fullname || user?.name || "").trim();
+    || String(user?.display_name || user?.name || "").trim();
 }
 let activeProductMode = "menu";
 
@@ -2965,8 +2965,8 @@ Array.isArray(data.users)
     last_name:
       u.last_name || "",
 
-    full_name:
-      u.full_name || "",
+    display_name:
+      u.display_name || "",
 
     email:
       u.email,
@@ -9029,21 +9029,6 @@ let middleName =
 
 let lastName =
   user.last_name || "";
-
-/*
-  Legacy accounts may only have full_name. Do not guess how to split
-  multi-part names; require the owner to review the fields once.
-*/
-if (
-  !firstName &&
-  !middleName &&
-  !lastName &&
-  user.full_name
-) {
-  alert(
-    `This is a legacy staff name: “${user.full_name}”. Please enter the First, Middle, and Last Name fields carefully before saving. FoodConnect will not split the name automatically.`
-  );
-}
 
 document.getElementById(
   "editUserFirstName"

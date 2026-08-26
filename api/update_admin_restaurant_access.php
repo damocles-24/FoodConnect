@@ -125,7 +125,7 @@ if (
 $adminStmt = $conn->prepare("
     SELECT
         user_id,
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
         role,
         status,
         is_verified
@@ -264,7 +264,7 @@ $restaurantStmt = $conn->prepare("
         r.owner_id,
         r.business_status,
 
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))), ''), NULLIF(TRIM(owner.full_name), ''), '') AS owner_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))) AS owner_name,
         owner.email AS owner_email,
         owner.status AS owner_status
 
@@ -511,7 +511,7 @@ try {
             "Restaurant Deactivated";
 
         $description =
-            $admin["full_name"] .
+            $admin["display_name"] .
             " deactivated " .
             $restaurant["name"] .
             " from FoodConnect. The restaurant was hidden from customers and " .
@@ -611,7 +611,7 @@ try {
             "Restaurant Reactivated";
 
         $description =
-            $admin["full_name"] .
+            $admin["display_name"] .
             " restored FoodConnect access for " .
             $restaurant["name"] .
             ". The owner account was reactivated. Staff remain inactive until reviewed.";

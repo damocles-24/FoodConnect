@@ -97,13 +97,13 @@ try {
             req.reviewed_at,
             req.created_at,
             req.updated_at,
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))), ''), NULLIF(TRIM(owner.full_name), ''), '') AS owner_name,
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(owner.first_name), ''), NULLIF(TRIM(owner.middle_name), ''), NULLIF(TRIM(owner.last_name), ''))) AS owner_name,
             owner.email AS owner_email,
             owner.contact_number AS owner_contact_number,
             owner.status AS owner_status,
             owner.is_verified AS owner_is_verified,
             COALESCE(r.name, pa.restaurant_name, '') AS actual_restaurant_name,
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(reviewer.first_name), ''), NULLIF(TRIM(reviewer.middle_name), ''), NULLIF(TRIM(reviewer.last_name), ''))), ''), NULLIF(TRIM(reviewer.full_name), ''), '') AS reviewer_name
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(reviewer.first_name), ''), NULLIF(TRIM(reviewer.middle_name), ''), NULLIF(TRIM(reviewer.last_name), ''))) AS reviewer_name
         FROM tbl_owner_password_reset_requests AS req
         INNER JOIN tbl_users AS owner
             ON owner.user_id = req.owner_id
