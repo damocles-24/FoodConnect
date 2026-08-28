@@ -3272,3 +3272,206 @@ html[data-theme="light"] body[data-fc-page="customer-cart"] .clear-cart-button:d
 }
 
 /* FOODCONNECT CART DARK MICRO POLISH END */
+
+
+/* =========================================================
+   ACTIVE RESTAURANT CART IDENTITY
+========================================================= */
+.cart-restaurant-summary {
+    padding: 16px 22px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+
+    background: var(--fc-surface);
+    border-bottom: 1px solid var(--fc-border);
+}
+
+.cart-restaurant-summary[hidden] {
+    display: none !important;
+}
+
+.cart-restaurant-logo-wrap {
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+
+    background: var(--fc-orange-soft);
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 13px;
+}
+
+.cart-restaurant-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-restaurant-fallback {
+    color: var(--fc-orange);
+    font-size: 18px;
+}
+
+.cart-restaurant-copy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.cart-restaurant-eyebrow,
+.checkout-summary-eyebrow {
+    color: var(--fc-orange-dark);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.cart-restaurant-copy strong {
+    overflow: hidden;
+    color: var(--fc-heading);
+    font-size: 14px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cart-restaurant-copy > span:last-child {
+    color: var(--fc-muted);
+    font-size: 10px;
+}
+
+.cart-restaurant-link {
+    min-height: 36px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    color: var(--fc-orange-dark);
+    background: var(--fc-orange-soft);
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 10px;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   CHECKOUT ORDER SUMMARY
+========================================================= */
+.checkout-summary-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkout-summary-heading .checkout-reminder-icon {
+    margin-bottom: 0;
+    flex: 0 0 48px;
+}
+
+.checkout-summary-items {
+    max-height: 230px;
+    margin-top: 18px;
+
+    display: grid;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.checkout-summary-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    color: var(--fc-muted);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.checkout-summary-item span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.checkout-summary-item strong {
+    flex-shrink: 0;
+    color: var(--fc-heading);
+    font-size: 10px;
+}
+
+.checkout-summary-empty {
+    color: var(--fc-muted);
+    font-size: 10px;
+}
+
+.checkout-summary-totals {
+    margin-top: 17px;
+    padding-top: 14px;
+
+    display: grid;
+    gap: 9px;
+
+    border-top: 1px solid var(--fc-border);
+}
+
+.checkout-summary-totals > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    color: var(--fc-muted);
+    font-size: 10px;
+}
+
+.checkout-summary-totals strong {
+    color: var(--fc-heading);
+}
+
+.checkout-summary-grand-total {
+    padding-top: 9px;
+    border-top: 1px dashed var(--fc-border);
+}
+
+.checkout-summary-grand-total strong {
+    color: var(--fc-orange-dark);
+    font-size: 14px;
+}
+
+.checkout-summary-divider {
+    height: 1px;
+    margin: 20px 0;
+    background: var(--fc-border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-restaurant-summary {
+    background: #181b20 !important;
+    border-color: #30343b !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .cart-restaurant-logo-wrap {
+    background: #2b1c12;
+    border-color: #5d3821;
+}
+
+@media (max-width: 650px) {
+    .cart-restaurant-summary {
+        grid-template-columns: auto minmax(0, 1fr);
+        padding: 14px;
+    }
+
+    .cart-restaurant-link {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}

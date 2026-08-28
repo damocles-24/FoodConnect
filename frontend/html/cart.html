@@ -204,6 +204,53 @@
 
         </div>
 
+        <section
+            id="cartRestaurantSummary"
+            class="cart-restaurant-summary"
+            aria-label="Restaurant for this cart"
+            hidden
+        >
+            <div class="cart-restaurant-logo-wrap">
+                <img
+                    id="cartRestaurantLogo"
+                    class="cart-restaurant-logo"
+                    alt=""
+                    hidden
+                >
+
+                <span
+                    id="cartRestaurantFallback"
+                    class="cart-restaurant-fallback"
+                    aria-hidden="true"
+                >
+                    <i class="fa-solid fa-store"></i>
+                </span>
+            </div>
+
+            <div class="cart-restaurant-copy">
+                <span class="cart-restaurant-eyebrow">
+                    Ordering From
+                </span>
+
+                <strong id="cartRestaurantName">
+                    Restaurant
+                </strong>
+
+                <span id="cartRestaurantItemCount">
+                    0 items in your cart
+                </span>
+            </div>
+
+            <a
+                id="cartRestaurantLink"
+                class="cart-restaurant-link"
+                href="index.html#restaurants"
+            >
+                View Restaurant
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+        </section>
+
         <div
             id="cartItems"
             class="cart-items"
@@ -561,9 +608,45 @@
 
             <aside class="checkout-reminder-card">
 
-                <span class="checkout-reminder-icon">
-                    <i class="fa-solid fa-circle-check"></i>
-                </span>
+                <div class="checkout-summary-heading">
+                    <span class="checkout-reminder-icon">
+                        <i class="fa-solid fa-receipt"></i>
+                    </span>
+
+                    <div>
+                        <span class="checkout-summary-eyebrow">
+                            Order Summary
+                        </span>
+
+                        <h3 id="checkoutRestaurantName">
+                            Restaurant
+                        </h3>
+                    </div>
+                </div>
+
+                <div
+                    id="checkoutSummaryItems"
+                    class="checkout-summary-items"
+                ></div>
+
+                <div class="checkout-summary-totals">
+                    <div>
+                        <span>Subtotal</span>
+                        <strong id="checkoutSummarySubtotal">₱0.00</strong>
+                    </div>
+
+                    <div>
+                        <span>Delivery Fee</span>
+                        <strong id="checkoutSummaryDeliveryFee">₱0.00</strong>
+                    </div>
+
+                    <div class="checkout-summary-grand-total">
+                        <span>Total</span>
+                        <strong id="checkoutSummaryTotal">₱0.00</strong>
+                    </div>
+                </div>
+
+                <div class="checkout-summary-divider"></div>
 
                 <h3>
                     Before placing your order

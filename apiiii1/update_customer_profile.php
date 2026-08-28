@@ -118,7 +118,6 @@ if ($duplicate) {
 $stmt = $conn->prepare("
    UPDATE tbl_users
 SET
-    full_name = ?,
     first_name = ?,
     middle_name = ?,
     last_name = ?,
@@ -139,8 +138,7 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "sssssssi",
-    $fullName,
+    "ssssssi",
     $firstName,
     $middleName,
     $lastName,
@@ -161,7 +159,7 @@ if (!$stmt->execute()) {
 
 $stmt->close();
 
-$_SESSION["full_name"] = $fullName;
+$_SESSION["display_name"] = $fullName;
 $_SESSION["first_name"] = $firstName;
 $_SESSION["middle_name"] = $middleName;
 $_SESSION["last_name"] = $lastName;

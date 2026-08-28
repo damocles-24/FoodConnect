@@ -578,7 +578,6 @@ try {
             first_name,
             middle_name,
             last_name,
-            full_name,
             email,
             contact_number,
             address,
@@ -590,7 +589,6 @@ try {
         )
         VALUES (
             NULL,
-            ?,
             ?,
             ?,
             ?,
@@ -613,12 +611,11 @@ try {
     }
 
     $insertStmt->bind_param(
-        "ssssssss",
+        "sssssss",
         $role,
         $firstName,
         $middleName,
         $lastName,
-        $fullName,
         $email,
         $contactNumber,
         $passwordHash
@@ -751,7 +748,7 @@ respond_json([
         "last_name" =>
             $lastName,
 
-        "full_name" =>
+        "display_name" =>
             $fullName,
 
         "email" =>

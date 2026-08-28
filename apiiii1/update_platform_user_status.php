@@ -127,7 +127,7 @@ $adminStmt = $conn->prepare("
         user_id,
         restaurant_id,
         role,
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
         status,
         is_verified
 
@@ -279,7 +279,7 @@ $userStmt = $conn->prepare("
         user_id,
         restaurant_id,
         role,
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
         email,
         status,
         is_verified
@@ -489,9 +489,9 @@ try {
             : "Platform User Deactivated";
 
     $description =
-        $admin["full_name"] .
+        $admin["display_name"] .
         " changed " .
-        $targetUser["full_name"] .
+        $targetUser["display_name"] .
         " (" .
         $targetUser["email"] .
         ", " .
@@ -574,9 +574,9 @@ respond_json([
 
     "message" =>
         $status === 1
-            ? $targetUser["full_name"] .
+            ? $targetUser["display_name"] .
               " was activated successfully."
-            : $targetUser["full_name"] .
+            : $targetUser["display_name"] .
               " was deactivated successfully.",
 
     "user_id" =>

@@ -282,7 +282,7 @@ if ($search !== "") {
 
     $whereConditions[] = "
         (
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))), ''), NULLIF(TRIM(u.full_name), ''), '') LIKE ?
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))) LIKE ?
 
             OR u.email LIKE ?
 
@@ -334,7 +334,6 @@ $usersSql = "
         u.first_name,
         u.middle_name,
         u.last_name,
-        u.full_name,
         u.email,
         u.contact_number,
         u.address,
@@ -469,7 +468,7 @@ while (
 "last_name" =>
     (string) ($row["last_name"] ?? ""),
 
-"full_name" =>
+"display_name" =>
     formatUserName($row),
 
         "email" =>

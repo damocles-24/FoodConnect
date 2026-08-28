@@ -48,6 +48,7 @@ let cartPricing = {
  * full reload to restore the correct cart.
  */
 let currentCartItems = [];
+let currentCartRestaurant = null;
 let currentCustomerTab = "cart";
 
 /*
@@ -222,6 +223,252 @@ function formatPrice(value) {
     return `₱${Number.isFinite(amount)
         ? amount.toFixed(2)
         : "0.00"}`;
+}
+
+
+function resolveRestaurantLogoUrl(value) {
+    const path =
+        String(value || "").trim();
+
+    if (!path) {
+        return "";
+    }
+
+    if (
+        /^https?:\/\//i.test(path) ||
+        path.startsWith("/FoodConnect/")
+    ) {
+        return path;
+    }
+
+    return (
+        "/FoodConnect/" +
+        path.replace(/^\/+/, "")
+    );
+}
+
+function hideCartRestaurantSummary() {
+    const summary =
+        document.getElementById(
+            "cartRestaurantSummary"
+        );
+
+    if (summary) {
+        summary.hidden = true;
+    }
+}
+
+function renderCartRestaurantSummary(
+    restaurant,
+    totalItems = 0
+) {
+    const summary =
+        document.getElementById(
+            "cartRestaurantSummary"
+        );
+
+    if (!summary) {
+        return;
+    }
+
+    const restaurantId =
+        Number(
+            restaurant?.restaurant_id ||
+            0
+        );
+
+    const restaurantName =
+        String(
+            restaurant?.name ||
+            "Restaurant"
+        ).trim();
+
+    if (restaurantId <= 0) {
+        summary.hidden = true;
+        return;
+    }
+
+    const nameElement =
+        document.getElementById(
+            "cartRestaurantName"
+        );
+
+    const countElement =
+        document.getElementById(
+            "cartRestaurantItemCount"
+        );
+
+    const logoElement =
+        document.getElementById(
+            "cartRestaurantLogo"
+        );
+
+    const fallbackElement =
+        document.getElementById(
+            "cartRestaurantFallback"
+        );
+
+    const linkElement =
+        document.getElementById(
+            "cartRestaurantLink"
+        );
+
+    if (nameElement) {
+        nameElement.textContent =
+            restaurantName;
+    }
+
+    if (countElement) {
+        const count =
+            Math.max(
+                0,
+                Number(totalItems) || 0
+            );
+
+        countElement.textContent =
+            `${count} item${
+                count === 1 ? "" : "s"
+            } in your cart`;
+    }
+
+    const logoUrl =
+        resolveRestaurantLogoUrl(
+            restaurant?.logo_path
+        );
+
+    if (logoElement) {
+        logoElement.onerror = () => {
+            logoElement.hidden = true;
+
+            if (fallbackElement) {
+                fallbackElement.hidden = false;
+            }
+        };
+
+        if (logoUrl) {
+            logoElement.src = logoUrl;
+            logoElement.alt =
+                `${restaurantName} logo`;
+            logoElement.hidden = false;
+
+            if (fallbackElement) {
+                fallbackElement.hidden = true;
+            }
+        } else {
+            logoElement.removeAttribute("src");
+            logoElement.hidden = true;
+
+            if (fallbackElement) {
+                fallbackElement.hidden = false;
+            }
+        }
+    }
+
+    if (linkElement) {
+        linkElement.href =
+            `restaurant.html?restaurant_id=${restaurantId}`;
+    }
+
+    summary.hidden = false;
+}
+
+function renderCheckoutSummary() {
+    const restaurantNameElement =
+        document.getElementById(
+            "checkoutRestaurantName"
+        );
+
+    const itemsElement =
+        document.getElementById(
+            "checkoutSummaryItems"
+        );
+
+    const subtotalElement =
+        document.getElementById(
+            "checkoutSummarySubtotal"
+        );
+
+    const deliveryFeeElement =
+        document.getElementById(
+            "checkoutSummaryDeliveryFee"
+        );
+
+    const totalElement =
+        document.getElementById(
+            "checkoutSummaryTotal"
+        );
+
+    if (restaurantNameElement) {
+        restaurantNameElement.textContent =
+            currentCartRestaurant?.name ||
+            "Restaurant";
+    }
+
+    if (itemsElement) {
+        itemsElement.innerHTML =
+            currentCartItems.length > 0
+                ? currentCartItems
+                    .map((item) => {
+                        const quantity =
+                            Math.max(
+                                1,
+                                Number(item.quantity) || 1
+                            );
+
+                        return `
+                            <div class="checkout-summary-item">
+                                <span>
+                                    ${quantity}×
+                                    ${escapeHtml(
+                                        item.product_name ||
+                                        "Item"
+                                    )}
+                                </span>
+
+                                <strong>
+                                    ${formatPrice(
+                                        item.subtotal || 0
+                                    )}
+                                </strong>
+                            </div>
+                        `;
+                    })
+                    .join("")
+                : `
+                    <p class="checkout-summary-empty">
+                        Your cart is empty.
+                    </p>
+                `;
+    }
+
+    const subtotal =
+        Number(cartPricing.subtotal || 0);
+
+    const deliveryFee =
+        cartPricing.selectedOrderType ===
+        "delivery"
+            ? Number(
+                cartPricing.deliveryFee || 0
+            )
+            : 0;
+
+    const total =
+        subtotal + deliveryFee;
+
+    if (subtotalElement) {
+        subtotalElement.textContent =
+            formatPrice(subtotal);
+    }
+
+    if (deliveryFeeElement) {
+        deliveryFeeElement.textContent =
+            formatPrice(deliveryFee);
+    }
+
+    if (totalElement) {
+        totalElement.textContent =
+            formatPrice(total);
+    }
 }
 
 async function readJsonResponse(response) {
@@ -429,6 +676,22 @@ if (promotionSavingsElement) {
     }
 
     updateCartBadge(totalItems);
+
+    if (
+        currentCartRestaurant &&
+        Number(totalItems || 0) > 0
+    ) {
+        renderCartRestaurantSummary(
+            currentCartRestaurant,
+            totalItems
+        );
+    } else if (
+        Number(totalItems || 0) <= 0
+    ) {
+        hideCartRestaurantSummary();
+    }
+
+    renderCheckoutSummary();
 }
 
 function resetCartPricing() {
@@ -701,6 +964,9 @@ async function loadCart() {
 
         if (!response.ok || !data.success) {
             currentCartItems = [];
+            currentCartRestaurant = null;
+            hideCartRestaurantSummary();
+            renderCheckoutSummary();
 
             renderLoginRequired(
                 data.message ||
@@ -720,6 +986,9 @@ async function loadCart() {
             data.items.length === 0
         ) {
             currentCartItems = [];
+            currentCartRestaurant = null;
+            hideCartRestaurantSummary();
+            renderCheckoutSummary();
             renderEmptyCart();
 
             if (checkoutSection) {
@@ -734,6 +1003,30 @@ async function loadCart() {
             data.items.map(item => ({
                 ...item
             }));
+
+        currentCartRestaurant =
+            data.restaurant ||
+            (
+                data.restaurant_id
+                    ? {
+                        restaurant_id:
+                            Number(
+                                data.restaurant_id
+                            ),
+                        name:
+                            data.restaurant_name ||
+                            "Restaurant",
+                        logo_path:
+                            data.restaurant_logo ||
+                            ""
+                    }
+                    : null
+            );
+
+        renderCartRestaurantSummary(
+            currentCartRestaurant,
+            data.total_items
+        );
 
         cartItemsContainer.innerHTML =
             currentCartItems
@@ -789,6 +1082,9 @@ if (checkoutSection) {
             error
         );
 
+        currentCartRestaurant = null;
+        hideCartRestaurantSummary();
+        renderCheckoutSummary();
         renderLoadError();
 
         showCartNotice(
@@ -1411,6 +1707,9 @@ function applyLocalRemove(cartId) {
         currentCartItems.length ===
         0
     ) {
+        currentCartRestaurant = null;
+        hideCartRestaurantSummary();
+        renderCheckoutSummary();
         renderEmptyCart();
 
         const checkoutSection =

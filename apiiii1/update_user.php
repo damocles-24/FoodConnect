@@ -189,7 +189,6 @@ $stmt = $conn->prepare("
         first_name = ?,
         middle_name = ?,
         last_name = ?,
-        full_name = ?,
         email = ?,
         contact_number = ?,
         address = ?,
@@ -207,11 +206,10 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "ssssssssiii",
+    "sssssssiii",
     $firstName,
     $middleName,
     $lastName,
-    $fullName,
     $email,
     $contactNumber,
     $address,
@@ -249,7 +247,7 @@ update_user_respond([
         "first_name" => $firstName,
         "middle_name" => $middleName,
         "last_name" => $lastName,
-        "full_name" => $fullName,
+        "display_name" => $fullName,
         "email" => $email,
         "contact_number" => $contactNumber,
         "address" => $address,

@@ -273,8 +273,7 @@ $accountStmt =
             first_name,
             middle_name,
             last_name,
-            full_name,
-            email,
+                email,
             password_hash,
             must_change_password,
             status,
@@ -437,7 +436,7 @@ if ((int)($user["must_change_password"] ?? 0) === 1) {
         $_SESSION["user_id"],
         $_SESSION["role"],
         $_SESSION["restaurant_id"],
-        $_SESSION["full_name"],
+        $_SESSION["display_name"],
         $_SESSION["logged_in"],
         $_SESSION["authenticated_at"],
         $_SESSION["owner_email_verified_at"],
@@ -452,7 +451,7 @@ if ((int)($user["must_change_password"] ?? 0) === 1) {
     $_SESSION["owner_password_change_restaurant_id"] =
         $restaurantId ?? 0;
 
-    $_SESSION["owner_password_change_full_name"] =
+    $_SESSION["owner_password_change_display_name"] =
         $displayName;
 
     $_SESSION["owner_password_change_email"] =
@@ -478,7 +477,7 @@ if ((int)($user["must_change_password"] ?? 0) === 1) {
                 "first_name" => (string)($user["first_name"] ?? ""),
                 "middle_name" => (string)($user["middle_name"] ?? ""),
                 "last_name" => (string)($user["last_name"] ?? ""),
-                "full_name" => $displayName,
+                "display_name" => $displayName,
                 "email" => (string)$user["email"]
             ]
         ]
@@ -951,7 +950,7 @@ if ($trustedCookie !== "") {
                         ] =
                             $restaurantId;
 
-                        $_SESSION["full_name"] =
+                        $_SESSION["display_name"] =
                             $displayName;
 
                         $_SESSION["logged_in"] =
@@ -1018,7 +1017,7 @@ if ($trustedCookie !== "") {
                                     "last_name" =>
                                         (string)($user["last_name"] ?? ""),
 
-                                    "full_name" =>
+                                    "display_name" =>
                                         $displayName,
 
                                     "email" =>
@@ -1138,7 +1137,7 @@ unset(
     $_SESSION["user_id"],
     $_SESSION["role"],
     $_SESSION["restaurant_id"],
-    $_SESSION["full_name"],
+    $_SESSION["display_name"],
     $_SESSION["logged_in"],
     $_SESSION["authenticated_at"],
     $_SESSION["owner_email_verified_at"],
@@ -1161,7 +1160,7 @@ $_SESSION["pending_owner_login"] = [
     "last_name" =>
         (string)($user["last_name"] ?? ""),
 
-    "full_name" =>
+    "display_name" =>
         $displayName,
 
     "email" =>

@@ -325,7 +325,6 @@ try {
                 first_name,
                 middle_name,
                 last_name,
-                full_name,
                 email,
                 contact_number,
                 password_hash,
@@ -337,7 +336,6 @@ try {
 
             VALUES (
                 NULL,
-                ?,
                 ?,
                 ?,
                 ?,
@@ -359,12 +357,11 @@ try {
     }
 
     $userStmt->bind_param(
-        "ssssssssss",
+        "sssssssss",
         $role,
         $firstName,
         $middleName,
         $lastName,
-        $fullName,
         $email,
         $contactNumber,
         $passwordHash,

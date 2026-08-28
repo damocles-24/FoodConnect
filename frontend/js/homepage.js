@@ -23,6 +23,73 @@ window.API =
   window.API ||
   "/FoodConnect/api";
 
+
+async function updateHomepageCartBadge() {
+  const badge =
+    document.getElementById(
+      "homepageCartBadge"
+    );
+
+  if (!badge) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${window.API}/cart_get.php`,
+      {
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      badge.hidden = true;
+      badge.textContent = "0";
+      return;
+    }
+
+    const data = await response.json();
+
+    const totalItems =
+      data.success
+        ? Math.max(
+            0,
+            Number(data.total_items) || 0
+          )
+        : 0;
+
+    badge.textContent =
+      totalItems > 99
+        ? "99+"
+        : String(totalItems);
+
+    badge.hidden =
+      totalItems <= 0;
+
+    const cartButton =
+      badge.closest(".cart-link");
+
+    if (cartButton) {
+      cartButton.setAttribute(
+        "aria-label",
+        totalItems > 0
+          ? `Open cart, ${totalItems} item${
+              totalItems === 1 ? "" : "s"
+            }`
+          : "Open cart"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Homepage cart badge error:",
+      error
+    );
+
+    badge.hidden = true;
+  }
+}
+
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
@@ -117,6 +184,8 @@ document.addEventListener(
       document.getElementById(
         "staffLoginBtn"
       );
+
+    updateHomepageCartBadge();
 
     const staffForgotPasswordBtn =
       document.getElementById(
@@ -4798,3 +4867,18 @@ document.querySelectorAll(".toggle-password").forEach((button) => {
     button.setAttribute("aria-label", show ? "Hide password" : "Show password");
   });
 });
+
+
+window.addEventListener(
+  "pageshow",
+  () => {
+    updateHomepageCartBadge();
+  }
+);
+
+window.addEventListener(
+  "focus",
+  () => {
+    updateHomepageCartBadge();
+  }
+);

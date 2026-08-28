@@ -56,7 +56,6 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         status,
         verification_expires_at
     FROM tbl_users
@@ -211,7 +210,7 @@ $_SESSION["restaurant_id"] =
         ? (int) $user["restaurant_id"]
         : null;
 
-$_SESSION["full_name"] =
+$_SESSION["display_name"] =
     formatUserName($user);
 
 /* =========================================================

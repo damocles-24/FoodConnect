@@ -24,7 +24,7 @@ function clear_owner_password_change_session(): void
     unset(
         $_SESSION["owner_password_change_user_id"],
         $_SESSION["owner_password_change_restaurant_id"],
-        $_SESSION["owner_password_change_full_name"],
+        $_SESSION["owner_password_change_display_name"],
         $_SESSION["owner_password_change_email"],
         $_SESSION["owner_password_change_started_at"]
     );
@@ -121,7 +121,7 @@ try {
             user_id,
             restaurant_id,
             role,
-            {$ownerNameSql} AS full_name,
+            {$ownerNameSql} AS display_name,
             email,
             password_hash,
             status,
@@ -219,7 +219,7 @@ try {
     $resolvedRestaurantId = (int)($owner["restaurant_id"] ?? $restaurantId);
 
     if ($resolvedRestaurantId > 0) {
-        $description = (string)$owner["full_name"] .
+        $description = (string)$owner["display_name"] .
             " created a new private password after an administrator-assisted account recovery.";
 
         $logStmt = $conn->prepare("
@@ -250,7 +250,7 @@ try {
         $_SESSION["user_id"],
         $_SESSION["role"],
         $_SESSION["restaurant_id"],
-        $_SESSION["full_name"],
+        $_SESSION["display_name"],
         $_SESSION["logged_in"],
         $_SESSION["authenticated_at"],
         $_SESSION["owner_email_verified_at"],

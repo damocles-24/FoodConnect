@@ -2687,19 +2687,30 @@ function formatMoney(value) {
 function formatDateTime(value) {
   if (!value) return "N/A";
 
-  const date = new Date(value);
+  const normalizedValue =
+    String(value)
+      .trim()
+      .replace(" ", "T");
+
+  const date =
+    new Date(normalizedValue);
 
   if (Number.isNaN(date.getTime())) {
     return String(value);
   }
 
-  return date.toLocaleString("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  return date.toLocaleString(
+    "en-PH",
+    {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    }
+  );
 }
 
 async function readJsonResponse(response) {

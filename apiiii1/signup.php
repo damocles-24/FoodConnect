@@ -114,7 +114,6 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         email,
         password_hash,
         status,
@@ -122,7 +121,7 @@ $stmt = $conn->prepare("
         verification_token,
         verification_expires_at
     )
-    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+    VALUES (NULL, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
 ");
 
 if (!$stmt) {
@@ -131,12 +130,11 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "sssssssss",
+    "ssssssss",
     $role,
     $firstName,
     $middleName,
     $lastName,
-    $fullName,
     $email,
     $hash,
     $token,

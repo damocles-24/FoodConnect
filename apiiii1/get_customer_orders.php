@@ -190,7 +190,7 @@ try {
             da.updated_at
                 AS delivery_updated_at,
 
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(rider.first_name), ''), NULLIF(TRIM(rider.middle_name), ''), NULLIF(TRIM(rider.last_name), ''))), ''), NULLIF(TRIM(rider.full_name), ''), '')
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(rider.first_name), ''), NULLIF(TRIM(rider.middle_name), ''), NULLIF(TRIM(rider.last_name), '')))
                 AS rider_name,
             rider.contact_number
                 AS rider_contact_number

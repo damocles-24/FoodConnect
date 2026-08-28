@@ -3772,3 +3772,227 @@ html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-toast .popup {
 
 
 .restaurant-banner { width:100%; height:250px; object-fit:cover; border-radius:12px; display:block; }
+
+
+/* =========================================================
+   SINGLE-RESTAURANT CART SWITCH CONFIRMATION
+========================================================= */
+body.cart-switch-modal-open {
+  overflow: hidden;
+}
+
+.cart-restaurant-switch-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+}
+
+.cart-restaurant-switch-modal.show {
+  display: flex;
+}
+
+.cart-restaurant-switch-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, .62);
+  backdrop-filter: blur(3px);
+}
+
+.cart-restaurant-switch-dialog {
+  position: relative;
+  z-index: 1;
+
+  width: min(100%, 440px);
+  max-height: min(92vh, 620px);
+  overflow-y: auto;
+
+  padding: 26px;
+
+  background: #ffffff;
+  color: #182230;
+  border: 1px solid #e4e7ec;
+  border-radius: 20px;
+
+  box-shadow: 0 24px 70px rgba(16, 24, 40, .28);
+}
+
+.cart-restaurant-switch-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+
+  display: grid;
+  place-items: center;
+
+  color: #f47c1e;
+  background: #fff1e8;
+  border-radius: 14px;
+
+  font-size: 19px;
+}
+
+.cart-restaurant-switch-dialog h3 {
+  margin: 0;
+  color: inherit;
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+#cartRestaurantSwitchMessage {
+  margin-top: 8px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.cart-restaurant-current {
+  margin-top: 18px;
+  padding: 13px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+}
+
+.cart-restaurant-current-logo {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+
+  color: #f47c1e;
+  background: #fff1e8;
+  border: 1px solid #ffd3b3;
+  border-radius: 12px;
+}
+
+.cart-restaurant-current-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-restaurant-current > div:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cart-restaurant-current span,
+.cart-restaurant-current small {
+  color: #667085;
+  font-size: 10px;
+}
+
+.cart-restaurant-current strong {
+  overflow: hidden;
+  color: #182230;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cart-restaurant-switch-warning {
+  margin-top: 16px;
+  color: #475467;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.cart-restaurant-switch-actions {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 10px;
+}
+
+.cart-restaurant-switch-actions button {
+  min-height: 44px;
+  padding: 10px 13px;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cart-switch-cancel {
+  color: #344054;
+  background: #ffffff;
+  border-color: #d0d5dd !important;
+}
+
+.cart-switch-confirm {
+  color: #ffffff;
+  background: #f47c1e;
+  border-color: #f47c1e !important;
+}
+
+.cart-switch-confirm:hover {
+  background: #df6810;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-switch-dialog {
+  background: #181b20;
+  color: #f5f7fa;
+  border-color: #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] #cartRestaurantSwitchMessage,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-switch-warning,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-current span,
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-current small {
+  color: #98a2b3;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-current {
+  background: #111317;
+  border-color: #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-restaurant-current strong {
+  color: #f5f7fa;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant"] .cart-switch-cancel {
+  color: #f5f7fa;
+  background: #24282e;
+  border-color: #3a4048 !important;
+}
+
+@media (max-width: 520px) {
+  .cart-restaurant-switch-modal {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .cart-restaurant-switch-dialog {
+    width: 100%;
+    padding: 21px 18px;
+    border-radius: 18px;
+  }
+
+  .cart-restaurant-switch-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-switch-confirm {
+    order: -1;
+  }
+}

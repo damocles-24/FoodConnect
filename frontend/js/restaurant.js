@@ -950,6 +950,340 @@ if (
     }
   }
 
+
+  function resolveCartRestaurantLogo(value) {
+    const path =
+      String(value || "").trim();
+
+    if (!path) {
+      return "";
+    }
+
+    if (
+      /^https?:\/\//i.test(path) ||
+      path.startsWith("/FoodConnect/")
+    ) {
+      return path;
+    }
+
+    return (
+      "/FoodConnect/" +
+      path.replace(/^\/+/, "")
+    );
+  }
+
+  function getCurrentRestaurantDisplayName() {
+    return String(
+      document.getElementById(
+        "restaurantName"
+      )?.textContent ||
+      document.getElementById(
+        "heroRestaurantName"
+      )?.textContent ||
+      "this restaurant"
+    ).trim();
+  }
+
+  function ensureCartRestaurantSwitchModal() {
+    let modal =
+      document.getElementById(
+        "cartRestaurantSwitchModal"
+      );
+
+    if (modal) {
+      return modal;
+    }
+
+    modal =
+      document.createElement("div");
+
+    modal.id =
+      "cartRestaurantSwitchModal";
+
+    modal.className =
+      "cart-restaurant-switch-modal";
+
+    modal.innerHTML = `
+      <div
+        class="cart-restaurant-switch-backdrop"
+        data-cart-switch-cancel
+      ></div>
+
+      <section
+        class="cart-restaurant-switch-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cartRestaurantSwitchTitle"
+        aria-describedby="cartRestaurantSwitchMessage"
+      >
+        <div class="cart-restaurant-switch-icon">
+          <i class="fa-solid fa-basket-shopping"></i>
+        </div>
+
+        <h3 id="cartRestaurantSwitchTitle">
+          Your Cart Has Items From Another Restaurant
+        </h3>
+
+        <p id="cartRestaurantSwitchMessage">
+          Your current cart belongs to another restaurant.
+        </p>
+
+        <div class="cart-restaurant-current">
+          <div class="cart-restaurant-current-logo">
+            <img
+              id="cartSwitchRestaurantLogo"
+              alt=""
+              hidden
+            >
+
+            <span id="cartSwitchRestaurantFallback">
+              <i class="fa-solid fa-store"></i>
+            </span>
+          </div>
+
+          <div>
+            <span>Your current cart</span>
+            <strong id="cartSwitchRestaurantName">
+              Restaurant
+            </strong>
+            <small id="cartSwitchItemCount">
+              0 items in your cart
+            </small>
+          </div>
+        </div>
+
+        <p class="cart-restaurant-switch-warning">
+          You can only order from one restaurant at a time.
+          Starting a new order here will remove your current cart items.
+        </p>
+
+        <div class="cart-restaurant-switch-actions">
+          <button
+            type="button"
+            class="cart-switch-cancel"
+            data-cart-switch-cancel
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="cart-switch-confirm"
+            data-cart-switch-confirm
+          >
+            Start New Order
+          </button>
+        </div>
+      </section>
+    `;
+
+    document.body.appendChild(modal);
+
+    return modal;
+  }
+
+  function showCartRestaurantSwitchModal(
+    currentCart = {}
+  ) {
+    const modal =
+      ensureCartRestaurantSwitchModal();
+
+    const restaurantName =
+      String(
+        currentCart.restaurant_name ||
+        "Current Restaurant"
+      ).trim();
+
+    const totalItems =
+      Math.max(
+        0,
+        Number(
+          currentCart.total_items
+        ) || 0
+      );
+
+    const targetRestaurantName =
+      getCurrentRestaurantDisplayName();
+
+    const nameElement =
+      modal.querySelector(
+        "#cartSwitchRestaurantName"
+      );
+
+    const countElement =
+      modal.querySelector(
+        "#cartSwitchItemCount"
+      );
+
+    const messageElement =
+      modal.querySelector(
+        "#cartRestaurantSwitchMessage"
+      );
+
+    const logoElement =
+      modal.querySelector(
+        "#cartSwitchRestaurantLogo"
+      );
+
+    const fallbackElement =
+      modal.querySelector(
+        "#cartSwitchRestaurantFallback"
+      );
+
+    if (nameElement) {
+      nameElement.textContent =
+        restaurantName;
+    }
+
+    if (countElement) {
+      countElement.textContent =
+        `${totalItems} item${
+          totalItems === 1 ? "" : "s"
+        } in your cart`;
+    }
+
+    if (messageElement) {
+      messageElement.textContent =
+        `You are trying to order from ${targetRestaurantName}.`;
+    }
+
+    const logoUrl =
+      resolveCartRestaurantLogo(
+        currentCart.restaurant_logo
+      );
+
+    if (logoElement) {
+      logoElement.onerror = () => {
+        logoElement.hidden = true;
+
+        if (fallbackElement) {
+          fallbackElement.hidden = false;
+        }
+      };
+
+      if (logoUrl) {
+        logoElement.src = logoUrl;
+        logoElement.alt =
+          `${restaurantName} logo`;
+        logoElement.hidden = false;
+
+        if (fallbackElement) {
+          fallbackElement.hidden = true;
+        }
+      } else {
+        logoElement.removeAttribute("src");
+        logoElement.hidden = true;
+
+        if (fallbackElement) {
+          fallbackElement.hidden = false;
+        }
+      }
+    }
+
+    modal.classList.add("show");
+    document.body.classList.add(
+      "cart-switch-modal-open"
+    );
+
+    return new Promise((resolve) => {
+      let settled = false;
+
+      const finish = (result) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+
+        modal.classList.remove("show");
+        document.body.classList.remove(
+          "cart-switch-modal-open"
+        );
+
+        modal.removeEventListener(
+          "click",
+          handleClick
+        );
+
+        document.removeEventListener(
+          "keydown",
+          handleKeydown
+        );
+
+        resolve(result);
+      };
+
+      const handleClick = (event) => {
+        if (
+          event.target.closest(
+            "[data-cart-switch-confirm]"
+          )
+        ) {
+          finish(true);
+          return;
+        }
+
+        if (
+          event.target.closest(
+            "[data-cart-switch-cancel]"
+          )
+        ) {
+          finish(false);
+        }
+      };
+
+      const handleKeydown = (event) => {
+        if (event.key === "Escape") {
+          finish(false);
+        }
+      };
+
+      modal.addEventListener(
+        "click",
+        handleClick
+      );
+
+      document.addEventListener(
+        "keydown",
+        handleKeydown
+      );
+
+      modal.querySelector(
+        "[data-cart-switch-confirm]"
+      )?.focus();
+    });
+  }
+
+  async function clearCartForRestaurantSwitch() {
+    const response = await fetch(
+      `${API}/cart_clear.php`,
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
+
+    const rawText =
+      await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (error) {
+      throw new Error(
+        "Unable to start a new order right now. Please try again."
+      );
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to clear your current cart. Please try again."
+      );
+    }
+  }
+
   const menuFilters =
   document.getElementById(
     "menuFilters"
@@ -4062,6 +4396,79 @@ if (!restaurantAcceptingOrders) {
       throw new Error(
         "Unable to update your cart right now. Please try again."
       );
+    }
+
+    if (
+      response.status === 409 &&
+      data.error_code ===
+        "different_restaurant"
+    ) {
+      const shouldStartNewOrder =
+        await showCartRestaurantSwitchModal(
+          data.current_cart || {}
+        );
+
+      if (!shouldStartNewOrder) {
+        return false;
+      }
+
+      await clearCartForRestaurantSwitch();
+
+      const retryResponse = await fetch(
+        `${API}/cart_add.php`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            product_id:
+              safeProductId,
+            quantity:
+              safeQuantity,
+            addon_ids:
+              safeAddonIds,
+            combo_choice_ids:
+              safeComboChoiceIds
+          })
+        }
+      );
+
+      const retryRawText =
+        await retryResponse.text();
+
+      let retryData;
+
+      try {
+        retryData =
+          JSON.parse(retryRawText);
+      } catch (error) {
+        throw new Error(
+          "Your old cart was cleared, but the new item could not be added. Please try again."
+        );
+      }
+
+      if (
+        !retryResponse.ok ||
+        !retryData.success
+      ) {
+        throw new Error(
+          retryData.message ||
+          "Your old cart was cleared, but the new item could not be added. Please try again."
+        );
+      }
+
+      await updateCartBadge();
+
+      showCartSuccessToast(
+        `New order started from ${
+          getCurrentRestaurantDisplayName()
+        }.`
+      );
+
+      return true;
     }
 
     if (!response.ok || !data.success) {

@@ -683,13 +683,101 @@ $discount_savings = round(
         (int)$existingCart["restaurant_id"]
             !== $restaurant_id
     ) {
+        $currentRestaurantId =
+            (int)$existingCart["restaurant_id"];
+
+        $currentCartDetails = [
+            "restaurant_id" =>
+                $currentRestaurantId,
+            "restaurant_name" =>
+                "Current Restaurant",
+            "restaurant_logo" =>
+                null,
+            "total_items" => 0
+        ];
+
+        $currentCartStmt = $conn->prepare("
+            SELECT
+                r.name AS restaurant_name,
+                r.logo_path AS restaurant_logo,
+                COALESCE(SUM(c.quantity), 0) AS total_items
+
+            FROM tbl_cart c
+
+            INNER JOIN tbl_restaurants r
+                ON r.restaurant_id = c.restaurant_id
+
+            WHERE c.user_id = ?
+              AND c.restaurant_id = ?
+
+            GROUP BY
+                r.restaurant_id,
+                r.name,
+                r.logo_path
+
+            LIMIT 1
+        ");
+
+        if ($currentCartStmt) {
+            $currentCartStmt->bind_param(
+                "ii",
+                $user_id,
+                $currentRestaurantId
+            );
+
+            if ($currentCartStmt->execute()) {
+                $currentCartResult =
+                    $currentCartStmt->get_result();
+
+                $currentCartRow =
+                    $currentCartResult->fetch_assoc();
+
+                if ($currentCartRow) {
+                    $currentCartDetails[
+                        "restaurant_name"
+                    ] = trim(
+                        (string)(
+                            $currentCartRow[
+                                "restaurant_name"
+                            ] ??
+                            "Current Restaurant"
+                        )
+                    );
+
+                    $currentCartDetails[
+                        "restaurant_logo"
+                    ] = $currentCartRow[
+                        "restaurant_logo"
+                    ] ?? null;
+
+                    $currentCartDetails[
+                        "total_items"
+                    ] = max(
+                        0,
+                        (int)(
+                            $currentCartRow[
+                                "total_items"
+                            ] ?? 0
+                        )
+                    );
+                }
+            }
+
+            $currentCartStmt->close();
+        }
+
         rollback_and_respond(
             $conn,
             [
                 "success" => false,
+                "error_code" =>
+                    "different_restaurant",
                 "message" =>
-                    "Your cart contains items from another restaurant. " .
-                    "Clear your cart before ordering from this restaurant."
+                    "Your cart has items from another restaurant.",
+                "current_cart" =>
+                    $currentCartDetails,
+                "requested_restaurant_id" =>
+                    $restaurant_id
             ],
             409
         );

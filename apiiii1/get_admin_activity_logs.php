@@ -92,7 +92,7 @@ $sql = "
         al.created_at,
 
         COALESCE(
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(administrator.first_name), ''), NULLIF(TRIM(administrator.middle_name), ''), NULLIF(TRIM(administrator.last_name), ''))), ''), NULLIF(TRIM(administrator.full_name), ''), ''),
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(administrator.first_name), ''), NULLIF(TRIM(administrator.middle_name), ''), NULLIF(TRIM(administrator.last_name), ''))),
             'System Administrator'
         ) AS administrator_name,
 
@@ -129,7 +129,7 @@ if ($search !== "") {
         AND (
             al.action_title LIKE ?
             OR al.action_description LIKE ?
-            OR COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(administrator.first_name), ''), NULLIF(TRIM(administrator.middle_name), ''), NULLIF(TRIM(administrator.last_name), ''))), ''), NULLIF(TRIM(administrator.full_name), ''), '') LIKE ?
+            OR TRIM(CONCAT_WS(' ', NULLIF(TRIM(administrator.first_name), ''), NULLIF(TRIM(administrator.middle_name), ''), NULLIF(TRIM(administrator.last_name), ''))) LIKE ?
             OR administrator.email LIKE ?
             OR restaurant.name LIKE ?
             OR al.user_role LIKE ?

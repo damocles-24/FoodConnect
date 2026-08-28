@@ -169,7 +169,7 @@ if ($action_type === "receipt_print_request") {
     $staffName = "Cashier";
 
     $userStmt = $conn->prepare("
-        SELECT COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))), ''), NULLIF(TRIM(full_name), ''), '') AS full_name
+        SELECT TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name
         FROM tbl_users
         WHERE user_id = ?
           AND restaurant_id = ?
@@ -188,7 +188,7 @@ if ($action_type === "receipt_print_request") {
                 $userStmt->get_result()->fetch_assoc();
 
             $resolvedName = trim(
-                (string)($userRow["full_name"] ?? "")
+                (string)($userRow["display_name"] ?? "")
             );
 
             if ($resolvedName !== "") {

@@ -24,7 +24,6 @@ if ($userId <= 0 || $role !== "customer") {
 $stmt = $conn->prepare("
     SELECT
     user_id,
-    full_name,
     first_name,
     middle_name,
     last_name,
@@ -71,16 +70,13 @@ respond([
    "user" => [
     "user_id" => (int) $user["user_id"],
 
-    "full_name" => formatUserName($user),
+    "display_name" => formatUserName($user),
 
     "first_name" => (string) ($user["first_name"] ?? ""),
     "middle_name" => (string) ($user["middle_name"] ?? ""),
     "last_name" => (string) ($user["last_name"] ?? ""),
 
-    "needs_name_migration" =>
-        trim((string)($user["full_name"] ?? "")) !== "" &&
-        trim((string)($user["first_name"] ?? "")) === "" &&
-        trim((string)($user["last_name"] ?? "")) === "",
+    "needs_name_migration" => false,
 
     "email" => (string) $user["email"],
     "contact_number" => (string) ($user["contact_number"] ?? ""),

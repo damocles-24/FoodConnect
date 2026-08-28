@@ -4923,3 +4923,44 @@ input[type="password"]::-webkit-textfield-decoration-container {
     appearance: none;
     -webkit-appearance: none;
 }
+
+/* =========================================================
+   HOMEPAGE ACTIVE CART BADGE
+========================================================= */
+body[data-fc-page="customer-home"] .cart-link {
+  position: relative;
+}
+
+body[data-fc-page="customer-home"] .cart-link .cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+  background: #f47c1e;
+  border: 2px solid var(--surface, #ffffff);
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+
+  box-shadow: 0 4px 12px rgba(244, 124, 30, .28);
+  pointer-events: none;
+}
+
+body[data-fc-page="customer-home"] .cart-link .cart-badge[hidden] {
+  display: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-home"] .cart-link .cart-badge {
+  border-color: #181b20;
+}

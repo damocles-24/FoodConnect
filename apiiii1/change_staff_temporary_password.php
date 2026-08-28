@@ -23,7 +23,7 @@ function clear_staff_password_change_session() {
         $_SESSION["staff_password_change_user_id"],
         $_SESSION["staff_password_change_restaurant_id"],
         $_SESSION["staff_password_change_role"],
-        $_SESSION["staff_password_change_full_name"],
+        $_SESSION["staff_password_change_display_name"],
         $_SESSION["staff_password_change_started_at"]
     );
 }
@@ -87,7 +87,7 @@ try {
      */
     $staffNameSql = userNameSqlExpression();
 
-    $stmt = $conn->prepare("\n        SELECT\n            user_id,\n            restaurant_id,\n            role,\n            {$staffNameSql} AS full_name,\n            email,\n            password_hash,\n            status,\n            must_change_password\n        FROM tbl_users\n        WHERE user_id = ?\n          AND restaurant_id = ?\n        LIMIT 1\n    ");
+    $stmt = $conn->prepare("\n        SELECT\n            user_id,\n            restaurant_id,\n            role,\n            {$staffNameSql} AS display_name,\n            email,\n            password_hash,\n            status,\n            must_change_password\n        FROM tbl_users\n        WHERE user_id = ?\n          AND restaurant_id = ?\n        LIMIT 1\n    ");
 
     if (!$stmt) {
         throw new RuntimeException("Unable to prepare staff account lookup.");
@@ -185,7 +185,7 @@ try {
     $_SESSION["user_id"] = (int)$dbUserId;
     $_SESSION["role"] = (string)$dbRole;
     $_SESSION["restaurant_id"] = (int)$dbRestaurantId;
-    $_SESSION["full_name"] = (string)$dbFullName;
+    $_SESSION["display_name"] = (string)$dbFullName;
 
     /* Accountability only; never log either password. Failure must not block login. */
     try {
@@ -221,7 +221,7 @@ try {
             "user_id" => (int)$dbUserId,
             "restaurant_id" => (int)$dbRestaurantId,
             "role" => (string)$dbRole,
-            "full_name" => (string)$dbFullName,
+            "display_name" => (string)$dbFullName,
             "email" => (string)$dbEmail
         ]
     ]);

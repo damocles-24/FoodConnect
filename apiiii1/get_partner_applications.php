@@ -91,7 +91,7 @@ $sql = "
         pa.created_at,
         pa.updated_at,
 
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))), ''), NULLIF(TRIM(u.full_name), ''), '') AS owner_name,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))) AS owner_name,
         u.email AS owner_email,
         u.contact_number AS owner_contact,
         u.status AS owner_status,

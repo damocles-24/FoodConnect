@@ -115,7 +115,7 @@ try {
         SELECT
             u.user_id,
             u.restaurant_id,
-            COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))), ''), NULLIF(TRIM(u.full_name), ''), '') AS full_name,
+            TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''))) AS display_name,
             u.contact_number,
             u.status,
             u.is_verified,

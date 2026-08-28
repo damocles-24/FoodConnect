@@ -1200,6 +1200,7 @@ $cartPriceUpdateStmt->close();
 ========================================================= */
 
 $delivery_fee = 0.00;
+$cart_restaurant = null;
 
 /*
  * Backward-compatible default for restaurants created before
@@ -1217,6 +1218,9 @@ if (
 ) {
     $restaurantStmt = $conn->prepare("
         SELECT
+            restaurant_id,
+            name,
+            logo_path,
             delivery_fee,
             order_types_json
 
@@ -1279,6 +1283,28 @@ if (
     $restaurantStmt->close();
 
     if ($restaurantRow) {
+        $cart_restaurant = [
+            "restaurant_id" =>
+                (int)(
+                    $restaurantRow[
+                        "restaurant_id"
+                    ] ??
+                    $cart_restaurant_id
+                ),
+
+            "name" => trim(
+                (string)(
+                    $restaurantRow["name"] ??
+                    "Restaurant"
+                )
+            ),
+
+            "logo_path" =>
+                $restaurantRow[
+                    "logo_path"
+                ] ?? null
+        ];
+
         $delivery_fee = max(
             0,
             (float)(
@@ -1327,6 +1353,17 @@ respond_json([
         $cart_restaurant_id > 0
             ? $cart_restaurant_id
             : null,
+
+    "restaurant" =>
+        $cart_restaurant,
+
+    "restaurant_name" =>
+        $cart_restaurant["name"] ??
+        null,
+
+    "restaurant_logo" =>
+        $cart_restaurant["logo_path"] ??
+        null,
 
     "items" => $items,
 

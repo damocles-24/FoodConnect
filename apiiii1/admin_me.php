@@ -49,7 +49,6 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
-        full_name,
         email,
         status,
         is_verified
@@ -95,7 +94,7 @@ $displayName = formatUserName($user);
 
 $_SESSION["role"] = "admin";
 $_SESSION["restaurant_id"] = null;
-$_SESSION["full_name"] = $displayName;
+$_SESSION["display_name"] = $displayName;
 
 respond_json([
     "logged_in" => true,
@@ -119,7 +118,7 @@ respond_json([
         "last_name" =>
             (string)($user["last_name"] ?? ""),
 
-        "full_name" =>
+        "display_name" =>
             $displayName,
 
         "email" =>

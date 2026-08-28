@@ -233,7 +233,7 @@ $sql = "
         pir.created_at,
         pir.updated_at,
 
-        COALESCE(NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(reviewer.first_name), ''), NULLIF(TRIM(reviewer.middle_name), ''), NULLIF(TRIM(reviewer.last_name), ''))), ''), NULLIF(TRIM(reviewer.full_name), ''), '') AS reviewer_name
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(reviewer.first_name), ''), NULLIF(TRIM(reviewer.middle_name), ''), NULLIF(TRIM(reviewer.last_name), ''))) AS reviewer_name
 
     FROM tbl_partner_invitation_requests pir
 

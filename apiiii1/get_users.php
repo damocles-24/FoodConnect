@@ -113,7 +113,6 @@ $sql = "
     first_name,
     middle_name,
     last_name,
-    full_name,
 
     email,
     contact_number,
@@ -178,7 +177,7 @@ while ($row = $result->fetch_assoc()) {
     "last_name" =>
         $row["last_name"] ?? "",
 
-    "full_name" =>
+    "display_name" =>
         formatUserName($row),
 
     "email" =>
