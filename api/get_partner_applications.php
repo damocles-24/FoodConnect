@@ -104,7 +104,11 @@ $sql = "
         ON u.user_id = pa.owner_id
 ";
 
-if ($status !== "all") {
+if ($status === "all") {
+    $sql .= "
+        WHERE pa.application_status IN ('submitted', 'needs_changes', 'draft', 'email_pending')
+    ";
+} elseif ($status !== "approved") {
     $sql .= "
         WHERE pa.application_status = ?
     ";
@@ -139,7 +143,7 @@ if (!$stmt) {
     ], 500);
 }
 
-if ($status !== "all") {
+if ($status !== "all" && $status !== "approved") {
     $stmt->bind_param(
         "s",
         $status

@@ -146,6 +146,22 @@ const pageTitle =
     "pageTitle"
   );
 
+const dashboardRestaurantTotal =
+  document.getElementById("dashboardRestaurantTotal");
+const dashboardOpenRestaurants =
+  document.getElementById("dashboardOpenRestaurants");
+const dashboardOwnerCount =
+  document.getElementById("dashboardOwnerCount");
+const dashboardStaffCount =
+  document.getElementById("dashboardStaffCount");
+const dashboardClosedRestaurants =
+  document.getElementById("dashboardClosedRestaurants");
+
+const dashboardQuickActions =
+  document.querySelectorAll(
+    ".dashboard-quick-action"
+  );
+
 const adminSidebar =
   document.getElementById(
     "adminSidebar"
@@ -677,6 +693,128 @@ document.addEventListener(
   initializeAdmin
 );
 
+async function loadAdminDashboardSummary() {
+  try {
+    const response = await fetch(`${API_BASE}/get_admin_dashboard_summary.php`, {
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    });
+
+    const data = await readJson(response);
+    const summary = data.summary || {};
+
+    setText("submittedCount", summary.submitted_applications || 0);
+    setText("approvedCount", summary.approved_restaurants || 0);
+    setText(dashboardRestaurantTotal, summary.total_restaurants || 0);
+    setText(dashboardOpenRestaurants, summary.open_restaurants || 0);
+    setText(dashboardClosedRestaurants, summary.closed_restaurants || 0);
+    setText(dashboardOwnerCount, summary.restaurant_owners || 0);
+    setText(dashboardStaffCount, summary.restaurant_staff || 0);
+  } catch (error) {
+    console.error("Dashboard summary error:", error);
+  }
+}
+
+async function loadDashboardPartnerRequestSummary() {
+  try {
+    const params = new URLSearchParams({
+      status: "all"
+    });
+
+    const response = await fetch(
+      `${API_BASE}/get_partner_invitation_requests.php?${params.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data = await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load partner request summary."
+      );
+    }
+
+    updatePartnerRequestSummary(
+      data.summary || {}
+    );
+  } catch (error) {
+    console.error(
+      "Dashboard partner request summary error:",
+      error
+    );
+  }
+}
+
+function updateDashboardAttentionVisibility(
+  itemId,
+  count
+) {
+  const item =
+    document.getElementById(
+      itemId
+    );
+
+  if (item) {
+    item.classList.toggle(
+      "hidden",
+      Number(count || 0) <= 0
+    );
+  }
+
+  const attentionPanel =
+    document.getElementById(
+      "dashboardAttentionPanel"
+    );
+
+  const dashboardMainGrid =
+    document.querySelector(
+      ".dashboard-main-grid"
+    );
+
+  if (!attentionPanel) {
+    return;
+  }
+
+  const hasVisibleAttention =
+    Array.from(
+      attentionPanel.querySelectorAll(
+        ".dashboard-attention-item"
+      )
+    ).some(
+      (attentionItem) =>
+        !attentionItem.classList.contains(
+          "hidden"
+        )
+    );
+
+  attentionPanel.classList.toggle(
+    "hidden",
+    !hasVisibleAttention
+  );
+
+  dashboardMainGrid?.classList.toggle(
+    "attention-empty",
+    !hasVisibleAttention
+  );
+}
+
 async function initializeAdmin() {
   bindEvents();
 
@@ -688,6 +826,8 @@ async function initializeAdmin() {
       adminSession.user
     );
 
+    await loadAdminDashboardSummary();
+    await loadDashboardPartnerRequestSummary();
     await loadApplications();
     await loadOwnerPasswordResetRequests();
     return;
@@ -776,6 +916,35 @@ partnerRequestModal
       }
     );
   });
+
+  dashboardQuickActions.forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          const targetSection =
+            button.dataset.dashboardTarget;
+
+          if (!targetSection) {
+            return;
+          }
+
+          const matchingNavItem =
+            Array.from(navItems).find(
+              (item) =>
+                item.dataset.section ===
+                targetSection
+            );
+
+          if (matchingNavItem) {
+            openDashboardSection(
+              matchingNavItem
+            );
+          }
+        }
+      );
+    }
+  );
 
   statusFilters.forEach((filter) => {
     filter.addEventListener(
@@ -1598,7 +1767,10 @@ async function handleAdminLogin(event) {
       data.user
     );
 
+    await loadAdminDashboardSummary();
+    await loadDashboardPartnerRequestSummary();
     await loadApplications();
+    await loadOwnerPasswordResetRequests();
   } catch (error) {
     console.error(
       "Admin login failed:",
@@ -1779,6 +1951,16 @@ function openDashboardSection(navItem) {
   adminSidebar?.classList.remove(
     "open"
   );
+
+  if (
+    sectionId ===
+    "overviewSection"
+  ) {
+    loadAdminDashboardSummary();
+    loadDashboardPartnerRequestSummary();
+    loadApplications();
+    loadOwnerPasswordResetRequests();
+  }
 
   if (
   sectionId ===
@@ -2258,6 +2440,16 @@ function updatePartnerRequestSummary(
   setText(
     totalPartnerRequestsCount,
     total
+  );
+
+  setText(
+    "dashboardPendingPartnerRequestsAttention",
+    pending
+  );
+
+  updateDashboardAttentionVisibility(
+    "dashboardPartnerRequestsAttentionItem",
+    pending
   );
 
   if (
@@ -3974,6 +4166,16 @@ function updateOwnerPasswordResetSummary(
 
   setText(
     pendingOwnerPasswordResetsCount,
+    pending
+  );
+
+  setText(
+    "dashboardPendingPasswordResetsAttention",
+    pending
+  );
+
+  updateDashboardAttentionVisibility(
+    "dashboardPasswordResetsAttentionItem",
     pending
   );
 
@@ -6758,8 +6960,13 @@ function updateApplicationCounts(
   );
 
   setText(
-    "approvedCount",
-    counts.approved || 0
+    "dashboardPendingApplicationsAttention",
+    counts.submitted || 0
+  );
+
+  updateDashboardAttentionVisibility(
+    "dashboardApplicationsAttentionItem",
+    counts.submitted || 0
   );
 
   const submittedBadge =

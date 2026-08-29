@@ -5,8 +5,8 @@
   --green: #4caf50;
 
   --text: #182230;
-  --muted: #667085;
-  --subtle: #98a2b3;
+  --muted: #5f6b7a;
+  --subtle: #7f8998;
 
   --surface: #ffffff;
   --background: #f6f7f9;
@@ -38,6 +38,7 @@ html {
 
 body {
   min-height: 100vh;
+  overflow-x: clip;
   background: var(--background);
   color: var(--text);
   line-height: 1.55;
@@ -86,6 +87,7 @@ a {
 
 .header-container {
   width: min(1160px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
   min-height: 72px;
   margin: 0 auto;
   display: flex;
@@ -128,6 +130,7 @@ a {
 .back-button {
   width: 42px;
   height: 42px;
+  flex: 0 0 42px;
   padding: 0;
   display: grid;
   place-items: center;
@@ -177,7 +180,7 @@ a {
 }
 
 .page-intro h2 {
-  font-size: clamp(28px, 4vw, 40px);
+  font-size: clamp(27px, 3.2vw, 36px);
   line-height: 1.12;
   letter-spacing: -1px;
 }
@@ -229,10 +232,15 @@ a {
   transition: .18s ease;
 }
 
-.settings-nav-item:hover,
+.settings-nav-item:hover {
+  background: #f8f9fb;
+  color: var(--text);
+}
+
 .settings-nav-item.active {
-  background: var(--primary-soft);
-  color: var(--primary-dark);
+  background: rgba(247, 128, 33, .08);
+  color: var(--text);
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .settings-nav-item.danger-nav:hover {
@@ -1180,8 +1188,8 @@ a {
 /* FOODCONNECT PROFILE THEME START */
 html[data-theme="dark"] body[data-fc-page="customer-account"] {
   --text: #f5f7fa;
-  --muted: #a0a8b3;
-  --subtle: #7f8997;
+  --muted: #b5bdc8;
+  --subtle: #a2acba;
   --surface: #181b20;
   --background: #101216;
   --border: #30343b;
@@ -1210,11 +1218,14 @@ html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item
   color: var(--text);
 }
 
-html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
-  .settings-nav-item:hover,
-  .settings-nav-item.active
-) {
-  background: var(--primary-soft);
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item:hover {
+  background: #20242a;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item.active {
+  background: rgba(247, 128, 33, .09);
+  color: #f5f7fa;
+  box-shadow: inset 3px 0 0 rgba(247, 128, 33, .92);
 }
 
 html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
@@ -1226,6 +1237,12 @@ html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
   background: #20242a;
   color: var(--text);
   border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item.active .nav-icon {
+  background: rgba(247, 128, 33, .05);
+  color: var(--primary);
+  border-color: rgba(247, 128, 33, .28);
 }
 
 html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
@@ -1278,10 +1295,13 @@ html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
 
 html[data-theme="dark"] body[data-fc-page="customer-account"] :is(
   .page-intro p,
-  .card-header p,
-  .field-hint
+  .card-header p
 ) {
-  color: #98a2b3;
+  color: var(--muted);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .field-hint {
+  color: var(--subtle);
 }
 
 html[data-theme="dark"] body[data-fc-page="customer-account"] .ph-phone-prefix {
@@ -1295,13 +1315,18 @@ html[data-theme="dark"] body[data-fc-page="customer-account"] .form-actions {
 
 /* FOODCONNECT PROFILE PHONE UI FIX START */
 /*
- * Keep +63 inside the same input shell.
- * HTML is unchanged:
- * icon -> +63 -> input
+ * Present the fixed Philippine country code as a clear, non-editable prefix.
+ * The divider separates +63 from the editable 10-digit local number.
  */
 body[data-fc-page="customer-account"]
 .input-wrap:has(.ph-phone-prefix) {
   position: relative;
+}
+
+body[data-fc-page="customer-account"]
+.input-wrap:has(.ph-phone-prefix)
+> i:first-child {
+  left: 15px;
 }
 
 body[data-fc-page="customer-account"]
@@ -1314,59 +1339,60 @@ body[data-fc-page="customer-account"]
 
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
-  height: 20px;
+  height: 26px;
+  min-width: 43px;
+  padding: 0 11px 0 3px;
   margin: 0;
+  border-right: 1px solid #d9dee6;
 
-  color: #667085;
+  color: #5f6b7a;
   font-size: 12px;
-  font-weight: 800;
-  line-height: 20px;
+  font-weight: 700;
+  line-height: 1;
 
   transform: translateY(-50%);
   pointer-events: none;
+  user-select: none;
 }
 
 body[data-fc-page="customer-account"]
 .input-wrap:has(.ph-phone-prefix)
 input[data-ph-phone-local] {
-  padding-left: 72px;
+  padding-left: 94px;
 }
 
 html[data-theme="dark"]
 body[data-fc-page="customer-account"]
 .input-wrap:has(.ph-phone-prefix)
 .ph-phone-prefix {
-  color: #b4bdca;
+  color: #d0d5dd;
+  border-right-color: #3a4048;
 }
 
 html[data-theme="light"]
 body[data-fc-page="customer-account"]
 .input-wrap:has(.ph-phone-prefix)
 .ph-phone-prefix {
-  color: #667085;
+  color: #5f6b7a;
+  border-right-color: #d9dee6;
 }
 
-/* Keep phone icon visually centered with the prefix */
-body[data-fc-page="customer-account"]
-.input-wrap:has(.ph-phone-prefix)
-> i:first-child {
-  left: 15px;
-}
-
-/* Smaller screens retain the same clean alignment */
 @media (max-width: 560px) {
   body[data-fc-page="customer-account"]
   .input-wrap:has(.ph-phone-prefix)
   .ph-phone-prefix {
     left: 39px;
+    min-width: 41px;
+    padding-right: 10px;
     font-size: 11px;
   }
 
   body[data-fc-page="customer-account"]
   .input-wrap:has(.ph-phone-prefix)
   input[data-ph-phone-local] {
-    padding-left: 68px;
+    padding-left: 89px;
   }
 }
 /* FOODCONNECT PROFILE PHONE UI FIX END */
@@ -1407,3 +1433,504 @@ body[data-fc-page="customer-account"]
     background: #f7f8fa !important;
   }
 }
+
+/* =========================================================
+   FOODCONNECT PROFILE PREMIUM POLISH V2
+   Visual-only refinements for a cleaner, more premium account UI.
+   No profile, address, or API behavior is changed here.
+========================================================= */
+body[data-fc-page="customer-account"] {
+  --profile-card-shadow: 0 14px 40px rgba(24, 34, 48, .075);
+  --profile-card-shadow-hover: 0 18px 46px rgba(24, 34, 48, .09);
+  --profile-input-bg: #ffffff;
+  --profile-input-hover: #cfd5dd;
+  --profile-soft-surface: #f7f8fa;
+  --profile-soft-border: #e6e9ee;
+}
+
+body[data-fc-page="customer-account"] .site-header {
+  box-shadow: 0 1px 0 rgba(16, 24, 40, .02);
+}
+
+body[data-fc-page="customer-account"] .back-button {
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+body[data-fc-page="customer-account"] .back-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(24, 34, 48, .08);
+}
+
+body[data-fc-page="customer-account"] .back-button:active {
+  transform: translateY(0);
+}
+
+body[data-fc-page="customer-account"] .settings-page {
+  padding-top: 38px;
+}
+
+body[data-fc-page="customer-account"] .page-intro {
+  margin-bottom: 22px;
+}
+
+body[data-fc-page="customer-account"] .section-kicker {
+  margin-bottom: 7px;
+  font-size: 11.5px;
+  letter-spacing: 1.25px;
+}
+
+body[data-fc-page="customer-account"] .page-intro h2 {
+  max-width: 720px;
+  font-size: clamp(28px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -1.15px;
+}
+
+body[data-fc-page="customer-account"] .page-intro p {
+  margin-top: 7px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+body[data-fc-page="customer-account"] .settings-layout {
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 24px;
+}
+
+body[data-fc-page="customer-account"] .settings-nav {
+  padding: 10px;
+  gap: 5px;
+  border-radius: 20px;
+  box-shadow: var(--profile-card-shadow);
+}
+
+body[data-fc-page="customer-account"] .settings-nav-item {
+  min-height: 62px;
+  padding: 10px 11px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 11px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+body[data-fc-page="customer-account"] .settings-nav-item:hover {
+  transform: translateX(1px);
+}
+
+body[data-fc-page="customer-account"] .settings-nav-item.active {
+  background: linear-gradient(90deg, rgba(247,128,33,.115), rgba(247,128,33,.055));
+  border-color: rgba(247,128,33,.14);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+body[data-fc-page="customer-account"] .nav-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 13.5px;
+}
+
+body[data-fc-page="customer-account"] .settings-nav-item strong {
+  font-size: 12.25px;
+  line-height: 1.25;
+  letter-spacing: -.08px;
+}
+
+body[data-fc-page="customer-account"] .settings-nav-item small {
+  margin-top: 3px;
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
+body[data-fc-page="customer-account"] .settings-card {
+  padding: clamp(24px, 3vw, 32px);
+  border-radius: 20px;
+  box-shadow: var(--profile-card-shadow);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+body[data-fc-page="customer-account"] .card-header {
+  margin-bottom: 25px;
+  gap: 13px;
+}
+
+body[data-fc-page="customer-account"] .card-icon {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 13px;
+  font-size: 15px;
+}
+
+body[data-fc-page="customer-account"] .card-header h3 {
+  font-size: 18.5px;
+  line-height: 1.25;
+  letter-spacing: -.3px;
+}
+
+body[data-fc-page="customer-account"] .card-header p {
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+body[data-fc-page="customer-account"] .field-grid {
+  gap: 19px 17px;
+}
+
+body[data-fc-page="customer-account"] .field {
+  gap: 8px;
+}
+
+body[data-fc-page="customer-account"] .field-label {
+  font-size: 12.5px;
+  line-height: 1.35;
+  letter-spacing: -.05px;
+}
+
+body[data-fc-page="customer-account"] .field-label small {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border: 1px solid var(--profile-soft-border);
+  border-radius: 999px;
+  background: var(--profile-soft-surface);
+  color: var(--subtle);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+body[data-fc-page="customer-account"] .input-wrap input,
+body[data-fc-page="customer-account"] .input-wrap textarea {
+  border-radius: 12px;
+  background: var(--profile-input-bg);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+body[data-fc-page="customer-account"] .input-wrap input {
+  height: 50px;
+  padding-right: 15px;
+  font-size: 12.5px;
+}
+
+body[data-fc-page="customer-account"] .input-wrap textarea {
+  min-height: 108px;
+  font-size: 12.5px;
+}
+
+body[data-fc-page="customer-account"] .input-wrap:hover input:not(:focus),
+body[data-fc-page="customer-account"] .input-wrap:hover textarea:not(:focus) {
+  border-color: var(--profile-input-hover);
+}
+
+body[data-fc-page="customer-account"] .input-wrap input:focus,
+body[data-fc-page="customer-account"] .input-wrap textarea:focus {
+  border-color: rgba(247,128,33,.88);
+  box-shadow: 0 0 0 3px rgba(247,128,33,.115);
+}
+
+body[data-fc-page="customer-account"] .input-wrap > i:first-child {
+  color: #98a2b1;
+}
+
+body[data-fc-page="customer-account"] .field-hint {
+  margin-top: 1px;
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+body[data-fc-page="customer-account"] .form-actions {
+  margin-top: 26px;
+  padding-top: 21px;
+  gap: 10px;
+}
+
+body[data-fc-page="customer-account"] .btn {
+  min-height: 46px;
+  padding-inline: 19px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+body[data-fc-page="customer-account"] .secondary-btn:hover {
+  border-color: #d5dae2;
+  box-shadow: 0 6px 14px rgba(24,34,48,.05);
+}
+
+body[data-fc-page="customer-account"] .primary-btn {
+  background: linear-gradient(180deg, #ff8b34 0%, #f47619 100%);
+  box-shadow: 0 8px 18px rgba(247,128,33,.22), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+body[data-fc-page="customer-account"] .primary-btn:hover {
+  background: linear-gradient(180deg, #f98229 0%, #df6510 100%);
+  box-shadow: 0 10px 22px rgba(247,128,33,.27), inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+body[data-fc-page="customer-account"] .inline-status,
+body[data-fc-page="customer-account"] .status-message {
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-settings-card {
+  gap: 22px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-settings-copy {
+  gap: 13px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-settings-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 13px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-settings-copy h3 {
+  margin-bottom: 4px;
+  font-size: 18.5px;
+  letter-spacing: -.3px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-settings-copy p {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice-group {
+  gap: 12px;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice {
+  min-height: 82px;
+  padding: 15px 16px;
+  border-radius: 14px;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice:hover {
+  transform: translateY(-1px);
+  border-color: rgba(247,128,33,.42);
+}
+
+body[data-fc-page="customer-account"] #appearanceSection .theme-choice.active {
+  background: rgba(247,128,33,.07);
+  border-color: rgba(247,128,33,.8);
+  box-shadow: 0 0 0 3px rgba(247,128,33,.075);
+}
+
+body[data-fc-page="customer-account"] .danger-action-row strong {
+  font-size: 11.5px;
+}
+
+body[data-fc-page="customer-account"] .danger-action-row span {
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+/* Dark mode gets a little more depth and less muddy brown. */
+html[data-theme="dark"] body[data-fc-page="customer-account"] {
+  --text: #f7f9fc;
+  --muted: #b5beca;
+  --subtle: #98a3b2;
+  --surface: #181c21;
+  --background: #0f1115;
+  --border: #30363f;
+  --primary-soft: #2a1b11;
+  --profile-card-shadow: 0 16px 46px rgba(0,0,0,.24);
+  --profile-card-shadow-hover: 0 18px 52px rgba(0,0,0,.29);
+  --profile-input-bg: #20252c;
+  --profile-input-hover: #414955;
+  --profile-soft-surface: #22272e;
+  --profile-soft-border: #343b45;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .site-header {
+  background: rgba(16,18,22,.95);
+  border-bottom-color: #2b3038;
+  box-shadow: 0 1px 0 rgba(255,255,255,.015);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] :is(.settings-nav, .settings-card) {
+  border-color: #30363f;
+  box-shadow: var(--profile-card-shadow), inset 0 1px 0 rgba(255,255,255,.012);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item:hover {
+  background: #20252b;
+  border-color: #303740;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item.active {
+  background: linear-gradient(90deg, rgba(247,128,33,.145), rgba(247,128,33,.055));
+  border-color: rgba(247,128,33,.18);
+  box-shadow: inset 3px 0 0 #f78021;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .settings-nav-item.active .nav-icon {
+  background: rgba(247,128,33,.085);
+  border-color: rgba(247,128,33,.27);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap input,
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap textarea {
+  background: var(--profile-input-bg);
+  border-color: #343b45;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap:hover input:not(:focus),
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap:hover textarea:not(:focus) {
+  border-color: #444d59;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap input:focus,
+html[data-theme="dark"] body[data-fc-page="customer-account"] .input-wrap textarea:focus {
+  border-color: #f78021;
+  box-shadow: 0 0 0 3px rgba(247,128,33,.13);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .field-label small {
+  background: #22272e;
+  color: #aeb7c4;
+  border-color: #353c46;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .secondary-btn {
+  background: #20252b;
+  color: #e8ecf2;
+  border-color: #353c46;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .secondary-btn:hover {
+  background: #272d35;
+  border-color: #444d58;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] #appearanceSection .theme-choice {
+  background: #1d2228;
+  border-color: #343b45;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] #appearanceSection .theme-choice:hover {
+  background: #222830;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] #appearanceSection .theme-choice.active {
+  background: rgba(247,128,33,.08);
+  border-color: rgba(247,128,33,.7);
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-account"] .danger-action-row {
+  border-top-color: #3a3032;
+}
+
+/* Tablet/mobile refinement: preserve readability instead of over-compressing text. */
+@media (max-width: 900px) and (min-width: 641px) {
+  body[data-fc-page="customer-account"] .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav-item {
+    min-height: 76px;
+    padding: 9px 7px;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-fc-page="customer-account"] .settings-page {
+    padding-top: 24px;
+  }
+
+  body[data-fc-page="customer-account"] .page-intro h2 {
+    font-size: 24px;
+    letter-spacing: -.7px;
+  }
+
+  body[data-fc-page="customer-account"] .page-intro p {
+    font-size: 11.5px;
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav {
+    padding: 16px 14px;
+    border-radius: 0;
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav-item {
+    min-height: 62px;
+    padding: 10px;
+    grid-template-columns: 36px 1fr;
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav-item strong {
+    font-size: 11.5px;
+  }
+
+  body[data-fc-page="customer-account"] .settings-nav-item small {
+    font-size: 9px;
+  }
+
+  body[data-fc-page="customer-account"] .settings-card {
+    padding: 19px 16px;
+    border-radius: 16px;
+  }
+
+  body[data-fc-page="customer-account"] .card-header h3 {
+    font-size: 16.5px;
+  }
+
+  body[data-fc-page="customer-account"] .card-header p {
+    font-size: 10px;
+  }
+
+  body[data-fc-page="customer-account"] .field-label {
+    font-size: 11.5px;
+  }
+
+  body[data-fc-page="customer-account"] .field-label small {
+    min-height: 18px;
+    padding-inline: 6px;
+    font-size: 8.5px;
+  }
+
+  body[data-fc-page="customer-account"] .input-wrap input {
+    height: 48px;
+    font-size: 11.5px;
+  }
+
+  body[data-fc-page="customer-account"] .input-wrap textarea {
+    font-size: 11.5px;
+  }
+
+  body[data-fc-page="customer-account"] .field-hint {
+    font-size: 9.75px;
+  }
+
+  body[data-fc-page="customer-account"] #appearanceSection .theme-choice {
+    min-height: 76px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-fc-page="customer-account"] *,
+  body[data-fc-page="customer-account"] *::before,
+  body[data-fc-page="customer-account"] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+/* FOODCONNECT PROFILE PREMIUM POLISH V2 END */
