@@ -22,6 +22,11 @@ try {
     $approved = $conn->query("SELECT COUNT(*) c FROM tbl_partner_applications WHERE application_status='approved'")->fetch_assoc()['c'];
     $users = $conn->query("SELECT COUNT(*) c FROM tbl_users")->fetch_assoc()['c'];
     $logs = $conn->query("SELECT COUNT(*) c FROM tbl_activity_logs")->fetch_assoc()['c'];
+    $restaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants")->fetch_assoc()['c'];
+    $openRestaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants WHERE business_status='Open'")->fetch_assoc()['c'];
+    $closedRestaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants WHERE business_status='Closed'")->fetch_assoc()['c'];
+    $owners = $conn->query("SELECT COUNT(*) c FROM tbl_users WHERE role='owner'")->fetch_assoc()['c'];
+    $staff = $conn->query("SELECT COUNT(*) c FROM tbl_users WHERE role IN ('cashier','delivery_staff')")->fetch_assoc()['c'];
 
     respond([
         'success'=>true,
@@ -29,7 +34,12 @@ try {
             'submitted_applications'=>(int)$submitted,
             'approved_restaurants'=>(int)$approved,
             'total_users'=>(int)$users,
-            'total_logs'=>(int)$logs
+            'total_logs'=>(int)$logs,
+            'total_restaurants'=>(int)$restaurants,
+            'open_restaurants'=>(int)$openRestaurants,
+            'closed_restaurants'=>(int)$closedRestaurants,
+            'restaurant_owners'=>(int)$owners,
+            'restaurant_staff'=>(int)$staff
         ]
     ]);
 } catch (Throwable $e) {

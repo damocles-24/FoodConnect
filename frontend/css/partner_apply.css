@@ -1134,3 +1134,192 @@ html[data-theme="dark"] :is(.auth-card,.login-card,.signup-card,.form-card,.appl
 html[data-theme="dark"] :is(input,select,textarea) { background:#20242a!important; color:#f5f7fa!important; border-color:#343942!important; }
 html[data-theme="dark"] :is(h1,h2,h3,h4,label,strong) { color:#f5f7fa; }
 html[data-theme="dark"] :is(p,.helper-text,.subtitle,.muted) { color:#a4acb9; }
+
+/* FoodConnect official brand logo standard */
+img[src*="logofoodconnect-Photoroom.png"] {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Keep the logo balanced in smaller navigation areas */
+.sidebar img[src*="logofoodconnect-Photoroom.png"],
+.admin-sidebar img[src*="logofoodconnect-Photoroom.png"] {
+    width: 42px;
+    height: 42px;
+}
+
+.footer img[src*="logofoodconnect-Photoroom.png"] {
+    width: 45px;
+    height: 45px;
+}
+
+
+
+/* =========================================================
+   OTHER RESTAURANT TYPE FIELD
+   ========================================================= */
+
+.other-cuisine-group[hidden] {
+    display: none;
+}
+
+/* =========================================================
+   THEME FIXES (Light/Dark compatible)
+   ========================================================= */
+
+html[data-theme="dark"] body,
+body[data-theme="dark"] {
+    color: #e5e7eb;
+    background:
+        radial-gradient(circle at 8% 8%, rgba(245,130,32,.12), transparent 28%),
+        linear-gradient(135deg, #0f1418 0%, #111827 100%);
+}
+
+html[data-theme="dark"] .partner-intro h1,
+body[data-theme="dark"] .partner-intro h1,
+html[data-theme="dark"] .form-header-content h2,
+body[data-theme="dark"] .form-header-content h2,
+html[data-theme="dark"] .section-heading h3,
+body[data-theme="dark"] .section-heading h3,
+html[data-theme="dark"] .benefit-content h3,
+body[data-theme="dark"] .benefit-content h3 {
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .intro-description,
+html[data-theme="dark"] .benefit-content p,
+html[data-theme="dark"] .form-header-content p,
+html[data-theme="dark"] .section-heading p {
+    color: #aab7c4;
+}
+
+html[data-theme="dark"] .benefit-card,
+body[data-theme="dark"] .benefit-card {
+    background: rgba(30, 41, 59, .78);
+    border-color: rgba(255,255,255,.12);
+}
+
+html[data-theme="dark"] .application-card,
+body[data-theme="dark"] .application-card {
+    background: #161b22;
+    border-color: rgba(255,255,255,.12);
+}
+
+html[data-theme="dark"] .form-header,
+body[data-theme="dark"] .form-header {
+    background: #1f2937;
+}
+
+html[data-theme="dark"] .form-group label,
+body[data-theme="dark"] .form-group label {
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .input-wrapper input,
+html[data-theme="dark"] .input-wrapper select,
+body[data-theme="dark"] .input-wrapper input,
+body[data-theme="dark"] .input-wrapper select {
+    color: #f8fafc;
+    background: #202832;
+    border-color: rgba(255,255,255,.12);
+}
+
+html[data-theme="dark"] .input-wrapper input::placeholder,
+body[data-theme="dark"] .input-wrapper input::placeholder {
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .input-wrapper input:focus,
+html[data-theme="dark"] .input-wrapper select:focus,
+body[data-theme="dark"] .input-wrapper input:focus,
+body[data-theme="dark"] .input-wrapper select:focus {
+    background: #26313d;
+}
+
+html[data-theme="dark"] .phone-prefix,
+body[data-theme="dark"] .phone-prefix {
+    color: #cbd5e1;
+}
+
+/* =========================================================
+   SIMPLE PARTNER PAGE HEADER
+   Clean FoodConnect logo + Back to Homepage only
+   ========================================================= */
+.partner-header {
+    width: 100%;
+    min-height: 78px;
+    margin: 0;
+    padding: 12px clamp(24px, 5vw, 88px);
+    background: var(--fc-surface);
+    border-bottom: 1px solid var(--fc-border);
+}
+
+.partner-header .foodconnect-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+html[data-theme="dark"] .partner-header,
+body[data-theme="dark"] .partner-header {
+    background: #12161b;
+    border-bottom-color: #2f353d;
+}
+
+html[data-theme="dark"] .partner-header .back-link,
+body[data-theme="dark"] .partner-header .back-link {
+    color: #aab4bf;
+}
+
+@media (max-width: 760px) {
+    .partner-header {
+        width: 100%;
+        min-height: 70px;
+        padding: 10px 16px;
+    }
+
+    .partner-header .foodconnect-logo {
+        width: 46px;
+        height: 46px;
+    }
+
+    .partner-header .back-link {
+        background: var(--fc-surface);
+    }
+
+    html[data-theme="dark"] .partner-header .back-link,
+    body[data-theme="dark"] .partner-header .back-link {
+        background: #1b2026;
+        border-color: #343a43;
+    }
+}
+
+/* =========================================================
+   HEADER BRAND NAME
+   Simple FoodConnect wordmark beside official logo
+   ========================================================= */
+.partner-header .brand-logo-link {
+    gap: 10px;
+}
+
+.partner-header .header-brand-name {
+    display: inline-flex;
+    align-items: baseline;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.35px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .partner-header .brand-logo-link {
+        gap: 8px;
+    }
+
+    .partner-header .header-brand-name {
+        font-size: 18px;
+    }
+}

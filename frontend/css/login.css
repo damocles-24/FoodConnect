@@ -1026,3 +1026,23 @@ html[data-theme="dark"] body[data-fc-page="customer-auth"] :is(
   border-color: var(--fc-border);
 }
 /* FOODCONNECT LOGIN THEME END */
+
+/* FoodConnect official brand logo standard */
+img[src*="logofoodconnect-Photoroom.png"] {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Keep the logo balanced in smaller navigation areas */
+.sidebar img[src*="logofoodconnect-Photoroom.png"],
+.admin-sidebar img[src*="logofoodconnect-Photoroom.png"] {
+    width: 42px;
+    height: 42px;
+}
+
+.footer img[src*="logofoodconnect-Photoroom.png"] {
+    width: 45px;
+    height: 45px;
+}

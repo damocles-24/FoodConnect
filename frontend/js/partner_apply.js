@@ -38,6 +38,15 @@ const registerAnotherPartnerButton =
         "registerAnotherPartnerButton"
     );
 
+const cuisineSelect =
+    document.getElementById("cuisine");
+
+const otherCuisineGroup =
+    document.getElementById("otherCuisineGroup");
+
+const otherCuisineInput =
+    document.getElementById("other_cuisine");
+
 let registeredPartnerEmail = "";
 
 let resendCooldownInterval = null;
@@ -307,6 +316,55 @@ document
 });
 
 /* =========================================================
+   OTHER RESTAURANT TYPE
+   ========================================================= */
+
+function syncOtherCuisineField() {
+    const usesOtherType =
+        cuisineSelect?.value === "Other";
+
+    if (!otherCuisineGroup || !otherCuisineInput) {
+        return;
+    }
+
+    if (usesOtherType) {
+        otherCuisineGroup.removeAttribute("hidden");
+        otherCuisineInput.required = true;
+        return;
+    }
+
+    otherCuisineGroup.setAttribute("hidden", "");
+    otherCuisineInput.required = false;
+    otherCuisineInput.value = "";
+}
+
+cuisineSelect?.addEventListener(
+    "change",
+    () => {
+        const selectedOther =
+            cuisineSelect.value === "Other";
+
+        syncOtherCuisineField();
+
+        if (selectedOther) {
+            otherCuisineInput?.focus();
+        }
+    }
+);
+
+partnerForm?.addEventListener(
+    "reset",
+    () => {
+        window.setTimeout(
+            syncOtherCuisineField,
+            0
+        );
+    }
+);
+
+syncOtherCuisineField();
+
+/* =========================================================
    PARTNER REGISTRATION
    ========================================================= */
 
@@ -376,15 +434,37 @@ partnerForm?.addEventListener(
                 ?.value
                 .trim() || "";
 
+        const selectedCuisine =
+            cuisineSelect?.value || "";
+
+        const otherCuisine =
+            otherCuisineInput
+                ?.value
+                .trim() || "";
+
         const cuisine =
-            document
-                .getElementById("cuisine")
-                ?.value || "";
+            selectedCuisine === "Other"
+                ? otherCuisine
+                : selectedCuisine;
 
         const agreement =
             document
                 .getElementById("agreement")
                 ?.checked || false;
+
+        if (
+            selectedCuisine === "Other" &&
+            !otherCuisine
+        ) {
+            showMessage(
+                "error",
+                "Please specify the restaurant type."
+            );
+
+            otherCuisineInput?.focus();
+
+            return;
+        }
 
         if (
             !firstName ||
