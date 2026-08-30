@@ -6,5 +6,20 @@ $uid=(int)$_SESSION["user_id"]; $role=strtolower((string)($_SESSION["role"]??"")
 $s=$conn->prepare("SELECT d.file_path,d.original_name,d.mime_type,d.owner_id FROM tbl_partner_application_documents d WHERE d.document_id=? LIMIT 1");$s->bind_param("i",$id);$s->execute();$d=$s->get_result()->fetch_assoc();$s->close();
 if(!$d){http_response_code(404);exit("Document not found.");}
 if($role!=="admin" && !($role==="owner" && (int)$d["owner_id"]===$uid)){http_response_code(403);exit("Access denied.");}
-$path=__DIR__."/".$d["file_path"];if(!is_file($path)){http_response_code(404);exit("File not found.");}
+$candidatePaths = [
+    __DIR__."/".$d["file_path"],
+    dirname(__DIR__)."/".$d["file_path"],
+    __DIR__."/uploads/".basename((string)$d["file_path"])
+];
+$path = "";
+foreach ($candidatePaths as $candidate) {
+    if (is_file($candidate)) {
+        $path = $candidate;
+        break;
+    }
+}
+if ($path === "") {
+    http_response_code(404);
+    exit("File not found.");
+}
 header("Content-Type: ".$d["mime_type"]);header("Content-Length: ".filesize($path));header("Content-Disposition: inline; filename=\"".str_replace(['\"','\\'],"",$d["original_name"])."\"");header("X-Content-Type-Options: nosniff");readfile($path);exit;

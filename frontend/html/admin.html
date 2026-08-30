@@ -16,7 +16,7 @@
 
   <link
     rel="stylesheet"
-    href="../css/admin.css?v=20260818-ownerrecovery1"
+    href="../css/admin.css?v=20260829-attention2"
   >
 
   <link
@@ -353,7 +353,7 @@
           data-section="overviewSection"
         >
           <i class="fa-solid fa-chart-pie"></i>
-          <span>Overview</span>
+          <span>Dashboard</span>
         </button>
 
         <button
@@ -446,21 +446,23 @@
           type="button"
           id="sidebarToggle"
           class="sidebar-toggle"
+          aria-label="Open admin navigation"
         >
           <i class="fa-solid fa-bars"></i>
         </button>
 
-        <div>
+        <div class="admin-header-title">
           <p class="header-label">
             Platform Administration
           </p>
 
           <h1 id="pageTitle">
-            Overview
+            Dashboard
           </h1>
         </div>
 
-<button
+        <div class="admin-header-actions">
+          <button
             type="button"
             class="theme-icon-toggle"
             data-theme-toggle
@@ -476,23 +478,23 @@
             </svg>
           </button>
 
-                <div class="admin-profile">
-        <div class="profile-avatar logo-avatar">
-    <img
-        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png"
-        alt="FoodConnect"
-    >
-</div>
+          <div class="admin-profile">
+            <div class="profile-avatar logo-avatar">
+              <img
+                src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/fc_laltest.png"
+                alt="FoodConnect"
+              >
+            </div>
 
-          <div>
-            <strong id="adminName">
-              Administrator
-            </strong>
+            <div class="admin-profile-copy">
+              <strong id="adminName">
+                Administrator
+              </strong>
 
-           <span>
-    Platform Administrator
-</span>
-
+              <span>
+                Platform Administrator
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -501,51 +503,182 @@
         id="dashboardMessage"
         class="dashboard-message hidden"
       ></div>
-    <!-- OVERVIEW -->
+    <!-- DASHBOARD -->
 
       <section
         id="overviewSection"
-        class="dashboard-section active"
+        class="dashboard-section active dashboard-home"
       >
-        <div class="summary-grid">
-
-          <article class="summary-card">
-            <div class="summary-icon orange">
-              <i class="fa-solid fa-file-circle-check"></i>
-            </div>
-
-            <div>
-              <span>Submitted Applications</span>
-              <strong id="submittedCount">0</strong>
-            </div>
-          </article>
-
-          <article class="summary-card">
-            <div class="summary-icon green">
-              <i class="fa-solid fa-store"></i>
-            </div>
-
-            <div>
-              <span>Approved Restaurants</span>
-              <strong id="approvedCount">0</strong>
-            </div>
-          </article>
-
-        </div>
-
-        <div class="content-card">
-          <div class="card-heading">
-            <div>
-              <h2>Platform Overview</h2>
-
-              <p>
-                Review restaurant applications,
-                restaurants, users, and platform
-                activities from one dashboard.
-              </p>
-            </div>
+        <div class="dashboard-intro">
+          <div>
+            <span class="dashboard-intro-label">FoodConnect Overview</span>
+            <h2>Platform at a glance</h2>
+            <p>
+              Monitor restaurant operations and jump straight to items that need administrator action.
+            </p>
           </div>
         </div>
+
+        <div class="dashboard-kpi-grid">
+          <article class="dashboard-kpi-card is-attention">
+            <div class="dashboard-kpi-icon orange">
+              <i class="fa-solid fa-file-circle-check"></i>
+            </div>
+            <div class="dashboard-kpi-copy">
+              <span>Pending Applications</span>
+              <strong id="submittedCount">0</strong>
+              <small>Awaiting review</small>
+            </div>
+          </article>
+
+          <article class="dashboard-kpi-card">
+            <div class="dashboard-kpi-icon green">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="dashboard-kpi-copy">
+              <span>Approved Restaurants</span>
+              <strong id="approvedCount">0</strong>
+              <small>Approved partners</small>
+            </div>
+          </article>
+
+          <article class="dashboard-kpi-card">
+            <div class="dashboard-kpi-icon blue">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <div class="dashboard-kpi-copy">
+              <span>Total Restaurants</span>
+              <strong id="dashboardRestaurantTotal">0</strong>
+              <small>Restaurant records</small>
+            </div>
+          </article>
+
+          <article class="dashboard-kpi-card">
+            <div class="dashboard-kpi-icon green">
+              <i class="fa-solid fa-door-open"></i>
+            </div>
+            <div class="dashboard-kpi-copy">
+              <span>Open Restaurants</span>
+              <strong id="dashboardOpenRestaurants">0</strong>
+              <small>Currently open</small>
+            </div>
+          </article>
+        </div>
+
+        <div class="dashboard-main-grid attention-empty">
+          <article class="dashboard-panel">
+            <div class="dashboard-panel-heading">
+              <div>
+                <span class="dashboard-panel-label">Platform Status</span>
+                <h3>Restaurant network</h3>
+              </div>
+              <div class="dashboard-panel-icon">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+            </div>
+
+            <div class="dashboard-status-list">
+              <div class="dashboard-status-row">
+                <span class="dashboard-status-icon blue">
+                  <i class="fa-solid fa-store-slash"></i>
+                </span>
+                <div>
+                  <span>Closed Restaurants</span>
+                  <small>Not currently accepting orders</small>
+                </div>
+                <strong id="dashboardClosedRestaurants">0</strong>
+              </div>
+
+              <div class="dashboard-status-row">
+                <span class="dashboard-status-icon orange">
+                  <i class="fa-solid fa-user-tie"></i>
+                </span>
+                <div>
+                  <span>Restaurant Owners</span>
+                  <small>Registered owner accounts</small>
+                </div>
+                <strong id="dashboardOwnerCount">0</strong>
+              </div>
+
+              <div class="dashboard-status-row">
+                <span class="dashboard-status-icon purple">
+                  <i class="fa-solid fa-users-gear"></i>
+                </span>
+                <div>
+                  <span>Restaurant Staff</span>
+                  <small>Cashier and delivery accounts</small>
+                </div>
+                <strong id="dashboardStaffCount">0</strong>
+              </div>
+            </div>
+          </article>
+
+          <article id="dashboardAttentionPanel" class="dashboard-panel hidden">
+            <div class="dashboard-panel-heading">
+              <div>
+                <span class="dashboard-panel-label">Needs Attention</span>
+                <h3>Administrator tasks</h3>
+              </div>
+              <div class="dashboard-panel-icon attention">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+            </div>
+
+            <div class="dashboard-attention-list">
+              <button
+                type="button"
+                id="dashboardPartnerRequestsAttentionItem"
+                class="dashboard-attention-item dashboard-quick-action hidden"
+                data-dashboard-target="partnerRequestsSection"
+              >
+                <span class="dashboard-attention-icon blue">
+                  <i class="fa-solid fa-handshake"></i>
+                </span>
+                <span class="dashboard-attention-copy">
+                  <strong>Partner requests</strong>
+                  <small>Businesses waiting for administrator review</small>
+                </span>
+                <span id="dashboardPendingPartnerRequestsAttention" class="dashboard-attention-count">0</span>
+                <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
+              </button>
+
+              <button
+                type="button"
+                id="dashboardApplicationsAttentionItem"
+                class="dashboard-attention-item dashboard-quick-action hidden"
+                data-dashboard-target="applicationsSection"
+              >
+                <span class="dashboard-attention-icon orange">
+                  <i class="fa-solid fa-file-circle-exclamation"></i>
+                </span>
+                <span class="dashboard-attention-copy">
+                  <strong>Restaurant applications</strong>
+                  <small>Waiting for verification and review</small>
+                </span>
+                <span id="dashboardPendingApplicationsAttention" class="dashboard-attention-count">0</span>
+                <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
+              </button>
+
+              <button
+                type="button"
+                id="dashboardPasswordResetsAttentionItem"
+                class="dashboard-attention-item dashboard-quick-action hidden"
+                data-dashboard-target="ownerPasswordResetsSection"
+              >
+                <span class="dashboard-attention-icon purple">
+                  <i class="fa-solid fa-key"></i>
+                </span>
+                <span class="dashboard-attention-copy">
+                  <strong>Owner password resets</strong>
+                  <small>Pending account recovery requests</small>
+                </span>
+                <span id="dashboardPendingPasswordResetsAttention" class="dashboard-attention-count">0</span>
+                <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
+              </button>
+            </div>
+          </article>
+        </div>
+
       </section>
 
       <!-- =========================
@@ -1666,6 +1799,6 @@
 </div>
 
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/admin.js?v=20260818-ownerrecovery1"></script>
+<script src="../js/admin.js?v=20260829-attention2"></script>
 </body>
 </html>
