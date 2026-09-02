@@ -1,20 +1,36 @@
 <?php
 // api/config.php
 //
-// SAFE FALLBACK DATABASE CONFIGURATION.
+// FoodConnect database configuration.
 //
-// FoodConnect first checks api/config/database.local.php from db.php.
-// If that private file exists, its values are used (Aiven/cloud).
-// If it does not exist, these localhost values are used.
-//
-// This keeps development recoverable without placing cloud passwords
-// directly in a tracked/shared PHP file.
+// Priority:
+// 1. Render environment variables (production)
+// 2. Local XAMPP fallback (development)
 
-define("DB_HOST", "localhost");
-define("DB_PORT", 3306);
-define("DB_USER", "root");
-define("DB_PASS", "");
-define("DB_NAME", "db_foodconnect");
+define(
+    "DB_HOST",
+    getenv("DB_HOST") ?: "localhost"
+);
+
+define(
+    "DB_PORT",
+    getenv("DB_PORT") ?: 3306
+);
+
+define(
+    "DB_USER",
+    getenv("DB_USER") ?: "root"
+);
+
+define(
+    "DB_PASS",
+    getenv("DB_PASS") ?: ""
+);
+
+define(
+    "DB_NAME",
+    getenv("DB_NAME") ?: "db_foodconnect"
+);
 
 /* =========================================================
    ADMIN PORTAL SECURITY
@@ -22,5 +38,5 @@ define("DB_NAME", "db_foodconnect");
 
 define(
     "ADMIN_PORTAL_ACCESS_CODE",
-    "FCADMIN2026"
+    getenv("ADMIN_PORTAL_ACCESS_CODE") ?: "FCADMIN2026"
 );
