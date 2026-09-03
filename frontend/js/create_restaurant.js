@@ -4,7 +4,7 @@
    API PATHS
    ========================================================= */
 
-const API_BASE = "/FoodConnect/api";
+const API_BASE = "/api";
 
 const API = {
     getApplication:
@@ -663,7 +663,7 @@ async function openRealCustomerPreview() {
     }
 
     previewWindow.location.href =
-        "/FoodConnect/frontend/html/restaurant.html?preview=owner";
+        "/frontend/html/restaurant.html?preview=owner";
 }
 
 /* =========================================================
@@ -892,7 +892,7 @@ async function loadApplication() {
 
         if (response.status === 401) {
             window.location.href =
-                "/FoodConnect/frontend/html/login.html";
+                "/frontend/html/login.html";
 
             return;
         }
@@ -2150,7 +2150,7 @@ async function saveApplication(
 
         if (response.status === 401) {
             window.location.href =
-                "/FoodConnect/frontend/html/login.html";
+                "/frontend/html/login.html";
 
             return false;
         }
@@ -2195,7 +2195,7 @@ async function saveApplication(
 
     window.setTimeout(() => {
         window.location.href =
-            "/FoodConnect/frontend/html/owner_dashboard.html";
+            "/frontend/html/owner_dashboard.html";
     }, 1200);
 
     return true;
@@ -2419,7 +2419,7 @@ function renderRestaurantLogo(
             "/"
         )
             ? cleanedPath
-            : `/FoodConnect/${cleanedPath}`;
+            : `/${cleanedPath}`;
 
     renderRestaurantLogoUrl(
         logoUrl
@@ -2479,7 +2479,7 @@ function renderReviewLogo(
                     "/"
                 )
                     ? cleanedPath
-                    : `/FoodConnect/${cleanedPath}`
+                    : `/${cleanedPath}`
             )
             : "";
 
@@ -2523,7 +2523,7 @@ function resolveRestaurantLogoUrl(
         return cleanedPath;
     }
 
-    return `/FoodConnect/${cleanedPath}`;
+    return `/${cleanedPath}`;
 }
 
 function formatPeso(
@@ -3243,7 +3243,7 @@ async function handleLogout() {
         );
     } finally {
         window.location.href =
-            "/FoodConnect/frontend/html/login.html";
+            "/frontend/html/login.html";
     }
 }
 
@@ -3265,7 +3265,7 @@ function redirectApprovedOwner(
         businessStatus === "active"
     ) {
         window.location.href =
-"/FoodConnect/frontend/html/owner_dashboard.html"
+"/frontend/html/owner_dashboard.html"
         return;
     }
 
@@ -3277,7 +3277,7 @@ function redirectApprovedOwner(
 
     window.setTimeout(() => {
         window.location.href =
-"/FoodConnect/frontend/html/owner_dashboard.html"    }, 1200);
+"/frontend/html/owner_dashboard.html"    }, 1200);
 }
 
 function updateDescriptionCounter() {

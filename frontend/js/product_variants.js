@@ -1,7 +1,7 @@
 "use strict";
 
 (() => {
-  const API_BASE = "/FoodConnect/api";
+  const API_BASE = "/api";
 
   const structure =
     document.getElementById("productStructure");

@@ -22,7 +22,7 @@ function clearCustomerSession(): void
             "",
             [
                 "expires" => time() - 3600,
-                "path" => $params["path"] ?? "/FoodConnect",
+                "path" => $params["path"] ?? "/",
                 "domain" => $params["domain"] ?? "",
                 "secure" => $params["secure"] ?? false,
                 "httponly" => $params["httponly"] ?? true,
@@ -38,7 +38,7 @@ function clearCustomerSession(): void
         "",
         [
             "expires" => time() - 3600,
-            "path" => "/FoodConnect",
+            "path" => "/",
             "domain" => "",
             "secure" => false,
             "httponly" => true,

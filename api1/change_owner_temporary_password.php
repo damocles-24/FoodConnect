@@ -42,7 +42,7 @@ function clear_owner_trusted_cookie_for_password_change(): void
         "",
         [
             "expires" => time() - 3600,
-            "path" => "/FoodConnect",
+            "path" => "/",
             "secure" => request_is_https_for_owner_password(),
             "httponly" => true,
             "samesite" => "Lax"

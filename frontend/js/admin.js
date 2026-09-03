@@ -1,7 +1,7 @@
 "use strict";
 
 const API_BASE =
-  "/FoodConnect/api";
+  "/api";
 
 /* =========================
    LOGIN AND SETUP ELEMENTS
@@ -6437,7 +6437,7 @@ function bindApplicationReviewControls(
       }
 
       const previewUrl =
-        "/FoodConnect/frontend/html/restaurant.html" +
+        "/frontend/html/restaurant.html" +
         `?preview=admin&application_id=${encodeURIComponent(
           applicationId
         )}`;

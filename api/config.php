@@ -24,7 +24,7 @@ define(
 
 define(
     "DB_PASS",
-    getenv("DB_PASS") ?: ""
+    getenv("DB_PASS") ?: "FoodConnectSystem202608242005"
 );
 
 define(
@@ -40,3 +40,4 @@ define(
     "ADMIN_PORTAL_ACCESS_CODE",
     getenv("ADMIN_PORTAL_ACCESS_CODE") ?: "FCADMIN2026"
 );
+

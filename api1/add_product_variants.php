@@ -552,7 +552,7 @@ try {
                 $absolutePath;
 
             $imagePath =
-                "/FoodConnect/" .
+                "/" .
                 $relativeDirectory .
                 "/" .
                 $filename;

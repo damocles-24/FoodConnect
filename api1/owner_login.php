@@ -138,7 +138,7 @@ function clear_owner_trusted_cookie(): void
                 time() - 3600,
 
             "path" =>
-                "/FoodConnect",
+                "/",
 
             "secure" =>
                 request_is_https(),
@@ -702,13 +702,13 @@ if (
     $restaurantId > 0
 ) {
     $redirectUrl =
-        "/FoodConnect/frontend/html/owner_dashboard.html";
+        "/frontend/html/owner_dashboard.html";
 
     $onboardingRequired =
         false;
 } else {
     $redirectUrl =
-        "/FoodConnect/frontend/html/create_restaurant.html";
+        "/frontend/html/create_restaurant.html";
 
     $onboardingRequired =
         true;

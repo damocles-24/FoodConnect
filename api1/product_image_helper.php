@@ -120,7 +120,7 @@ function save_product_image(
     }
 
     return
-        "/FoodConnect/" .
+        "/" .
         $relativeDirectory .
         "/" .
         $filename;
@@ -134,7 +134,7 @@ function delete_product_image(
     );
 
     $allowedPrefix =
-    "/FoodConnect/uploads/product_images/";
+    "/uploads/product_images/";
 
 if (
     $imagePath === "" ||
@@ -150,7 +150,7 @@ if (
         substr(
             $imagePath,
             strlen(
-                "/FoodConnect/"
+                "/"
             )
         );
 

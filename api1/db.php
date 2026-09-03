@@ -8,6 +8,12 @@
 //
 // Cloud credentials are intentionally NOT hard-coded in this file.
 
+/*
+ * FoodConnect application timezone.
+ * Philippines uses UTC+8 and does not observe daylight saving time.
+ */
+date_default_timezone_set("Asia/Manila");
+
 require_once __DIR__ . "/config.php";
 
 $databaseLocalFile =
@@ -218,6 +224,19 @@ if (!$connected) {
 if (!$conn->set_charset("utf8mb4")) {
     error_log(
         "FoodConnect could not set utf8mb4: "
+        . $conn->error
+    );
+}
+
+/*
+ * Keep MySQL timestamps aligned with Asia/Manila.
+ *
+ * A numeric offset is used because it works even when the MySQL server
+ * does not have named timezone tables installed.
+ */
+if (!$conn->query("SET time_zone = '+08:00'")) {
+    error_log(
+        "FoodConnect could not set MySQL timezone: "
         . $conn->error
     );
 }

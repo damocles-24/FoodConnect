@@ -1,4 +1,4 @@
-const API = "/FoodConnect/api";
+const API = "/api";
 
 const profileForm = document.getElementById("profileForm");
 const passwordForm = document.getElementById("passwordForm");
@@ -68,7 +68,7 @@ async function readJson(response) {
 }
 
 function redirectToLogin() {
-  window.location.href = "login.html";
+  window.location.href = "/frontend/html/login.html";
 }
 
 async function loadProfile() {
@@ -441,7 +441,7 @@ confirmDeactivateBtn?.addEventListener("click", async () => {
     );
 
     setTimeout(() => {
-      window.location.href = "index.html";
+      window.location.href = "/";
     }, 900);
   } catch (error) {
     showStatus(
@@ -463,7 +463,19 @@ logoutSettingsBtn?.addEventListener("click", () => {
   window.location.href = `${API}/logout.php`;
 });
 
-cancelBtn?.addEventListener("click", () => history.back());
-headerBackBtn?.addEventListener("click", () => history.back());
+cancelBtn?.addEventListener(
+  "click",
+  () => {
+    loadProfile();
+    clearStatus(profileStatus);
+  }
+);
+
+headerBackBtn?.addEventListener(
+  "click",
+  () => {
+    window.location.href = "/";
+  }
+);
 
 loadProfile();

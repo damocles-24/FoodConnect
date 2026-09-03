@@ -14,14 +14,11 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
-SET @@SESSION.SQL_LOG_BIN= 0;
 
 --
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '2d8691b7-980f-11f1-a127-d6fef8c650af:1-1624';
 
 --
 -- Table structure for table `tbl_activity_logs`
@@ -963,10 +960,10 @@ LOCK TABLES `tbl_users` WRITE;
 INSERT INTO `tbl_users` VALUES (12,NULL,'customer','Cj','Tamayo','Porto','carlosjaymiguel67@gmail.com','','1234 Hello, Poblacion, City of Alaminos, Pangasinan, Philippines','$2y$10$0pZX3FKO7GjRcebhrx2ZdOERZNfE4SZh9cfJQ5D6pvAhDgxtiv/IO',0,1,'2026-03-01 14:15:54',NULL,NULL,NULL,NULL,1,NULL,NULL),(17,NULL,'admin','Carlos Jay Miguel T. Porto',NULL,NULL,'foodconnectv1@gmail.com','+639457309228',NULL,'$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq',0,1,'2026-07-16 06:02:12',NULL,NULL,NULL,NULL,1,NULL,NULL),(27,6,'owner','Jemillene ',NULL,'Laurente','gelracho07@gmail.com','+639295096884',NULL,'$2y$10$/iRsgy9Txea.Qjnc55PHd.G0o8WegRV3MIIIUviSubye8MgY8G9OC',0,1,'2026-08-14 18:29:16',NULL,NULL,NULL,NULL,1,NULL,NULL),(28,NULL,'owner','Mary Joy Peralta',NULL,NULL,'ianc18864@gmail.com','+639273980482',NULL,'$2y$10$plWaoFzqAxvICs1n2suZDO/2vixRFzckzL4D9iXCGbVrGCYX3J25i',0,0,'2026-08-16 16:14:17',NULL,NULL,NULL,NULL,0,'f202e730ca554b00b16a39c7a5237834795979619b2eda3ddd04a9d7f8d5a08c','2026-08-18 00:14:20'),(29,7,'owner','Mary Joy Peralta',NULL,NULL,'jaisfc2026@gmail.com','+639273980481',NULL,'$2y$10$fc6cWhi8Iwgw7dFbi8Fy0O.SYjUnC4zjedPITeolCiDbx82to9oSe',0,1,'2026-08-16 16:33:17',NULL,NULL,NULL,NULL,1,NULL,NULL),(30,8,'owner','Rizza D. Ranoy',NULL,NULL,'alonsfc67@gmail.com','+639165843190',NULL,'$2y$10$WLsZSXZsNfMFEqLuRxyLEuy./Or1MOZfA40HtQgrFZKLAxmhJdIiq',0,1,'2026-08-17 06:43:03',NULL,NULL,NULL,NULL,1,NULL,NULL),(31,9,'owner','Dary Apolinario Castro',NULL,NULL,'galleyfc8@gmail.com','+639956327964',NULL,'$2y$10$2dY7d8qpfSzCGRlUiMoewO5HAWgoxs74g5vcdLCZ.1ATGpk1CVRlC',0,1,'2026-08-17 11:10:39',NULL,NULL,NULL,NULL,1,NULL,NULL),(32,NULL,'customer','Gel','Racho','Recepcion','eeegggihtloh@gmail.com','+639295096884','V. Racho St., San Roque, City of Alaminos, Pangasinan, Philippines','$2y$10$S2uADG/Gnwp1RWf2/5.LiutBJkGa10Vf9c2DsQ0riVxGcx3vFEfUe',0,1,'2026-08-25 13:11:30','$2y$10$2hEcls6Xh32CLVG3NsgVO.zr3QxAH1WFpZy54SvNcZxeW30fGkUpO','2026-09-24 21:13:12',NULL,NULL,1,NULL,NULL),(33,6,'delivery_staff','Ian Reigh','Pagador','Dela Cruz','iandelacruz@gmail.com','+639123456789','Basta, Bolaney, City of Alaminos, Pangasinan, Philippines','$2y$10$prmjFVPxWFQWTBhPJFPH8.k1/wfd6UmdSWgcxHYglnycmzrxWmu7e',1,1,'2026-08-25 13:27:10',NULL,NULL,NULL,NULL,1,NULL,NULL),(34,6,'cashier','Angel','R','Recepcion','angelrecep123@gmail.com','+639112233444','Basta, San Roque, City of Alaminos, Pangasinan, Philippines','$2y$10$A.ks7wrNOmb41cLE13pXueHJqYWC/3XFlXxAJfAcob4tURzZy0Yya',0,1,'2026-08-25 13:29:58',NULL,NULL,NULL,NULL,1,NULL,NULL);
 /*!40000 ALTER TABLE `tbl_users` ENABLE KEYS */;
 UNLOCK TABLES;
-SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

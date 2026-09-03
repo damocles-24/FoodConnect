@@ -26,11 +26,11 @@ function goToCart() {
   );
 
   window.location.href =
-    "cart.html";
+    "/frontend/html/cart.html";
 }
 
 
-const API = "/FoodConnect/api";
+const API = "/api";
 
 let currentRestaurantStatus =
   "Closed";
@@ -365,7 +365,7 @@ closeRestaurantPreview?.addEventListener(
         () => {
           if (!window.closed) {
             window.location.href =
-              "/FoodConnect/frontend/html/admin.html";
+              "/frontend/html/admin.html";
           }
         },
         150
@@ -375,7 +375,7 @@ closeRestaurantPreview?.addEventListener(
     }
 
     window.location.href =
-      "/FoodConnect/frontend/html/create_restaurant.html";
+      "/frontend/html/create_restaurant.html";
   }
 );
 
@@ -440,7 +440,7 @@ closeRestaurantPreview?.addEventListener(
     return cleanedPath;
   }
 
-  return `/FoodConnect/${cleanedPath}`;
+  return `/${cleanedPath}`;
 }
 
 function formatPesoAmount(
@@ -961,13 +961,13 @@ if (
 
     if (
       /^https?:\/\//i.test(path) ||
-      path.startsWith("/FoodConnect/")
+      path.startsWith("/")
     ) {
       return path;
     }
 
     return (
-      "/FoodConnect/" +
+      "/" +
       path.replace(/^\/+/, "")
     );
   }

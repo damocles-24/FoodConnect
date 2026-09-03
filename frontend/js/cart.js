@@ -9,7 +9,7 @@ import {
   off
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-database.js";
 
-const API = "/FoodConnect/api";
+const API = "/api";
 
 let customerTrackingMaps =
   new Map();
@@ -236,13 +236,13 @@ function resolveRestaurantLogoUrl(value) {
 
     if (
         /^https?:\/\//i.test(path) ||
-        path.startsWith("/FoodConnect/")
+        path.startsWith("/")
     ) {
         return path;
     }
 
     return (
-        "/FoodConnect/" +
+        "/" +
         path.replace(/^\/+/, "")
     );
 }
@@ -704,10 +704,49 @@ function resetCartPricing() {
 }
 
 function getBackPage() {
-    return (
+    const storedPage =
         localStorage.getItem("lastPage") ||
-        "index.html"
-    );
+        "/";
+
+    try {
+        const target =
+            new URL(
+                storedPage,
+                window.location.origin
+            );
+
+        const path =
+            target.pathname
+                .replace(/\/+$/, "")
+                .toLowerCase();
+
+        /*
+         * Old local/deployment homepage paths must never
+         * be restored by the Cart "Back to Menu" button.
+         */
+        if (
+            path === "/frontend/html/index.html" ||
+            path === "/foodconnect/frontend/html/index.html" ||
+            path === "/foodconnect"
+        ) {
+            return "/";
+        }
+
+        if (
+            target.origin !==
+            window.location.origin
+        ) {
+            return "/";
+        }
+
+        return (
+            target.pathname +
+            target.search +
+            target.hash
+        );
+    } catch (_) {
+        return "/";
+    }
 }
 
 function goBackToMenu() {
@@ -748,7 +787,7 @@ function renderLoginRequired(message) {
             <div class="empty-cart-actions">
 
                 <a
-                    href="login.html"
+                    href="/frontend/html/login.html"
                     class="empty-primary-button"
                 >
                     <i class="fa-solid fa-right-to-bracket"></i>
@@ -756,7 +795,7 @@ function renderLoginRequired(message) {
                 </a>
 
                 <a
-                    href="signup.html"
+                    href="/frontend/html/signup.html"
                     class="empty-secondary-button"
                 >
                     Create Account
@@ -795,7 +834,7 @@ function renderEmptyCart() {
             <div class="empty-cart-actions">
 
                 <a
-                    href="index.html#restaurants"
+                    href="/#restaurants"
                     class="empty-primary-button"
                 >
                     <i class="fa-solid fa-store"></i>
@@ -5749,7 +5788,11 @@ function buildCustomerOrderTimeline(
         : [
             {
                 key: "waiting_for_qr",
-                label: "Waiting for QR Verification",
+                label:
+                    currentStatus === "waiting_for_qr" &&
+                    order.qr_expired === true
+                        ? "QR Expired"
+                        : "Waiting for QR Verification",
                 icon: "fa-qrcode"
             },
             {
@@ -5876,6 +5919,14 @@ function buildCustomerOrderCard(order) {
             order
         );
 
+    const customerStatusLabel =
+        status === "waiting_for_qr" &&
+        order.qr_expired === true
+            ? "QR Expired"
+            : getOrderStatusLabel(
+                status
+            );
+
     const canTrackDelivery =
     status === "out_for_delivery" &&
     Number(
@@ -5982,9 +6033,7 @@ const canCustomerCancel =
                         class="customer-order-status ${status}"
                     >
                         ${escapeHtml(
-                            getOrderStatusLabel(
-                                status
-                            )
+                            customerStatusLabel
                         )}
                     </span>
 

@@ -9,7 +9,7 @@ ini_set("display_errors", "0");
 
 session_set_cookie_params(
     0,
-    "/FoodConnect",
+    "/",
     "",
     false,
     true
@@ -452,7 +452,7 @@ respond_json([
         "Administrator login successful.",
 
     "redirect_url" =>
-        "/FoodConnect/frontend/html/admin.html",
+        "/frontend/html/admin.html",
 
     "user" => [
         "user_id" =>

@@ -100,16 +100,34 @@ if (
    REQUEST
 ========================================================= */
 
-$rawInput =
-    file_get_contents(
-        "php://input"
+$contentType =
+    strtolower(
+        trim(
+            (string)(
+                $_SERVER["CONTENT_TYPE"] ?? ""
+            )
+        )
     );
 
-$input =
-    json_decode(
-        $rawInput,
-        true
-    );
+if (
+    strpos(
+        $contentType,
+        "application/json"
+    ) !== false
+) {
+    $rawInput =
+        file_get_contents(
+            "php://input"
+        );
+
+    $input =
+        json_decode(
+            $rawInput,
+            true
+        );
+} else {
+    $input = $_POST;
+}
 
 if (!is_array($input)) {
     respond_json([
@@ -289,7 +307,8 @@ if (
 ========================================================= */
 
 $serviceAccountPath =
-    "C:/xampp/private/" .
+    dirname(__DIR__, 2) .
+    "/private/" .
     "foodconnect-94d23-firebase-adminsdk-fbsvc-1ae7580248.json";
 
 if (!is_file($serviceAccountPath)) {

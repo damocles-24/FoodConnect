@@ -16,12 +16,72 @@ function goToCart() {
     window.location.href
   );
 
-  window.location.href = "cart.html";
+  window.location.href = "/frontend/html/cart.html";
 }
 
 window.API =
   window.API ||
-  "/FoodConnect/api";
+  "/api";
+
+/*
+ * Production route guard.
+ *
+ * Older local/deployment responses may still contain:
+ * /FoodConnect/frontend/html/...
+ *
+ * On the live site, public_html is already the web root,
+ * so the /FoodConnect prefix must be removed.
+ */
+function normalizeFoodConnectDestination(
+  destination,
+  fallback = "/"
+) {
+  const raw =
+    String(destination || "")
+      .trim();
+
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    const url =
+      new URL(
+        raw,
+        window.location.origin
+      );
+
+    if (
+      url.origin !==
+      window.location.origin
+    ) {
+      return fallback;
+    }
+
+    let pathname =
+      url.pathname.replace(
+        /^\/FoodConnect(?=\/|$)/i,
+        ""
+      );
+
+    if (!pathname) {
+      pathname = "/";
+    }
+
+    if (!pathname.startsWith("/")) {
+      pathname =
+        "/" + pathname;
+    }
+
+    return (
+      pathname +
+      url.search +
+      url.hash
+    );
+  } catch (_) {
+    return fallback;
+  }
+}
 
 
 async function updateHomepageCartBadge() {
@@ -184,8 +244,6 @@ document.addEventListener(
       document.getElementById(
         "staffLoginBtn"
       );
-
-    updateHomepageCartBadge();
 
     const staffForgotPasswordBtn =
       document.getElementById(
@@ -1982,21 +2040,27 @@ let restaurantsPageCards = [];
           window.location.pathname
             .toLowerCase();
 
+        const isHomepage =
+          currentPage === "/" ||
+          currentPage.endsWith("/index.html") ||
+          currentPage.endsWith("/frontend/html/index.html");
+
         if (
           role === "owner" &&
-          currentPage.includes(
-            "index.html"
-          )
+          isHomepage
         ) {
+          const ownerFallback =
+            Number(
+              data.user
+                ?.restaurant_id || 0
+            ) > 0
+              ? "/frontend/html/owner_dashboard.html"
+              : "/frontend/html/create_restaurant.html";
+
           const ownerDestination =
-            data.owner_redirect_url ||
-            (
-              Number(
-                data.user
-                  ?.restaurant_id || 0
-              ) > 0
-                ? "owner_dashboard.html"
-                : "create_restaurant.html"
+            normalizeFoodConnectDestination(
+              data.owner_redirect_url,
+              ownerFallback
             );
 
           window.location.href =
@@ -2064,6 +2128,8 @@ let restaurantsPageCards = [];
             "none";
         }
       }
+
+      return data;
     }
 
     /* =========================
@@ -2251,7 +2317,7 @@ function createRestaurantCard(
 
       <a
         class="card-action restaurant-link"
-        href="restaurant.html?restaurant_id=${restaurantId}"
+        href="/frontend/html/restaurant.html?restaurant_id=${restaurantId}"
       >
 
         View Restaurant
@@ -3220,7 +3286,7 @@ function updateAllRestaurantCards() {
       "click",
       () => {
         window.location.href =
-          "login.html";
+          "/frontend/html/login.html";
       }
     );
 
@@ -3228,7 +3294,7 @@ function updateAllRestaurantCards() {
       "click",
       () => {
         window.location.href =
-          "signup.html";
+          "/frontend/html/signup.html";
       }
     );
 
@@ -3252,7 +3318,7 @@ function updateAllRestaurantCards() {
 
         if (!data.logged_in) {
           window.location.href =
-            "login.html";
+            "/frontend/html/login.html";
 
           return;
         }
@@ -3263,37 +3329,42 @@ function updateAllRestaurantCards() {
           ).toLowerCase();
 
         switch (role) {
-          case "owner":
+          case "owner": {
+            const ownerFallback =
+              Number(
+                data.user
+                  ?.restaurant_id || 0
+              ) > 0
+                ? "/frontend/html/owner_dashboard.html"
+                : "/frontend/html/create_restaurant.html";
+
             window.location.href =
-              data.owner_redirect_url ||
-              (
-                Number(
-                  data.user
-                    ?.restaurant_id || 0
-                ) > 0
-                  ? "owner_dashboard.html"
-                  : "create_restaurant.html"
+              normalizeFoodConnectDestination(
+                data.owner_redirect_url,
+                ownerFallback
               );
+
             break;
+          }
 
           case "cashier":
             window.location.href =
-              "cashier_dashboard.html";
+              "/frontend/html/cashier_dashboard.html";
             break;
 
           case "delivery_staff":
             window.location.href =
-              "delivery_dashboard.html";
+              "/frontend/html/delivery_dashboard.html";
             break;
 
           case "admin":
             window.location.href =
-              "admin.html";
+              "/frontend/html/admin.html";
             break;
 
           default:
             window.location.href =
-              "profile.html";
+              "/frontend/html/profile.html";
         }
       }
     );
@@ -3722,7 +3793,12 @@ if (
 
   window.setTimeout(() => {
     window.location.href =
-      data.redirect_url;
+      normalizeFoodConnectDestination(
+        data.redirect_url,
+        data.onboarding_required
+          ? "/frontend/html/create_restaurant.html"
+          : "/frontend/html/owner_dashboard.html"
+      );
   }, 500);
 
   return;
@@ -4154,9 +4230,14 @@ verifyOwnerCodeBtn?.addEventListener(
       );
 
       window.setTimeout(() => {
-        window.location.href =
-          data.redirect_url;
-      }, 500);
+    window.location.href =
+      normalizeFoodConnectDestination(
+        data.redirect_url,
+        data.onboarding_required
+          ? "/frontend/html/create_restaurant.html"
+          : "/frontend/html/owner_dashboard.html"
+      );
+  }, 500);
     } catch (error) {
       console.error(
         "Owner code verification failed:",
@@ -4401,7 +4482,7 @@ ownerVerificationCode?.addEventListener(
 
               window.setTimeout(() => {
                 window.location.href =
-                  "admin.html";
+                  "/frontend/html/admin.html";
               }, 450);
               break;
 
@@ -4419,7 +4500,7 @@ ownerVerificationCode?.addEventListener(
 
               window.setTimeout(() => {
                 window.location.href =
-                  "cashier_dashboard.html";
+                  "/frontend/html/cashier_dashboard.html";
               }, 450);
               break;
 
@@ -4431,7 +4512,7 @@ ownerVerificationCode?.addEventListener(
 
               window.setTimeout(() => {
                 window.location.href =
-                  "delivery_dashboard.html";
+                  "/frontend/html/delivery_dashboard.html";
               }, 450);
               break;
 
@@ -4568,7 +4649,7 @@ ownerVerificationCode?.addEventListener(
           window.setTimeout(() => {
             if (role === "cashier") {
               window.location.href =
-                "cashier_dashboard.html";
+                "/frontend/html/cashier_dashboard.html";
               return;
             }
 
@@ -4577,7 +4658,7 @@ ownerVerificationCode?.addEventListener(
               role === "delivery_coordinator"
             ) {
               window.location.href =
-                "delivery_dashboard.html";
+                "/frontend/html/delivery_dashboard.html";
               return;
             }
 
@@ -4705,7 +4786,31 @@ ownerVerificationCode?.addEventListener(
    INITIALIZE HOMEPAGE
 ========================= */
 
-setupAccountUI();
+async function refreshHomepageSessionAndCart() {
+  const auth =
+    await setupAccountUI();
+
+  const badge =
+    document.getElementById(
+      "homepageCartBadge"
+    );
+
+  if (!auth?.logged_in) {
+    if (badge) {
+      badge.hidden = true;
+      badge.textContent = "0";
+    }
+
+    return;
+  }
+
+  await updateHomepageCartBadge();
+}
+
+window.refreshHomepageSessionAndCart =
+  refreshHomepageSessionAndCart;
+
+refreshHomepageSessionAndCart();
 
 loadPublicRestaurants();
 
@@ -4871,14 +4976,14 @@ document.querySelectorAll(".toggle-password").forEach((button) => {
 
 window.addEventListener(
   "pageshow",
-  () => {
-    updateHomepageCartBadge();
-  }
-);
-
-window.addEventListener(
-  "focus",
-  () => {
-    updateHomepageCartBadge();
+  (event) => {
+    /*
+     * Only refresh after a browser back/forward cache restore.
+     * Normal page loads are already handled by
+     * refreshHomepageSessionAndCart().
+     */
+    if (event.persisted) {
+      window.refreshHomepageSessionAndCart?.();
+    }
   }
 );

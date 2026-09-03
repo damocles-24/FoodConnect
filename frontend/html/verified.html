@@ -20,7 +20,7 @@
     <p id="msg">Please wait.</p>
 
     <!-- ✅ FIXED PATH -->
-    <a class="btn" id="btn" href="/FoodConnect/frontend/html/index.html">Go to Homepage</a>
+    <a class="btn" id="btn" href="/">Go to Homepage</a>
 
     <div class="small">FoodConnect • Email Verification</div>
   </div>
@@ -38,10 +38,10 @@
       btn.textContent = "Go to Homepage";
 
       // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/index.html";
+      btn.href = "/";
 
       setTimeout(() => {
-        window.location.href = "/FoodConnect/frontend/html/index.html";
+        window.location.href = "/";
       }, 10000);
 
     } else if (status === "expired") {
@@ -50,7 +50,7 @@
       btn.textContent = "Back to Login";
 
       // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/login.html";
+      btn.href = "/frontend/html/login.html";
 
     } else {
       title.textContent = "Verification failed ⚠️";
@@ -58,7 +58,7 @@
       btn.textContent = "Back to Login";
 
       // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/login.html";
+      btn.href = "/frontend/html/login.html";
     }
   </script>
 </body>

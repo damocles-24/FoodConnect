@@ -8,7 +8,7 @@ ini_set("display_errors", "0");
 
 session_set_cookie_params(
     0,
-    "/FoodConnect",
+    "/",
     "",
     false,
     true
@@ -250,7 +250,7 @@ if ($documentStmt) {
         while ($documentRow = $documentResult->fetch_assoc()) {
             $documentRow["document_id"] = (int)$documentRow["document_id"];
             $documentRow["file_size"] = (int)$documentRow["file_size"];
-            $documentRow["view_url"] = "/FoodConnect/api/view_restaurant_verification_document.php?document_id=" . $documentRow["document_id"];
+            $documentRow["view_url"] = "/api/view_restaurant_verification_document.php?document_id=" . $documentRow["document_id"];
             $applicationItem["verification_documents"][] = $documentRow;
         }
     }

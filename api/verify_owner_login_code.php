@@ -303,7 +303,7 @@ $redirectUrl =
     trim(
         (string) (
             $pendingLogin["redirect_url"]
-            ?? "/FoodConnect/frontend/html/index.html"
+            ?? "/"
         )
     );
 
@@ -595,7 +595,7 @@ if ($trustDevice) {
             (string) $_SERVER["HTTPS"]
         ) !== "off";
 
-    $cookiePath = "/FoodConnect";
+    $cookiePath = "/";
 
 if (PHP_VERSION_ID >= 70300) {
     $cookieCreated =

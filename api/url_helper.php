@@ -4,10 +4,10 @@
  * Build absolute FoodConnect URLs without hard-coding localhost.
  *
  * Production can explicitly set FOODCONNECT_APP_URL, for example:
- *   https://foodconnect.example.com/FoodConnect
+ *   https://foodconnect.example.com
  *
  * When it is not set, the helper derives the scheme/host from the current
- * request and keeps the existing /FoodConnect deployment path.
+ * request and uses the domain root as the deployment path.
  */
 function foodconnect_base_url(): string
 {
@@ -57,7 +57,7 @@ function foodconnect_base_url(): string
         $host .= ":" . $port;
     }
 
-    return $scheme . "://" . $host . "/FoodConnect";
+    return $scheme . "://" . $host;
 }
 
 function foodconnect_url(string $path, array $query = []): string

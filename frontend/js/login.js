@@ -1,4 +1,32 @@
-const API = "/FoodConnect/api";
+const API = "/api";
+
+async function sendCustomerLogin({
+    email,
+    password,
+    remember = false
+}) {
+    const body = new URLSearchParams();
+
+    body.set("email", email);
+    body.set("password", password);
+    body.set("remember", remember ? "1" : "0");
+
+    return fetch(
+        `${API}/login.php`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type":
+                    "application/x-www-form-urlencoded;charset=UTF-8",
+                "Accept":
+                    "application/json"
+            },
+            body: body.toString()
+        }
+    );
+}
+
 
 function formatUserName(user) {
   return [
@@ -351,25 +379,11 @@ loginForm?.addEventListener(
         );
 
         try {
-            const response = await fetch(
-                `${API}/login.php`,
-                {
-                    method: "POST",
-
-                    credentials: "include",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        remember
-                    })
-                }
-            );
+            const response = await sendCustomerLogin({
+                email,
+                password,
+                remember
+            });
 
             const data =
                 await readJsonResponse(response);
@@ -443,7 +457,7 @@ loginForm?.addEventListener(
 
             window.setTimeout(() => {
                 window.location.href =
-                    "index.html";
+                    "/";
             }, 650);
         } catch (error) {
             console.error(
@@ -632,17 +646,7 @@ verifyReactivationCodeBtn?.addEventListener(
                 "success"
             );
 
-            const loginResponse = await fetch(
-                `${API}/login.php`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(pendingReactivation)
-                }
-            );
+            const loginResponse = await sendCustomerLogin(pendingReactivation);
 
             const loginData =
                 await readJsonResponse(loginResponse);
@@ -670,7 +674,7 @@ verifyReactivationCodeBtn?.addEventListener(
             );
 
             window.setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "/";
             }, 500);
         } catch (error) {
             setMessage(
@@ -1052,7 +1056,7 @@ resetForm?.addEventListener(
 
             window.setTimeout(() => {
                 window.location.href =
-                    "login.html";
+                    "/frontend/html/login.html";
             }, 1200);
         } catch (error) {
             console.error(

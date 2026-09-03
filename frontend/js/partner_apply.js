@@ -1,5 +1,5 @@
 const API_BASE =
-    "/FoodConnect/api";
+    "/api";
 
 const partnerForm =
     document.getElementById("partnerForm");

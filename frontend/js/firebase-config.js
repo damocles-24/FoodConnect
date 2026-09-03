@@ -57,7 +57,7 @@ const firebaseAuth =
 
 async function authenticateFirebaseRider() {
   const response = await fetch(
-    "/FoodConnect/api/get_firebase_rider_token.php",
+    "/api/get_firebase_rider_token.php",
     {
       method: "POST",
       credentials: "include",
@@ -135,8 +135,16 @@ async function authenticateFirebaseCustomerTracking(
     );
   }
 
+  const requestBody =
+    new URLSearchParams();
+
+  requestBody.set(
+    "order_id",
+    String(safeOrderId)
+  );
+
   const response = await fetch(
-    "/FoodConnect/api/get_firebase_customer_tracking_token.php",
+    "/api/get_firebase_customer_tracking_token.php",
     {
       method: "POST",
       credentials: "include",
@@ -144,13 +152,13 @@ async function authenticateFirebaseCustomerTracking(
 
       headers: {
         "Content-Type":
+          "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept":
           "application/json"
       },
 
-      body: JSON.stringify({
-        order_id:
-          safeOrderId
-      })
+      body:
+        requestBody.toString()
     }
   );
 

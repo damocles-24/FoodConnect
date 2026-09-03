@@ -45,7 +45,7 @@ if (ini_get("session.use_cookies")) {
             "expires" => time() - 3600,
             "path" =>
                 $params["path"] ??
-                "/FoodConnect",
+                "/",
             "domain" =>
                 $params["domain"] ?? "",
             "secure" =>
@@ -88,7 +88,7 @@ setcookie(
     "",
     [
         "expires" => time() - 3600,
-        "path" => "/FoodConnect",
+        "path" => "/",
         "domain" => "",
         "secure" => false,
         "httponly" => true,
@@ -107,7 +107,7 @@ setcookie(
  */
 
 header(
-    "Location: /FoodConnect/frontend/html/index.html"
+    "Location: /"
 );
 
 exit;

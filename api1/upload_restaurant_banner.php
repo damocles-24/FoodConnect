@@ -25,7 +25,7 @@ ini_set(
 
 session_set_cookie_params(
     0,
-    "/FoodConnect",
+    "/",
     "",
     false,
     true
@@ -417,7 +417,7 @@ respond_json(
         "banner_path" =>
             $relativePath,
         "banner_url" =>
-            "/FoodConnect/" .
+            "/" .
             $relativePath,
         "original_name" =>
             $originalName

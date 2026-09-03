@@ -7,7 +7,7 @@ ini_set("display_errors", "0");
 
 session_set_cookie_params(
     0,
-    "/FoodConnect",
+    "/",
     "",
     false,
     true
@@ -31,12 +31,20 @@ function respond_json(array $data, int $statusCode = 200): void
     exit;
 }
 
-$input = json_decode(
-    file_get_contents("php://input"),
-    true
+$contentType = strtolower(
+    (string) ($_SERVER["CONTENT_TYPE"] ?? "")
 );
 
-if (!is_array($input)) {
+if (str_contains($contentType, "application/json")) {
+    $input = json_decode(
+        file_get_contents("php://input"),
+        true
+    );
+} else {
+    $input = $_POST;
+}
+
+if (!is_array($input) || !$input) {
     respond_json(
         [
             "error" => "Invalid request data."
@@ -308,7 +316,7 @@ if ($remember) {
         $cookieValue,
         [
             "expires" => $expiresTimestamp,
-            "path" => "/FoodConnect",
+            "path" => "/",
             "secure" => false,
             "httponly" => true,
             "samesite" => "Lax"
@@ -339,7 +347,7 @@ if ($remember) {
         "",
         [
             "expires" => time() - 3600,
-            "path" => "/FoodConnect",
+            "path" => "/",
             "secure" => false,
             "httponly" => true,
             "samesite" => "Lax"

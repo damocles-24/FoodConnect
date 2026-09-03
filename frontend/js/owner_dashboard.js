@@ -1515,7 +1515,7 @@ async function saveActivityLog(
    API CONFIGURATION
 ========================= */
 
-const OWNER_API_BASE = "/FoodConnect/api";
+const OWNER_API_BASE = "/api";
 
 /* =========================
    OWNER AND RESTAURANT IDENTITY
@@ -1577,7 +1577,7 @@ async function loadOwnerIdentity() {
       !data.logged_in
     ) {
       window.location.href =
-        "/FoodConnect/frontend/html/index.html";
+        "/";
 
       return false;
     }
@@ -1607,7 +1607,7 @@ async function loadOwnerIdentity() {
     ) {
       window.location.href =
         data.owner_redirect_url ||
-        "/FoodConnect/frontend/html/create_restaurant.html";
+        "/frontend/html/create_restaurant.html";
 
       return false;
     }
@@ -1676,7 +1676,7 @@ function normalizeOwnerApiUrl(url) {
    * prevents PHP session cookies from being lost.
    */
   return value.replace(
-    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/FoodConnect\/api/i,
+    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/\/api/i,
     OWNER_API_BASE
   );
 }
@@ -8743,7 +8743,7 @@ closeRestockModal?.addEventListener(
   closeRestockDialog
 );
 logoutBtn?.addEventListener("click", () => {
-  window.location.href = "/FoodConnect/api/logout.php";
+  window.location.href = "/api/logout.php";
 });
 
 
@@ -10300,14 +10300,14 @@ function resolveSettingsLogoUrl(
       "https://"
     ) ||
     normalizedPath.startsWith(
-      "/FoodConnect/"
+      "/"
     )
   ) {
     return normalizedPath;
   }
 
   return (
-    "/FoodConnect/" +
+    "/" +
     normalizedPath.replace(
       /^\/+/,
       ""

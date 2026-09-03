@@ -1,7 +1,7 @@
 "use strict";
 
 (() => {
-  const API_BASE = "/FoodConnect/api";
+  const API_BASE = "/api";
   const REQUIRED_TYPES = ["bir_2303", "restaurant_menu", "applicant_id"];
   const statusIds = {
     bir_2303: "verificationBir2303Status",
