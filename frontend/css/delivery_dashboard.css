@@ -1872,3 +1872,49 @@ img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
 }
+
+/* =========================================================
+   FOODCONNECT DELIVERY LOGO SIZE FIX
+   Keep delivery header logo consistent with other dashboards.
+   ========================================================= */
+
+body[data-fc-page="delivery"] .delivery-logo-shell {
+  width: 45px !important;
+  height: 45px !important;
+  flex: 0 0 45px !important;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+}
+
+body[data-fc-page="delivery"] .delivery-logo-shell .delivery-logo {
+  width: 45px !important;
+  height: 45px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  object-fit: contain !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+
+  transform: none !important;
+}
+
+@media (max-width: 540px) {
+  body[data-fc-page="delivery"] .delivery-logo-shell {
+    width: 42px !important;
+    height: 42px !important;
+    flex: 0 0 42px !important;
+  }
+
+  body[data-fc-page="delivery"] .delivery-logo-shell .delivery-logo {
+    width: 42px !important;
+    height: 42px !important;
+    transform: none !important;
+  }
+}

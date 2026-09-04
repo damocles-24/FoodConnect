@@ -40,6 +40,16 @@ let automaticReceiptPrintTimer = null;
 let automaticReceiptPrintErrorShown = false;
 
 /* =========================================
+   CASHIER POLLING INTERVALS
+   Keep the dashboard responsive without
+   sending unnecessary requests to the server.
+========================================= */
+
+const CASHIER_ORDER_POLL_INTERVAL_MS = 5000;
+const CASHIER_NOTIFICATION_POLL_INTERVAL_MS = 10000;
+const RECEIPT_PRINT_POLL_INTERVAL_MS = 3000;
+
+/* =========================================
    QR SCANNER STATE
 ========================================= */
 
@@ -67,13 +77,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 1200);
 
   automaticReceiptPrintTimer = setInterval(() => {
+    if (document.hidden) {
+      return;
+    }
+
     processAutomaticReceiptPrintQueue();
-  }, 2000);
+  }, RECEIPT_PRINT_POLL_INTERVAL_MS);
 
   setInterval(() => {
+    if (document.hidden) {
+      return;
+    }
+
     loadOrders();
+  }, CASHIER_ORDER_POLL_INTERVAL_MS);
+
+  setInterval(() => {
+    if (document.hidden) {
+      return;
+    }
+
     loadCashierNotifications();
-  }, 5000);
+  }, CASHIER_NOTIFICATION_POLL_INTERVAL_MS);
+
+  /*
+   * Browsers keep interval timers alive even when a tab is in the
+   * background. Skip network polling while hidden, then refresh all
+   * cashier data immediately when the cashier returns to the tab.
+   */
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (document.hidden) {
+        return;
+      }
+
+      loadOrders();
+      loadCashierNotifications();
+      processAutomaticReceiptPrintQueue();
+    }
+  );
 
   /* =========================================
      ORDER FILTERS AND REFRESH

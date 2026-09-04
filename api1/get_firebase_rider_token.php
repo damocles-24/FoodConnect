@@ -59,12 +59,17 @@ if (
 
 
 /* =========================================================
-   FOODCONNECT CUSTOMER SESSION
+   FOODCONNECT RIDER SESSION
 ========================================================= */
 
-$customerId =
+$riderId =
     isset($_SESSION["user_id"])
         ? (int)$_SESSION["user_id"]
+        : 0;
+
+$restaurantId =
+    isset($_SESSION["restaurant_id"])
+        ? (int)$_SESSION["restaurant_id"]
         : 0;
 
 $sessionRole =
@@ -76,208 +81,108 @@ $sessionRole =
         )
     );
 
-if ($customerId <= 0) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Your session has expired or you do not have access. Please log in again. Please log in again."
-    ], 401);
-}
-
 if (
-    $sessionRole !== "" &&
-    $sessionRole !== "customer"
+    $riderId <= 0 ||
+    $restaurantId <= 0
 ) {
     respond_json([
         "success" => false,
         "message" =>
-            "Only customers can access delivery tracking."
+            "Your session has expired or you do not have access. Please log in again."
+    ], 401);
+}
+
+/*
+ * The database verification below is authoritative.
+ * This early role check also blocks another logged-in
+ * FoodConnect role from requesting a rider token.
+ */
+if (
+    $sessionRole !== "" &&
+    $sessionRole !== "delivery_staff"
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "Only delivery staff can access rider GPS tracking."
     ], 403);
 }
 
 
 /* =========================================================
-   REQUEST
+   VERIFY ACTIVE DELIVERY RIDER ACCOUNT
 ========================================================= */
 
-$rawInput =
-    file_get_contents(
-        "php://input"
-    );
-
-$input =
-    json_decode(
-        $rawInput,
-        true
-    );
-
-if (!is_array($input)) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Invalid tracking request."
-    ], 400);
-}
-
-$orderId =
-    isset($input["order_id"])
-        ? (int)$input["order_id"]
-        : 0;
-
-if ($orderId <= 0) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "A valid order ID is required."
-    ], 400);
-}
-
-
-/* =========================================================
-   VERIFY CUSTOMER ACCOUNT
-========================================================= */
-
-$userStmt =
+$riderStmt =
     $conn->prepare("
         SELECT
             user_id,
+            restaurant_id,
             role,
             status
         FROM tbl_users
         WHERE user_id = ?
-          AND role = 'customer'
+          AND restaurant_id = ?
+          AND role = 'delivery_staff'
           AND status = 1
         LIMIT 1
     ");
 
-if (!$userStmt) {
+if (!$riderStmt) {
+    error_log(
+        "Firebase rider token: unable to prepare rider verification query: " .
+        $conn->error
+    );
+
     respond_json([
         "success" => false,
         "message" =>
-            "Unable to verify the customer account."
+            "Unable to verify the delivery rider."
     ], 500);
 }
 
-$userStmt->bind_param(
-    "i",
-    $customerId
-);
-
-$userStmt->execute();
-
-$userResult =
-    $userStmt->get_result();
-
-$customer =
-    $userResult->fetch_assoc();
-
-$userStmt->close();
-
-if (!$customer) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "This customer account is not authorized."
-    ], 403);
-}
-
-
-/* =========================================================
-   VERIFY ORDER + ACTIVE DELIVERY ASSIGNMENT
-
-   Important:
-   The customer must own the order.
-========================================================= */
-
-$orderStmt =
-    $conn->prepare("
-        SELECT
-            o.order_id,
-            o.user_id,
-            o.restaurant_id,
-            o.order_type,
-            o.order_status,
-
-            da.assignment_id,
-            da.delivery_staff_id,
-            da.delivery_status
-
-        FROM tbl_orders o
-
-        INNER JOIN tbl_delivery_assignments da
-            ON da.order_id =
-               o.order_id
-           AND da.restaurant_id =
-               o.restaurant_id
-
-        WHERE o.order_id = ?
-          AND o.user_id = ?
-          AND o.order_type = 'delivery'
-          AND da.delivery_status =
-              'out_for_delivery'
-          AND da.delivery_staff_id IS NOT NULL
-
-        ORDER BY
-            da.assignment_id DESC
-
-        LIMIT 1
-    ");
-
-if (!$orderStmt) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unable to verify this delivery order."
-    ], 500);
-}
-
-$orderStmt->bind_param(
+$riderStmt->bind_param(
     "ii",
-    $orderId,
-    $customerId
+    $riderId,
+    $restaurantId
 );
 
-$orderStmt->execute();
+$riderStmt->execute();
 
-$orderResult =
-    $orderStmt->get_result();
+$riderResult =
+    $riderStmt->get_result();
 
-$delivery =
-    $orderResult->fetch_assoc();
+$rider =
+    $riderResult->fetch_assoc();
 
-$orderStmt->close();
+$riderStmt->close();
 
-if (!$delivery) {
+if (!$rider) {
     respond_json([
         "success" => false,
         "message" =>
-            "Live rider tracking is not available for this order."
+            "This account is not authorized as an active delivery rider."
     ], 403);
 }
 
-
-/* =========================================================
-   VERIFIED DELIVERY DATA
-========================================================= */
+/*
+ * Use the database-verified values for the Firebase
+ * token instead of trusting client input.
+ */
+$riderId =
+    (int)$rider["user_id"];
 
 $restaurantId =
-    (int)$delivery["restaurant_id"];
-
-$assignmentId =
-    (int)$delivery["assignment_id"];
-
-$riderId =
-    (int)$delivery["delivery_staff_id"];
+    (int)$rider["restaurant_id"];
 
 if (
-    $restaurantId <= 0 ||
-    $assignmentId <= 0 ||
-    $riderId <= 0
+    $riderId <= 0 ||
+    $restaurantId <= 0
 ) {
     respond_json([
         "success" => false,
         "message" =>
-            "The delivery assignment is invalid."
+            "The delivery rider account is invalid."
     ], 500);
 }
 
@@ -285,7 +190,7 @@ if (
 /* =========================================================
    LOAD FIREBASE SERVICE ACCOUNT
 
-   Keep this OUTSIDE htdocs.
+   Production file stays outside public_html.
 ========================================================= */
 
 $serviceAccountPath =
@@ -384,18 +289,22 @@ if (
 
 
 /* =========================================================
-   CUSTOMER FIREBASE UID
+   RIDER FIREBASE UID
+
+   Must match:
+   rider_locations/{restaurant_id}/rider_{user_id}
 ========================================================= */
 
 $firebaseUid =
-    "customer_" .
-    $customerId;
+    "rider_" .
+    $riderId;
 
 
 /* =========================================================
    CUSTOM FIREBASE TOKEN
 
-   This token authorizes ONE delivery relationship.
+   These claims match the currently deployed
+   Realtime Database rider write/read rules.
 ========================================================= */
 
 $now =
@@ -425,35 +334,25 @@ $payload = [
 
     "claims" => [
         "role" =>
-            "customer",
+            "delivery_staff",
 
         "foodconnect_user_id" =>
-            $customerId,
+            $riderId,
 
         "restaurant_id" =>
             $restaurantId,
 
-        "order_id" =>
-            $orderId,
-
-        "assignment_id" =>
-            $assignmentId,
-
         "delivery_staff_id" =>
             $riderId,
 
-        /*
-         * Exact Firebase rider UID.
-         */
         "rider_uid" =>
-            "rider_" .
-            $riderId
+            $firebaseUid
     ]
 ];
 
 
 /* =========================================================
-   CREATE TOKEN
+   CREATE FIREBASE CUSTOM TOKEN
 ========================================================= */
 
 try {
@@ -468,14 +367,14 @@ try {
 } catch (Throwable $error) {
 
     error_log(
-        "Firebase customer tracking token error: " .
+        "Firebase rider token error: " .
         $error->getMessage()
     );
 
     respond_json([
         "success" => false,
         "message" =>
-            "Unable to create the customer tracking token."
+            "Unable to create the rider tracking token."
     ], 500);
 }
 
@@ -483,14 +382,17 @@ try {
 /* =========================================================
    RESPONSE
 
-   No private Firebase credentials are returned.
+   firebase-config.js expects:
+   - firebase.token
+   - rider.user_id
+   - rider.restaurant_id
 ========================================================= */
 
 respond_json([
     "success" => true,
 
     "message" =>
-        "Customer delivery tracking token created successfully.",
+        "Delivery rider Firebase token created successfully.",
 
     "firebase" => [
         "uid" =>
@@ -503,21 +405,14 @@ respond_json([
             3600
     ],
 
-    "tracking" => [
-        "order_id" =>
-            $orderId,
-
-        "assignment_id" =>
-            $assignmentId,
+    "rider" => [
+        "user_id" =>
+            $riderId,
 
         "restaurant_id" =>
             $restaurantId,
 
-        "delivery_staff_id" =>
-            $riderId,
-
         "rider_uid" =>
-            "rider_" .
-            $riderId
+            $firebaseUid
     ]
 ]);
