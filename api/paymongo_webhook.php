@@ -29,20 +29,11 @@ $requestMethod =
         )
     );
 
-if ($requestMethod === "GET") {
-    webhook_json([
-        "success" => true,
-        "message" =>
-            "FoodConnect PayMongo webhook endpoint is reachable.",
-        "mode" => "test"
-    ]);
-}
-
-if ($requestMethod !== "POST") {
+if (!in_array($requestMethod, ["GET", "POST"], true)) {
     webhook_json([
         "success" => false,
         "message" =>
-            "Only POST webhook requests are accepted."
+            "Only GET and POST requests are accepted."
     ], 405);
 }
 
@@ -56,10 +47,16 @@ try {
     ], 500);
 }
 
-if (
-    !defined("PAYMONGO_WEBHOOK_SECRET") ||
-    trim((string)PAYMONGO_WEBHOOK_SECRET) === ""
-) {
+if ($requestMethod === "GET") {
+    webhook_json([
+        "success" => true,
+        "message" =>
+            "FoodConnect PayMongo webhook endpoint is reachable.",
+        "mode" => paymongo_mode()
+    ]);
+}
+
+if (paymongo_webhook_secret() === "") {
     webhook_json([
         "success" => false,
         "message" =>
@@ -68,9 +65,7 @@ if (
 }
 
 $webhookSecret =
-    trim(
-        (string)PAYMONGO_WEBHOOK_SECRET
-    );
+    paymongo_webhook_secret();
 
 $rawBody =
     file_get_contents("php://input");
@@ -128,21 +123,26 @@ $timestamp =
         )
     );
 
-$testSignature =
+$signatureField =
+    paymongo_is_live()
+        ? "li"
+        : "te";
+
+$providedSignature =
     trim(
         (string)(
-            $signatureParts["te"] ?? ""
+            $signatureParts[$signatureField] ?? ""
         )
     );
 
 if (
     $timestamp === "" ||
-    $testSignature === ""
+    $providedSignature === ""
 ) {
     webhook_json([
         "success" => false,
         "message" =>
-            "Invalid Test Mode PayMongo signature."
+            "Invalid " . ucfirst(paymongo_mode()) . " Mode PayMongo signature."
     ], 401);
 }
 
@@ -177,7 +177,7 @@ $expectedSignature =
 if (
     !hash_equals(
         $expectedSignature,
-        $testSignature
+        $providedSignature
     )
 ) {
     webhook_json([
@@ -235,11 +235,11 @@ $livemode =
         $eventAttributes["livemode"] ?? false
     );
 
-if ($livemode) {
+if ($livemode !== paymongo_is_live()) {
     webhook_json([
         "success" => false,
         "message" =>
-            "Live webhook events are disabled during FoodConnect Test Mode."
+            "PayMongo webhook mode does not match the configured FoodConnect payment mode."
     ], 403);
 }
 
@@ -398,6 +398,21 @@ if (
         "success" => false,
         "message" =>
             "No paid payment was found in the PayMongo checkout session."
+    ], 422);
+}
+
+$paymentMethodType =
+    strtolower(
+        trim(
+            (string)$paymentMethodType
+        )
+    );
+
+if ($paymentMethodType !== "qrph") {
+    webhook_json([
+        "success" => false,
+        "message" =>
+            "The PayMongo payment method is not QR Ph."
     ], 422);
 }
 

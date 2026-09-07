@@ -1078,6 +1078,9 @@ function buildDeliveryDetails(delivery) {
   const amountToCollect =
     getAmountToCollect(delivery);
 
+  const paymentStatusInfo =
+    getPaymentStatusInfo(delivery);
+
     const customerLatitude =
   Number(delivery.customer_latitude);
 
@@ -1329,12 +1332,36 @@ const hasDeliveryCoordinates =
 
         <div class="delivery-detail-box">
           <span>
+            Payment Status
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              paymentStatusInfo.label
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
             Amount to Collect
           </span>
 
           <strong class="delivery-money-value">
             ₱${formatMoney(
               amountToCollect
+            )}
+          </strong>
+        </div>
+
+        <div class="delivery-detail-box">
+          <span>
+            Rider Payment Instruction
+          </span>
+
+          <strong>
+            ${escapeHTML(
+              paymentStatusInfo.instruction
             )}
           </strong>
         </div>
@@ -2625,26 +2652,145 @@ function getDeliveryStatusLabel(status) {
     "Unknown";
 }
 
-function getAmountToCollect(delivery) {
+function isCashDeliveryPayment(delivery) {
   const paymentMethod = String(
     delivery.payment_method || ""
-  ).toLowerCase();
+  )
+    .toLowerCase()
+    .trim();
+
+  return (
+    paymentMethod === "cash on delivery" ||
+    paymentMethod === "cod" ||
+    paymentMethod.includes("cash on delivery")
+  );
+}
+
+function getPaymentStatusInfo(delivery) {
+  const paymentStatus = String(
+    delivery.payment_status || ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const deliveryStatus = String(
+    delivery.delivery_status || ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const isCashDelivery =
+    isCashDeliveryPayment(delivery);
+
+  if (paymentStatus === "paid") {
+    return {
+      label: isCashDelivery
+        ? "PAID — CASH RECEIVED"
+        : "PAID ONLINE",
+      instruction:
+        "No payment to collect from the customer."
+    };
+  }
+
+  if (
+    isCashDelivery &&
+    paymentStatus === "cash_pending"
+  ) {
+    if (deliveryStatus === "completed") {
+      return {
+        label: "PAYMENT STATUS NOT RECORDED",
+        instruction:
+          "This delivery is completed, but the stored COD payment status is not marked paid. Please report this record for review."
+      };
+    }
+
+    return {
+      label: "PAYMENT DUE — COD",
+      instruction:
+        `Collect ₱${formatMoney(
+          delivery.total_amount
+        )} cash from the customer before completing the delivery.`
+    };
+  }
+
+  if (paymentStatus === "pending") {
+    return {
+      label: isCashDelivery
+        ? "PAYMENT DUE — COD"
+        : "ONLINE PAYMENT PENDING",
+      instruction: isCashDelivery
+        ? `Collect ₱${formatMoney(
+            delivery.total_amount
+          )} cash from the customer before completing the delivery.`
+        : "Do not collect cash. Online payment has not been confirmed."
+    };
+  }
+
+  if (paymentStatus === "failed") {
+    return {
+      label: "PAYMENT FAILED",
+      instruction:
+        "Do not collect or complete this order as an online-paid delivery until the payment is reviewed."
+    };
+  }
+
+  if (paymentStatus === "cancelled") {
+    return {
+      label: "PAYMENT CANCELLED",
+      instruction:
+        "No payment should be collected for this cancelled payment."
+    };
+  }
+
+  if (paymentStatus === "refunded") {
+    return {
+      label: "PAYMENT REFUNDED",
+      instruction:
+        "The payment was refunded. Do not collect another payment unless instructed by the restaurant."
+    };
+  }
+
+  return {
+    label: "PAYMENT STATUS UNKNOWN",
+    instruction:
+      "Verify the payment with the restaurant before collecting money or completing the delivery."
+  };
+}
+
+function getAmountToCollect(delivery) {
+  const paymentStatus = String(
+    delivery.payment_status || ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const deliveryStatus = String(
+    delivery.delivery_status || ""
+  )
+    .toLowerCase()
+    .trim();
 
   const totalAmount =
     Number(delivery.total_amount || 0);
 
   /*
-   * Cash and COD deliveries require collection.
-   * Online-paid orders only show the delivery fee when it
-   * has not already been included in total_amount.
-   *
-   * For the current FoodConnect version, total_amount is
-   * treated as the complete customer charge.
+   * Never ask the rider to collect money when the
+   * order is already paid, completed, or cancelled.
    */
   if (
-    paymentMethod.includes("cash") ||
-    paymentMethod.includes("cod")
+    paymentStatus === "paid" ||
+    deliveryStatus === "completed" ||
+    deliveryStatus === "cancelled"
   ) {
+    return 0;
+  }
+
+  /*
+   * Only COD requires the rider to collect cash.
+   * Online payments are confirmed by the payment
+   * provider and must never be collected again.
+   */
+  if (isCashDeliveryPayment(delivery)) {
     return totalAmount;
   }
 

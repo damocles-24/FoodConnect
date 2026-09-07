@@ -110,7 +110,7 @@ if ($requiresQrFirst && empty($order["qr_verified_at"])) {
 $amount = round((float)($order["total_amount"] ?? 0), 2);
 $amountCentavos = (int)round($amount * 100);
 if ($amountCentavos < 100) {
-    payment_json(["success" => false, "message" => "The order total is too small for this payment test."], 400);
+    payment_json(["success" => false, "message" => "The order total is too small for online payment."], 400);
 }
 
 try {
@@ -127,19 +127,389 @@ if (!function_exists("curl_init")) {
     payment_json(["success" => false, "message" => "PHP cURL is not enabled."], 500);
 }
 
+$restaurantId =
+    (int)$order["restaurant_id"];
+
+/*
+ * Production safety:
+ * Reuse an existing active PayMongo checkout session for this order
+ * instead of creating multiple payable checkout URLs.
+ */
+$existingStmt =
+    $conn->prepare("
+        SELECT
+            payment_id,
+            amount,
+            reference_number,
+            checkout_session_id
+        FROM tbl_payments
+        WHERE order_id = ?
+          AND restaurant_id = ?
+          AND provider = 'paymongo'
+          AND payment_method_type = 'qrph'
+          AND payment_status = 'pending'
+        ORDER BY payment_id DESC
+        LIMIT 1
+    ");
+
+if (!$existingStmt) {
+    payment_json([
+        "success" => false,
+        "message" => "Unable to check the existing payment session."
+    ], 500);
+}
+
+$existingStmt->bind_param(
+    "ii",
+    $orderId,
+    $restaurantId
+);
+
+if (!$existingStmt->execute()) {
+    $existingStmt->close();
+
+    payment_json([
+        "success" => false,
+        "message" => "Unable to check the existing payment session."
+    ], 500);
+}
+
+$existingPayment =
+    $existingStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$existingStmt->close();
+
+if ($existingPayment) {
+    $existingAmount =
+        round(
+            (float)($existingPayment["amount"] ?? 0),
+            2
+        );
+
+    $existingSessionId =
+        trim(
+            (string)(
+                $existingPayment["checkout_session_id"] ?? ""
+            )
+        );
+
+    $existingReference =
+        trim(
+            (string)(
+                $existingPayment["reference_number"] ?? ""
+            )
+        );
+
+    if (
+        abs($existingAmount - $amount) <= 0.009 &&
+        $existingSessionId !== "" &&
+        $existingReference !== ""
+    ) {
+        $existingCurl =
+            curl_init(
+                "https://api.paymongo.com/v1/checkout_sessions/" .
+                rawurlencode($existingSessionId)
+            );
+
+        curl_setopt_array(
+            $existingCurl,
+            [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_HTTPHEADER => [
+                    "Authorization: Basic " .
+                        base64_encode(paymongo_secret_key() . ":"),
+                    "Accept: application/json"
+                ]
+            ]
+        );
+
+        $existingResponseBody =
+            curl_exec($existingCurl);
+
+        $existingCurlError =
+            curl_error($existingCurl);
+
+        $existingHttpCode =
+            (int)curl_getinfo(
+                $existingCurl,
+                CURLINFO_HTTP_CODE
+            );
+
+        curl_close($existingCurl);
+
+        if ($existingResponseBody === false) {
+            error_log(
+                "create_paymongo_checkout.php existing-session cURL error: " .
+                $existingCurlError
+            );
+
+            payment_json([
+                "success" => false,
+                "message" => "Unable to verify the existing payment session. Please try again."
+            ], 502);
+        }
+
+        $existingResponse =
+            json_decode(
+                $existingResponseBody,
+                true
+            );
+
+        if (
+            $existingHttpCode >= 200 &&
+            $existingHttpCode < 300 &&
+            is_array($existingResponse)
+        ) {
+            $existingAttributes =
+                $existingResponse["data"]["attributes"] ?? null;
+
+            if (is_array($existingAttributes)) {
+                $existingLivemode =
+                    (bool)(
+                        $existingAttributes["livemode"] ?? false
+                    );
+
+                $existingRemoteReference =
+                    trim(
+                        (string)(
+                            $existingAttributes["reference_number"] ?? ""
+                        )
+                    );
+
+                $existingStatus =
+                    strtolower(
+                        trim(
+                            (string)(
+                                $existingAttributes["status"] ?? ""
+                            )
+                        )
+                    );
+
+                $existingCheckoutUrl =
+                    trim(
+                        (string)(
+                            $existingAttributes["checkout_url"] ?? ""
+                        )
+                    );
+
+                $existingPayments =
+                    is_array(
+                        $existingAttributes["payments"] ?? null
+                    )
+                        ? $existingAttributes["payments"]
+                        : [];
+
+                $existingAlreadyPaid = false;
+
+                foreach ($existingPayments as $existingPayAttempt) {
+                    if (!is_array($existingPayAttempt)) {
+                        continue;
+                    }
+
+                    $existingPayAttributes =
+                        is_array(
+                            $existingPayAttempt["attributes"] ?? null
+                        )
+                            ? $existingPayAttempt["attributes"]
+                            : [];
+
+                    if (
+                        strtolower(
+                            trim(
+                                (string)(
+                                    $existingPayAttributes["status"] ?? ""
+                                )
+                            )
+                        ) === "paid"
+                    ) {
+                        $existingAlreadyPaid = true;
+                        break;
+                    }
+                }
+
+                if ($existingLivemode === paymongo_is_live()) {
+                    if (
+                        $existingRemoteReference === "" ||
+                        !hash_equals(
+                            $existingReference,
+                            $existingRemoteReference
+                        )
+                    ) {
+                        payment_json([
+                            "success" => false,
+                            "message" => "The existing PayMongo payment reference does not match this order.",
+                            "error_code" => "PAYMENT_REFERENCE_MISMATCH"
+                        ], 409);
+                    }
+
+                    if ($existingAlreadyPaid) {
+                        payment_json([
+                            "success" => false,
+                            "message" => "This payment was already completed and is being confirmed. Please refresh My Orders.",
+                            "error_code" => "PAYMENT_CONFIRMATION_PENDING"
+                        ], 409);
+                    }
+
+                    if (
+                        $existingStatus === "active" &&
+                        $existingCheckoutUrl !== ""
+                    ) {
+                        payment_json([
+                            "success" => true,
+                            "message" => "Existing PayMongo checkout is ready.",
+                            "order_id" => $orderId,
+                            "checkout_session_id" => $existingSessionId,
+                            "reference_number" => $existingReference,
+                            "checkout_url" => $existingCheckoutUrl,
+                            "payment_status" => "pending",
+                            "livemode" => $existingLivemode,
+                            "reused" => true
+                        ]);
+                    }
+
+                    if ($existingStatus === "expired") {
+                        $expiredPaymentId =
+                            (int)$existingPayment["payment_id"];
+
+                        $expireLocalStmt =
+                            $conn->prepare("
+                                UPDATE tbl_payments
+                                SET payment_status = 'failed'
+                                WHERE payment_id = ?
+                                  AND payment_status = 'pending'
+                            ");
+
+                        if ($expireLocalStmt) {
+                            $expireLocalStmt->bind_param(
+                                "i",
+                                $expiredPaymentId
+                            );
+                            $expireLocalStmt->execute();
+                            $expireLocalStmt->close();
+                        }
+                    } else {
+                        payment_json([
+                            "success" => false,
+                            "message" => "The existing PayMongo checkout could not be safely reused. Please try again later.",
+                            "error_code" => "PAYMENT_SESSION_STATE_INVALID"
+                        ], 409);
+                    }
+                }
+
+            }
+        } elseif ($existingHttpCode !== 404) {
+            error_log(
+                "create_paymongo_checkout.php existing-session HTTP " .
+                $existingHttpCode
+            );
+
+            payment_json([
+                "success" => false,
+                "message" => "Unable to verify the existing payment session. Please try again."
+            ], 502);
+        }
+    } elseif (abs($existingAmount - $amount) > 0.009) {
+        payment_json([
+            "success" => false,
+            "message" => "The order total changed while a payment session is still pending. Please contact the restaurant before paying.",
+            "error_code" => "PENDING_PAYMENT_AMOUNT_MISMATCH"
+        ], 409);
+    }
+}
+
+/*
+ * Build one deterministic logical-attempt key. If the customer double-clicks
+ * or the network retries before the first request is saved locally, PayMongo
+ * receives the same payload and Idempotency-Key instead of creating a second
+ * payable Checkout Session. A later attempt gets a new seed from the latest
+ * stored payment row.
+ */
+$latestPaymentStmt =
+    $conn->prepare("
+        SELECT COALESCE(MAX(payment_id), 0) AS latest_payment_id
+        FROM tbl_payments
+        WHERE order_id = ?
+          AND restaurant_id = ?
+          AND provider = 'paymongo'
+          AND payment_method_type = 'qrph'
+    ");
+
+if (!$latestPaymentStmt) {
+    payment_json([
+        "success" => false,
+        "message" => "Unable to prepare the payment attempt."
+    ], 500);
+}
+
+$latestPaymentStmt->bind_param(
+    "ii",
+    $orderId,
+    $restaurantId
+);
+
+if (!$latestPaymentStmt->execute()) {
+    $latestPaymentStmt->close();
+
+    payment_json([
+        "success" => false,
+        "message" => "Unable to prepare the payment attempt."
+    ], 500);
+}
+
+$latestPaymentRow =
+    $latestPaymentStmt
+        ->get_result()
+        ->fetch_assoc();
+
+$latestPaymentStmt->close();
+
+$latestPaymentId =
+    (int)(
+        $latestPaymentRow["latest_payment_id"] ?? 0
+    );
+
+$attemptSeed = $latestPaymentId + 1;
+$modeMarker = paymongo_is_live() ? "L" : "T";
+
+$attemptFingerprint =
+    hash(
+        "sha256",
+        "foodconnect|qrph|" .
+        $restaurantId . "|" .
+        $orderId . "|" .
+        $amountCentavos . "|" .
+        $attemptSeed . "|" .
+        paymongo_mode()
+    );
+
 $referenceNumber =
     "FC-" .
-    (int)$order["restaurant_id"] . "-" .
+    $restaurantId . "-" .
     $orderId . "-" .
-    date("YmdHis") . "-" .
-    bin2hex(random_bytes(3));
+    $modeMarker . "-" .
+    $attemptSeed . "-" .
+    substr($attemptFingerprint, 0, 10);
+
+$idempotencyKey =
+    "foodconnect-qrph-" .
+    $attemptFingerprint;
 
 $restaurantName = trim((string)($order["restaurant_name"] ?? "FoodConnect Restaurant"));
 if ($restaurantName === "") {
     $restaurantName = "FoodConnect Restaurant";
 }
 
-$returnBase = foodconnect_url("frontend/html/cart.html");
+/*
+ * Production return URL:
+ * FoodConnect is deployed at the domain root on foodconnect.store.
+ * Do not include the old /FoodConnect development folder in PayMongo
+ * success/cancel redirects.
+ */
+$returnBase = "https://foodconnect.store/frontend/html/cart.html";
 
 $successUrl =
     $returnBase .
@@ -180,9 +550,10 @@ curl_setopt_array($curl, [
     CURLOPT_TIMEOUT => 30,
     CURLOPT_CONNECTTIMEOUT => 10,
     CURLOPT_HTTPHEADER => [
-        "Authorization: Basic " . base64_encode(PAYMONGO_SECRET_KEY . ":"),
+        "Authorization: Basic " . base64_encode(paymongo_secret_key() . ":"),
         "Content-Type: application/json",
-        "Accept: application/json"
+        "Accept: application/json",
+        "Idempotency-Key: " . $idempotencyKey
     ],
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_SLASHES)
 ]);
@@ -214,6 +585,23 @@ if (!is_array($response) || $httpCode < 200 || $httpCode >= 300) {
         "success" => false,
         "message" => $message,
         "paymongo_http_status" => $httpCode
+    ], 502);
+}
+
+$responseLivemode =
+    (bool)(
+        $response["data"]["attributes"]["livemode"] ?? false
+    );
+
+if ($responseLivemode !== paymongo_is_live()) {
+    error_log(
+        "create_paymongo_checkout.php PayMongo mode mismatch. Configured=" .
+        paymongo_mode()
+    );
+
+    payment_json([
+        "success" => false,
+        "message" => "PayMongo returned a checkout session from the wrong environment."
     ], 502);
 }
 
@@ -274,5 +662,6 @@ payment_json([
     "reference_number" => $referenceNumber,
     "checkout_url" => $checkoutUrl,
     "payment_status" => "pending",
-    "livemode" => (bool)($response["data"]["attributes"]["livemode"] ?? false)
+    "livemode" => $responseLivemode,
+    "reused" => false
 ]);

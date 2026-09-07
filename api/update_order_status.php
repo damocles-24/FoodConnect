@@ -435,6 +435,98 @@ $actorRoleLabel =
         ], 409);
     }
 
+    if (
+        $orderPaymentMethod === "PayMongo QR Ph" &&
+        $new_status === "cancelled"
+    ) {
+        if ($orderPaymentStatus === "paid") {
+            $conn->rollback();
+
+            respond_json([
+                "success" => false,
+                "message" =>
+                    "This order has already been paid through PayMongo. It cannot be cancelled until a refund workflow is handled.",
+                "error_code" =>
+                    "PAID_ONLINE_ORDER_REQUIRES_REFUND"
+            ], 409);
+        }
+
+        if ($orderPaymentStatus === "pending") {
+            /*
+             * Load the PayMongo checkout lifecycle helper only when a
+             * PayMongo cancellation actually needs it. Normal cashier
+             * status updates (for example Pending -> Preparing) must not
+             * depend on this optional cancellation helper.
+             */
+            $paymongoLifecycleHelper =
+                __DIR__ . "/paymongo_checkout_lifecycle_helper.php";
+
+            if (!is_file($paymongoLifecycleHelper)) {
+                $conn->rollback();
+
+                respond_json([
+                    "success" => false,
+                    "message" =>
+                        "Online payment cancellation is temporarily unavailable. Please try again later.",
+                    "error_code" =>
+                        "PAYMONGO_LIFECYCLE_HELPER_MISSING"
+                ], 503);
+            }
+
+            require_once $paymongoLifecycleHelper;
+
+            if (!function_exists("paymongo_close_pending_checkout_sessions")) {
+                $conn->rollback();
+
+                respond_json([
+                    "success" => false,
+                    "message" =>
+                        "Online payment cancellation is temporarily unavailable. Please try again later.",
+                    "error_code" =>
+                        "PAYMONGO_LIFECYCLE_HELPER_INVALID"
+                ], 503);
+            }
+
+            $paymongoCloseResult =
+                paymongo_close_pending_checkout_sessions(
+                    $conn,
+                    $order_id,
+                    $restaurant_id
+                );
+
+            if (
+                empty(
+                    $paymongoCloseResult[
+                        "safe_to_cancel"
+                    ]
+                )
+            ) {
+                $conn->rollback();
+
+                respond_json([
+                    "success" => false,
+                    "message" =>
+                        (string)(
+                            $paymongoCloseResult[
+                                "message"
+                            ] ??
+                            "The online payment could not be safely closed."
+                        ),
+                    "error_code" =>
+                        $paymongoCloseResult[
+                            "error_code"
+                        ] ??
+                        "PAYMONGO_CANCEL_BLOCKED"
+                ], (int)(
+                    $paymongoCloseResult[
+                        "http_status"
+                    ] ??
+                    409
+                ));
+            }
+        }
+    }
+
     /* =====================================================
        STATUS TRANSITIONS
     ===================================================== */
@@ -611,6 +703,14 @@ if ($new_status === "cancelled") {
             cancellation_reason = ?,
             cancelled_by = ?,
             cancelled_at = NOW(),
+
+            payment_status =
+                CASE
+                    WHEN payment_method = 'PayMongo QR Ph'
+                         AND payment_status <> 'paid'
+                        THEN 'cancelled'
+                    ELSE payment_status
+                END,
 
             processed_by_cashier_id =
                 COALESCE(

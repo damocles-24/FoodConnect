@@ -235,7 +235,7 @@ curl_setopt_array(
         CURLOPT_HTTPHEADER => [
             "Authorization: Basic " .
                 base64_encode(
-                    PAYMONGO_SECRET_KEY . ":"
+                    paymongo_secret_key() . ":"
                 ),
             "Accept: application/json"
         ]
@@ -305,6 +305,18 @@ if (!is_array($attributes)) {
         "success" => false,
         "message" => "Unable to confirm the payment right now."
     ], 502);
+}
+
+$sessionLivemode =
+    (bool)(
+        $attributes["livemode"] ?? false
+    );
+
+if ($sessionLivemode !== paymongo_is_live()) {
+    sync_json([
+        "success" => false,
+        "message" => "The PayMongo payment environment could not be verified."
+    ], 409);
 }
 
 $referenceNumber =
@@ -420,12 +432,21 @@ $source =
         : [];
 
 $paymentMethodType =
-    trim(
-        (string)(
-            $source["type"] ??
-            "qrph"
+    strtolower(
+        trim(
+            (string)(
+                $source["type"] ??
+                ""
+            )
         )
     );
+
+if ($paymentMethodType !== "qrph") {
+    sync_json([
+        "success" => false,
+        "message" => "The PayMongo payment method could not be verified as QR Ph."
+    ], 409);
+}
 
 $conn->begin_transaction();
 

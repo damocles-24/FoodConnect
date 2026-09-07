@@ -5,49 +5,100 @@
 | FoodConnect PayMongo Configuration Loader
 |--------------------------------------------------------------------------
 |
-| IMPORTANT:
-| - Keep the real PayMongo secret key ONLY in:
-|     api/config/paymongo.local.php
-| - Do not commit that local file to Git.
-| - Test Mode is intentionally required for this first integration step.
+| PayMongo secrets are loaded from the existing FoodConnect .env system via:
+|     api/config/env.php
+|
+| Required .env values:
+|     PAYMONGO_SECRET_KEY="sk_test_..." or "sk_live_..."
+|     PAYMONGO_WEBHOOK_SECRET="..."
+|
+| The environment is detected from the secret-key prefix:
+|     sk_test_...  => Test Mode
+|     sk_live_...  => Live Mode
 |
 */
 
-$paymongoLocalConfig =
-    __DIR__ . "/config/paymongo.local.php";
+require_once __DIR__ . "/config/env.php";
 
-if (!file_exists($paymongoLocalConfig)) {
+/*
+|--------------------------------------------------------------------------
+| Accessors
+|--------------------------------------------------------------------------
+*/
+
+if (!function_exists("paymongo_secret_key")) {
+    function paymongo_secret_key(): string
+    {
+        return trim(
+            (string)($_ENV["PAYMONGO_SECRET_KEY"] ?? "")
+        );
+    }
+}
+
+if (!function_exists("paymongo_webhook_secret")) {
+    function paymongo_webhook_secret(): string
+    {
+        return trim(
+            (string)($_ENV["PAYMONGO_WEBHOOK_SECRET"] ?? "")
+        );
+    }
+}
+
+if (!function_exists("paymongo_is_live")) {
+    function paymongo_is_live(): bool
+    {
+        return strpos(
+            paymongo_secret_key(),
+            "sk_live_"
+        ) === 0;
+    }
+}
+
+if (!function_exists("paymongo_mode")) {
+    function paymongo_mode(): string
+    {
+        return paymongo_is_live()
+            ? "live"
+            : "test";
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Validate configuration
+|--------------------------------------------------------------------------
+*/
+
+$paymongoSecretKey = paymongo_secret_key();
+
+if ($paymongoSecretKey === "") {
     throw new RuntimeException(
-        "PayMongo local configuration is missing. " .
-        "Create api/config/paymongo.local.php from " .
-        "api/config/paymongo.local.example.php."
+        "PAYMONGO_SECRET_KEY is not configured in the FoodConnect .env file."
     );
 }
 
-require $paymongoLocalConfig;
+$paymongoIsTest =
+    strpos($paymongoSecretKey, "sk_test_") === 0;
 
+$paymongoIsLive =
+    strpos($paymongoSecretKey, "sk_live_") === 0;
+
+if (!$paymongoIsTest && !$paymongoIsLive) {
+    throw new RuntimeException(
+        "PAYMONGO_SECRET_KEY must be a valid PayMongo test or live secret key."
+    );
+}
+
+/*
+| In live mode, fail closed if webhook verification is not configured.
+| This prevents FoodConnect from accepting real QR Ph payments without a
+| working PayMongo webhook signature secret.
+*/
 if (
-    !defined("PAYMONGO_SECRET_KEY") ||
-    trim((string)PAYMONGO_SECRET_KEY) === ""
+    $paymongoIsLive &&
+    paymongo_webhook_secret() === ""
 ) {
     throw new RuntimeException(
-        "PAYMONGO_SECRET_KEY is not configured."
+        "PAYMONGO_WEBHOOK_SECRET is required in live mode."
     );
-}
-
-if (
-    strpos(
-        trim((string)PAYMONGO_SECRET_KEY),
-        "sk_test_"
-    ) !== 0
-) {
-    throw new RuntimeException(
-        "FoodConnect Step 1 only accepts a PayMongo TEST secret key."
-    );
-}
-
-
-/* Optional PayMongo webhook secret. */
-if (defined("PAYMONGO_WEBHOOK_SECRET")) {
-    $paymongoWebhookSecret = trim((string)PAYMONGO_WEBHOOK_SECRET);
 }

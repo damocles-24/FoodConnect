@@ -26,6 +26,7 @@ require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/order_stock_helper.php";
+require_once __DIR__ . "/paymongo_checkout_lifecycle_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -229,6 +230,8 @@ try {
                 o.order_type,
                 o.order_status,
                 o.qr_verified_at,
+                o.payment_method,
+                o.payment_status,
                 o.total_amount,
                 o.created_at,
 
@@ -362,6 +365,90 @@ if (
 }
 
     /* =====================================================
+       CLOSE PENDING PAYMONGO CHECKOUT BEFORE CANCELLATION
+
+       A PayMongo Checkout Session remains payable until it is
+       explicitly expired. Never cancel the FoodConnect order
+       while a live QR Ph checkout URL can still accept money.
+    ===================================================== */
+
+    $orderPaymentMethod =
+        trim(
+            (string)(
+                $order["payment_method"] ?? ""
+            )
+        );
+
+    $orderPaymentStatus =
+        strtolower(
+            trim(
+                (string)(
+                    $order["payment_status"] ?? ""
+                )
+            )
+        );
+
+    if ($orderPaymentMethod === "PayMongo QR Ph") {
+        if ($orderPaymentStatus === "paid") {
+            $conn->rollback();
+
+            respond_json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "This order has already been paid online and cannot be cancelled automatically. Please contact the restaurant for assistance.",
+                    "error_code" =>
+                        "PAID_ONLINE_ORDER_CANNOT_CANCEL"
+                ],
+                409
+            );
+        }
+
+        if ($orderPaymentStatus === "pending") {
+            $paymongoCloseResult =
+                paymongo_close_pending_checkout_sessions(
+                    $conn,
+                    $orderId,
+                    $restaurantId
+                );
+
+            if (
+                empty(
+                    $paymongoCloseResult[
+                        "safe_to_cancel"
+                    ]
+                )
+            ) {
+                $conn->rollback();
+
+                respond_json(
+                    [
+                        "success" => false,
+                        "message" =>
+                            (string)(
+                                $paymongoCloseResult[
+                                    "message"
+                                ] ??
+                                "The online payment could not be safely closed."
+                            ),
+                        "error_code" =>
+                            $paymongoCloseResult[
+                                "error_code"
+                            ] ??
+                            "PAYMONGO_CANCEL_BLOCKED"
+                    ],
+                    (int)(
+                        $paymongoCloseResult[
+                            "http_status"
+                        ] ??
+                        409
+                    )
+                );
+            }
+        }
+    }
+
+    /* =====================================================
        RESTORE RESERVED STOCK
     ===================================================== */
 
@@ -454,7 +541,15 @@ if (
                     'customer',
 
                 cancelled_at =
-                    NOW()
+                    NOW(),
+
+                payment_status =
+                    CASE
+                        WHEN payment_method = 'PayMongo QR Ph'
+                             AND payment_status <> 'paid'
+                            THEN 'cancelled'
+                        ELSE payment_status
+                    END
 
             WHERE order_id = ?
                 AND user_id = ?

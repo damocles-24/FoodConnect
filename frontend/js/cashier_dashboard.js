@@ -4475,16 +4475,16 @@ function formatDateTime(dateValue) {
     String(dateValue).trim();
 
   /*
-   * Cloud MySQL DATETIME values normally arrive without a timezone.
-   * Treat timezone-less values as UTC, then display them explicitly
-   * in Philippine Standard Time (Asia/Manila, UTC+8).
+   * FoodConnect stores MySQL DATETIME values in Asia/Manila.
+   * When a timestamp arrives without an explicit timezone, attach
+   * +08:00 so it is not incorrectly treated as UTC and shifted +8 hours.
    */
   const mysqlDateTimePattern =
     /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
 
   const normalizedValue =
     mysqlDateTimePattern.test(rawValue)
-      ? `${rawValue.replace(" ", "T")}Z`
+      ? `${rawValue.replace(" ", "T")}+08:00`
       : rawValue;
 
   const date =
