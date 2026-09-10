@@ -1,0 +1,37 @@
+# Disable directory listing
+Options -Indexes
+
+# Protect environment files
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Protect project/configuration files
+<FilesMatch "^(composer\.json|composer\.lock|\.gitignore|README\.md)$">
+    Require all denied
+</FilesMatch>
+
+# Enable URL rewriting
+RewriteEngine On
+
+# =========================================================
+# Protect restaurant verification documents
+# These files must only be served through the authorized
+# PHP document viewer, never directly from /uploads/.
+# =========================================================
+
+RewriteRule ^(?:FoodConnect/)?api/uploads/restaurant_verification(?:/|$) - [F,L,NC]
+
+# =========================================================
+# Redirect old /FoodConnect paths to the production root
+# =========================================================
+
+RewriteRule ^FoodConnect/?$ / [R=308,L,NC]
+RewriteRule ^FoodConnect/(.*)$ /$1 [R=308,L,NE,NC]
+
+# Block development/database files from web access
+RewriteRule ^database(?:/|$) - [F,L]
+RewriteRule ^diagrams(?:/|$) - [F,L]
+
+# Block direct web access to Composer dependencies
+RewriteRule ^vendor(?:/|$) - [F,L]

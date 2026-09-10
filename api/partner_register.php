@@ -471,9 +471,8 @@ try {
 ========================================================= */
 
 $verificationLink =
-    foodconnect_url(
-        "api/verify.php",
-        ["token" => $verificationToken]
+    foodconnect_verification_url(
+        $verificationToken
     );
 
 $safeName =

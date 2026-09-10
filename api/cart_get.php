@@ -94,6 +94,8 @@ if (empty($_SESSION["user_id"])) {
 
 /* Only authenticated carts require the remote database. */
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/product_image_helper.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 $user_id = (int)$_SESSION["user_id"];
 
@@ -1116,12 +1118,14 @@ foreach ($cartRows as $row) {
             $price_changed,
 
         "image_path" =>
-            $row["image_path"] ??
-            null,
+            normalize_product_image_path(
+                $row["image_path"] ?? null
+            ),
 
         "image" =>
-            $row["image_path"] ??
-            null,
+            normalize_product_image_path(
+                $row["image_path"] ?? null
+            ),
 
         "addon_ids" =>
             $addon_ids,
@@ -1200,6 +1204,7 @@ $cartPriceUpdateStmt->close();
 ========================================================= */
 
 $delivery_fee = 0.00;
+$delivery_pricing_type = "fixed";
 $cart_restaurant = null;
 
 /*
@@ -1312,6 +1317,19 @@ if (
             )
         );
 
+        $activeDeliveryPricing =
+            fc_delivery_pricing_get_active(
+                $conn,
+                (int) $cart_restaurant_id,
+                $delivery_fee
+            );
+
+        $delivery_pricing_type =
+            (string) (
+                $activeDeliveryPricing["pricing_type"] ??
+                "fixed"
+            );
+
         $decodedOrderTypes = json_decode(
             (string)(
                 $restaurantRow["order_types_json"] ?? ""
@@ -1397,6 +1415,9 @@ respond_json([
             $delivery_fee,
             2
         ),
+
+    "delivery_pricing_type" =>
+        $delivery_pricing_type,
 
     "order_types" =>
         $order_types

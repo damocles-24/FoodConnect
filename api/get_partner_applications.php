@@ -84,6 +84,8 @@ $sql = "
         pa.barangay,
         pa.postal_code,
         pa.delivery_fee,
+        pa.delivery_pricing_type,
+        pa.delivery_pricing_json,
         pa.application_status,
         pa.rejection_reason,
         pa.submitted_at,
@@ -214,6 +216,31 @@ while ($row = $result->fetch_assoc()) {
 
         "delivery_fee" =>
             (float) $row["delivery_fee"],
+
+        "delivery_pricing_type" =>
+            in_array(
+                strtolower((string) ($row["delivery_pricing_type"] ?? "fixed")),
+                ["fixed", "distance", "tiered"],
+                true
+            )
+                ? strtolower((string) $row["delivery_pricing_type"])
+                : "fixed",
+
+        "delivery_pricing" =>
+            (static function ($json, $legacyFee): array {
+                $decoded = json_decode((string) $json, true);
+
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+
+                return [
+                    "fixed_fee" => (float) $legacyFee
+                ];
+            })(
+                $row["delivery_pricing_json"] ?? "",
+                $row["delivery_fee"] ?? 0
+            ),
 
         "application_status" =>
             strtolower(

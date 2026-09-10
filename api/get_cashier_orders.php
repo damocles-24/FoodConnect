@@ -197,7 +197,7 @@ $sql = "
         o.cancelled_by,
         o.cancelled_at,
         o.total_amount,
-        r.delivery_fee,
+        o.delivery_fee,
         o.payment_method,
         o.payment_status,
         o.address,

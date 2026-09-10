@@ -463,19 +463,7 @@ logoutSettingsBtn?.addEventListener("click", () => {
   window.location.href = `${API}/logout.php`;
 });
 
-cancelBtn?.addEventListener(
-  "click",
-  () => {
-    loadProfile();
-    clearStatus(profileStatus);
-  }
-);
-
-headerBackBtn?.addEventListener(
-  "click",
-  () => {
-    window.location.href = "/";
-  }
-);
+cancelBtn?.addEventListener("click", () => history.back());
+headerBackBtn?.addEventListener("click", () => history.back());
 
 loadProfile();

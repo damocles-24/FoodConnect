@@ -175,6 +175,8 @@ if ($previewMode === "owner") {
             pa.business_hours_json,
             pa.order_types_json,
             pa.delivery_fee,
+            pa.delivery_pricing_type,
+            pa.delivery_pricing_json,
             pa.application_status
 
         FROM tbl_partner_applications AS pa
@@ -232,6 +234,8 @@ if ($previewMode === "owner") {
             pa.business_hours_json,
             pa.order_types_json,
             pa.delivery_fee,
+            pa.delivery_pricing_type,
+            pa.delivery_pricing_json,
             pa.application_status
 
         FROM tbl_partner_applications AS pa
@@ -423,6 +427,37 @@ respond_json(
                         $application["delivery_fee"] ?? 0
                     ),
                     2
+                ),
+
+            "delivery_pricing_type" =>
+                in_array(
+                    strtolower(
+                        (string) (
+                            $application["delivery_pricing_type"] ??
+                            "fixed"
+                        )
+                    ),
+                    ["fixed", "distance", "tiered"],
+                    true
+                )
+                    ? strtolower(
+                        (string) $application["delivery_pricing_type"]
+                    )
+                    : "fixed",
+
+            "delivery_pricing" =>
+                (static function ($json, $legacyFee): array {
+                    $decoded = json_decode((string) $json, true);
+
+                    return is_array($decoded)
+                        ? $decoded
+                        : [
+                            "fixed_fee" =>
+                                (float) $legacyFee
+                        ];
+                })(
+                    $application["delivery_pricing_json"] ?? "",
+                    $application["delivery_fee"] ?? 0
                 ),
 
             "business_status" =>

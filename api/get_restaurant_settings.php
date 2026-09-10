@@ -20,6 +20,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 if (!isset($_SESSION["user_id"])) {
     http_response_code(401);
@@ -29,6 +30,8 @@ if (!isset($_SESSION["user_id"])) {
     ]);
     exit;
 }
+
+$owner_id = (int) $_SESSION["user_id"];
 
 $restaurant_id = isset($_SESSION["restaurant_id"])
     ? (int) $_SESSION["restaurant_id"]
@@ -57,6 +60,7 @@ try {
         business_status
     FROM tbl_restaurants
     WHERE restaurant_id = ?
+      AND owner_id = ?
     LIMIT 1
 ";
 
@@ -66,7 +70,11 @@ try {
         throw new Exception($conn->error);
     }
 
-    $stmt->bind_param("i", $restaurant_id);
+    $stmt->bind_param(
+        "ii",
+        $restaurant_id,
+        $owner_id
+    );
     $stmt->execute();
 
     $result = $stmt->get_result();
@@ -207,6 +215,37 @@ try {
                 }
             }
         }
+    }
+
+    $activePricing =
+        fc_delivery_pricing_get_active(
+            $conn,
+            $restaurant_id,
+            (float) ($restaurant["delivery_fee"] ?? 0)
+        );
+
+    $restaurant["delivery_pricing_type"] =
+        $activePricing["pricing_type"];
+
+    if ($activePricing["pricing_type"] === "distance") {
+        $restaurant["delivery_pricing"] = [
+            "base_fee" =>
+                (float) $activePricing["base_fee"],
+            "included_km" =>
+                (float) ($activePricing["included_km"] ?? 0),
+            "extra_fee_per_km" =>
+                (float) ($activePricing["extra_fee_per_km"] ?? 0)
+        ];
+    } elseif ($activePricing["pricing_type"] === "tiered") {
+        $restaurant["delivery_pricing"] = [
+            "tiers" =>
+                $activePricing["tiers"]
+        ];
+    } else {
+        $restaurant["delivery_pricing"] = [
+            "fixed_fee" =>
+                (float) $activePricing["base_fee"]
+        ];
     }
 
     unset($restaurant["owner_id"]);

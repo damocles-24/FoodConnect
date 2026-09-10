@@ -19,6 +19,25 @@ require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/name_helper.php";
 
+/*
+ * Remember-me cookies must be Secure on HTTPS production requests, while
+ * remaining usable on local HTTP development. X-Forwarded-Proto is checked
+ * first for deployments that terminate TLS at a reverse proxy.
+ */
+$forwardedProto = strtolower(
+    trim(
+        explode(
+            ",",
+            (string) ($_SERVER["HTTP_X_FORWARDED_PROTO"] ?? "")
+        )[0]
+    )
+);
+
+$rememberCookieSecure =
+    $forwardedProto === "https" ||
+    (!empty($_SERVER["HTTPS"]) && strtolower((string) $_SERVER["HTTPS"]) !== "off") ||
+    (string) ($_SERVER["SERVER_PORT"] ?? "") === "443";
+
 function respond_json(array $data, int $statusCode = 200): void
 {
     http_response_code($statusCode);
@@ -317,7 +336,7 @@ if ($remember) {
         [
             "expires" => $expiresTimestamp,
             "path" => "/",
-            "secure" => false,
+            "secure" => $rememberCookieSecure,
             "httponly" => true,
             "samesite" => "Lax"
         ]
@@ -348,7 +367,7 @@ if ($remember) {
         [
             "expires" => time() - 3600,
             "path" => "/",
-            "secure" => false,
+            "secure" => $rememberCookieSecure,
             "httponly" => true,
             "samesite" => "Lax"
         ]

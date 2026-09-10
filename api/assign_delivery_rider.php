@@ -80,25 +80,18 @@ $delivery_staff_id = isset($data["delivery_staff_id"])
     ? (int) $data["delivery_staff_id"]
     : 0;
 
-$delivery_fee = isset($data["delivery_fee"])
-    ? (float) $data["delivery_fee"]
-    : 0.00;
-
-$delivery_staff_payment = isset($data["delivery_staff_payment"])
-    ? (float) $data["delivery_staff_payment"]
-    : 0.00;
+/*
+ * The final customer delivery fee is authoritative on tbl_orders and must
+ * never be accepted from the cashier browser. Internal restaurant riders
+ * are not paid through this assignment endpoint, so staff payment remains 0.
+ */
+$delivery_fee = 0.00;
+$delivery_staff_payment = 0.00;
 
 if ($order_id <= 0 || $delivery_staff_id <= 0) {
     respond_json([
         "success" => false,
         "message" => "Order ID and rider ID are required."
-    ], 400);
-}
-
-if ($delivery_fee < 0 || $delivery_staff_payment < 0) {
-    respond_json([
-        "success" => false,
-        "message" => "Delivery fee and rider payment cannot be negative."
     ], 400);
 }
 
@@ -115,7 +108,8 @@ try {
         SELECT
             order_id,
             order_type,
-            order_status
+            order_status,
+            delivery_fee
         FROM tbl_orders
         WHERE order_id = ?
           AND restaurant_id = ?
@@ -145,6 +139,17 @@ try {
 
     $order_type = strtolower(trim((string) $order["order_type"]));
     $order_status = strtolower(trim((string) $order["order_status"]));
+
+    $delivery_fee = round(
+        max(0.0, (float)($order["delivery_fee"] ?? 0)),
+        2
+    );
+
+    if (!is_finite($delivery_fee)) {
+        throw new Exception(
+            "The order delivery fee is invalid. Refresh the order and try again."
+        );
+    }
 
     if ($order_type !== "delivery") {
         throw new Exception(

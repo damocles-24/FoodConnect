@@ -76,7 +76,7 @@ if (
     respond_json([
         "success" => false,
         "message" =>
-            "Your session has expired or you do not have access. Please log in again. Please log in again."
+            "Your session has expired or you do not have access. Please log in again."
     ], 401);
 }
 

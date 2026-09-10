@@ -15,7 +15,7 @@ function goToCart() {
   window.location.href = "cart.html";
 }
 
-const API = "/api";
+const API = "/FoodConnect/api";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const wrapper = document.querySelector(".account-wrapper");

@@ -12,6 +12,20 @@ function respond(array $data, int $status = 200): void
 
 function clearCustomerSession(): void
 {
+    $forwardedProto = strtolower(
+        trim(
+            explode(
+                ",",
+                (string) ($_SERVER["HTTP_X_FORWARDED_PROTO"] ?? "")
+            )[0]
+        )
+    );
+
+    $rememberCookieSecure =
+        $forwardedProto === "https" ||
+        (!empty($_SERVER["HTTPS"]) && strtolower((string) $_SERVER["HTTPS"]) !== "off") ||
+        (string) ($_SERVER["SERVER_PORT"] ?? "") === "443";
+
     $_SESSION = [];
 
     if (ini_get("session.use_cookies")) {
@@ -40,7 +54,7 @@ function clearCustomerSession(): void
             "expires" => time() - 3600,
             "path" => "/",
             "domain" => "",
-            "secure" => false,
+            "secure" => $rememberCookieSecure,
             "httponly" => true,
             "samesite" => "Lax"
         ]

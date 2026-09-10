@@ -22,11 +22,67 @@ ini_set(
     "0"
 );
 
+/*
+ * Keep fatal runtime failures JSON-safe. The cart expects JSON even when a
+ * hosting extension or included helper fails unexpectedly.
+ */
+$GLOBALS["foodconnect_cancel_response_sent"] = false;
+
+register_shutdown_function(
+    static function (): void {
+        if (!empty($GLOBALS["foodconnect_cancel_response_sent"])) {
+            return;
+        }
+
+        $lastError = error_get_last();
+
+        if (!is_array($lastError)) {
+            return;
+        }
+
+        $fatalTypes = [
+            E_ERROR,
+            E_PARSE,
+            E_CORE_ERROR,
+            E_COMPILE_ERROR,
+            E_USER_ERROR
+        ];
+
+        if (!in_array((int)($lastError["type"] ?? 0), $fatalTypes, true)) {
+            return;
+        }
+
+        error_log(
+            "FoodConnect customer cancellation fatal error: " .
+            (string)($lastError["message"] ?? "Unknown fatal error")
+        );
+
+        if (!headers_sent()) {
+            header(
+                "Content-Type: application/json; charset=utf-8"
+            );
+        }
+
+        http_response_code(500);
+
+        echo json_encode(
+            [
+                "success" => false,
+                "message" =>
+                    "Unable to cancel the order right now. Please try again.",
+                "error_code" =>
+                    "CUSTOMER_CANCEL_FATAL"
+            ],
+            JSON_UNESCAPED_UNICODE |
+            JSON_UNESCAPED_SLASHES
+        );
+    }
+);
+
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/order_stock_helper.php";
-require_once __DIR__ . "/paymongo_checkout_lifecycle_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -36,6 +92,8 @@ function respond_json(
     array $data,
     int $statusCode = 200
 ): void {
+    $GLOBALS["foodconnect_cancel_response_sent"] = true;
+
     http_response_code(
         $statusCode
     );
@@ -47,6 +105,39 @@ function respond_json(
     );
 
     exit;
+}
+
+function foodconnect_text_length(string $value): int
+{
+    if (function_exists("mb_strlen")) {
+        return mb_strlen($value, "UTF-8");
+    }
+
+    return strlen($value);
+}
+
+function foodconnect_safe_rollback($conn): void
+{
+    if (!($conn instanceof mysqli)) {
+        return;
+    }
+
+    try {
+        $conn->rollback();
+    } catch (Throwable $ignored) {
+    }
+}
+
+function foodconnect_safe_close($conn): void
+{
+    if (!($conn instanceof mysqli)) {
+        return;
+    }
+
+    try {
+        $conn->close();
+    } catch (Throwable $ignored) {
+    }
 }
 
 /* =========================================================
@@ -181,7 +272,7 @@ rate_limit_enforce(
 );
 
 $reasonLength =
-    mb_strlen(
+    foodconnect_text_length(
         $cancellationReason
     );
 
@@ -211,9 +302,8 @@ if ($reasonLength > 250) {
    TRANSACTION
 ========================================================= */
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
 
     /* =====================================================
        LOCK CUSTOMER ORDER
@@ -405,6 +495,41 @@ if (
         }
 
         if ($orderPaymentStatus === "pending") {
+            $paymongoLifecycleHelper =
+                __DIR__ . "/paymongo_checkout_lifecycle_helper.php";
+
+            if (!is_file($paymongoLifecycleHelper)) {
+                $conn->rollback();
+
+                respond_json(
+                    [
+                        "success" => false,
+                        "message" =>
+                            "Online payment cancellation is temporarily unavailable. Please try again later.",
+                        "error_code" =>
+                            "PAYMONGO_LIFECYCLE_HELPER_MISSING"
+                    ],
+                    503
+                );
+            }
+
+            require_once $paymongoLifecycleHelper;
+
+            if (!function_exists("paymongo_close_pending_checkout_sessions")) {
+                $conn->rollback();
+
+                respond_json(
+                    [
+                        "success" => false,
+                        "message" =>
+                            "Online payment cancellation is temporarily unavailable. Please try again later.",
+                        "error_code" =>
+                            "PAYMONGO_LIFECYCLE_HELPER_INVALID"
+                    ],
+                    503
+                );
+            }
+
             $paymongoCloseResult =
                 paymongo_close_pending_checkout_sessions(
                     $conn,
@@ -475,50 +600,70 @@ if (
     /* =====================================================
        CANCEL ACTIVE DELIVERY ASSIGNMENT
 
-       Normally there should be no rider assignment while
-       the order is pending, but this protects data integrity.
+       Pending dine-in/takeout orders do not need this table at all.
+       A pending delivery normally has no rider yet; if a stale assignment
+       exists, cancel it without making the customer cancellation depend on
+       that non-critical cleanup.
     ===================================================== */
 
-    $deliveryStmt =
-        $conn->prepare("
-            UPDATE tbl_delivery_assignments
-
-            SET
-                delivery_status =
-                    'cancelled',
-
-                cancelled_at =
-                    NOW()
-
-            WHERE order_id = ?
-              AND restaurant_id = ?
-              AND delivery_status NOT IN (
-                  'completed',
-                  'cancelled'
-              )
-        ");
-
-    if (!$deliveryStmt) {
-        throw new RuntimeException(
-            "Unable to prepare delivery cancellation."
+    $orderTypeForCancellation =
+        strtolower(
+            trim(
+                (string)(
+                    $order["order_type"] ?? ""
+                )
+            )
         );
+
+    if ($orderTypeForCancellation === "delivery") {
+        try {
+            $deliveryStmt =
+                $conn->prepare("
+                    UPDATE tbl_delivery_assignments
+
+                    SET
+                        delivery_status = 'cancelled',
+                        cancelled_at = NOW()
+
+                    WHERE order_id = ?
+                      AND restaurant_id = ?
+                      AND delivery_status NOT IN (
+                          'completed',
+                          'cancelled'
+                      )
+                ");
+
+            if ($deliveryStmt) {
+                $deliveryStmt->bind_param(
+                    "ii",
+                    $orderId,
+                    $restaurantId
+                );
+
+                if (!$deliveryStmt->execute()) {
+                    error_log(
+                        "FoodConnect customer cancellation delivery cleanup failed for order " .
+                        $orderId . ": " .
+                        $deliveryStmt->error
+                    );
+                }
+
+                $deliveryStmt->close();
+            } else {
+                error_log(
+                    "FoodConnect customer cancellation delivery cleanup prepare failed for order " .
+                    $orderId . ": " .
+                    $conn->error
+                );
+            }
+        } catch (Throwable $deliveryCleanupError) {
+            error_log(
+                "FoodConnect customer cancellation delivery cleanup error for order " .
+                $orderId . ": " .
+                $deliveryCleanupError->getMessage()
+            );
+        }
     }
-
-    $deliveryStmt->bind_param(
-        "ii",
-        $orderId,
-        $restaurantId
-    );
-
-    if (!$deliveryStmt->execute()) {
-        $deliveryStmt->close();
-
-        throw new RuntimeException(
-            "Unable to cancel the delivery assignment."
-        );
-    }
-
-    $deliveryStmt->close();
 
     /* =====================================================
        UPDATE ORDER
@@ -694,52 +839,69 @@ if (
         ". Inventory: " .
         $inventoryText;
 
-    $logStmt =
-        $conn->prepare("
-            INSERT INTO tbl_activity_logs (
-                restaurant_id,
-                user_id,
-                user_role,
-                action_type,
-                action_title,
-                action_description
-            )
-            VALUES (
-                ?,
-                ?,
-                'customer',
-                'order',
-                ?,
-                ?
-            )
-        ");
-
-    if (!$logStmt) {
-        throw new RuntimeException(
-            "Unable to prepare the cancellation activity."
-        );
-    }
-
-    $logStmt->bind_param(
-        "iiss",
-        $restaurantId,
-        $customerId,
-        $actionTitle,
-        $actionDescription
-    );
-
-    if (!$logStmt->execute()) {
-        $logStmt->close();
-
-        throw new RuntimeException(
-            "Unable to record the cancellation activity."
-        );
-    }
-
-    $logStmt->close();
+    /*
+     * Commit the customer-facing cancellation first. Activity logging is a
+     * notification/audit side effect and must not roll back restored stock or
+     * a valid cancellation if the log table is temporarily unavailable.
+     */
 
     $conn->commit();
-    $conn->close();
+
+    try {
+        $logStmt =
+            $conn->prepare("
+                INSERT INTO tbl_activity_logs (
+                    restaurant_id,
+                    user_id,
+                    user_role,
+                    action_type,
+                    action_title,
+                    action_description
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    'customer',
+                    'order',
+                    ?,
+                    ?
+                )
+            ");
+
+        if ($logStmt) {
+            $logStmt->bind_param(
+                "iiss",
+                $restaurantId,
+                $customerId,
+                $actionTitle,
+                $actionDescription
+            );
+
+            if (!$logStmt->execute()) {
+                error_log(
+                    "FoodConnect customer cancellation activity log failed for order " .
+                    $orderId . ": " .
+                    $logStmt->error
+                );
+            }
+
+            $logStmt->close();
+        } else {
+            error_log(
+                "FoodConnect customer cancellation activity log prepare failed for order " .
+                $orderId . ": " .
+                $conn->error
+            );
+        }
+    } catch (Throwable $logError) {
+        error_log(
+            "FoodConnect customer cancellation activity log error for order " .
+            $orderId . ": " .
+            $logError->getMessage()
+        );
+    }
+
+    foodconnect_safe_close($conn);
 
     respond_json([
         "success" => true,
@@ -763,20 +925,22 @@ if (
     ]);
 
 } catch (Throwable $error) {
-    $conn->rollback();
+    foodconnect_safe_rollback($conn ?? null);
 
     error_log(
         "FoodConnect customer cancellation error: " .
         $error->getMessage()
     );
 
-    $conn->close();
+    foodconnect_safe_close($conn ?? null);
 
     respond_json(
         [
             "success" => false,
             "message" =>
-                "Unable to cancel the order. Please refresh your orders and try again."
+                "Unable to cancel the order. Please refresh your orders and try again.",
+            "error_code" =>
+                "CUSTOMER_CANCEL_FAILED"
         ],
         500
     );

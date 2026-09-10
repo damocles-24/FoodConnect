@@ -7,6 +7,7 @@ header(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/product_image_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -169,15 +170,10 @@ while ($row = $result->fetch_assoc()) {
             ? "Available"
             : "Unavailable";
 
-    $imagePath = trim(
-        (string) (
-            $row["image_path"] ?? ""
-        )
-    );
-
-    if ($imagePath === "") {
-        $imagePath = null;
-    }
+    $imagePath =
+        normalize_product_image_path(
+            $row["image_path"] ?? null
+        );
 
     $discountType = strtolower(
     trim(

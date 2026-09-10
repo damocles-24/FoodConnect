@@ -207,7 +207,37 @@ function restore_order_stock(
     |--------------------------------------------------------------------------
     | Prepared statements
     |--------------------------------------------------------------------------
+    |
+    | Only prepare combo-table statements when the order actually contains a
+    | combo. A normal product cancellation must not depend on optional combo
+    | tables being present or healthy.
+    |
     */
+
+    $hasComboItems = false;
+    $hasComboChoices = false;
+
+    foreach ($orderItems as $orderItemForPreparation) {
+        $itemComboId = (int)(
+            $orderItemForPreparation["combo_id"] ?? 0
+        );
+
+        if ($itemComboId <= 0) {
+            continue;
+        }
+
+        $hasComboItems = true;
+
+        if (
+            decode_order_ids(
+                $orderItemForPreparation[
+                    "combo_choice_ids_json"
+                ] ?? null
+            ) !== []
+        ) {
+            $hasComboChoices = true;
+        }
+    }
 
     $restoreStockStmt = $conn->prepare("
         UPDATE tbl_products
@@ -226,60 +256,70 @@ function restore_order_stock(
         );
     }
 
-    $comboComponentStmt = $conn->prepare("
-        SELECT
-            ci.product_id,
-            ci.quantity AS required_quantity,
-            p.product_name
+    $comboComponentStmt = null;
+    $comboChoiceStmt = null;
 
-        FROM tbl_combo_items ci
+    if ($hasComboItems) {
+        $comboComponentStmt = $conn->prepare("
+            SELECT
+                ci.product_id,
+                ci.quantity AS required_quantity,
+                p.product_name
 
-        INNER JOIN tbl_products p
-            ON p.product_id = ci.product_id
-           AND p.restaurant_id = ?
+            FROM tbl_combo_items ci
 
-        WHERE ci.combo_id = ?
+            INNER JOIN tbl_products p
+                ON p.product_id = ci.product_id
+               AND p.restaurant_id = ?
 
-        ORDER BY ci.product_id ASC
-    ");
+            WHERE ci.combo_id = ?
 
-    if (!$comboComponentStmt) {
-        $restoreStockStmt->close();
+            ORDER BY ci.product_id ASC
+        ");
 
-        throw new RuntimeException(
-            "Unable to prepare combo component restoration."
-        );
+        if (!$comboComponentStmt) {
+            $restoreStockStmt->close();
+
+            throw new RuntimeException(
+                "Unable to prepare combo component restoration."
+            );
+        }
     }
 
-    $comboChoiceStmt = $conn->prepare("
-        SELECT
-            o.choice_option_id,
-            o.product_id,
-            p.product_name,
-            p.size
+    if ($hasComboChoices) {
+        $comboChoiceStmt = $conn->prepare("
+            SELECT
+                o.choice_option_id,
+                o.product_id,
+                p.product_name,
+                p.size
 
-        FROM tbl_combo_choice_options o
+            FROM tbl_combo_choice_options o
 
-        INNER JOIN tbl_combo_choice_groups g
-            ON g.choice_group_id = o.choice_group_id
-           AND g.combo_id = ?
+            INNER JOIN tbl_combo_choice_groups g
+                ON g.choice_group_id = o.choice_group_id
+               AND g.combo_id = ?
 
-        INNER JOIN tbl_products p
-            ON p.product_id = o.product_id
-           AND p.restaurant_id = ?
+            INNER JOIN tbl_products p
+                ON p.product_id = o.product_id
+               AND p.restaurant_id = ?
 
-        WHERE o.choice_option_id = ?
+            WHERE o.choice_option_id = ?
 
-        LIMIT 1
-    ");
+            LIMIT 1
+        ");
 
-    if (!$comboChoiceStmt) {
-        $restoreStockStmt->close();
-        $comboComponentStmt->close();
+        if (!$comboChoiceStmt) {
+            $restoreStockStmt->close();
 
-        throw new RuntimeException(
-            "Unable to prepare combo option restoration."
-        );
+            if ($comboComponentStmt instanceof mysqli_stmt) {
+                $comboComponentStmt->close();
+            }
+
+            throw new RuntimeException(
+                "Unable to prepare combo option restoration."
+            );
+        }
     }
 
     $summary = [
@@ -348,6 +388,12 @@ function restore_order_stock(
             */
 
             if ($isCombo) {
+                if (!($comboComponentStmt instanceof mysqli_stmt)) {
+                    throw new RuntimeException(
+                        "Combo component restoration is unavailable."
+                    );
+                }
+
                 $comboComponentStmt->bind_param(
                     "ii",
                     $restaurantId,
@@ -436,6 +482,12 @@ function restore_order_stock(
                     $comboChoiceIds
                     as $choiceOptionId
                 ) {
+                    if (!($comboChoiceStmt instanceof mysqli_stmt)) {
+                        throw new RuntimeException(
+                            "Combo option restoration is unavailable."
+                        );
+                    }
+
                     $comboChoiceStmt->bind_param(
                         "iii",
                         $comboId,
@@ -510,8 +562,14 @@ function restore_order_stock(
 
     } finally {
         $restoreStockStmt->close();
-        $comboComponentStmt->close();
-        $comboChoiceStmt->close();
+
+        if ($comboComponentStmt instanceof mysqli_stmt) {
+            $comboComponentStmt->close();
+        }
+
+        if ($comboChoiceStmt instanceof mysqli_stmt) {
+            $comboChoiceStmt->close();
+        }
     }
 
     return $summary;

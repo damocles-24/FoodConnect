@@ -23,6 +23,7 @@ require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/addon_helper.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -1976,12 +1977,27 @@ $subtotal = round(
 $delivery_fee = 0.00;
 
 if ($order_type === "delivery") {
-    $delivery_fee = max(
-        0,
-        (float)(
-            $restaurantRow["delivery_fee"] ?? 0
-        )
-    );
+    try {
+        $deliveryQuote =
+            fc_delivery_pricing_calculate(
+                $conn,
+                $restaurant_id,
+                (float) $customer_latitude,
+                (float) $customer_longitude
+            );
+
+        $delivery_fee =
+            max(
+                0,
+                (float) (
+                    $deliveryQuote["delivery_fee"] ?? 0
+                )
+            );
+    } catch (DomainException | InvalidArgumentException $pricingError) {
+        throw new RuntimeException(
+            $pricingError->getMessage()
+        );
+    }
 }
 
 $total = round(
@@ -2804,6 +2820,8 @@ $addonIdsJson = encode_id_array(
         "Unable to determine the restaurant.",
         "This order type is not available for this restaurant.",
         "No delivery rider is currently available for this restaurant. Please choose Takeout or Dine-in.",
+        "The selected delivery location is outside this restaurant's configured delivery range.",
+        "Invalid delivery location coordinates.",
         "Products from different restaurants cannot be checked out together.",
         "A product in your cart no longer exists.",
         "This combo is currently unavailable.",

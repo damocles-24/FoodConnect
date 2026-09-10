@@ -64,7 +64,9 @@ $upd->bind_param("ssi", $token, $expires_at, $uid);
 $upd->execute();
 
 // Send email
-$link = foodconnect_url("api/verify.php", ["token" => $token]);
+$link = foodconnect_verification_url(
+    $token
+);
 
 $htmlBody = "
 <!doctype html>

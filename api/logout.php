@@ -3,6 +3,25 @@
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 
+/*
+ * Match the remember-me cookie's Secure attribute to the current request.
+ * This keeps production cookies HTTPS-only without breaking local HTTP
+ * development. X-Forwarded-Proto supports TLS-terminating proxies.
+ */
+$forwardedProto = strtolower(
+    trim(
+        explode(
+            ",",
+            (string) ($_SERVER["HTTP_X_FORWARDED_PROTO"] ?? "")
+        )[0]
+    )
+);
+
+$rememberCookieSecure =
+    $forwardedProto === "https" ||
+    (!empty($_SERVER["HTTPS"]) && strtolower((string) $_SERVER["HTTPS"]) !== "off") ||
+    (string) ($_SERVER["SERVER_PORT"] ?? "") === "443";
+
 $userId =
     !empty($_SESSION["user_id"])
         ? (int) $_SESSION["user_id"]
@@ -90,7 +109,7 @@ setcookie(
         "expires" => time() - 3600,
         "path" => "/",
         "domain" => "",
-        "secure" => false,
+        "secure" => $rememberCookieSecure,
         "httponly" => true,
         "samesite" => "Lax"
     ]

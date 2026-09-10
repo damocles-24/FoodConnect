@@ -360,11 +360,6 @@ const backToOwnerLoginBtn =
         "ownerPassword"
       );
 
-    const toggleOwnerPassword = 
-      document.getElementById(
-        "toggleOwnerPassword"
-      );
-
     const ownerLoginBtn =
       document.getElementById(
         "ownerLoginBtn"
@@ -608,6 +603,41 @@ const restaurantsPageCategories =
   );
 
 let restaurantsPageCards = [];
+let closedRestaurantsPageCards = [];
+
+const closedRestaurantsPageTrack =
+  document.getElementById(
+    "closedRestaurantsPageTrack"
+  );
+
+const closedRestaurantsPageResultCount =
+  document.getElementById(
+    "closedRestaurantsPageResultCount"
+  );
+
+const closedRestaurantsPageEmptyState =
+  document.getElementById(
+    "closedRestaurantsPageEmptyState"
+  );
+
+const closedRestaurantsPageEmptyTitle =
+  document.getElementById(
+    "closedRestaurantsPageEmptyTitle"
+  );
+
+const closedRestaurantsPageEmptyText =
+  document.getElementById(
+    "closedRestaurantsPageEmptyText"
+  );
+
+let homepageCategoryFilter = "";
+let restaurantsPageCategoryFilter = "";
+
+const restaurantBrowseMetadataCache =
+  new Map();
+
+let restaurantCategoryHydrationPromise =
+  Promise.resolve();
 
     const restaurantResultCount =
       document.getElementById(
@@ -2148,6 +2178,434 @@ function escapeHtml(
 }
 
 /* =========================
+   RESTAURANT BROWSE METADATA
+========================= */
+
+function normalizeBrowseCategory(
+  value = ""
+) {
+  const normalized =
+    String(value)
+      .trim()
+      .toLowerCase()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
+
+  const aliases = {
+    burger: "burgers",
+    burgers: "burgers",
+    burgir: "burgers",
+    chicken: "chicken",
+    chickens: "chicken",
+    drink: "drinks",
+    drinks: "drinks",
+    beverage: "drinks",
+    beverages: "drinks",
+    "milk tea": "milktea",
+    milktea: "milktea",
+    "bubble tea": "milktea",
+    boba: "milktea",
+    pizza: "pizza",
+    pizzas: "pizza",
+    coffee: "coffee",
+    coffees: "coffee",
+    filipino: "filipino",
+    pinoy: "filipino",
+    dessert: "dessert",
+    desserts: "dessert"
+  };
+
+  return aliases[normalized] ||
+    normalized;
+}
+
+function flattenBrowseValues(
+  values
+) {
+  const output = [];
+
+  values.flat(Infinity).forEach(
+    (value) => {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return;
+      }
+
+      if (
+        typeof value === "object" &&
+        !Array.isArray(value)
+      ) {
+        output.push(
+          ...Object.values(value)
+        );
+
+        return;
+      }
+
+      output.push(value);
+    }
+  );
+
+  return output;
+}
+
+function inferBrowseCategories(
+  ...values
+) {
+  const text =
+    flattenBrowseValues(values)
+      .map(value => String(value))
+      .join(" ")
+      .toLowerCase();
+
+  const categories =
+    new Set();
+
+  if (/\bburg(?:er|ers|ir)\b/.test(text)) {
+    categories.add("burgers");
+  }
+
+  if (
+    /\bchicken\b|\bchickens\b|\bchicken wings?\b|\binasal\b/.test(
+      text
+    )
+  ) {
+    categories.add("chicken");
+  }
+
+  if (
+    /\bdrinks?\b|\bbeverages?\b|\bjuice\b|\bsoda\b|\bfruit tea\b|\btea based\b|\bcoffee\b|\blatte\b|\bespresso\b|\bamericano\b|\bfrappe\b|\bshake\b|\byogurt\b|\bboba\b|\bmilk tea\b|\bmilktea\b/.test(
+      text
+    )
+  ) {
+    categories.add("drinks");
+  }
+
+  if (
+    /\bmilk tea\b|\bmilktea\b|\bbubble tea\b|\bboba\b/.test(
+      text
+    )
+  ) {
+    categories.add("milktea");
+    categories.add("drinks");
+  }
+
+  if (/\bpizza\b|\bpizzas\b/.test(text)) {
+    categories.add("pizza");
+  }
+
+  if (
+    /\bcoffee\b|\bcafe\b|\bespresso\b|\bamericano\b|\blatte\b|\bmacchiato\b|\bmachiatto\b|\bpour[ -]?over\b/.test(
+      text
+    )
+  ) {
+    categories.add("coffee");
+    categories.add("drinks");
+  }
+
+  if (
+    /\bfilipino\b|\bpinoy\b|\bsilog\b|\brice meals?\b|\bbudget meals?\b|\bulam\b|\bkambing\b|\bpansit\b|\bpancit\b|\bbilao\b|\bshort orders?\b|\bpinakbet\b|\bhalo[ -]?halo\b|\badobo\b|\bsisig\b|\bbulalo\b|\bcaldereta\b|\bkare[ -]?kare\b/.test(
+      text
+    )
+  ) {
+    categories.add("filipino");
+  }
+
+  if (
+    /\bdesserts?\b|\bcake\b|\bcakes\b|\bice cream\b|\bleche ?flan\b|\bhalo[ -]?halo\b|\bpastr(?:y|ies)\b|\bsweets?\b/.test(
+      text
+    )
+  ) {
+    categories.add("dessert");
+  }
+
+  return [...categories];
+}
+
+function getRestaurantSeedBrowseCategories(
+  restaurant = {}
+) {
+  return inferBrowseCategories(
+    restaurant.name,
+    restaurant.description,
+    restaurant.category,
+    restaurant.categories,
+    restaurant.food_category,
+    restaurant.food_categories,
+    restaurant.cuisine,
+    restaurant.cuisines,
+    restaurant.tags
+  );
+}
+
+function getCardBrowseCategories(
+  card
+) {
+  return String(
+    card?.dataset?.categories || ""
+  )
+    .split(",")
+    .map(normalizeBrowseCategory)
+    .filter(Boolean);
+}
+
+function cardMatchesBrowseFilters(
+  card,
+  searchValue = "",
+  categoryValue = ""
+) {
+  const query =
+    String(searchValue)
+      .trim()
+      .toLowerCase();
+
+  const category =
+    normalizeBrowseCategory(
+      categoryValue
+    );
+
+  const categories =
+    getCardBrowseCategories(card);
+
+  const searchableText = [
+    card?.dataset?.name || "",
+    card?.dataset?.description || "",
+    card?.dataset?.menuSearchText || "",
+    categories.join(" ")
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const matchesSearch =
+    !query ||
+    searchableText.includes(query);
+
+  const matchesCategory =
+    !category ||
+    categories.includes(category);
+
+  return (
+    matchesSearch &&
+    matchesCategory
+  );
+}
+
+function setCategoryButtonState(
+  buttons,
+  activeCategory = ""
+) {
+  const normalizedActive =
+    normalizeBrowseCategory(
+      activeCategory
+    );
+
+  buttons.forEach(
+    (button) => {
+      const buttonCategory =
+        normalizeBrowseCategory(
+          button.dataset.category ??
+          button.dataset.search ??
+          ""
+        );
+
+      const active =
+        buttonCategory ===
+        normalizedActive;
+
+      button.classList.toggle(
+        "active",
+        active
+      );
+
+      button.setAttribute(
+        "aria-pressed",
+        String(active)
+      );
+    }
+  );
+}
+
+async function loadRestaurantBrowseMetadata(
+  card
+) {
+  const restaurantId =
+    Number(
+      card?.dataset?.restaurantId ||
+      0
+    );
+
+  if (
+    !Number.isInteger(restaurantId) ||
+    restaurantId <= 0
+  ) {
+    return;
+  }
+
+  const cached =
+    restaurantBrowseMetadataCache.get(
+      restaurantId
+    );
+
+  if (cached) {
+    card.dataset.categories =
+      cached.categories;
+
+    card.dataset.menuSearchText =
+      cached.menuSearchText;
+
+    return;
+  }
+
+  const categorySet =
+    new Set(
+      getCardBrowseCategories(card)
+    );
+
+  const menuSearchTerms = [];
+
+  try {
+    const response = await fetch(
+      `${window.API}/get_public_products.php?restaurant_id=${encodeURIComponent(
+        restaurantId
+      )}`,
+      {
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        "Unable to load menu categories."
+      );
+    }
+
+    const products =
+      Array.isArray(data.products)
+        ? data.products
+        : Array.isArray(data)
+          ? data
+          : [];
+
+    products.forEach(
+      (product) => {
+        const itemType =
+          String(
+            product.item_type || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        const rawCategory =
+          String(
+            product.category || ""
+          );
+
+        const isAddon =
+          itemType === "add_on" ||
+          /\badd[ -]?ons?\b/i.test(
+            rawCategory
+          );
+
+        if (isAddon) {
+          return;
+        }
+
+        inferBrowseCategories(
+          rawCategory,
+          product.product_name,
+          product.name,
+          product.description
+        ).forEach(
+          category =>
+            categorySet.add(category)
+        );
+
+        menuSearchTerms.push(
+          rawCategory,
+          product.product_name || "",
+          product.name || "",
+          product.description || ""
+        );
+      }
+    );
+  } catch (error) {
+    console.warn(
+      `Restaurant ${restaurantId} category metadata could not be loaded:`,
+      error
+    );
+  }
+
+  const metadata = {
+    categories:
+      [...categorySet].join(","),
+    menuSearchText:
+      menuSearchTerms
+        .filter(Boolean)
+        .join(" ")
+  };
+
+  restaurantBrowseMetadataCache.set(
+    restaurantId,
+    metadata
+  );
+
+  card.dataset.categories =
+    metadata.categories;
+
+  card.dataset.menuSearchText =
+    metadata.menuSearchText;
+}
+
+async function hydrateRestaurantBrowseMetadata() {
+  const cards = [...restaurantCards];
+
+  if (cards.length === 0) {
+    return;
+  }
+
+  let nextIndex = 0;
+
+  const workerCount =
+    Math.min(5, cards.length);
+
+  const workers =
+    Array.from(
+      { length: workerCount },
+      async () => {
+        while (nextIndex < cards.length) {
+          const index = nextIndex;
+          nextIndex += 1;
+
+          await loadRestaurantBrowseMetadata(
+            cards[index]
+          );
+        }
+      }
+    );
+
+  await Promise.all(workers);
+}
+
+async function ensureRestaurantBrowseMetadata() {
+  try {
+    await restaurantCategoryHydrationPromise;
+  } catch (error) {
+    console.warn(
+      "Restaurant category metadata hydration failed:",
+      error
+    );
+  }
+}
+
+/* =========================
    RESTAURANT CARDS
 ========================= */
 
@@ -2188,6 +2646,14 @@ function createRestaurantCard(
       restaurant.delivery_fee || 0
     );
 
+  const deliveryPricingType =
+    String(
+      restaurant.delivery_pricing_type ||
+      "fixed"
+    )
+      .trim()
+      .toLowerCase();
+
   const article =
     document.createElement("article");
 
@@ -2202,11 +2668,22 @@ function createRestaurantCard(
 
   article.dataset.description = [
     restaurantName,
-    restaurantAddress
+    restaurantAddress,
+    restaurant.description || ""
   ].join(" ");
+
+  article.dataset.categories =
+    getRestaurantSeedBrowseCategories(
+      restaurant
+    ).join(",");
+
+  article.dataset.menuSearchText = "";
 
   article.dataset.deliveryFee =
     String(deliveryFee);
+
+  article.dataset.deliveryPricingType =
+    deliveryPricingType;
 
   article.dataset.businessStatus =
     businessStatus;
@@ -2286,7 +2763,8 @@ function createRestaurantCard(
             <small class="delivery-fee">
               ${escapeHtml(
                 formatDeliveryFee(
-                  deliveryFee
+                  deliveryFee,
+                  deliveryPricingType
                 )
               )}
             </small>
@@ -2424,12 +2902,15 @@ function bindRestaurantLinks() {
 ========================================================= */
 
 function renderRestaurantsPageCards() {
-
   if (!restaurantsPageTrack) {
     return;
   }
 
   restaurantsPageTrack.innerHTML = "";
+
+  if (closedRestaurantsPageTrack) {
+    closedRestaurantsPageTrack.innerHTML = "";
+  }
 
   const originalCards =
     restaurantTrack
@@ -2440,16 +2921,32 @@ function renderRestaurantsPageCards() {
 
   originalCards.forEach(
     (card) => {
+      if (card.hidden) {
+        return;
+      }
 
       const clonedCard =
         card.cloneNode(true);
 
       clonedCard.style.display = "";
 
-      restaurantsPageTrack.appendChild(
+      updateRestaurantCard(
         clonedCard
       );
 
+      if (isRestaurantOpen(card)) {
+        restaurantsPageTrack.appendChild(
+          clonedCard
+        );
+      } else if (closedRestaurantsPageTrack) {
+        clonedCard.classList.add(
+          "restaurant-unavailable-card"
+        );
+
+        closedRestaurantsPageTrack.appendChild(
+          clonedCard
+        );
+      }
     }
   );
 
@@ -2458,6 +2955,15 @@ function renderRestaurantsPageCards() {
       ".restaurant-slide"
     )
   ];
+
+  closedRestaurantsPageCards =
+    closedRestaurantsPageTrack
+      ? [
+          ...closedRestaurantsPageTrack.querySelectorAll(
+            ".restaurant-slide"
+          )
+        ]
+      : [];
 
   bindRestaurantsPageLinks();
 
@@ -2468,47 +2974,48 @@ function renderRestaurantsPageCards() {
 
 
 function bindRestaurantsPageLinks() {
+  const pageTracks = [
+    restaurantsPageTrack,
+    closedRestaurantsPageTrack
+  ].filter(Boolean);
 
-  if (!restaurantsPageTrack) {
-    return;
-  }
+  pageTracks.forEach(
+    (track) => {
+      const links =
+        track.querySelectorAll(
+          ".restaurant-link"
+        );
 
-  const links =
-    restaurantsPageTrack.querySelectorAll(
-      ".restaurant-link"
-    );
+      links.forEach(
+        (link) => {
+          link.addEventListener(
+            "click",
+            async (event) => {
+              event.preventDefault();
 
-  links.forEach(
-    (link) => {
+              const restaurantUrl =
+                link.getAttribute(
+                  "href"
+                );
 
-      link.addEventListener(
-        "click",
-        async (event) => {
+              if (!restaurantUrl) {
+                return;
+              }
 
-          event.preventDefault();
+              const login =
+                await checkLogin();
 
-          const restaurantUrl =
-            link.getAttribute("href");
+              if (!login.logged_in) {
+                openLoginModal();
+                return;
+              }
 
-          if (!restaurantUrl) {
-            return;
-          }
-
-          const login =
-            await checkLogin();
-
-          if (!login.logged_in) {
-            openLoginModal();
-
-            return;
-          }
-
-          window.location.href =
-            restaurantUrl;
-
+              window.location.href =
+                restaurantUrl;
+            }
+          );
         }
       );
-
     }
   );
 }
@@ -2517,68 +3024,101 @@ function bindRestaurantsPageLinks() {
 function filterRestaurantsPage(
   searchValue = ""
 ) {
-
   const query =
     String(searchValue)
       .trim()
       .toLowerCase();
 
-  let visibleCount = 0;
+  const category =
+    normalizeBrowseCategory(
+      restaurantsPageCategoryFilter
+    );
 
-  restaurantsPageCards.forEach(
-    (card) => {
+  const filterCards =
+    (cards) => {
+      let visibleCount = 0;
 
-      const searchableText = [
+      cards.forEach(
+        (card) => {
+          const matches =
+            cardMatchesBrowseFilters(
+              card,
+              query,
+              category
+            );
 
-        card.dataset.name || "",
+          card.style.display =
+            matches ? "" : "none";
 
-        card.dataset.description || ""
+          if (matches) {
+            visibleCount += 1;
+          }
+        }
+      );
 
-      ]
-        .join(" ")
-        .toLowerCase();
+      return visibleCount;
+    };
 
+  const availableCount =
+    filterCards(
+      restaurantsPageCards
+    );
 
-      const matches =
-        !query ||
-        searchableText.includes(
-          query
-        );
-
-
-      card.style.display =
-        matches ? "" : "none";
-
-
-      if (matches) {
-        visibleCount += 1;
-      }
-
-    }
-  );
-
+  const closedCount =
+    filterCards(
+      closedRestaurantsPageCards
+    );
 
   if (restaurantsPageResultCount) {
-
     restaurantsPageResultCount.textContent =
-      `${visibleCount} restaurant${
-        visibleCount === 1
+      `${availableCount} restaurant${
+        availableCount === 1
           ? ""
           : "s"
       }`;
-
   }
-
 
   if (restaurantsPageEmptyState) {
+    restaurantsPageEmptyState.textContent =
+      query || category
+        ? "No available restaurant matched your search or category."
+        : "No restaurants are currently available.";
 
     restaurantsPageEmptyState.style.display =
-      visibleCount === 0
+      availableCount === 0
         ? "block"
         : "none";
-
   }
 
+  if (closedRestaurantsPageResultCount) {
+    closedRestaurantsPageResultCount.textContent =
+      `${closedCount} closed restaurant${
+        closedCount === 1
+          ? ""
+          : "s"
+      }`;
+  }
+
+  if (closedRestaurantsPageEmptyState) {
+    closedRestaurantsPageEmptyState.style.display =
+      closedCount === 0
+        ? "flex"
+        : "none";
+  }
+
+  if (closedRestaurantsPageEmptyTitle) {
+    closedRestaurantsPageEmptyTitle.textContent =
+      query || category
+        ? "No closed restaurant matched"
+        : "No closed restaurants";
+  }
+
+  if (closedRestaurantsPageEmptyText) {
+    closedRestaurantsPageEmptyText.textContent =
+      query || category
+        ? "Try another search or category to see unavailable restaurants."
+        : "All listed restaurants are currently available.";
+  }
 }
 
 
@@ -2651,6 +3191,9 @@ function showHomePage() {
     partnerCTA.style.display = "";
   }
 
+  document.body.classList.remove(
+    "restaurants-page-active"
+  );
 
   window.scrollTo({
     top: 0,
@@ -2727,6 +3270,30 @@ async function loadPublicRestaurants() {
     filterRestaurants(
       restaurantSearch?.value || ""
     );
+
+    if (
+      document.body.classList.contains(
+        "restaurants-page-active"
+      )
+    ) {
+      renderRestaurantsPageCards();
+    }
+
+    restaurantCategoryHydrationPromise =
+      hydrateRestaurantBrowseMetadata()
+        .then(() => {
+          filterRestaurants(
+            restaurantSearch?.value || ""
+          );
+
+          if (
+            document.body.classList.contains(
+              "restaurants-page-active"
+            )
+          ) {
+            renderRestaurantsPageCards();
+          }
+        });
   } catch (error) {
     console.error(
       "Load public restaurants failed:",
@@ -2734,6 +3301,8 @@ async function loadPublicRestaurants() {
     );
 
     restaurantCards = [];
+    restaurantsPageCards = [];
+    closedRestaurantsPageCards = [];
 
     restaurantTrack.innerHTML = "";
 
@@ -2751,8 +3320,49 @@ async function loadPublicRestaurants() {
     }
 
     updateStaffRestaurantOptions([]);
+
+    if (restaurantsPageTrack) {
+      restaurantsPageTrack.innerHTML = "";
+    }
+
+    if (closedRestaurantsPageTrack) {
+      closedRestaurantsPageTrack.innerHTML = "";
+    }
+
+    if (restaurantsPageResultCount) {
+      restaurantsPageResultCount.textContent =
+        "0 restaurants";
+    }
+
+    if (restaurantsPageEmptyState) {
+      restaurantsPageEmptyState.textContent =
+        "Restaurants could not be loaded.";
+      restaurantsPageEmptyState.style.display =
+        "block";
+    }
+
+    if (closedRestaurantsPageResultCount) {
+      closedRestaurantsPageResultCount.textContent =
+        "0 closed restaurants";
+    }
+
+    if (closedRestaurantsPageEmptyState) {
+      closedRestaurantsPageEmptyState.style.display =
+        "flex";
+    }
+
+    if (closedRestaurantsPageEmptyTitle) {
+      closedRestaurantsPageEmptyTitle.textContent =
+        "Restaurant availability unavailable";
+    }
+
+    if (closedRestaurantsPageEmptyText) {
+      closedRestaurantsPageEmptyText.textContent =
+        "Closed restaurants could not be loaded right now.";
+    }
   }
 }
+
 
     /* =========================
        RESTAURANT SEARCH
@@ -2762,7 +3372,7 @@ async function loadPublicRestaurants() {
       searchValue = ""
     ) {
       const query =
-        searchValue
+        String(searchValue)
           .trim()
           .toLowerCase();
 
@@ -2770,17 +3380,16 @@ async function loadPublicRestaurants() {
 
       restaurantCards.forEach(
         (card) => {
-          const searchableText = [
-            card.dataset.name || "",
-            card.dataset.description || ""
-          ]
-            .join(" ")
-            .toLowerCase();
+          const available =
+            !card.hidden &&
+            isRestaurantOpen(card);
 
           const matches =
-            !query ||
-            searchableText.includes(
-              query
+            available &&
+            cardMatchesBrowseFilters(
+              card,
+              query,
+              homepageCategoryFilter
             );
 
           card.style.display =
@@ -2802,12 +3411,18 @@ async function loadPublicRestaurants() {
       }
 
       if (restaurantEmptyState) {
+        restaurantEmptyState.textContent =
+          query || homepageCategoryFilter
+            ? "No available restaurant matched your search or category."
+            : "No restaurants are currently available.";
+
         restaurantEmptyState.style.display =
           visibleCount === 0
             ? "block"
             : "none";
       }
     }
+
 
     /* =========================
    RESTAURANT AVAILABILITY
@@ -2873,7 +3488,8 @@ function formatTime(
 }
 
 function formatDeliveryFee(
-  feeValue = 0
+  feeValue = 0,
+  pricingType = "fixed"
 ) {
   const fee =
     Number(feeValue);
@@ -2882,18 +3498,31 @@ function formatDeliveryFee(
     return "Unavailable";
   }
 
-  if (fee <= 0) {
+  const type =
+    String(pricingType || "fixed")
+      .trim()
+      .toLowerCase();
+
+  if (
+    type === "fixed" &&
+    fee <= 0
+  ) {
     return "Free";
   }
 
-  return new Intl.NumberFormat(
-    "en-PH",
-    {
-      style: "currency",
-      currency: "PHP",
-      minimumFractionDigits: 2
-    }
-  ).format(fee);
+  const formatted =
+    new Intl.NumberFormat(
+      "en-PH",
+      {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      }
+    ).format(Math.max(0, fee));
+
+  return type === "fixed"
+    ? formatted
+    : `From ${formatted}`;
 }
 
 function isRestaurantOpen(
@@ -3052,6 +3681,12 @@ async function loadPublicRestaurantCard(
         restaurant.delivery_fee || 0
       );
 
+    card.dataset.deliveryPricingType =
+      String(
+        restaurant.delivery_pricing_type ||
+        "fixed"
+      );
+
     const nameElement =
       card.querySelector("h3");
 
@@ -3133,7 +3768,8 @@ function updateRestaurantCard(
   if (deliveryFee) {
     deliveryFee.textContent =
       formatDeliveryFee(
-        card.dataset.deliveryFee
+        card.dataset.deliveryFee,
+        card.dataset.deliveryPricingType
       );
   }
 
@@ -3157,6 +3793,18 @@ function updateAllRestaurantCards() {
   restaurantCards.forEach(
     updateRestaurantCard
   );
+
+  filterRestaurants(
+    restaurantSearch?.value || ""
+  );
+
+  if (
+    document.body.classList.contains(
+      "restaurants-page-active"
+    )
+  ) {
+    renderRestaurantsPageCards();
+  }
 }
 
     /* =========================
@@ -3377,8 +4025,10 @@ function updateAllRestaurantCards() {
 
    restaurantSearchForm?.addEventListener(
   "submit",
-  (event) => {
+  async (event) => {
     event.preventDefault();
+
+    await ensureRestaurantBrowseMetadata();
 
     filterRestaurants(
       restaurantSearch?.value || ""
@@ -3436,19 +4086,46 @@ backToHomepageBtn?.addEventListener(
       (button) => {
         button.addEventListener(
           "click",
-          () => {
-            const keyword =
-              button.dataset.search || "";
+          async () => {
+            const category =
+              normalizeBrowseCategory(
+                button.dataset.category ??
+                button.dataset.search ??
+                ""
+              );
+
+            homepageCategoryFilter =
+              category;
 
             if (restaurantSearch) {
-              restaurantSearch.value =
-                keyword;
+              restaurantSearch.value = "";
             }
 
-            filterRestaurants(keyword);
+            setCategoryButtonState(
+              categoryCards,
+              homepageCategoryFilter
+            );
+
+            await ensureRestaurantBrowseMetadata();
+
+            filterRestaurants("");
+
+            document
+              .querySelector(
+                ".restaurants-section"
+              )
+              ?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
           }
         );
       }
+    );
+
+    setCategoryButtonState(
+      categoryCards,
+      homepageCategoryFilter
     );
 
     /* =========================
@@ -4819,34 +5496,17 @@ window.setInterval(
   60000
 );
 
-    // ===== Owner Password Toggle (Partner Portal) =====
-if (ownerPassword && toggleOwnerPassword) {
-  toggleOwnerPassword.addEventListener("click", function (e) {
-    e.preventDefault();
-    const icon = this.querySelector("i");
-    if (ownerPassword.type === "password") {
-      ownerPassword.type = "text";
-      icon.classList.remove("fa-eye");
-      icon.classList.add("fa-eye-slash");
-      this.setAttribute("aria-label", "Hide password");
-    } else {
-      ownerPassword.type = "password";
-      icon.classList.remove("fa-eye-slash");
-      icon.classList.add("fa-eye");
-      this.setAttribute("aria-label", "Show password");
-    }
-  });
-}
-
 /* =========================================================
    RESTAURANTS PAGE SEARCH
 ========================================================= */
 
 restaurantsPageSearchForm?.addEventListener(
   "submit",
-  (event) => {
+  async (event) => {
 
     event.preventDefault();
+
+    await ensureRestaurantBrowseMetadata();
 
     const searchValue =
       restaurantsPageSearch?.value || "";
@@ -4867,7 +5527,10 @@ restaurantsPageSearchForm?.addEventListener(
     setTimeout(() => {
 
       const matchedCard =
-        restaurantsPageCards.find(
+        [
+          ...restaurantsPageCards,
+          ...closedRestaurantsPageCards
+        ].find(
           (card) => {
 
             const restaurantName =
@@ -4930,29 +5593,41 @@ restaurantsPageSearch?.addEventListener(
 
 restaurantsPageCategories.forEach(
   (button) => {
-
     button.addEventListener(
       "click",
-      () => {
-
-        const category =
-          button.dataset.category || "";
-
-        if (restaurantsPageSearch) {
-
-          restaurantsPageSearch.value =
-            category;
-
-          filterRestaurantsPage(
-            category
+      async () => {
+        const clickedCategory =
+          normalizeBrowseCategory(
+            button.dataset.category ||
+            ""
           );
 
+        restaurantsPageCategoryFilter =
+          restaurantsPageCategoryFilter ===
+          clickedCategory
+            ? ""
+            : clickedCategory;
+
+        if (restaurantsPageSearch) {
+          restaurantsPageSearch.value = "";
         }
 
+        setCategoryButtonState(
+          restaurantsPageCategories,
+          restaurantsPageCategoryFilter
+        );
+
+        await ensureRestaurantBrowseMetadata();
+
+        renderRestaurantsPageCards();
       }
     );
-
   }
+);
+
+setCategoryButtonState(
+  restaurantsPageCategories,
+  restaurantsPageCategoryFilter
 );
   }
 );

@@ -2914,7 +2914,7 @@ async function submitRiderAssignment() {
   ) {
     showToast(
       "Delivery Fee Unavailable",
-      "The fixed delivery fee was not loaded from this order. Refresh the orders and try again."
+      "The delivery fee was not loaded from this order. Refresh the orders and try again."
     );
 
     return;
@@ -2951,7 +2951,7 @@ async function submitRiderAssignment() {
 
   openConfirmModal(
     "Assign Delivery Rider",
-    `Assign ${selectedRiderName} to Order #${orderId} with the fixed ₱${formatMoney(deliveryFee)} delivery fee?`,
+    `Assign ${selectedRiderName} to Order #${orderId} with the ₱${formatMoney(deliveryFee)} delivery fee saved on this order?`,
     async () => {
       try {
         if (submitButton) {

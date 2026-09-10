@@ -1,0 +1,13 @@
+# FoodConnect private restaurant verification documents.
+# These files must only be served through the authenticated PHP viewer.
+
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order Allow,Deny
+    Deny from all
+</IfModule>

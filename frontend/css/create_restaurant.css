@@ -39,7 +39,7 @@ body {
     margin: 0;
     min-height: 100vh;
 
-    font-family: Arial, sans-serif;
+    font-family: "Poppins", Arial, sans-serif;
 
     color: var(--text);
     background: var(--background);
@@ -100,30 +100,23 @@ button {
 }
 
 .brand-logo {
-    flex: 0 0 52px;
+    flex: 0 0 50px;
 
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
 
     display: flex;
     align-items: center;
     justify-content: center;
-
-    overflow: hidden;
-
-    border-radius: 13px;
-    background: #ffffff;
 }
 
 .brand-logo-image {
     display: block;
 
-    width: 100%;
-    height: 100%;
+    width: 50px;
+    height: 50px;
 
-    object-fit: cover;
-
-    transform: scale(1.30);
+    object-fit: contain;
 }
 
 .sidebar-brand h1 {
@@ -136,6 +129,18 @@ button {
     line-height: 1.1;
 
     white-space: nowrap;
+}
+
+.sidebar-brand-copy {
+    min-width: 0;
+}
+
+.sidebar-brand .brand-food {
+    color: #f78021;
+}
+
+.sidebar-brand .brand-connect {
+    color: #4caf50;
 }
 
 .sidebar-brand p {
@@ -2155,14 +2160,313 @@ button {
 @media (max-width:700px) { .verification-documents-heading { flex-direction:column; } .verification-document-item { grid-template-columns:1fr; } .verification-upload-button { width:100%; } }
 
 
-/* FC_THEME_CREATE_RESTAURANT_CSS_V5 */
-html[data-theme="dark"] body { background:#0f1115!important; color:#f5f7fa!important; }
-html[data-theme="dark"] :is(.auth-card,.login-card,.signup-card,.form-card,.application-card,.wizard-card,.card,.modal-content) {
-  background:#181b20!important; color:#f5f7fa!important; border-color:#30343b!important;
+/* =========================================================
+   RESTAURANT ONBOARDING THEME
+   Scoped to this page so dark mode never leaks into other UI.
+   ========================================================= */
+
+html[data-theme="light"] body[data-fc-page="restaurant-setup"] {
+    color-scheme: light;
 }
-html[data-theme="dark"] :is(input,select,textarea) { background:#20242a!important; color:#f5f7fa!important; border-color:#343942!important; }
-html[data-theme="dark"] :is(h1,h2,h3,h4,label,strong) { color:#f5f7fa; }
-html[data-theme="dark"] :is(p,.helper-text,.subtitle,.muted) { color:#a4acb9; }
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] {
+    color-scheme: dark;
+
+    --text: #f5f7fa;
+    --muted: #a4acb9;
+    --border: #30343b;
+    --surface: #181b20;
+    --background: #0f1115;
+
+    --primary-soft: #2b1c12;
+    --success-soft: rgba(25, 135, 84, 0.16);
+    --danger-soft: rgba(220, 53, 69, 0.14);
+    --warning-soft: rgba(183, 121, 31, 0.16);
+
+    --shadow: 0 16px 35px rgba(0, 0, 0, 0.28);
+
+    background: var(--background);
+    color: var(--text);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .setup-sidebar {
+    background: linear-gradient(160deg, #17202d 0%, #0f1724 72%);
+    border-right: 1px solid #252b34;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .setup-header h2,
+    .section-heading h3,
+    .form-group label,
+    .hours-day,
+    .service-content strong,
+    .customer-preview-heading h4,
+    .customer-preview-title-row h3,
+    .customer-preview-block p,
+    .review-group-header h4,
+    .review-list dd,
+    .review-hour-item strong,
+    .modal-card h3,
+    .verification-documents-heading h4,
+    .delivery-tier-heading strong,
+    .delivery-tier-row label
+) {
+    color: var(--text);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .header-description,
+    .section-heading p,
+    .form-group > small,
+    .textarea-meta,
+    .closed-label,
+    .service-content small,
+    .customer-preview-heading p,
+    .customer-preview-title-row p,
+    .customer-preview-block-label,
+    .customer-preview-order-card small,
+    .review-list dt,
+    .review-hour-item span,
+    .modal-card p,
+    .verification-documents-heading p,
+    .verification-privacy-note,
+    .verification-kicker,
+    .verification-document-copy span,
+    .verification-file-status,
+    .delivery-tier-heading small,
+    .unit-input span
+) {
+    color: var(--muted);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .wizard-status,
+    .form-section,
+    .review-group,
+    .customer-restaurant-preview,
+    .customer-preview-order-card,
+    .modal-card,
+    .verification-documents-card,
+    .logo-preview,
+    .review-logo
+) {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .hours-input,
+    .money-input,
+    .delivery-pricing-panel select,
+    .unit-input,
+    .delivery-tier-row
+) {
+    background: #20242a;
+    color: var(--text);
+    border-color: #343942;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .form-group input,
+    .form-group textarea,
+    .hours-input
+)::placeholder {
+    color: #7f8998;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .form-group input:disabled,
+    .form-group select:disabled,
+    .form-group textarea:disabled,
+    .hours-input:disabled
+) {
+    background: #24282e;
+    color: #8f98a6;
+    border-color: #343942;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .wizard-progress-track {
+    background: #30343b;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .wizard-status-text strong {
+    color: #ff974c;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .wizard-status-text span {
+    color: var(--muted);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .required-note {
+    color: #f7b69c;
+    background: rgba(247, 128, 33, 0.09);
+    border-color: rgba(247, 128, 33, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .status-banner.status-draft {
+    color: #f5c56b;
+    background: rgba(183, 121, 31, 0.15);
+    border-color: rgba(245, 197, 107, 0.32);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .status-banner.status-submitted {
+    color: #8ee0ad;
+    background: rgba(25, 135, 84, 0.15);
+    border-color: rgba(142, 224, 173, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .status-banner.status-rejected {
+    color: #ff9da5;
+    background: rgba(220, 53, 69, 0.14);
+    border-color: rgba(255, 157, 165, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .status-banner :is(strong, span, p) {
+    color: inherit;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .business-hours {
+    background: #181b20;
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .hours-row {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .service-card {
+    background: #1b1f25;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .service-card:hover {
+    border-color: rgba(247, 128, 33, 0.50);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .service-card:has(input:checked) {
+    background: rgba(247, 128, 33, 0.10);
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .service-check {
+    background: #20242a;
+    border-color: #59616d;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .service-card input:checked + .service-check {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .logo-upload-field,
+    .verification-source-note,
+    .delivery-pricing-panel,
+    .customer-preview-content,
+    .review-list > div
+) {
+    background: #171a1f;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] :is(
+    .verification-document-item,
+    .customer-preview-top,
+    .review-hour-item
+) {
+    background: #1d2127;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-required-badge {
+    color: #ffb06d;
+    background: rgba(247, 128, 33, 0.10);
+    border-color: rgba(247, 128, 33, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-source-note {
+    color: #c7ced8;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-file-status.uploaded {
+    color: #70d99a;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-file-status.error {
+    color: #ff9da5;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions {
+    background: rgba(24, 27, 32, 0.96);
+    border-color: var(--border);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .secondary-button {
+    background: #22262c;
+    color: var(--text);
+    border-color: #3a4048;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .secondary-button:hover:not(:disabled) {
+    background: #2a2f36;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logo-upload-field {
+    background: #171a1f;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logo-preview {
+    background: #20242a;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logo-preview-placeholder,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .review-logo span {
+    color: #9ca6b4;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logo-remove-button {
+    background: rgba(220, 38, 38, 0.12);
+    color: #ff9da5;
+    border-color: rgba(248, 113, 113, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .review-delivery-pricing,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .real-customer-preview-action {
+    background: rgba(247, 128, 33, 0.10);
+    color: var(--muted);
+    border-color: rgba(247, 128, 33, 0.28);
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .real-customer-preview-action strong {
+    color: #ff974c;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .modal-overlay {
+    background: rgba(0, 0, 0, 0.68);
+}
+
+/* Keep the FoodConnect brand identical in both modes. */
+body[data-fc-page="restaurant-setup"] .brand-logo-image {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+body[data-fc-page="restaurant-setup"] .sidebar-brand .brand-food {
+    color: #f78021;
+}
+
+body[data-fc-page="restaurant-setup"] .sidebar-brand .brand-connect {
+    color: #4caf50;
+}
 
 /* FoodConnect official brand logo standard */
 img[src*="logofoodconnect-Photoroom.png"] {
@@ -2182,4 +2486,329 @@ img[src*="logofoodconnect-Photoroom.png"] {
 .footer img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
+}
+
+/* =========================================================
+   FLEXIBLE DELIVERY PRICING
+   ========================================================= */
+
+.delivery-pricing-panel {
+    margin-top: 24px;
+    padding: 22px;
+
+    border: 1px solid #e3e6eb;
+    border-radius: 16px;
+
+    background: #fbfcfd;
+}
+
+.delivery-pricing-panel > .form-group {
+    margin-bottom: 18px;
+}
+
+.delivery-pricing-fields {
+    margin-top: 14px;
+}
+
+.delivery-pricing-fields.hidden,
+.delivery-pricing-panel.hidden {
+    display: none !important;
+}
+
+.delivery-pricing-panel select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+
+    border: 1px solid #d7dbe1;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: var(--text);
+
+    font: inherit;
+}
+
+.delivery-pricing-panel select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.13);
+}
+
+.unit-input {
+    min-height: 46px;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+
+    border: 1px solid #d7dbe1;
+    border-radius: 10px;
+
+    background: #ffffff;
+}
+
+.unit-input:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.13);
+}
+
+.unit-input input {
+    flex: 1;
+    min-width: 0;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.unit-input span {
+    padding: 0 13px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.delivery-tier-heading {
+    margin-bottom: 13px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.delivery-tier-heading strong,
+.delivery-tier-heading small {
+    display: block;
+}
+
+.delivery-tier-heading small {
+    margin-top: 4px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.delivery-tiers {
+    display: grid;
+    gap: 10px;
+}
+
+.delivery-tier-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+
+    padding: 13px;
+
+    border: 1px solid #e3e6eb;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.delivery-tier-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.delivery-tier-remove {
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid #f0c8c8;
+    border-radius: 10px;
+
+    background: #fff5f5;
+    color: #c83f49;
+
+    cursor: pointer;
+}
+
+.delivery-tier-remove:hover,
+.delivery-tier-remove:focus-visible {
+    background: #ffe8e8;
+}
+
+.review-delivery-pricing {
+    margin-top: 12px;
+    padding: 10px 12px;
+
+    border-radius: 10px;
+    background: #fff7ef;
+    color: var(--muted);
+
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+    .delivery-pricing-panel {
+        padding: 16px;
+    }
+
+    .delivery-tier-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .delivery-tier-row {
+        grid-template-columns: 1fr;
+    }
+
+    .delivery-tier-remove {
+        width: 100%;
+    }
+}
+
+html[data-theme="dark"] .delivery-pricing-panel {
+    background: #171a1f;
+    border-color: #343942;
+}
+
+html[data-theme="dark"] .delivery-pricing-panel select,
+html[data-theme="dark"] .unit-input,
+html[data-theme="dark"] .delivery-tier-row {
+    background: #20242a;
+    color: #f5f7fa;
+    border-color: #343942;
+}
+
+html[data-theme="dark"] .review-delivery-pricing {
+    background: rgba(247, 128, 33, 0.12);
+    color: #c8ced8;
+}
+
+html[data-theme="dark"] .delivery-tier-remove {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.32);
+    color: #ff9a9f;
+}
+
+/* =========================================================
+   RESTAURANT SETUP DARK MODE - FINAL CONTRAST GUARD
+   Page-specific rules intentionally use higher specificity so
+   shared semantic button rules cannot turn controls white.
+   ========================================================= */
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions {
+    background: rgba(24, 27, 32, 0.97) !important;
+    border-color: #343941 !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38) !important;
+    color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .secondary-button,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-upload-button.secondary-button {
+    background: #24282e !important;
+    border-color: #3a4048 !important;
+    color: #f5f7fa !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .secondary-button:hover:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-upload-button.secondary-button:hover:not(:disabled) {
+    background: #2c3138 !important;
+    border-color: #4a515b !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .secondary-button:disabled,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-upload-button.secondary-button:disabled {
+    background: #20242a !important;
+    border-color: #343941 !important;
+    color: #7f8998 !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .primary-button {
+    background: #f47c1e !important;
+    border-color: #f47c1e !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .primary-button:hover:not(:disabled) {
+    background: #df6810 !important;
+    border-color: #df6810 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .form-actions .primary-button:disabled {
+    background: rgba(244, 124, 30, 0.22) !important;
+    border-color: rgba(244, 124, 30, 0.30) !important;
+    color: #d8b49a !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-document-item {
+    background: #1d2127 !important;
+    border-color: #343941 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-document-copy strong {
+    color: #f5f7fa !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-document-copy span,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .verification-file-status {
+    color: #a4acb9 !important;
+}
+
+/* Keep the sidebar wordmark consistent in both themes. */
+body[data-fc-page="restaurant-setup"] .sidebar-brand .brand-logo-image {
+    width: 50px !important;
+    height: 50px !important;
+    object-fit: contain !important;
+}
+
+body[data-fc-page="restaurant-setup"] .sidebar-brand h1 {
+    font-family: "Poppins", Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.35px;
+}
+
+body[data-fc-page="restaurant-setup"] .sidebar-brand .brand-food {
+    color: #f78021 !important;
+}
+
+body[data-fc-page="restaurant-setup"] .sidebar-brand .brand-connect {
+    color: #4caf50 !important;
+}
+
+
+/* =========================================================
+   RESTAURANT SETUP LOGOUT BUTTON - CONTRAST GUARD
+   Prevent shared/light hover styles from turning the logout
+   control white and making its label unreadable.
+   ========================================================= */
+body[data-fc-page="restaurant-setup"] .logout-button,
+html[data-theme="light"] body[data-fc-page="restaurant-setup"] .logout-button,
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logout-button {
+    background: var(--fc-danger, #dc2626) !important;
+    background-image: none !important;
+    border-color: var(--fc-danger, #dc2626) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+body[data-fc-page="restaurant-setup"] .logout-button:hover:not(:disabled),
+body[data-fc-page="restaurant-setup"] .logout-button:focus-visible:not(:disabled),
+html[data-theme="light"] body[data-fc-page="restaurant-setup"] .logout-button:hover:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="restaurant-setup"] .logout-button:hover:not(:disabled) {
+    background: var(--fc-danger-hover, #b91c1c) !important;
+    background-image: none !important;
+    border-color: var(--fc-danger-hover, #b91c1c) !important;
+    color: #ffffff !important;
+}
+
+body[data-fc-page="restaurant-setup"] .logout-button:focus-visible {
+    outline: 3px solid rgba(220, 38, 38, 0.24) !important;
+    outline-offset: 2px;
+}
+
+body[data-fc-page="restaurant-setup"] .logout-button:disabled {
+    background: rgba(220, 38, 38, 0.38) !important;
+    border-color: rgba(220, 38, 38, 0.42) !important;
+    color: rgba(255, 255, 255, 0.78) !important;
 }

@@ -789,6 +789,16 @@ const settingsBusinessHours = document.getElementById("settingsBusinessHours");
 const settingsApplyMondayHours = document.getElementById("settingsApplyMondayHours");
 const settingsHoursError = document.getElementById("settingsHoursError");
 const settingsDeliveryFee = document.getElementById("settingsDeliveryFee");
+const settingsDeliveryPricingType = document.getElementById("settingsDeliveryPricingType");
+const settingsFixedPricingFields = document.getElementById("settingsFixedPricingFields");
+const settingsDistancePricingFields = document.getElementById("settingsDistancePricingFields");
+const settingsTieredPricingFields = document.getElementById("settingsTieredPricingFields");
+const settingsDeliveryBaseFee = document.getElementById("settingsDeliveryBaseFee");
+const settingsDeliveryIncludedKm = document.getElementById("settingsDeliveryIncludedKm");
+const settingsDeliveryExtraFeePerKm = document.getElementById("settingsDeliveryExtraFeePerKm");
+const settingsDeliveryTiersContainer = document.getElementById("settingsDeliveryTiersContainer");
+const settingsAddDeliveryTierBtn = document.getElementById("settingsAddDeliveryTierBtn");
+const settingsDeliveryPricingError = document.getElementById("settingsDeliveryPricingError");
 const settingsBusinessStatus =
   document.getElementById(
     "settingsBusinessStatus"
@@ -857,7 +867,11 @@ const settingsFormControls = [
   settingsContactNumber,
   settingsAddress,
   settingsOpeningHours,
-  settingsDeliveryFee
+  settingsDeliveryFee,
+  settingsDeliveryPricingType,
+  settingsDeliveryBaseFee,
+  settingsDeliveryIncludedKm,
+  settingsDeliveryExtraFeePerKm
 ].filter(Boolean);
 
 let savedRestaurantSettings = null;
@@ -998,6 +1012,71 @@ control.removeAttribute(
     }
   );
 });
+
+settingsDeliveryPricingType?.addEventListener(
+  "change",
+  () => {
+    updateSettingsDeliveryPricingFields();
+    handleSettingsChange();
+  }
+);
+
+settingsAddDeliveryTierBtn?.addEventListener(
+  "click",
+  () => {
+    if (!settingsDeliveryTiersContainer) {
+      return;
+    }
+
+    if (settingsDeliveryTiersContainer.children.length >= 10) {
+      if (settingsDeliveryPricingError) {
+        settingsDeliveryPricingError.textContent =
+          "A maximum of 10 delivery tiers is allowed.";
+      }
+      return;
+    }
+
+    const rows = Array.from(
+      settingsDeliveryTiersContainer.querySelectorAll(
+        ".settings-delivery-tier-row"
+      )
+    );
+
+    const lastRow = rows[rows.length - 1];
+
+    const lastKm = Number(
+      lastRow?.querySelector(
+        ".settings-delivery-tier-km"
+      )?.value || 0
+    );
+
+    const lastFee = Number(
+      lastRow?.querySelector(
+        ".settings-delivery-tier-fee"
+      )?.value || 0
+    );
+
+    settingsDeliveryTiersContainer.appendChild(
+      createSettingsDeliveryTierRow(
+        {
+          up_to_km: Math.min(
+            100,
+            Math.max(1, lastKm + 3)
+          ),
+          fee: Math.max(
+            0,
+            lastFee + 50
+          )
+        },
+        rows.length
+      )
+    );
+
+    refreshSettingsDeliveryTierLabels();
+    clearSettingsDeliveryPricingError();
+    handleSettingsChange();
+  }
+);
 
 settingsStatusRadios.forEach(radio => {
   radio.addEventListener(
@@ -2637,10 +2716,12 @@ async function loadProducts() {
       ),
 
     image:
-      p.image_path ||
-      p.image ||
-      p.image_url ||
-      ""
+      normalizeProductImagePath(
+        p.image_path ||
+        p.image ||
+        p.image_url ||
+        ""
+      )
   };
 });
 
@@ -2650,6 +2731,50 @@ async function loadProducts() {
   populateInventoryCategories();
   applyInventoryFilters();
   renderAddonChoiceLists();
+}
+
+function normalizeProductImagePath(imagePath = "") {
+  let path = String(imagePath || "").trim();
+
+  if (!path) {
+    return "";
+  }
+
+  /*
+   * Legacy production records may still contain the old
+   * /FoodConnect deployment prefix. The live site is hosted
+   * at the domain root, so product images must resolve from
+   * /uploads/... instead.
+   */
+  try {
+    const parsed = new URL(path, window.location.origin);
+
+    if (parsed.origin === window.location.origin) {
+      path = parsed.pathname;
+    }
+  } catch (_) {
+    // Keep the original relative path and normalize it below.
+  }
+
+  path = path.replace(
+    /^\/FoodConnect(?=\/uploads\/product_images\/)/i,
+    ""
+  );
+
+  path = path.replace(
+    /^FoodConnect(?=\/uploads\/product_images\/)/i,
+    ""
+  );
+
+  if (
+    path.startsWith(
+      "uploads/product_images/"
+    )
+  ) {
+    path = "/" + path;
+  }
+
+  return path;
 }
 
 /* =========================
@@ -3922,7 +4047,7 @@ function exportSalesReportExcel() {
 
         h1 {
           background: #111111;
-          color: #cc9900;
+          color: #f47c1e;
           padding: 14px;
           text-align: center;
         }
@@ -3939,7 +4064,7 @@ function exportSalesReportExcel() {
         }
 
         th {
-          background: #cc9900;
+          background: #f47c1e;
           color: #ffffff;
           padding: 10px;
           border: 1px solid #999;
@@ -8003,12 +8128,63 @@ navItems.forEach(btn => {
             savedRestaurantSettings.opening_hours;
         }
 
+        const savedPricing =
+          savedRestaurantSettings.delivery_pricing ||
+          {
+            pricing_type: "fixed",
+            fixed_fee:
+              Number(
+                savedRestaurantSettings.delivery_fee || 0
+              )
+          };
+
+        if (settingsDeliveryPricingType) {
+          settingsDeliveryPricingType.value =
+            normalizeSettingsDeliveryPricingType(
+              savedRestaurantSettings.delivery_pricing_type ||
+              savedPricing.pricing_type
+            );
+        }
+
         if (settingsDeliveryFee) {
           settingsDeliveryFee.value =
             Number(
-              savedRestaurantSettings.delivery_fee
+              savedPricing.fixed_fee ??
+              savedRestaurantSettings.delivery_fee ??
+              0
             ).toFixed(2);
         }
+
+        if (settingsDeliveryBaseFee) {
+          settingsDeliveryBaseFee.value =
+            Number(
+              savedPricing.base_fee ??
+              savedRestaurantSettings.delivery_fee ??
+              0
+            ).toFixed(2);
+        }
+
+        if (settingsDeliveryIncludedKm) {
+          settingsDeliveryIncludedKm.value =
+            String(
+              savedPricing.included_km ??
+              5
+            );
+        }
+
+        if (settingsDeliveryExtraFeePerKm) {
+          settingsDeliveryExtraFeePerKm.value =
+            Number(
+              savedPricing.extra_fee_per_km ??
+              10
+            ).toFixed(2);
+        }
+
+        renderSettingsDeliveryTiers(
+          savedPricing.tiers || []
+        );
+
+        updateSettingsDeliveryPricingFields();
 
         setSelectedBusinessStatus(
           savedRestaurantSettings.business_status
@@ -9697,7 +9873,7 @@ function exportSalesReportPDF() {
 
         h1 {
           text-align: center;
-          color: #cc9900;
+          color: #f47c1e;
           margin-bottom: 5px;
         }
 
@@ -9740,7 +9916,7 @@ function exportSalesReportPDF() {
         }
 
         th {
-          background: #cc9900;
+          background: #f47c1e;
           color: white;
           padding: 10px;
           border: 1px solid #aaa;
@@ -9939,6 +10115,8 @@ function clearSettingsFieldErrors() {
       "aria-invalid"
     );
   });
+
+  clearSettingsDeliveryPricingError();
 
   if (settingsFormMessage) {
     settingsFormMessage.textContent = "";
@@ -10231,17 +10409,361 @@ function applySettingsMondayHoursToAll() {
 
 settingsApplyMondayHours?.addEventListener("click", applySettingsMondayHoursToAll);
 
-function getCurrentRestaurantSettings() {
-  return {
+function normalizeSettingsDeliveryPricingType(value) {
+  const type =
+    String(value || "fixed")
+      .trim()
+      .toLowerCase();
 
+  return ["fixed", "distance", "tiered"].includes(type)
+    ? type
+    : "fixed";
+}
+
+function clearSettingsDeliveryPricingError() {
+  if (settingsDeliveryPricingError) {
+    settingsDeliveryPricingError.textContent = "";
+  }
+}
+
+function createSettingsDeliveryTierRow(
+  tier = {},
+  index = 0
+) {
+  const row = document.createElement("div");
+  row.className = "settings-delivery-tier-row";
+
+  row.innerHTML = `
+    <div class="settings-field">
+      <label>Up to distance</label>
+      <div class="settings-unit-input">
+        <input
+          type="number"
+          class="settings-delivery-tier-km"
+          min="0.1"
+          max="100"
+          step="0.1"
+          value="${Number(tier.up_to_km || (index + 1) * 5)}"
+          aria-label="Tier ${index + 1} maximum distance"
+        />
+        <span>km</span>
+      </div>
+    </div>
+
+    <div class="settings-field">
+      <label>Delivery fee</label>
+      <div class="settings-money-input">
+        <span>₱</span>
+        <input
+          type="number"
+          class="settings-delivery-tier-fee"
+          min="0"
+          max="9999"
+          step="0.01"
+          value="${Number(tier.fee || 0).toFixed(2)}"
+          aria-label="Tier ${index + 1} delivery fee"
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="settings-delivery-tier-remove"
+      aria-label="Remove delivery tier ${index + 1}"
+      title="Remove tier"
+    >
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  `;
+
+  row
+    .querySelectorAll("input")
+    .forEach(input => {
+      input.addEventListener(
+        "input",
+        () => {
+          clearSettingsDeliveryPricingError();
+          handleSettingsChange();
+        }
+      );
+    });
+
+  row
+    .querySelector(".settings-delivery-tier-remove")
+    ?.addEventListener(
+      "click",
+      () => {
+        if (
+          !settingsDeliveryTiersContainer ||
+          settingsDeliveryTiersContainer.children.length <= 1
+        ) {
+          if (settingsDeliveryPricingError) {
+            settingsDeliveryPricingError.textContent =
+              "Tiered pricing must keep at least one distance tier.";
+          }
+          return;
+        }
+
+        row.remove();
+        refreshSettingsDeliveryTierLabels();
+        clearSettingsDeliveryPricingError();
+        handleSettingsChange();
+      }
+    );
+
+  return row;
+}
+
+function refreshSettingsDeliveryTierLabels() {
+  settingsDeliveryTiersContainer
+    ?.querySelectorAll(".settings-delivery-tier-row")
+    .forEach((row, index) => {
+      row
+        .querySelector(".settings-delivery-tier-km")
+        ?.setAttribute(
+          "aria-label",
+          `Tier ${index + 1} maximum distance`
+        );
+
+      row
+        .querySelector(".settings-delivery-tier-fee")
+        ?.setAttribute(
+          "aria-label",
+          `Tier ${index + 1} delivery fee`
+        );
+
+      row
+        .querySelector(".settings-delivery-tier-remove")
+        ?.setAttribute(
+          "aria-label",
+          `Remove delivery tier ${index + 1}`
+        );
+    });
+}
+
+function renderSettingsDeliveryTiers(tiers = []) {
+  if (!settingsDeliveryTiersContainer) {
+    return;
+  }
+
+  settingsDeliveryTiersContainer.innerHTML = "";
+
+  const normalizedTiers =
+    Array.isArray(tiers) && tiers.length > 0
+      ? tiers.slice(0, 10)
+      : [
+          {
+            up_to_km: 5,
+            fee:
+              Number(
+                settingsDeliveryFee?.value || 0
+              ) || 70
+          }
+        ];
+
+  normalizedTiers.forEach(
+    (tier, index) => {
+      settingsDeliveryTiersContainer.appendChild(
+        createSettingsDeliveryTierRow(
+          tier,
+          index
+        )
+      );
+    }
+  );
+
+  refreshSettingsDeliveryTierLabels();
+}
+
+function updateSettingsDeliveryPricingFields() {
+  const type =
+    normalizeSettingsDeliveryPricingType(
+      settingsDeliveryPricingType?.value
+    );
+
+  if (settingsFixedPricingFields) {
+    settingsFixedPricingFields.hidden =
+      type !== "fixed";
+  }
+
+  if (settingsDistancePricingFields) {
+    settingsDistancePricingFields.hidden =
+      type !== "distance";
+  }
+
+  if (settingsTieredPricingFields) {
+    settingsTieredPricingFields.hidden =
+      type !== "tiered";
+  }
+
+  if (
+    type === "tiered" &&
+    settingsDeliveryTiersContainer &&
+    settingsDeliveryTiersContainer.children.length === 0
+  ) {
+    const startingFee =
+      Math.max(
+        0,
+        Number(
+          settingsDeliveryFee?.value ||
+          settingsDeliveryBaseFee?.value ||
+          70
+        ) || 70
+      );
+
+    renderSettingsDeliveryTiers([
+      {
+        up_to_km: 5,
+        fee: startingFee
+      },
+      {
+        up_to_km: 8,
+        fee: startingFee + 50
+      }
+    ]);
+  }
+
+  clearSettingsDeliveryPricingError();
+}
+
+function collectSettingsDeliveryPricing() {
+  const type =
+    normalizeSettingsDeliveryPricingType(
+      settingsDeliveryPricingType?.value
+    );
+
+  if (type === "distance") {
+    return {
+      pricing_type: "distance",
+      base_fee:
+        Number(
+          settingsDeliveryBaseFee?.value || 0
+        ),
+      included_km:
+        Number(
+          settingsDeliveryIncludedKm?.value || 0
+        ),
+      extra_fee_per_km:
+        Number(
+          settingsDeliveryExtraFeePerKm?.value || 0
+        )
+    };
+  }
+
+  if (type === "tiered") {
+    const tiers = [];
+
+    settingsDeliveryTiersContainer
+      ?.querySelectorAll(
+        ".settings-delivery-tier-row"
+      )
+      .forEach(row => {
+        tiers.push({
+          up_to_km:
+            Number(
+              row.querySelector(
+                ".settings-delivery-tier-km"
+              )?.value || 0
+            ),
+          fee:
+            Number(
+              row.querySelector(
+                ".settings-delivery-tier-fee"
+              )?.value || 0
+            )
+        });
+      });
+
+    return {
+      pricing_type: "tiered",
+      tiers
+    };
+  }
+
+  return {
+    pricing_type: "fixed",
+    fixed_fee:
+      Number(
+        settingsDeliveryFee?.value || 0
+      )
+  };
+}
+
+function getSettingsLegacyDeliveryFee(
+  pricing
+) {
+  const type =
+    normalizeSettingsDeliveryPricingType(
+      pricing?.pricing_type
+    );
+
+  if (type === "distance") {
+    return Number(
+      pricing?.base_fee || 0
+    );
+  }
+
+  if (type === "tiered") {
+    return Number(
+      pricing?.tiers?.[0]?.fee || 0
+    );
+  }
+
+  return Number(
+    pricing?.fixed_fee || 0
+  );
+}
+
+function normalizeSettingsPricingForCompare(
+  pricing
+) {
+  const type =
+    normalizeSettingsDeliveryPricingType(
+      pricing?.pricing_type
+    );
+
+  if (type === "distance") {
+    return {
+      pricing_type: type,
+      base_fee: Number(pricing?.base_fee || 0),
+      included_km: Number(pricing?.included_km || 0),
+      extra_fee_per_km:
+        Number(pricing?.extra_fee_per_km || 0)
+    };
+  }
+
+  if (type === "tiered") {
+    return {
+      pricing_type: type,
+      tiers: (pricing?.tiers || []).map(tier => ({
+        up_to_km: Number(tier?.up_to_km || 0),
+        fee: Number(tier?.fee || 0)
+      }))
+    };
+  }
+
+  return {
+    pricing_type: "fixed",
+    fixed_fee:
+      Number(pricing?.fixed_fee || 0)
+  };
+}
+
+function getCurrentRestaurantSettings() {
+  const deliveryPricing =
+    collectSettingsDeliveryPricing();
+
+  return {
     logo_path:
-  String(
-    settingsLogoPath?.value || ""
-  ).trim(),
+      String(
+        settingsLogoPath?.value || ""
+      ).trim(),
+
     banner_path:
-  String(
-    settingsBannerPath?.value || ""
-  ).trim(),
+      String(
+        settingsBannerPath?.value || ""
+      ).trim(),
+
     name:
       normalizeSettingsText(
         settingsRestaurantName?.value
@@ -10263,9 +10785,15 @@ function getCurrentRestaurantSettings() {
       ),
 
     delivery_fee:
-      Number(
-        settingsDeliveryFee?.value || 0
+      getSettingsLegacyDeliveryFee(
+        deliveryPricing
       ),
+
+    delivery_pricing_type:
+      deliveryPricing.pricing_type,
+
+    delivery_pricing:
+      deliveryPricing,
 
     business_status:
       getSelectedBusinessStatus()
@@ -10705,8 +11233,13 @@ function updateSettingsPreview() {
   }
 
   if (settingsPreviewFee) {
+    const pricingPrefix =
+      settings.delivery_pricing_type === "fixed"
+        ? ""
+        : "From ";
+
     settingsPreviewFee.textContent =
-      `₱${formatSettingsDeliveryFee(
+      `${pricingPrefix}₱${formatSettingsDeliveryFee(
         settings.delivery_fee
       )}`;
   }
@@ -10750,6 +11283,20 @@ function settingsHaveChanges() {
   const current =
     getCurrentRestaurantSettings();
 
+  const currentPricing =
+    JSON.stringify(
+      normalizeSettingsPricingForCompare(
+        current.delivery_pricing
+      )
+    );
+
+  const savedPricing =
+    JSON.stringify(
+      normalizeSettingsPricingForCompare(
+        savedRestaurantSettings.delivery_pricing
+      )
+    );
+
   return (
     current.logo_path !==
       String(
@@ -10768,10 +11315,10 @@ function settingsHaveChanges() {
     current.opening_hours !==
       savedRestaurantSettings.opening_hours ||
 
-    Number(current.delivery_fee) !==
-      Number(
-        savedRestaurantSettings.delivery_fee
-      ) ||
+    current.delivery_pricing_type !==
+      savedRestaurantSettings.delivery_pricing_type ||
+
+    currentPricing !== savedPricing ||
 
     current.business_status !==
       savedRestaurantSettings.business_status
@@ -10851,6 +11398,143 @@ function handleSettingsChange() {
       saveSettingsBtn.disabled = true;
     }
   }
+}
+
+function validateSettingsDeliveryPricing(
+  settings
+) {
+  const pricing =
+    settings?.delivery_pricing || {};
+
+  const type =
+    normalizeSettingsDeliveryPricingType(
+      settings?.delivery_pricing_type ||
+      pricing?.pricing_type
+    );
+
+  const validMoney = value =>
+    Number.isFinite(Number(value)) &&
+    Number(value) >= 0 &&
+    Number(value) <= 9999;
+
+  const fail = (message, control = null) => {
+    if (settingsDeliveryPricingError) {
+      settingsDeliveryPricingError.textContent =
+        message;
+    }
+
+    if (control) {
+      markSettingsFieldInvalid(control);
+    }
+
+    return message;
+  };
+
+  if (type === "fixed") {
+    if (!validMoney(pricing.fixed_fee)) {
+      return fail(
+        "Enter a valid fixed delivery fee from ₱0.00 to ₱9,999.00.",
+        settingsDeliveryFee
+      );
+    }
+
+    clearSettingsDeliveryPricingError();
+    return "";
+  }
+
+  if (type === "distance") {
+    if (!validMoney(pricing.base_fee)) {
+      return fail(
+        "Enter a valid base delivery fee.",
+        settingsDeliveryBaseFee
+      );
+    }
+
+    const includedKm =
+      Number(pricing.included_km);
+
+    if (
+      !Number.isFinite(includedKm) ||
+      includedKm <= 0 ||
+      includedKm > 100
+    ) {
+      return fail(
+        "Included distance must be greater than 0 and not exceed 100 km.",
+        settingsDeliveryIncludedKm
+      );
+    }
+
+    const extraFee =
+      Number(pricing.extra_fee_per_km);
+
+    if (
+      !validMoney(extraFee) ||
+      extraFee <= 0
+    ) {
+      return fail(
+        "Additional fee per kilometer must be greater than ₱0.00.",
+        settingsDeliveryExtraFeePerKm
+      );
+    }
+
+    clearSettingsDeliveryPricingError();
+    return "";
+  }
+
+  const tiers =
+    Array.isArray(pricing.tiers)
+      ? pricing.tiers
+      : [];
+
+  if (
+    tiers.length < 1 ||
+    tiers.length > 10
+  ) {
+    return fail(
+      "Tiered pricing must contain between 1 and 10 distance tiers."
+    );
+  }
+
+  let previousDistance = 0;
+
+  for (
+    let index = 0;
+    index < tiers.length;
+    index += 1
+  ) {
+    const tier = tiers[index];
+    const distance =
+      Number(tier?.up_to_km);
+    const fee =
+      Number(tier?.fee);
+
+    if (
+      !Number.isFinite(distance) ||
+      distance <= 0 ||
+      distance > 100
+    ) {
+      return fail(
+        `Tier ${index + 1} distance must be greater than 0 and not exceed 100 km.`
+      );
+    }
+
+    if (distance <= previousDistance) {
+      return fail(
+        "Tier distances must increase from one tier to the next."
+      );
+    }
+
+    if (!validMoney(fee)) {
+      return fail(
+        `Enter a valid fee for tier ${index + 1}.`
+      );
+    }
+
+    previousDistance = distance;
+  }
+
+  clearSettingsDeliveryPricingError();
+  return "";
 }
 
 function validateRestaurantSettings(
@@ -10949,32 +11633,13 @@ if (
     return "Enter clear and understandable opening hours.";
   }
 
-  if (
-    !Number.isFinite(
-      settings.delivery_fee
-    )
-  ) {
-    markSettingsFieldInvalid(
-      settingsDeliveryFee
+  const deliveryPricingValidationError =
+    validateSettingsDeliveryPricing(
+      settings
     );
 
-    return "Enter a valid delivery fee.";
-  }
-
-  if (settings.delivery_fee < 0) {
-    markSettingsFieldInvalid(
-      settingsDeliveryFee
-    );
-
-    return "Delivery fee cannot be negative.";
-  }
-
-  if (settings.delivery_fee > 999) {
-    markSettingsFieldInvalid(
-      settingsDeliveryFee
-    );
-
-    return "Delivery fee cannot exceed ₱999.00.";
+  if (deliveryPricingValidationError) {
+    return deliveryPricingValidationError;
   }
 
   return "";
@@ -11018,6 +11683,60 @@ renderSettingsLogo(
 
 setSettingsLogoMessage("");   
 
+const loadedPricingType =
+  normalizeSettingsDeliveryPricingType(
+    restaurant.delivery_pricing_type ||
+    "fixed"
+  );
+
+const loadedPricingSource =
+  restaurant.delivery_pricing &&
+  typeof restaurant.delivery_pricing === "object"
+    ? restaurant.delivery_pricing
+    : {};
+
+let loadedDeliveryPricing;
+
+if (loadedPricingType === "distance") {
+  loadedDeliveryPricing = {
+    pricing_type: "distance",
+    base_fee: Number(
+      loadedPricingSource.base_fee ??
+      restaurant.delivery_fee ??
+      0
+    ),
+    included_km: Number(
+      loadedPricingSource.included_km ??
+      5
+    ),
+    extra_fee_per_km: Number(
+      loadedPricingSource.extra_fee_per_km ??
+      10
+    )
+  };
+} else if (loadedPricingType === "tiered") {
+  loadedDeliveryPricing = {
+    pricing_type: "tiered",
+    tiers: Array.isArray(
+      loadedPricingSource.tiers
+    )
+      ? loadedPricingSource.tiers.map(tier => ({
+          up_to_km: Number(tier?.up_to_km || 0),
+          fee: Number(tier?.fee || 0)
+        }))
+      : []
+  };
+} else {
+  loadedDeliveryPricing = {
+    pricing_type: "fixed",
+    fixed_fee: Number(
+      loadedPricingSource.fixed_fee ??
+      restaurant.delivery_fee ??
+      0
+    )
+  };
+}
+
 const loadedSettings = {
   logo_path: String(
     restaurant.logo_path || ""
@@ -11040,9 +11759,15 @@ const loadedSettings = {
   ).trim(),
 
   delivery_fee:
-    Number(
-      restaurant.delivery_fee || 0
+    getSettingsLegacyDeliveryFee(
+      loadedDeliveryPricing
     ),
+
+  delivery_pricing_type:
+    loadedPricingType,
+
+  delivery_pricing:
+    loadedDeliveryPricing,
 
   business_status:
     normalizeBusinessStatus(
@@ -11104,12 +11829,48 @@ const loadedSettings = {
       loadedSettings.opening_hours = settingsOpeningHours.value;
     }
 
+    if (settingsDeliveryPricingType) {
+      settingsDeliveryPricingType.value =
+        loadedSettings.delivery_pricing_type;
+    }
+
     if (settingsDeliveryFee) {
       settingsDeliveryFee.value =
-        loadedSettings.delivery_fee.toFixed(
-          2
+        Number(
+          loadedSettings.delivery_pricing.fixed_fee ??
+          loadedSettings.delivery_fee
+        ).toFixed(2);
+    }
+
+    if (settingsDeliveryBaseFee) {
+      settingsDeliveryBaseFee.value =
+        Number(
+          loadedSettings.delivery_pricing.base_fee ??
+          loadedSettings.delivery_fee
+        ).toFixed(2);
+    }
+
+    if (settingsDeliveryIncludedKm) {
+      settingsDeliveryIncludedKm.value =
+        String(
+          loadedSettings.delivery_pricing.included_km ??
+          5
         );
     }
+
+    if (settingsDeliveryExtraFeePerKm) {
+      settingsDeliveryExtraFeePerKm.value =
+        Number(
+          loadedSettings.delivery_pricing.extra_fee_per_km ??
+          10
+        ).toFixed(2);
+    }
+
+    renderSettingsDeliveryTiers(
+      loadedSettings.delivery_pricing.tiers || []
+    );
+
+    updateSettingsDeliveryPricingFields();
 
     setSelectedBusinessStatus(
       loadedSettings.business_status

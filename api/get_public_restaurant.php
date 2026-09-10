@@ -9,6 +9,7 @@ header(
 );
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -157,6 +158,13 @@ $normalized_status = strtolower(
 $is_accepting_orders =
     $normalized_status === "open";
 
+$deliveryPricing =
+    fc_delivery_pricing_get_active(
+        $conn,
+        (int) $restaurant["restaurant_id"],
+        (float) ($restaurant["delivery_fee"] ?? 0)
+    );
+
 /* =========================================================
    RESPONSE
 ========================================================= */
@@ -193,6 +201,9 @@ respond_json([
                 ),
                 2
             ),
+
+        "delivery_pricing_type" =>
+            (string) $deliveryPricing["pricing_type"],
 
         "business_status" =>
             $business_status,

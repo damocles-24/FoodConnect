@@ -334,15 +334,29 @@ const restaurantPreviewDeliveryFee =
     );
 
   function formatRestaurantDeliveryFee(
-    value
+    value,
+    pricingType = "fixed"
   ) {
     const amount = Number(value || 0);
+    const type = String(
+      pricingType || "fixed"
+    )
+      .trim()
+      .toLowerCase();
 
-    if (amount <= 0) {
+    if (type === "fixed" && amount <= 0) {
       return "Free delivery";
     }
 
-    return `Delivery fee: ₱${amount.toFixed(2)}`;
+    if (type === "distance") {
+      return `Delivery starts at ₱${Math.max(0, amount).toFixed(2)} • based on distance`;
+    }
+
+    if (type === "tiered") {
+      return `Delivery starts at ₱${Math.max(0, amount).toFixed(2)} • distance tiers`;
+    }
+
+    return `Delivery fee: ₱${Math.max(0, amount).toFixed(2)}`;
   }
 
 closeRestaurantPreview?.addEventListener(
@@ -858,18 +872,29 @@ if (
     if (restaurantDeliveryFee) {
       restaurantDeliveryFee.textContent =
         formatRestaurantDeliveryFee(
-          restaurant.delivery_fee
+          restaurant.delivery_fee,
+          restaurant.delivery_pricing_type
         );
     }
 
     if (
       restaurantPreviewDeliveryFee
     ) {
-      restaurantPreviewDeliveryFee.textContent =
+      const previewDeliveryAmount =
         formatPesoAmount(
           restaurant.delivery_fee,
           "Free"
         );
+
+      restaurantPreviewDeliveryFee.textContent =
+        ["distance", "tiered"].includes(
+          String(
+            restaurant.delivery_pricing_type ||
+            "fixed"
+          ).toLowerCase()
+        )
+          ? `From ${previewDeliveryAmount}`
+          : previewDeliveryAmount;
     }
 
     renderRestaurantServices(

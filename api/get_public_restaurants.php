@@ -9,6 +9,7 @@ header(
 );
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -125,6 +126,13 @@ while ($row = $result->fetch_assoc()) {
         )
     );
 
+    $deliveryPricing =
+        fc_delivery_pricing_get_active(
+            $conn,
+            (int) $row["restaurant_id"],
+            (float) ($row["delivery_fee"] ?? 0)
+        );
+
     $restaurants[] = [
         "restaurant_id" =>
             (int) $row["restaurant_id"],
@@ -154,6 +162,9 @@ while ($row = $result->fetch_assoc()) {
                 ),
                 2
             ),
+
+        "delivery_pricing_type" =>
+            (string) $deliveryPricing["pricing_type"],
 
         "business_status" =>
             $businessStatus,

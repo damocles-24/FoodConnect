@@ -19,6 +19,14 @@
     }
   }
 
+  function fallbackTheme() {
+    return normalize(
+      root.dataset.theme ||
+      root.dataset.defaultTheme ||
+      "light"
+    );
+  }
+
   function syncControls(theme) {
     document.querySelectorAll("[data-theme-choice]").forEach((button) => {
       const active = button.dataset.themeChoice === theme;
@@ -61,6 +69,20 @@
     );
   }
 
+  function syncFromStorage() {
+    const theme = stored() || fallbackTheme();
+
+    if (
+      root.dataset.theme !== theme ||
+      (document.body && document.body.dataset.theme !== theme)
+    ) {
+      apply(theme, false);
+      return;
+    }
+
+    syncControls(theme);
+  }
+
   function toggle() {
     apply(
       (root.dataset.theme || "light") === "dark"
@@ -85,15 +107,22 @@
       try {
         localStorage.removeItem(KEY);
       } catch (_) {}
-      apply("light", false);
+      apply(
+        normalize(root.dataset.defaultTheme || "light"),
+        false
+      );
+    },
+
+    sync() {
+      syncFromStorage();
     }
   };
 
-  /* All roles default to Light. Saved choice wins. */
-  apply(stored() || "light", false);
+  /* Apply saved theme as early as possible to prevent a light/dark flash. */
+  apply(stored() || fallbackTheme(), false);
 
   document.addEventListener("DOMContentLoaded", () => {
-    apply(stored() || root.dataset.theme || "light", false);
+    syncFromStorage();
 
     document.addEventListener("click", (event) => {
       const choice = event.target.closest?.("[data-theme-choice]");
@@ -129,5 +158,31 @@
         characterData: true
       });
     }
+  });
+
+  /*
+   * Mobile browsers and normal browsers can restore pages from the
+   * back/forward cache without re-running scripts. Re-sync the saved
+   * preference whenever a cached page becomes visible again.
+   */
+  window.addEventListener("pageshow", syncFromStorage);
+  window.addEventListener("focus", syncFromStorage);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      syncFromStorage();
+    }
+  });
+
+  /* Keep another open FoodConnect tab/window in sync instantly. */
+  window.addEventListener("storage", (event) => {
+    if (event.key !== KEY) {
+      return;
+    }
+
+    apply(
+      event.newValue || root.dataset.defaultTheme || "light",
+      false
+    );
   });
 })();

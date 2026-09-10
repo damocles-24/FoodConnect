@@ -11,30 +11,38 @@
 
     <title>Create Restaurant | FoodConnect</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260910-themefix2">
+
     <link
         rel="stylesheet"
-        href="../css/create_restaurant.css"
+        href="../css/create_restaurant.css?v=20260910-logoutfix1"
     >
+
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
-  <script src="../js/foodconnect-theme.js?v=20260817-5" defer></script>
+  <script src="../js/foodconnect-theme.js?v=20260908-live-sync1" defer></script>
 </head>
 
 <body data-fc-page="restaurant-setup">
     <div class="onboarding-page">
         <aside class="setup-sidebar">
             <div class="sidebar-brand">
-                <div class="brand-logo">
+                <div class="brand-logo" aria-hidden="true">
                     <img
                         src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png"
-                        alt="FoodConnect Logo"
+                        alt=""
                         class="brand-logo-image"
                     >
                 </div>
 
-                <div>
-                    <h1>FoodConnect</h1>
+                <div class="sidebar-brand-copy">
+                    <h1 aria-label="FoodConnect">
+                        <span class="brand-food">Food</span><span class="brand-connect">Connect</span>
+                    </h1>
                     <p>Restaurant Partner</p>
                 </div>
             </div>
@@ -725,35 +733,123 @@
                     ></small>
 
                     <div
-                        class="form-grid pricing-grid hidden"
+                        class="delivery-pricing-panel hidden"
                         id="deliveryFeeGroup"
                     >
-                        <div class="form-group">
-                            <label for="deliveryFee">
-                                Delivery fee
-
-                                <span class="optional-label">
-                                    (Optional)
-                                </span>
+                        <div class="form-group full-width">
+                            <label for="deliveryPricingType">
+                                Delivery pricing method
                             </label>
 
-                            <div class="money-input">
-                                <span>₱</span>
-
-                                <input
-                                    type="number"
-                                    id="deliveryFee"
-                                    name="delivery_fee"
-                                    min="0"
-                                    step="0.01"
-                                    value="0.00"
-                                >
-                            </div>
+                            <select
+                                id="deliveryPricingType"
+                                name="delivery_pricing_type"
+                            >
+                                <option value="fixed">Fixed fee</option>
+                                <option value="distance">Base radius + extra per km</option>
+                                <option value="tiered">Distance tiers</option>
+                            </select>
 
                             <small>
-                                Keep ₱0.00 if your restaurant offers free delivery.
+                                Choose how this restaurant charges customers for delivery. Distance methods use radius distance from the restaurant to the customer's pinned location.
                             </small>
                         </div>
+
+                        <div id="fixedPricingFields" class="delivery-pricing-fields">
+                            <div class="form-group">
+                                <label for="deliveryFee">Delivery fee</label>
+
+                                <div class="money-input">
+                                    <span>₱</span>
+                                    <input
+                                        type="number"
+                                        id="deliveryFee"
+                                        name="delivery_fee"
+                                        min="0"
+                                        max="9999"
+                                        step="0.01"
+                                        value="0.00"
+                                    >
+                                </div>
+
+                                <small>Use ₱0.00 only when delivery is free.</small>
+                            </div>
+                        </div>
+
+                        <div id="distancePricingFields" class="delivery-pricing-fields hidden">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="deliveryBaseFee">Base delivery fee</label>
+                                    <div class="money-input">
+                                        <span>₱</span>
+                                        <input
+                                            type="number"
+                                            id="deliveryBaseFee"
+                                            min="0"
+                                            max="9999"
+                                            step="0.01"
+                                            value="70.00"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="deliveryIncludedKm">Included distance</label>
+                                    <div class="unit-input">
+                                        <input
+                                            type="number"
+                                            id="deliveryIncludedKm"
+                                            min="0.1"
+                                            max="100"
+                                            step="0.1"
+                                            value="5"
+                                        >
+                                        <span>km</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="deliveryExtraFeePerKm">Additional fee per succeeding km</label>
+                                    <div class="money-input">
+                                        <span>₱</span>
+                                        <input
+                                            type="number"
+                                            id="deliveryExtraFeePerKm"
+                                            min="0.01"
+                                            max="9999"
+                                            step="0.01"
+                                            value="10.00"
+                                        >
+                                    </div>
+                                    <small>Extra distance is charged by the next whole kilometer.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tieredPricingFields" class="delivery-pricing-fields hidden">
+                            <div class="delivery-tier-heading">
+                                <div>
+                                    <strong>Distance tiers</strong>
+                                    <small>Example: up to 5 km = ₱70, up to 8 km = ₱120.</small>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    id="addDeliveryTierButton"
+                                    class="secondary-action-button"
+                                >
+                                    + Add tier
+                                </button>
+                            </div>
+
+                            <div id="deliveryTiersContainer" class="delivery-tiers"></div>
+                        </div>
+
+                        <small
+                            class="section-error"
+                            id="deliveryPricingError"
+                            aria-live="polite"
+                        ></small>
                     </div>
                 </section>
 
@@ -810,7 +906,6 @@
 
                     <div
                         class="application-review"
-                        id="applicationReview"
                     >
                         <div class="review-group">
                             <div class="review-group-header">
@@ -923,6 +1018,11 @@
                                 class="review-services"
                                 id="reviewDeliveryOptions"
                             ></div>
+
+                            <p
+                                class="review-delivery-pricing"
+                                id="reviewDeliveryPricing"
+                            ></p>
                         </div>
                     </div>
 

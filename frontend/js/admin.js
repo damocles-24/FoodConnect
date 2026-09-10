@@ -6109,6 +6109,59 @@ function renderApplications(
       "hidden"
     );
 }
+
+function formatApplicationDeliveryPricing(application = {}) {
+  const type = String(
+    application.delivery_pricing_type ||
+    "fixed"
+  ).toLowerCase();
+
+  const pricing =
+    application.delivery_pricing &&
+    typeof application.delivery_pricing === "object"
+      ? application.delivery_pricing
+      : {};
+
+  if (type === "distance") {
+    const baseFee = Number(
+      pricing.base_fee ??
+      application.delivery_fee ??
+      0
+    );
+    const includedKm = Number(
+      pricing.included_km ?? 0
+    );
+    const extraFee = Number(
+      pricing.extra_fee_per_km ?? 0
+    );
+
+    return `Base ${formatCurrency(baseFee)} within ${includedKm} km • +${formatCurrency(extraFee)}/km`;
+  }
+
+  if (type === "tiered") {
+    const tiers = Array.isArray(pricing.tiers)
+      ? pricing.tiers
+      : [];
+
+    if (tiers.length) {
+      return tiers
+        .map(
+          (tier) =>
+            `Up to ${Number(tier?.up_to_km || 0)} km: ${formatCurrency(Number(tier?.fee || 0))}`
+        )
+        .join(" • " );
+    }
+
+    return `Tiered delivery pricing • starts at ${formatCurrency(application.delivery_fee || 0)}`;
+  }
+
+  return `Fixed • ${formatCurrency(
+    pricing.fixed_fee ??
+    application.delivery_fee ??
+    0
+  )}`;
+}
+
 function openApplicationDetails(
   applicationId
 ) {
@@ -6185,15 +6238,32 @@ function openApplicationDetails(
         "—"
       )}
 ${createDetail(
-        "Delivery Fee",
-        formatCurrency(
-          application.delivery_fee
-        )
+        "Delivery Pricing",
+        formatApplicationDeliveryPricing(
+          application
+        ),
+        true
       )}
 
       ${createDetail(
         "Address",
-        application.restaurant_address,
+        [
+          application.restaurant_address,
+          application.barangay,
+          application.city_municipality,
+          application.province,
+          application.postal_code
+        ]
+          .map((part) => String(part || "").trim())
+          .filter(Boolean)
+          .filter(
+            (part, index, parts) =>
+              parts.findIndex(
+                (candidate) =>
+                  candidate.toLowerCase() === part.toLowerCase()
+              ) === index
+          )
+          .join(", ") || "—",
         true
       )}
 

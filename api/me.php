@@ -307,7 +307,7 @@ function build_logged_in_response(
                 $restaurantId;
 
             $ownerRedirectUrl =
-                "/frontend/html/owner_dashboard.html";
+                "/FoodConnect/frontend/html/owner_dashboard.html";
         } else {
             $restaurantId = null;
 
@@ -323,7 +323,7 @@ function build_logged_in_response(
             $onboardingRequired = true;
 
             $ownerRedirectUrl =
-                "/frontend/html/create_restaurant.html";
+                "/FoodConnect/frontend/html/create_restaurant.html";
         }
     } elseif (
         in_array(

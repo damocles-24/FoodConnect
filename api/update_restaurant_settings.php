@@ -7,6 +7,7 @@ header(
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -15,7 +16,7 @@ require_once __DIR__ . "/ph_phone.php";
 function respond_json(
     array $data,
     int $statusCode = 200
-): void {
+): never {
     http_response_code($statusCode);
 
     echo json_encode(
@@ -128,6 +129,30 @@ $delivery_fee =
         ? (float) $data["delivery_fee"]
         : 0;
 
+try {
+    $deliveryPricing =
+        fc_delivery_pricing_normalize(
+            $data,
+            $delivery_fee,
+            true
+        );
+} catch (InvalidArgumentException $error) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                $error->getMessage()
+        ],
+        422
+    );
+}
+
+$delivery_fee =
+    (float) $deliveryPricing["legacy_fee"];
+
+$deliveryPricingType =
+    (string) $deliveryPricing["pricing_type"];
+
 $business_status = trim(
     (string) (
         $data["business_status"] ??
@@ -222,13 +247,13 @@ if (
 if (
     !is_finite($delivery_fee) ||
     $delivery_fee < 0 ||
-    $delivery_fee > 999
+    $delivery_fee > 9999
 ) {
     respond_json(
         [
             "success" => false,
             "message" =>
-                "Delivery fee must be from ₱0.00 to ₱999.00."
+                "Delivery fee must be from ₱0.00 to ₱9,999.00."
         ],
         422
     );
@@ -338,6 +363,72 @@ if ($logo_path !== "") {
 ========================================================= */
 
 try {
+    /* Verify ownership before geocoding or writing anything. */
+    $ownershipStmt = $conn->prepare("
+        SELECT restaurant_id
+        FROM tbl_restaurants
+        WHERE restaurant_id = ?
+          AND owner_id = ?
+        LIMIT 1
+    ");
+
+    if (!$ownershipStmt) {
+        throw new RuntimeException("Unable to verify restaurant ownership.");
+    }
+
+    $ownershipStmt->bind_param(
+        "ii",
+        $restaurant_id,
+        $owner_id
+    );
+
+    $ownershipStmt->execute();
+    $ownership =
+        $ownershipStmt
+            ->get_result()
+            ->fetch_assoc();
+    $ownershipStmt->close();
+
+    if (!$ownership) {
+        respond_json(
+            [
+                "success" => false,
+                "message" =>
+                    "You are not allowed to update this restaurant."
+            ],
+            403
+        );
+    }
+
+    $restaurantPricingLatitude = null;
+    $restaurantPricingLongitude = null;
+
+    if ($deliveryPricingType !== "fixed") {
+        try {
+            $pricingCoordinates =
+                fc_delivery_pricing_geocode_address(
+                    $address
+                );
+
+            $restaurantPricingLatitude =
+                (float) $pricingCoordinates["latitude"];
+
+            $restaurantPricingLongitude =
+                (float) $pricingCoordinates["longitude"];
+        } catch (RuntimeException $geocodeError) {
+            respond_json(
+                [
+                    "success" => false,
+                    "message" =>
+                        $geocodeError->getMessage()
+                ],
+                422
+            );
+        }
+    }
+
+    $conn->begin_transaction();
+
     $sql = "
         UPDATE tbl_restaurants
         SET
@@ -356,67 +447,42 @@ try {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
-        throw new Exception(
+        throw new RuntimeException(
             $conn->error
         );
     }
 
     $stmt->bind_param(
-    "ssssssdsii",
-    $name,
-    $logo_path,
-    $banner_path,
-    $address,
-    $contact_number,
-    $opening_hours,
-    $delivery_fee,
-    $business_status,
-    $restaurant_id,
-    $owner_id
-);
+        "ssssssdsii",
+        $name,
+        $logo_path,
+        $banner_path,
+        $address,
+        $contact_number,
+        $opening_hours,
+        $delivery_fee,
+        $business_status,
+        $restaurant_id,
+        $owner_id
+    );
 
-    $stmt->execute();
-
-    if ($stmt->affected_rows === 0) {
-        $check_sql = "
-            SELECT restaurant_id
-            FROM tbl_restaurants
-            WHERE restaurant_id = ?
-              AND owner_id = ?
-            LIMIT 1
-        ";
-
-        $check_stmt =
-            $conn->prepare($check_sql);
-
-        if (!$check_stmt) {
-            throw new Exception(
-                $conn->error
-            );
-        }
-
-        $check_stmt->bind_param(
-            "ii",
-            $restaurant_id,
-            $owner_id
-        );
-
-        $check_stmt->execute();
-
-        $check_result =
-            $check_stmt->get_result();
-
-        if ($check_result->num_rows === 0) {
-            respond_json(
-                [
-                    "success" => false,
-                    "message" =>
-                        "You are not allowed to update this restaurant."
-                ],
-                403
-            );
-        }
+    if (!$stmt->execute()) {
+        $message = $stmt->error;
+        $stmt->close();
+        throw new RuntimeException($message);
     }
+
+    $stmt->close();
+
+    fc_delivery_pricing_upsert_active(
+        $conn,
+        $restaurant_id,
+        $deliveryPricing,
+        $restaurantPricingLatitude,
+        $restaurantPricingLongitude
+    );
+
+    $conn->commit();
 
     respond_json([
         "success" => true,
@@ -425,34 +491,42 @@ try {
         "restaurant" => [
             "restaurant_id" =>
                 $restaurant_id,
-
             "name" =>
                 $name,
-
             "logo_path" =>
                 $logo_path,
-
             "banner_path" =>
                 $banner_path,
-
             "address" =>
                 $address,
-
             "contact_number" =>
                 $contact_number,
-
             "opening_hours" =>
                 $opening_hours,
-
             "delivery_fee" =>
                 $delivery_fee,
-
+            "delivery_pricing_type" =>
+                $deliveryPricingType,
+            "delivery_pricing" =>
+                json_decode(
+                    (string) $deliveryPricing["pricing_json"],
+                    true
+                ),
             "business_status" =>
                 $business_status
         ]
     ]);
 
 } catch (Throwable $error) {
+    try {
+        $conn->rollback();
+    } catch (Throwable $rollbackError) {
+        error_log(
+            "Update restaurant settings rollback failed: " .
+            $rollbackError->getMessage()
+        );
+    }
+
     error_log(
         "Update restaurant settings failed: " .
         $error->getMessage()

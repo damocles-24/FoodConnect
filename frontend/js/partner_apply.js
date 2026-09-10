@@ -1,5 +1,5 @@
 const API_BASE =
-    "/api";
+    `${window.location.origin}/api`;
 
 const partnerForm =
     document.getElementById("partnerForm");

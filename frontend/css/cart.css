@@ -3495,3 +3495,113 @@ img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
 }
+
+/* =========================================================
+   CART ACTION BUTTON CONTRAST + THEME FIX - 2026-09-08
+   Keeps Proceed to Checkout / Clear Cart readable in both
+   FoodConnect Light and Dark themes, including mobile Chrome.
+========================================================= */
+
+body[data-fc-page="customer-cart"] :is(
+  .checkout-button:not(:disabled),
+  .clear-cart-button:not(:disabled)
+) {
+  opacity: 1 !important;
+}
+
+/* Enabled primary action: always FoodConnect orange + white content. */
+html[data-theme="light"] body[data-fc-page="customer-cart"] .checkout-button:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .checkout-button:not(:disabled) {
+  background: var(--fc-orange, #f47c1e) !important;
+  border-color: var(--fc-orange, #f47c1e) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: var(--shadow-orange) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .checkout-button:not(:disabled) :is(span, i),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .checkout-button:not(:disabled) :is(span, i) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .checkout-button:hover:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .checkout-button:hover:not(:disabled) {
+  background: var(--fc-orange-dark, #df6810) !important;
+  border-color: var(--fc-orange-dark, #df6810) !important;
+  color: #ffffff !important;
+}
+
+/* Enabled destructive action: red + white content in both themes. */
+html[data-theme="light"] body[data-fc-page="customer-cart"] .clear-cart-button:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .clear-cart-button:not(:disabled) {
+  background: var(--fc-danger, #dc2626) !important;
+  border-color: var(--fc-danger, #dc2626) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .clear-cart-button:not(:disabled) :is(span, i),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .clear-cart-button:not(:disabled) :is(span, i) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] .clear-cart-button:hover:not(:disabled),
+html[data-theme="dark"] body[data-fc-page="customer-cart"] .clear-cart-button:hover:not(:disabled) {
+  background: var(--fc-danger-hover, #b91c1c) !important;
+  border-color: var(--fc-danger-hover, #b91c1c) !important;
+  color: #ffffff !important;
+}
+
+/* Disabled actions must look disabled, but remain readable in each theme. */
+html[data-theme="light"] body[data-fc-page="customer-cart"] :is(
+  .checkout-button:disabled,
+  .clear-cart-button:disabled
+) {
+  background: #f2f4f7 !important;
+  border-color: #d0d5dd !important;
+  color: #98a2b3 !important;
+  -webkit-text-fill-color: #98a2b3 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .checkout-button:disabled,
+  .clear-cart-button:disabled
+) {
+  background: #20242a !important;
+  border-color: #3a4048 !important;
+  color: #7f8997 !important;
+  -webkit-text-fill-color: #7f8997 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] body[data-fc-page="customer-cart"] :is(
+  .checkout-button:disabled,
+  .clear-cart-button:disabled
+) :is(span, i) {
+  color: #98a2b3 !important;
+  -webkit-text-fill-color: #98a2b3 !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
+  .checkout-button:disabled,
+  .clear-cart-button:disabled
+) :is(span, i) {
+  color: #7f8997 !important;
+  -webkit-text-fill-color: #7f8997 !important;
+  opacity: 1 !important;
+}
+
+/* Avoid native mobile-browser disabled text tint leaking into enabled state. */
+body[data-fc-page="customer-cart"] :is(.checkout-button, .clear-cart-button) {
+  -webkit-appearance: none;
+  appearance: none;
+}

@@ -6,11 +6,11 @@
   --border: rgba(255, 255, 255, 0.08);
   --text: #ffffff;
   --muted: rgba(255, 255, 255, 0.65);
-  --gold: #cc9900;
-  --gold-dark: #997300;
+  --gold: #f47c1e;
+  --gold-dark: #d9650d;
   --danger: #ff4d4f;
   --green: #22c55e;
-  --orange: #ff9f1c;
+  --orange: #f47c1e;
   --radius: 18px;
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
 }
@@ -208,7 +208,7 @@ body {
 .form-group textarea:focus,
 .panel-header select:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(204, 153, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(244, 124, 30, 0.2);
 }
 
 .search-box input {
@@ -353,7 +353,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.035);
-  color: rgba(218, 165, 0, 0.85);  font-size: 19px;
+  color: rgba(244, 124, 30, 0.85);  font-size: 19px;
   font-weight: 800;
 }
 
@@ -536,7 +536,7 @@ body {
 }
 
 .attention-item-warning {
-  background: rgba(218, 165, 0, 0.14);
+  background: rgba(244, 124, 30, 0.14);
   color: var(--gold);
 }
 
@@ -668,15 +668,15 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(204, 153, 0, 0.12);
-  border: 1px solid rgba(204, 153, 0, 0.35);
+  background: rgba(244, 124, 30, 0.12);
+  border: 1px solid rgba(244, 124, 30, 0.35);
   color: var(--text);
   padding: 12px 14px;
   border-radius: 12px;
 }
 
 .low-stock-item strong {
-  color: #ffd666;
+  color: #fb923c;
 }
 
 /* TABLE */
@@ -714,8 +714,8 @@ table th {
 }
 
 .status-Pending {
-  background: rgba(204, 153, 0, 0.15);
-  color: #ffd666;
+  background: rgba(244, 124, 30, 0.15);
+  color: #fb923c;
 }
 
 .status-Confirmed {
@@ -961,12 +961,12 @@ table th {
 
 /* INVENTORY */
 #inventoryList .low-stock-item {
-  background: rgba(204, 153, 0, 0.12);
-  border: 1px solid rgba(204, 153, 0, 0.35);
+  background: rgba(244, 124, 30, 0.12);
+  border: 1px solid rgba(244, 124, 30, 0.35);
 }
 
 .inventory-table-row:hover {
-  background: rgba(204, 153, 0, 0.06);
+  background: rgba(244, 124, 30, 0.06);
 }
 
 #inventoryCategoryFilter {
@@ -1057,7 +1057,7 @@ table th {
   background:
     linear-gradient(
       120deg,
-      rgba(204, 153, 0, 0.08),
+      rgba(244, 124, 30, 0.08),
       transparent 45%
     );
 }
@@ -1078,10 +1078,10 @@ table th {
   align-items: center;
   justify-content: center;
 
-  border: 1px solid rgba(204, 153, 0, 0.32);
+  border: 1px solid rgba(244, 124, 30, 0.32);
   border-radius: 12px;
 
-  background: rgba(204, 153, 0, 0.12);
+  background: rgba(244, 124, 30, 0.12);
   color: var(--gold);
 
   font-size: 25px;
@@ -1212,7 +1212,7 @@ table th {
 .restock-quantity-control:focus-within
 .restock-quantity-btn {
   border-color:
-    rgba(204, 153, 0, 0.35);
+    rgba(244, 124, 30, 0.35);
 }
 
 .restock-form-group input::-webkit-inner-spin-button,
@@ -1227,7 +1227,7 @@ table th {
   border-color: var(--gold);
   box-shadow:
     0 0 0 3px
-    rgba(204, 153, 0, 0.12);
+    rgba(244, 124, 30, 0.12);
 }
 
 .restock-field-help {
@@ -1337,8 +1337,8 @@ table th {
 }
 
 .restock-quantity-btn:hover {
-  border-color: rgba(204, 153, 0, 0.5);
-  background: rgba(204, 153, 0, 0.1);
+  border-color: rgba(244, 124, 30, 0.5);
+  background: rgba(244, 124, 30, 0.1);
   color: var(--gold);
 }
 
@@ -1600,7 +1600,7 @@ padding: 17px;
 
 .inventory-overview-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(204, 153, 0, 0.42);
+  border-color: rgba(244, 124, 30, 0.42);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
 }
 
@@ -1622,10 +1622,10 @@ padding: 17px;
   align-items: center;
   justify-content: center;
 
-  border: 1px solid rgba(204, 153, 0, 0.2);
+  border: 1px solid rgba(244, 124, 30, 0.2);
   border-radius: 12px;
 
-  background: rgba(204, 153, 0, 0.1);
+  background: rgba(244, 124, 30, 0.1);
   color: var(--gold);
 
   font-size: 20px;
@@ -1746,11 +1746,11 @@ padding: 14px 16px;
   justify-content: center;
   gap: 7px;
 
-  border: 1px solid rgba(204, 153, 0, 0.42);
+  border: 1px solid rgba(244, 124, 30, 0.42);
   border-radius: 10px;
 
-  background: rgba(204, 153, 0, 0.09);
-  color: #e5bd3d;
+  background: rgba(244, 124, 30, 0.09);
+  color: #f47c1e;
 
   cursor: pointer;
   font-size: 12px;
@@ -1796,7 +1796,7 @@ padding: 14px 16px;
 
 .inventory-search-box input:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(204, 153, 0, 0.16);
+  box-shadow: 0 0 0 2px rgba(244, 124, 30, 0.16);
 }
 
 .inventory-filter-group {
@@ -1831,7 +1831,7 @@ padding: 14px 16px;
 
 .inventory-filter-group select:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(204, 153, 0, 0.16);
+  box-shadow: 0 0 0 2px rgba(244, 124, 30, 0.16);
 }
 
 .inventory-clear-button {
@@ -1855,8 +1855,8 @@ padding: 14px 16px;
 }
 
 .inventory-clear-button:hover {
-  border-color: rgba(204, 153, 0, 0.5);
-  background: rgba(204, 153, 0, 0.08);
+  border-color: rgba(244, 124, 30, 0.5);
+  background: rgba(244, 124, 30, 0.08);
   color: var(--text);
 }
 
@@ -1945,7 +1945,7 @@ padding: 14px 16px;
 }
 
 .inventory-table tbody tr:hover {
-  background: rgba(204, 153, 0, 0.07);
+  background: rgba(244, 124, 30, 0.07);
 }
 
 .inventory-table th,
@@ -2138,7 +2138,7 @@ padding: 14px 16px;
 
 .product-overview-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(204, 153, 0, 0.45);
+  border-color: rgba(244, 124, 30, 0.45);
 }
 
 .product-overview-icon {
@@ -2150,8 +2150,8 @@ padding: 14px 16px;
   align-items: center;
   justify-content: center;
 
-  background: rgba(204, 153, 0, 0.1);
-  border: 1px solid rgba(204, 153, 0, 0.18);
+  background: rgba(244, 124, 30, 0.1);
+  border: 1px solid rgba(244, 124, 30, 0.18);
   border-radius: 11px;
 
   font-size: 18px;
@@ -2184,7 +2184,7 @@ padding: 14px 16px;
   background:
     linear-gradient(
       145deg,
-      rgba(204, 153, 0, 0.035),
+      rgba(244, 124, 30, 0.035),
       transparent
     ),
     var(--card);
@@ -2288,9 +2288,9 @@ padding: 14px 16px;
 }
 
 .promotion-overview-card.is-scheduled {
-  color: #f5cc3d;
+  color: #f47c1e;
   border-color:
-    rgba(250, 204, 21, 0.22);
+    rgba(244, 124, 30, 0.22);
 }
 
 .promotion-overview-card.is-expired {
@@ -2408,7 +2408,7 @@ padding: 14px 16px;
 .product-toolbar select:focus {
   border-color: var(--gold);
   box-shadow:
-    0 0 0 3px rgba(204, 153, 0, 0.1);
+    0 0 0 3px rgba(244, 124, 30, 0.1);
 }
 
 /* Product grid */
@@ -2456,7 +2456,7 @@ padding: 14px 16px;
 
 .product-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(204, 153, 0, 0.38);
+  border-color: rgba(244, 124, 30, 0.38);
 
   box-shadow:
     0 18px 38px rgba(0, 0, 0, 0.38);
@@ -2885,7 +2885,7 @@ padding: 14px 16px;
 .user-toolbar input:focus,
 .user-toolbar select:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(204, 153, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(244, 124, 30, 0.2);
 }
 
 .users-table tbody tr:nth-child(even) {
@@ -2893,7 +2893,7 @@ padding: 14px 16px;
 }
 
 .users-table tbody tr:hover {
-  background: rgba(204, 153, 0, 0.08);
+  background: rgba(244, 124, 30, 0.08);
 }
 
 .user-role-badge,
@@ -2913,9 +2913,9 @@ padding: 14px 16px;
 }
 
 .user-role-owner {
-  background: rgba(204, 153, 0, 0.15);
-  color: #ffd666;
-  border: 1px solid rgba(204, 153, 0, 0.35);
+  background: rgba(244, 124, 30, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(244, 124, 30, 0.35);
 }
 
 .user-role-staff {
@@ -3046,8 +3046,8 @@ padding: 14px 16px;
 }
 
 .activity-refresh-btn:hover {
-  border-color: rgba(204, 153, 0, 0.5);
-  background: rgba(204, 153, 0, 0.08);
+  border-color: rgba(244, 124, 30, 0.5);
+  background: rgba(244, 124, 30, 0.08);
   color: var(--text);
 }
 
@@ -3093,7 +3093,7 @@ padding: 14px 16px;
 
 .activity-overview-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(204, 153, 0, 0.4);
+  border-color: rgba(244, 124, 30, 0.4);
 }
 
 .activity-overview-icon {
@@ -3114,8 +3114,8 @@ padding: 14px 16px;
 }
 
 .activity-icon-all {
-  border-color: rgba(204, 153, 0, 0.25);
-  background: rgba(204, 153, 0, 0.1);
+  border-color: rgba(244, 124, 30, 0.25);
+  background: rgba(244, 124, 30, 0.1);
   color: var(--gold);
 }
 
@@ -3225,7 +3225,7 @@ padding: 14px 16px;
 
   box-shadow:
     0 0 0 2px
-    rgba(204, 153, 0, 0.15);
+    rgba(244, 124, 30, 0.15);
 }
 
 .activity-filter-group {
@@ -3263,7 +3263,7 @@ padding: 14px 16px;
 
   box-shadow:
     0 0 0 2px
-    rgba(204, 153, 0, 0.15);
+    rgba(244, 124, 30, 0.15);
 }
 
 .activity-clear-btn {
@@ -3287,8 +3287,8 @@ padding: 14px 16px;
 }
 
 .activity-clear-btn:hover {
-  border-color: rgba(204, 153, 0, 0.5);
-  background: rgba(204, 153, 0, 0.08);
+  border-color: rgba(244, 124, 30, 0.5);
+  background: rgba(244, 124, 30, 0.08);
   color: var(--text);
 }
 
@@ -3420,7 +3420,7 @@ padding: 14px 16px;
 }
 
 .log-item.log-order {
-  border-left-color: #f59e0b;
+  border-left-color: #f47c1e;
 }
 
 .log-item.log-product {
@@ -3471,12 +3471,12 @@ padding: 14px 16px;
 .log-icon.order {
   border-color: rgba(245, 158, 11, 0.3);
   background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  color: #fb923c;
 }
 
 .log-icon.product {
-  border-color: rgba(204, 153, 0, 0.25);
-  background: rgba(204, 153, 0, 0.1);
+  border-color: rgba(244, 124, 30, 0.25);
+  background: rgba(244, 124, 30, 0.1);
 }
 
 .log-icon.inventory {
@@ -3716,8 +3716,8 @@ padding: 14px 16px;
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: rgba(204, 153, 0, 0.08);
-  border: 1px solid rgba(204, 153, 0, 0.25);
+  background: rgba(244, 124, 30, 0.08);
+  border: 1px solid rgba(244, 124, 30, 0.25);
   border-radius: 18px;
   padding: 22px;
 }
@@ -3726,7 +3726,7 @@ padding: 14px 16px;
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: rgba(204, 153, 0, 0.18);
+  background: rgba(244, 124, 30, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3841,14 +3841,14 @@ padding: 14px 16px;
 }
 
 .settings-save-state.is-unsaved {
-  color: #ffd166;
+  color: #fb923c;
   border-color: rgba(255, 193, 7, 0.25);
   background: rgba(255, 193, 7, 0.08);
 }
 
 .settings-save-state.is-unsaved
 .settings-save-dot {
-  background: #ffd166;
+  background: #fb923c;
 }
 
 .settings-save-state.is-saving {
@@ -3947,8 +3947,8 @@ padding: 14px 16px;
   align-items: center;
   justify-content: center;
 
-  background: rgba(204, 153, 0, 0.1);
-  border: 1px solid rgba(204, 153, 0, 0.2);
+  background: rgba(244, 124, 30, 0.1);
+  border: 1px solid rgba(244, 124, 30, 0.2);
   border-radius: 11px;
 
   color: var(--gold);
@@ -4080,7 +4080,7 @@ gap:18px;
 .settings-field textarea:focus {
   border-color: var(--gold);
   box-shadow:
-    0 0 0 3px rgba(204, 153, 0, 0.1);
+    0 0 0 3px rgba(244, 124, 30, 0.1);
 }
 
 .settings-field small {
@@ -4513,12 +4513,12 @@ gap:18px;
   background:
     linear-gradient(
       145deg,
-      rgba(204, 153, 0, 0.08),
+      rgba(244, 124, 30, 0.08),
       rgba(255, 255, 255, 0.02)
     );
 
   border: 1px solid
-    rgba(204, 153, 0, 0.3);
+    rgba(244, 124, 30, 0.3);
   border-radius: 16px;
 }
 
@@ -4987,14 +4987,14 @@ margin-bottom:18px;
 
 .performance-range:hover {
   background-color: #252525;
-  border-color: rgba(204, 153, 0, 0.45);
+  border-color: rgba(244, 124, 30, 0.45);
 }
 
 .performance-range:focus {
   border-color: var(--gold);
 
   box-shadow:
-    0 0 0 3px rgba(204, 153, 0, 0.12);
+    0 0 0 3px rgba(244, 124, 30, 0.12);
 }
 
 .performance-range option {
@@ -5030,17 +5030,17 @@ margin-bottom:18px;
   gap: 8px;
 
   background:
-    rgba(204, 153, 0, 0.055);
+    rgba(244, 124, 30, 0.055);
 
   border-bottom:
-    1px solid rgba(204, 153, 0, 0.16);
+    1px solid rgba(244, 124, 30, 0.16);
 
   color: var(--muted);
   font-size: 13px;
 }
 
 .performance-range-label strong {
-  color: #ffd666;
+  color: #fb923c;
   font-size: 13px;
 }
 
@@ -5085,7 +5085,7 @@ margin-bottom:18px;
 }
 
 .performance-table tbody tr:hover {
-  background: rgba(204, 153, 0, 0.055);
+  background: rgba(244, 124, 30, 0.055);
 }
 
 .performance-table tbody tr:last-child td {
@@ -5113,14 +5113,14 @@ margin-bottom:18px;
   justify-content: center;
 
   background:
-    rgba(204, 153, 0, 0.12);
+    rgba(244, 124, 30, 0.12);
 
   border:
-    1px solid rgba(204, 153, 0, 0.24);
+    1px solid rgba(244, 124, 30, 0.24);
 
   border-radius: 11px;
 
-  color: #ffd666;
+  color: #fb923c;
   font-size: 15px;
   font-weight: 800;
   text-transform: uppercase;
@@ -5157,7 +5157,7 @@ margin-bottom:18px;
 }
 
 .performance-money {
-  color: #ffd666;
+  color: #fb923c;
   font-weight: 700;
 }
 
@@ -5275,8 +5275,8 @@ margin-bottom:18px;
 
   margin-bottom: 4px;
 
-  background: rgba(204, 153, 0, 0.08);
-  border: 1px solid rgba(204, 153, 0, 0.16);
+  background: rgba(244, 124, 30, 0.08);
+  border: 1px solid rgba(244, 124, 30, 0.16);
   border-radius: 13px;
 
   font-size: 20px;
@@ -5355,7 +5355,7 @@ margin-bottom:18px;
 
 .go-live-card.is-live::before { background: #16803c; }
 .go-live-card.is-review::before { background: #2563eb; }
-.go-live-card.is-warning::before { background: #d97706; }
+.go-live-card.is-warning::before { background: #d9650d; }
 .go-live-card.is-rejected::before { background: #b91c1c; }
 
 .go-live-main {
@@ -5371,7 +5371,7 @@ margin-bottom:18px;
   display: grid;
   place-items: center;
   border-radius: 15px;
-  background: rgba(204, 153, 0, 0.1);
+  background: rgba(244, 124, 30, 0.1);
   color: var(--gold);
   font-size: 20px;
 }
@@ -5453,7 +5453,7 @@ margin-bottom:18px;
   min-width: 74px;
   padding: 12px 14px;
   border-radius: 15px;
-  background: rgba(204, 153, 0, 0.1);
+  background: rgba(244, 124, 30, 0.1);
   color: var(--gold-dark);
   font-size: 20px;
   font-weight: 800;
@@ -5732,9 +5732,9 @@ margin-bottom:18px;
 .availability-guide,
 .product-form-notice {
   padding: 11px 13px;
-  border: 1px solid rgba(204, 153, 0, 0.22);
+  border: 1px solid rgba(244, 124, 30, 0.22);
   border-radius: 10px;
-  background: rgba(204, 153, 0, 0.06);
+  background: rgba(244, 124, 30, 0.06);
   color: var(--muted);
   font-size: 11px;
   line-height: 1.6;
@@ -5747,7 +5747,7 @@ margin-bottom:18px;
 .product-image-field input[type="file"] {
   width: 100%;
   padding: 12px;
-  border: 1px dashed rgba(204, 153, 0, 0.45);
+  border: 1px dashed rgba(244, 124, 30, 0.45);
   border-radius: 12px;
   background: #151515;
   color: var(--text);
@@ -5862,9 +5862,9 @@ margin-bottom:18px;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  border: 1px solid rgba(204, 153, 0, 0.28);
+  border: 1px solid rgba(244, 124, 30, 0.28);
   border-radius: 14px;
-  background: rgba(204, 153, 0, 0.04);
+  background: rgba(244, 124, 30, 0.04);
 }
 
 .product-discount-fields[hidden] {
@@ -6031,12 +6031,12 @@ margin-bottom:18px;
 
 .product-promo-status-badge.is-scheduled {
   border-color:
-    rgba(250, 204, 21, 0.32);
+    rgba(244, 124, 30, 0.32);
 
   background:
-    rgba(234, 179, 8, 0.14);
+    rgba(217, 101, 13, 0.14);
 
-  color: #f5cc3d;
+  color: #f47c1e;
 }
 
 .product-promo-status-badge.is-expired {
@@ -6096,13 +6096,13 @@ margin-bottom:18px;
   background:
     linear-gradient(
       135deg,
-      rgba(204, 153, 0, 0.09),
+      rgba(244, 124, 30, 0.09),
       rgba(255, 255, 255, 0.015)
     );
 
   border:
     1px solid
-    rgba(204, 153, 0, 0.25);
+    rgba(244, 124, 30, 0.25);
 
   border-radius: 13px;
 }
@@ -6199,7 +6199,7 @@ margin-bottom:18px;
 
 .product-promotion-panel.is-scheduled {
   border-color:
-    rgba(250, 204, 21, 0.3);
+    rgba(244, 124, 30, 0.3);
 }
 
 .product-promotion-panel.is-expired {
@@ -6392,12 +6392,12 @@ margin-bottom:18px;
 
   border:
     1px solid
-    rgba(250, 204, 21, 0.23);
+    rgba(244, 124, 30, 0.23);
 
   border-radius: 12px;
 
   background:
-    rgba(234, 179, 8, 0.045);
+    rgba(217, 101, 13, 0.045);
 }
 
 .product-compact-price.is-expired {
@@ -6494,8 +6494,8 @@ margin-bottom:18px;
     background:
         linear-gradient(
             135deg,
-            #f59e0b,
-            #d97706
+            #f47c1e,
+            #d9650d
         );
 
 }
@@ -6518,12 +6518,12 @@ margin-bottom:18px;
   background:
     linear-gradient(
       135deg,
-      rgba(218, 165, 0, 0.10),
+      rgba(244, 124, 30, 0.10),
       rgba(255, 255, 255, 0.02)
     );
 
   border: 1px solid
-    rgba(218, 165, 0, 0.35);
+    rgba(244, 124, 30, 0.35);
 
   border-radius: 18px;
 }
@@ -6544,7 +6544,7 @@ margin-bottom:18px;
 
   font-size: 21px;
 
-  background: rgba(218, 165, 0, 0.16);
+  background: rgba(244, 124, 30, 0.16);
   border-radius: 14px;
 }
 
@@ -6552,7 +6552,7 @@ margin-bottom:18px;
   display: block;
   margin-bottom: 5px;
 
-  color: #d9a900;
+  color: #f47c1e;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -6667,9 +6667,9 @@ font-size: 1rem;
 }
 
 .staff-access-code-message.info {
-  color: #f2c94c;
-  background: rgba(218, 165, 0, 0.10);
-  border: 1px solid rgba(218, 165, 0, 0.30);
+  color: #f47c1e;
+  background: rgba(244, 124, 30, 0.10);
+  border: 1px solid rgba(244, 124, 30, 0.30);
 }
 
 .staff-access-code-warning {
@@ -6686,7 +6686,7 @@ font-size: 1rem;
 }
 
 .staff-access-code-warning strong {
-  color: #f0c529;
+  color: #f47c1e;
 }
 
 @media (max-width: 900px) {
@@ -6732,7 +6732,7 @@ font-size: 1rem;
 }
 
 .staff-code-icon-button:hover {
-    color: #f0c529;
+    color: #f47c1e;
 }
 
 /* =========================================================
@@ -6760,7 +6760,7 @@ font-size: 1rem;
   background:
     linear-gradient(
       135deg,
-      rgba(204, 153, 0, 0.09),
+      rgba(244, 124, 30, 0.09),
       transparent 42%
     ),
     var(--card);
@@ -6824,7 +6824,7 @@ font-size: 1rem;
   border-color: var(--gold);
   box-shadow:
     0 0 0 3px
-    rgba(204, 153, 0, 0.14);
+    rgba(244, 124, 30, 0.14);
 }
 
 .analytics-export-actions {
@@ -6869,7 +6869,7 @@ font-size: 1rem;
 
 .analytics-secondary-btn:hover {
   border-color:
-    rgba(204, 153, 0, 0.55);
+    rgba(244, 124, 30, 0.55);
 }
 
 .analytics-period-summary {
@@ -6880,10 +6880,10 @@ font-size: 1rem;
   margin-bottom: 18px;
   padding: 13px 16px;
   border: 1px solid
-    rgba(204, 153, 0, 0.22);
+    rgba(244, 124, 30, 0.22);
   border-radius: 13px;
   background:
-    rgba(204, 153, 0, 0.065);
+    rgba(244, 124, 30, 0.065);
 }
 
 .analytics-period-summary > div {
@@ -6900,7 +6900,7 @@ font-size: 1rem;
 }
 
 .analytics-period-summary strong {
-  color: #f0c94f;
+  color: #f47c1e;
 }
 
 .analytics-kpi-grid {
@@ -6939,7 +6939,7 @@ font-size: 1rem;
   background:
     linear-gradient(
       145deg,
-      rgba(204, 153, 0, 0.13),
+      rgba(244, 124, 30, 0.13),
       transparent 50%
     ),
     var(--analytics-card);
@@ -6977,11 +6977,11 @@ font-size: 1rem;
   width: 41px;
   height: 41px;
   border: 1px solid
-    rgba(204, 153, 0, 0.28);
+    rgba(244, 124, 30, 0.28);
   border-radius: 12px;
   background:
-    rgba(204, 153, 0, 0.1);
-  color: #f0c94f;
+    rgba(244, 124, 30, 0.1);
+  color: #f47c1e;
   font-size: 17px;
   font-weight: 800;
 }
@@ -7188,7 +7188,7 @@ font-size: 1rem;
 
 .report-list-value {
   flex-shrink: 0;
-  color: #f0c94f;
+  color: #f47c1e;
   font-size: 14px;
   font-weight: 800;
 }
@@ -7210,9 +7210,9 @@ font-size: 1rem;
   width: 50px;
   height: 50px;
   margin-bottom: 13px;
-  border: 1px solid rgba(204, 153, 0, 0.24);
+  border: 1px solid rgba(244, 124, 30, 0.24);
   border-radius: 14px;
-  background: rgba(204, 153, 0, 0.09);
+  background: rgba(244, 124, 30, 0.09);
   font-size: 21px;
 }
 
@@ -7968,7 +7968,7 @@ font-size: 1rem;
 }
 
 .product-management-tab.is-active {
-  background: #e0aa00;
+  background: #f47c1e;
   color: #111;
 }
 
@@ -8062,7 +8062,7 @@ font-size: 1rem;
 }
 
 .addon-management-price strong {
-  color: #e0aa00;
+  color: #f47c1e;
   font-size: 1.4rem;
 }
 
@@ -8112,11 +8112,11 @@ font-size: 1rem;
 .product-addon-choice input {
   width: 17px;
   height: 17px;
-  accent-color: #e0aa00;
+  accent-color: #f47c1e;
 }
 
 .product-addon-choice strong {
-  color: #e0aa00;
+  color: #f47c1e;
   white-space: nowrap;
 }
 
@@ -8204,8 +8204,8 @@ font-size: 1rem;
 }
 
 .addon-form-modal .modal-actions .primary-btn {
-  border: 1px solid #e0aa00;
-  background: #e0aa00;
+  border: 1px solid #f47c1e;
+  background: #f47c1e;
   color: #111;
 }
 
@@ -9746,4 +9746,456 @@ img[src*="logofoodconnect-Photoroom.png"] {
 .footer img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
+}
+
+
+/* =========================================================
+   FOODCONNECT OWNER ORANGE ACCENT SWEEP — 2026-09-08
+   Removes legacy gold/yellow branding from owner-facing UI.
+   Semantic success/danger/info colors remain unchanged.
+========================================================= */
+
+body[data-fc-page="owner"] {
+  --fc-owner-orange: #f47c1e;
+  --fc-owner-orange-dark: #d9650d;
+  --fc-owner-orange-text-light: #c6530e;
+  --fc-owner-orange-text-dark: #fb923c;
+  --fc-owner-orange-soft-light: #fff4ec;
+  --fc-owner-orange-soft-dark: rgba(244, 124, 30, .12);
+  --fc-owner-orange-border-light: #f5c3a0;
+  --fc-owner-orange-border-dark: rgba(244, 124, 30, .34);
+}
+
+/* Inventory: brand action is orange, stock health remains green/red. */
+body[data-fc-page="owner"] .inventory-restock-btn {
+  border-color: rgba(244, 124, 30, .42);
+  background: rgba(244, 124, 30, .08);
+  color: var(--fc-owner-orange);
+}
+
+body[data-fc-page="owner"] .inventory-restock-btn:hover,
+body[data-fc-page="owner"] .inventory-restock-btn:focus-visible {
+  border-color: var(--fc-owner-orange);
+  background: var(--fc-owner-orange);
+  color: #fff;
+}
+
+body[data-fc-page="owner"] .inventory-table tbody tr:hover {
+  background: rgba(244, 124, 30, .065);
+}
+
+/* Sales report: remove yellow text and yellow-tinted cards. */
+body[data-fc-page="owner"] :is(
+  .analytics-period-summary strong,
+  .report-list-value,
+  .analytics-kpi-icon,
+  .performance-money
+) {
+  color: var(--fc-owner-orange);
+}
+
+body[data-fc-page="owner"] .analytics-period-summary {
+  border-color: rgba(244, 124, 30, .25);
+  background: rgba(244, 124, 30, .07);
+}
+
+body[data-fc-page="owner"] .analytics-kpi-icon {
+  border-color: rgba(244, 124, 30, .28);
+  background: rgba(244, 124, 30, .10);
+}
+
+body[data-fc-page="owner"] .analytics-kpi-card::before {
+  background: var(--fc-owner-orange);
+}
+
+body[data-fc-page="owner"] .analytics-kpi-primary {
+  background:
+    linear-gradient(145deg, rgba(244, 124, 30, .10), transparent 50%),
+    var(--analytics-card);
+}
+
+body[data-fc-page="owner"] .analytics-page-header {
+  background:
+    linear-gradient(135deg, rgba(244, 124, 30, .07), transparent 42%),
+    var(--card);
+}
+
+body[data-fc-page="owner"] .analytics-empty-state > span {
+  border-color: rgba(244, 124, 30, .25);
+  background: rgba(244, 124, 30, .08);
+  color: var(--fc-owner-orange);
+}
+
+/* Staff access: replace brown/gold panel with neutral FoodConnect orange. */
+body[data-fc-page="owner"] .staff-access-code-card {
+  background:
+    linear-gradient(135deg, rgba(244, 124, 30, .09), transparent 58%),
+    var(--card);
+  border-color: rgba(244, 124, 30, .32);
+}
+
+body[data-fc-page="owner"] .staff-access-code-icon {
+  color: var(--fc-owner-orange);
+  background: rgba(244, 124, 30, .12);
+  border: 1px solid rgba(244, 124, 30, .24);
+}
+
+body[data-fc-page="owner"] :is(
+  .staff-access-code-eyebrow,
+  .staff-access-code-warning strong,
+  .staff-access-code-message.info
+) {
+  color: var(--fc-owner-orange);
+}
+
+body[data-fc-page="owner"] .staff-access-code-message.info {
+  background: rgba(244, 124, 30, .10);
+  border-color: rgba(244, 124, 30, .30);
+}
+
+/* Activity/product scheduled accents also follow the brand orange. */
+body[data-fc-page="owner"] :is(
+  .promotion-overview-card.is-scheduled,
+  .product-promo-status-badge.is-scheduled
+) {
+  color: var(--fc-owner-orange);
+  border-color: rgba(244, 124, 30, .28);
+}
+
+body[data-fc-page="owner"] .product-promo-status-badge.is-scheduled {
+  background: rgba(244, 124, 30, .12);
+}
+
+body[data-fc-page="owner"] .log-item.log-order {
+  border-left-color: var(--fc-owner-orange);
+}
+
+body[data-fc-page="owner"] .log-icon.order {
+  border-color: rgba(244, 124, 30, .30);
+  background: rgba(244, 124, 30, .11);
+  color: var(--fc-owner-orange);
+}
+
+/* Light mode uses a deeper orange for small text to improve readability. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .inventory-restock-btn,
+  .analytics-period-summary strong,
+  .report-list-value,
+  .analytics-kpi-icon,
+  .performance-money,
+  .staff-access-code-eyebrow,
+  .staff-access-code-warning strong,
+  .staff-access-code-message.info,
+  .promotion-overview-card.is-scheduled,
+  .product-promo-status-badge.is-scheduled,
+  .log-icon.order
+) {
+  color: var(--fc-owner-orange-text-light);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-restock-btn {
+  background: var(--fc-owner-orange-soft-light);
+  border-color: var(--fc-owner-orange-border-light);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-restock-btn:hover,
+html[data-theme="light"] body[data-fc-page="owner"] .inventory-restock-btn:focus-visible {
+  background: var(--fc-owner-orange);
+  border-color: var(--fc-owner-orange);
+  color: #fff;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-period-summary {
+  background: #fff8f3;
+  border-color: #f3d1ba;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-kpi-icon {
+  background: #fff4ec;
+  border-color: #f3cfb6;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-kpi-primary {
+  background:
+    linear-gradient(145deg, rgba(244, 124, 30, .055), transparent 50%),
+    #fff;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-card {
+  background:
+    linear-gradient(135deg, rgba(244, 124, 30, .06), transparent 60%),
+    #fff;
+  border-color: #f1c9ad;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-content h3 {
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-content p,
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-warning {
+  color: var(--muted);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value {
+  background: #f8fafc;
+  border-color: var(--border);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value > span {
+  color: var(--text);
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-code-icon-button {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Dark mode uses a brighter orange accent against charcoal surfaces. */
+html[data-theme="dark"] body[data-fc-page="owner"] :is(
+  .inventory-restock-btn,
+  .analytics-period-summary strong,
+  .report-list-value,
+  .analytics-kpi-icon,
+  .performance-money,
+  .staff-access-code-eyebrow,
+  .staff-access-code-warning strong,
+  .staff-access-code-message.info,
+  .promotion-overview-card.is-scheduled,
+  .product-promo-status-badge.is-scheduled,
+  .log-icon.order
+) {
+  color: var(--fc-owner-orange-text-dark);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .inventory-restock-btn {
+  background: rgba(244, 124, 30, .08);
+  border-color: rgba(244, 124, 30, .36);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .inventory-restock-btn:hover,
+html[data-theme="dark"] body[data-fc-page="owner"] .inventory-restock-btn:focus-visible {
+  background: var(--fc-owner-orange);
+  border-color: var(--fc-owner-orange);
+  color: #fff;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .analytics-period-summary {
+  background: rgba(244, 124, 30, .075);
+  border-color: rgba(244, 124, 30, .26);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-access-code-card {
+  background:
+    linear-gradient(135deg, rgba(244, 124, 30, .08), transparent 58%),
+    #171717;
+  border-color: rgba(244, 124, 30, .30);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-access-code-icon {
+  color: #fb923c;
+  background: rgba(244, 124, 30, .12);
+  border-color: rgba(244, 124, 30, .24);
+}
+
+/* Semantic success and danger colors remain unchanged by design. */
+/* FOODCONNECT OWNER ORANGE ACCENT SWEEP END */
+
+/* =========================================================
+   OWNER FLEXIBLE DELIVERY PRICING
+   ========================================================= */
+
+.settings-delivery-pricing-grid {
+  align-items: start;
+}
+
+.settings-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px 13px;
+
+  outline: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  background: #202020;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-field select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(244, 124, 30, 0.1);
+}
+
+.settings-delivery-pricing-fields[hidden] {
+  display: none !important;
+}
+
+.settings-unit-input {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #202020;
+}
+
+.settings-unit-input:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(244, 124, 30, 0.1);
+}
+
+.settings-unit-input input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.settings-unit-input > span {
+  padding: 0 13px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-delivery-tier-heading {
+  margin-bottom: 12px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.settings-delivery-tier-heading strong {
+  display: block;
+  font-size: 12px;
+}
+
+.settings-delivery-tier-heading p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.settings-secondary-action {
+  min-height: 38px;
+  padding: 8px 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  border: 1px solid rgba(247, 128, 33, 0.35);
+  border-radius: 9px;
+
+  background: rgba(247, 128, 33, 0.08);
+  color: var(--gold);
+
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-secondary-action:hover,
+.settings-secondary-action:focus-visible {
+  background: rgba(247, 128, 33, 0.14);
+}
+
+.settings-delivery-tiers {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-delivery-tier-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+
+  padding: 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.settings-delivery-tier-row label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.settings-delivery-tier-remove {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  border-radius: 9px;
+
+  background: rgba(239, 68, 68, 0.08);
+  color: #ff8e94;
+  cursor: pointer;
+}
+
+.settings-delivery-tier-remove:hover,
+.settings-delivery-tier-remove:focus-visible {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+@media (max-width: 680px) {
+  .settings-delivery-tier-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-secondary-action {
+    width: 100%;
+  }
+
+  .settings-delivery-tier-row {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-delivery-tier-remove {
+    width: 100%;
+  }
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-field select,
+html[data-theme="light"] body[data-fc-page="owner"] .settings-unit-input,
+html[data-theme="light"] body[data-fc-page="owner"] .settings-delivery-tier-row {
+  background: #ffffff;
+  color: #1c2434;
+  border-color: #e3e6eb;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-delivery-tier-row label {
+  color: #1c2434;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .settings-field select,
+html[data-theme="dark"] body[data-fc-page="owner"] .settings-unit-input,
+html[data-theme="dark"] body[data-fc-page="owner"] .settings-delivery-tier-row {
+  background: #20242a;
+  color: #f5f7fa;
+  border-color: #343942;
 }

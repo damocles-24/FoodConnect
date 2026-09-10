@@ -9,6 +9,7 @@ header(
 );
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/product_image_helper.php";
 
 /*
  * Promotion dates are entered and stored
@@ -261,15 +262,10 @@ while ($row = $result->fetch_assoc()) {
        PRODUCT IMAGE
     ===================================================== */
 
-    $imagePath = trim(
-        (string) (
-            $row["image_path"] ?? ""
-        )
-    );
-
-    if ($imagePath === "") {
-        $imagePath = null;
-    }
+    $imagePath =
+        normalize_product_image_path(
+            $row["image_path"] ?? null
+        );
 
     /* =====================================================
        DISCOUNT TYPE

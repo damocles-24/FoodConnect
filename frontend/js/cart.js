@@ -35,10 +35,14 @@ let selectedDeliveryLocation = {
     longitude: null
 };
 
+let deliveryFeeQuoteSequence = 0;
+
 let cartPricing = {
     subtotal: 0,
     promotionSavings: 0,
     deliveryFee: 0,
+    deliveryPricingType: "fixed",
+    deliveryFeeQuoted: false,
     selectedOrderType: ""
 };
 
@@ -461,8 +465,13 @@ function renderCheckoutSummary() {
     }
 
     if (deliveryFeeElement) {
+        const isDynamicEstimate =
+            cartPricing.selectedOrderType === "delivery" &&
+            cartPricing.deliveryPricingType !== "fixed" &&
+            !cartPricing.deliveryFeeQuoted;
+
         deliveryFeeElement.textContent =
-            formatPrice(deliveryFee);
+            `${isDynamicEstimate ? "From " : ""}${formatPrice(deliveryFee)}`;
     }
 
     if (totalElement) {
@@ -473,17 +482,41 @@ function renderCheckoutSummary() {
 
 async function readJsonResponse(response) {
     const raw = await response.text();
+    const normalizedRaw =
+        String(raw || "").trim();
 
-    try {
-        return JSON.parse(raw);
-    } catch {
+    if (!normalizedRaw) {
         console.error(
-            "Invalid server response:",
-            raw
+            "Empty server response:",
+            {
+                status: response.status,
+                statusText: response.statusText
+            }
         );
 
         throw new Error(
-            "Something went wrong. Please try again."
+            response.ok
+                ? "The server returned an empty response. Please try again."
+                : `The server could not complete the request (HTTP ${response.status}). Please try again.`
+        );
+    }
+
+    try {
+        return JSON.parse(normalizedRaw);
+    } catch {
+        console.error(
+            "Non-JSON server response:",
+            {
+                status: response.status,
+                statusText: response.statusText,
+                body: normalizedRaw.slice(0, 500)
+            }
+        );
+
+        throw new Error(
+            response.ok
+                ? "The server returned an invalid response. Please try again."
+                : `The server could not complete the request (HTTP ${response.status}). Please try again.`
         );
     }
 }
@@ -539,19 +572,27 @@ function showCheckoutMessage(
 function setCartActionState(
     enabled
 ) {
+    const isEnabled = Boolean(enabled);
+
     const clearButton =
         document.getElementById("clearCartBtn");
 
     const checkoutButton =
         document.getElementById("checkoutBtn");
 
-    if (clearButton) {
-        clearButton.disabled = !enabled;
-    }
-
-    if (checkoutButton) {
-        checkoutButton.disabled = !enabled;
-    }
+    [clearButton, checkoutButton]
+        .filter(Boolean)
+        .forEach((button) => {
+            button.disabled = !isEnabled;
+            button.setAttribute(
+                "aria-disabled",
+                String(!isEnabled)
+            );
+            button.dataset.actionState =
+                isEnabled
+                    ? "enabled"
+                    : "disabled";
+        });
 }
 
 function updateCartBadge(totalItems) {
@@ -664,10 +705,15 @@ if (promotionSavingsElement) {
 }
 
     if (deliveryFeeElement) {
+        const isDynamicEstimate =
+            cartPricing.selectedOrderType === "delivery" &&
+            cartPricing.deliveryPricingType !== "fixed" &&
+            !cartPricing.deliveryFeeQuoted;
+
         deliveryFeeElement.textContent =
-            formatPrice(
+            `${isDynamicEstimate ? "From " : ""}${formatPrice(
                 appliedDeliveryFee
-            );
+            )}`;
     }
 
     if (totalPriceElement) {
@@ -699,6 +745,8 @@ function resetCartPricing() {
         subtotal: 0,
         promotionSavings: 0,
         deliveryFee: 0,
+        deliveryPricingType: "fixed",
+        deliveryFeeQuoted: false,
         selectedOrderType: ""
     };
 }
@@ -1088,6 +1136,18 @@ cartPricing.deliveryFee =
     Number(
         data.delivery_fee ?? 0
     );
+
+cartPricing.deliveryPricingType =
+    ["fixed", "distance", "tiered"].includes(
+        String(
+            data.delivery_pricing_type ||
+            "fixed"
+        ).toLowerCase()
+    )
+        ? String(data.delivery_pricing_type).toLowerCase()
+        : "fixed";
+
+cartPricing.deliveryFeeQuoted = false;
 
 applyRestaurantOrderTypes(
     data.order_types
@@ -2369,6 +2429,8 @@ function resetSelectedDeliveryLocation() {
         longitude: null
     };
 
+    cartPricing.deliveryFeeQuoted = false;
+
     if (deliveryLocationMap) {
         deliveryLocationMap.remove();
         deliveryLocationMap = null;
@@ -2407,6 +2469,183 @@ function updateDeliveryCoordinateDisplay(
     );
 }
 
+function getCurrentCartTotalItems() {
+    return currentCartItems.reduce(
+        (total, item) =>
+            total + Math.max(
+                1,
+                Number(item?.quantity) || 1
+            ),
+        0
+    );
+}
+
+async function quoteSelectedDeliveryFee(
+    showErrors = false
+) {
+    const latitude =
+        Number(
+            selectedDeliveryLocation.latitude
+        );
+
+    const longitude =
+        Number(
+            selectedDeliveryLocation.longitude
+        );
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+        return false;
+    }
+
+    const quoteSequence =
+        ++deliveryFeeQuoteSequence;
+
+    try {
+        const response = await fetch(
+            `${API}/quote_delivery_fee.php`,
+            {
+                method: "POST",
+                credentials: "include",
+                cache: "no-store",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    customer_latitude:
+                        latitude,
+                    customer_longitude:
+                        longitude
+                })
+            }
+        );
+
+        const data =
+            await readJsonResponse(
+                response
+            );
+
+        if (
+            quoteSequence !==
+            deliveryFeeQuoteSequence
+        ) {
+            return false;
+        }
+
+        if (!response.ok || !data.success) {
+            cartPricing.deliveryFeeQuoted = false;
+
+            const quoteMessage =
+                data.message ||
+                "Unable to calculate the delivery fee for this location.";
+
+            const locationStatus =
+                document.getElementById(
+                    "deliveryLocationStatus"
+                );
+
+            if (locationStatus) {
+                locationStatus.innerHTML = `
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>${escapeHtml(quoteMessage)}</span>
+                `;
+
+                locationStatus.classList.remove(
+                    "location-selected"
+                );
+            }
+
+            if (showErrors) {
+                showCheckoutMessage(
+                    quoteMessage,
+                    "error"
+                );
+            }
+
+            return false;
+        }
+
+        cartPricing.deliveryFee =
+            Math.max(
+                0,
+                Number(
+                    data.delivery_fee || 0
+                )
+            );
+
+        cartPricing.deliveryPricingType =
+            ["fixed", "distance", "tiered"].includes(
+                String(data.pricing_type || "fixed").toLowerCase()
+            )
+                ? String(data.pricing_type).toLowerCase()
+                : "fixed";
+
+        cartPricing.deliveryFeeQuoted = true;
+
+        updateTotals(
+            getCurrentCartTotalItems()
+        );
+
+        const locationStatus =
+            document.getElementById(
+                "deliveryLocationStatus"
+            );
+
+        if (locationStatus) {
+            const distanceText =
+                Number.isFinite(
+                    Number(data.distance_km)
+                )
+                    ? ` • ${Number(data.distance_km).toFixed(2)} km`
+                    : "";
+
+            locationStatus.innerHTML = `
+                <i class="fa-solid fa-circle-check"></i>
+                <span>
+                    Delivery location selected${distanceText}.
+                    <strong>
+                        Delivery fee: ${formatPrice(
+                            cartPricing.deliveryFee
+                        )}
+                    </strong>
+                </span>
+            `;
+
+            locationStatus.classList.add(
+                "location-selected"
+            );
+        }
+
+        if (showErrors) {
+            showCheckoutMessage(
+                "Delivery fee confirmed for your selected location.",
+                "success"
+            );
+        }
+
+        return true;
+    } catch (error) {
+        cartPricing.deliveryFeeQuoted = false;
+
+        console.error(
+            "Delivery fee quote error:",
+            error
+        );
+
+        if (showErrors) {
+            showCheckoutMessage(
+                "Unable to calculate the delivery fee right now. Please try again.",
+                "error"
+            );
+        }
+
+        return false;
+    }
+}
+
 function setDeliveryLocation(
     latitude,
     longitude
@@ -2428,6 +2667,8 @@ function setDeliveryLocation(
         latitude: parsedLatitude,
         longitude: parsedLongitude
     };
+
+    cartPricing.deliveryFeeQuoted = false;
 
     const markerPosition = [
         parsedLatitude,
@@ -2456,10 +2697,14 @@ function setDeliveryLocation(
                 longitude: newPosition.lng
             };
 
+            cartPricing.deliveryFeeQuoted = false;
+
             updateDeliveryCoordinateDisplay(
                 newPosition.lat,
                 newPosition.lng
             );
+
+            quoteSelectedDeliveryFee();
         }
     );
 } else {
@@ -2477,6 +2722,8 @@ function setDeliveryLocation(
         parsedLatitude,
         parsedLongitude
     );
+
+    quoteSelectedDeliveryFee();
 }
 
 async function reverseGeocodeDeliveryLocation(
@@ -4946,6 +5193,15 @@ payload.customer_latitude =
 
 payload.customer_longitude =
     selectedDeliveryLocation.longitude;
+
+const deliveryFeeConfirmed =
+    await quoteSelectedDeliveryFee(
+        true
+    );
+
+if (!deliveryFeeConfirmed) {
+    return;
+}
 
         payload.landmark =
             document

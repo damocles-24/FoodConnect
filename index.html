@@ -16,15 +16,15 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260903-finalroot1">
+<link rel="stylesheet" href="style.css?v=20260910-passwordtoggle1">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
-<link rel="stylesheet" href="foodconnect-theme.css?v=20260903-finalroot1">
+<link rel="stylesheet" href="frontend/css/foodconnect-theme.css?v=20260903-finalroot1">
 
 
   
-<script src="foodconnect-theme.js?v=20260903-finalroot1" defer></script>
+<script src="frontend/js/foodconnect-theme.js?v=20260908-live-sync1" defer></script>
 </head>
 
 <body data-fc-page="customer-home">
@@ -327,6 +327,7 @@
           type="button"
           class="category-card"
           data-search="burger"
+          data-category="Burgers"
         >
 
           <span>🍔</span>
@@ -339,6 +340,7 @@
           type="button"
           class="category-card"
           data-search="chicken"
+          data-category="Chicken"
         >
 
           <span>🍗</span>
@@ -351,6 +353,7 @@
           type="button"
           class="category-card"
           data-search="drink"
+          data-category="Drinks"
         >
 
           <span>🥤</span>
@@ -363,6 +366,7 @@
           type="button"
           class="category-card"
           data-search="filipino"
+          data-category="Filipino"
         >
 
           <span>🍛</span>
@@ -375,6 +379,7 @@
           type="button"
           class="category-card"
           data-search="dessert"
+          data-category="Dessert"
         >
 
           <span>🍰</span>
@@ -387,6 +392,7 @@
           type="button"
           class="category-card"
           data-search=""
+          data-category=""
         >
 
           <span>🍽️</span>
@@ -956,23 +962,37 @@
             Currently Unavailable
           </span>
 
-          <h3>Closed Restaurant</h3>
+          <h3>Closed Restaurants</h3>
         </div>
+
+        <p id="closedRestaurantsPageResultCount">
+          Loading restaurants...
+        </p>
 
       </div>
 
+      <div
+        class="restaurants-page-grid closed-restaurants-grid"
+        id="closedRestaurantsPageTrack"
+      >
+        <!-- Closed restaurant cards are rendered here by JavaScript. -->
+      </div>
 
-      <!-- Placeholder for backend integration -->
-      <div class="closed-restaurants-placeholder">
+      <div
+        class="closed-restaurants-placeholder"
+        id="closedRestaurantsPageEmptyState"
+      >
 
         <div class="closed-restaurants-placeholder-icon">
           <i class="fa-solid fa-store-slash"></i>
         </div>
 
-        <h4>Closed Restaurants</h4>
+        <h4 id="closedRestaurantsPageEmptyTitle">
+          No closed restaurants
+        </h4>
 
-        <p>
-          Restaurant availability information will appear here.
+        <p id="closedRestaurantsPageEmptyText">
+          All listed restaurants are currently available.
         </p>
 
       </div>
@@ -1392,30 +1412,21 @@
         </label>
 
         <div class="password-input-wrapper">
-        <div class="password-input-wrapper"><input
-          type="password"
-          id="ownerPassword"
-          placeholder="Enter password"
-          autocomplete="current-password"
-        >
-        <button
+          <input
+            type="password"
+            id="ownerPassword"
+            placeholder="Enter password"
+            autocomplete="current-password"
+          >
+          <button
             type="button"
             class="toggle-password"
             data-target="ownerPassword"
             aria-label="Show password"
-        >
+          >
             <i class="fa-regular fa-eye"></i>
-        </button></div>
-
-        <button
-        type="button"
-        class="password-toggle"
-        id="toggleOwnerPassword"
-        aria-label="Show Password"
-        >
-        <i class="fa-regular fa-eye"></i>
-      </button>
-      </div>
+          </button>
+        </div>
       </div>
 
       <button
@@ -1797,6 +1808,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260903-ownerredirect1" defer></script>
+<script src="homepage.js?v=20260910-passwordtoggle1" defer></script>
 </body>
 </html>

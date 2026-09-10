@@ -1,5 +1,68 @@
 <?php
 
+function normalize_product_image_path(
+    ?string $imagePath
+): ?string {
+    $imagePath = trim(
+        (string) $imagePath
+    );
+
+    if ($imagePath === "") {
+        return null;
+    }
+
+    /*
+     * Support legacy rows created while FoodConnect lived in
+     * /FoodConnect. Production now serves public_html as the
+     * domain root, so the browser URL must begin with /uploads.
+     */
+    if (
+        preg_match(
+            '~^https?://[^/]+(?P<path>/.*)$~i',
+            $imagePath,
+            $matches
+        )
+    ) {
+        $candidate =
+            (string) (
+                $matches["path"] ?? ""
+            );
+
+        if (
+            preg_match(
+                '~^/(?:FoodConnect/)?uploads/product_images/~i',
+                $candidate
+            )
+        ) {
+            $imagePath = $candidate;
+        }
+    }
+
+    $imagePath = preg_replace(
+        '~^/FoodConnect(?=/uploads/product_images/)~i',
+        '',
+        $imagePath
+    );
+
+    $imagePath = preg_replace(
+        '~^FoodConnect(?=/uploads/product_images/)~i',
+        '',
+        $imagePath
+    );
+
+    if (
+        strpos(
+            $imagePath,
+            "uploads/product_images/"
+        ) === 0
+    ) {
+        $imagePath =
+            "/" . $imagePath;
+    }
+
+    return $imagePath;
+}
+
 function save_product_image(
     array $file,
     int $restaurantId
@@ -129,12 +192,13 @@ function save_product_image(
 function delete_product_image(
     ?string $imagePath
 ): void {
-    $imagePath = trim(
-        (string) $imagePath
-    );
+    $imagePath =
+        normalize_product_image_path(
+            $imagePath
+        );
 
     $allowedPrefix =
-    "/uploads/product_images/";
+        "/uploads/product_images/";
 
 if (
     $imagePath === "" ||

@@ -151,6 +151,56 @@ const deliveryFeeInput =
         "deliveryFee"
     );
 
+const deliveryPricingTypeInput =
+    document.getElementById(
+        "deliveryPricingType"
+    );
+
+const fixedPricingFields =
+    document.getElementById(
+        "fixedPricingFields"
+    );
+
+const distancePricingFields =
+    document.getElementById(
+        "distancePricingFields"
+    );
+
+const tieredPricingFields =
+    document.getElementById(
+        "tieredPricingFields"
+    );
+
+const deliveryBaseFeeInput =
+    document.getElementById(
+        "deliveryBaseFee"
+    );
+
+const deliveryIncludedKmInput =
+    document.getElementById(
+        "deliveryIncludedKm"
+    );
+
+const deliveryExtraFeePerKmInput =
+    document.getElementById(
+        "deliveryExtraFeePerKm"
+    );
+
+const deliveryTiersContainer =
+    document.getElementById(
+        "deliveryTiersContainer"
+    );
+
+const addDeliveryTierButton =
+    document.getElementById(
+        "addDeliveryTierButton"
+    );
+
+const deliveryPricingError =
+    document.getElementById(
+        "deliveryPricingError"
+    );
+
 const descriptionCounter =
     document.getElementById(
         "descriptionCounter"
@@ -330,6 +380,11 @@ const reviewBusinessHours =
 const reviewDeliveryOptions =
     document.getElementById(
         "reviewDeliveryOptions"
+    );
+
+const reviewDeliveryPricing =
+    document.getElementById(
+        "reviewDeliveryPricing"
     );
 
 const wizardSteps =
@@ -516,8 +571,11 @@ removeLogoButton.addEventListener(
         provinceInput,
         cityMunicipalityInput,
         barangayInput,
-        deliveryFeeInput
-    ].forEach((field) => {
+        deliveryFeeInput,
+        deliveryBaseFeeInput,
+        deliveryIncludedKmInput,
+        deliveryExtraFeePerKmInput
+    ].filter(Boolean).forEach((field) => {
         field.addEventListener(
             "input",
             () => {
@@ -534,6 +592,74 @@ removeLogoButton.addEventListener(
             }
         );
     });
+
+    deliveryPricingTypeInput?.addEventListener(
+        "change",
+        () => {
+            updateDeliveryPricingFields();
+            updateWizardButtons();
+        }
+    );
+
+    addDeliveryTierButton?.addEventListener(
+        "click",
+        () => {
+            if (!deliveryTiersContainer) {
+                return;
+            }
+
+            if (deliveryTiersContainer.children.length >= 10) {
+                if (deliveryPricingError) {
+                    deliveryPricingError.textContent =
+                        "A maximum of 10 delivery tiers is allowed.";
+                }
+                return;
+            }
+
+            const existingRows =
+                Array.from(
+                    deliveryTiersContainer.querySelectorAll(
+                        ".delivery-tier-row"
+                    )
+                );
+
+            const lastRow =
+                existingRows[existingRows.length - 1];
+
+            const lastKm =
+                Number(
+                    lastRow?.querySelector(
+                        ".delivery-tier-km"
+                    )?.value || 0
+                );
+
+            const lastFee =
+                Number(
+                    lastRow?.querySelector(
+                        ".delivery-tier-fee"
+                    )?.value || 0
+                );
+
+            deliveryTiersContainer.appendChild(
+                createDeliveryTierRow(
+                    {
+                        up_to_km:
+                            Math.min(
+                                100,
+                                Math.max(1, lastKm + 3)
+                            ),
+                        fee:
+                            Math.max(0, lastFee + 50)
+                    },
+                    existingRows.length
+                )
+            );
+
+            refreshDeliveryTierLabels();
+            clearDeliveryPricingError();
+            updateWizardButtons();
+        }
+    );
 
     deliveryOptionInputs.forEach(
         (checkbox) => {
@@ -622,7 +748,7 @@ async function openRealCustomerPreview() {
     if (!previewWindow) {
         showToast(
             "Preview blocked",
-            "Allow pop-ups for localhost, then try opening the preview again.",
+            "Allow pop-ups for this site, then try opening the preview again.",
             "error"
         );
 
@@ -1002,17 +1128,69 @@ renderRestaurantLogo(
     postalCodeInput.value =
         application.postal_code || "";
 
-    deliveryFeeInput.value =
-        formatMoneyInput(
-            application.delivery_fee
-        );
-
     populateBusinessHours(
         application.business_hours
     );
 
     populateDeliveryOptions(
         application.delivery_options
+    );
+
+    const applicationPricingType =
+        normalizeDeliveryPricingType(
+            application.delivery_pricing_type ||
+            "fixed"
+        );
+
+    const applicationPricing =
+        application.delivery_pricing &&
+        typeof application.delivery_pricing === "object"
+            ? application.delivery_pricing
+            : {};
+
+    if (deliveryPricingTypeInput) {
+        deliveryPricingTypeInput.value =
+            applicationPricingType;
+    }
+
+    if (deliveryFeeInput) {
+        deliveryFeeInput.value =
+            formatMoneyInput(
+                applicationPricing.fixed_fee ??
+                application.delivery_fee ??
+                0
+            );
+    }
+
+    if (deliveryBaseFeeInput) {
+        deliveryBaseFeeInput.value =
+            formatMoneyInput(
+                applicationPricing.base_fee ??
+                application.delivery_fee ??
+                70
+            );
+    }
+
+    if (deliveryIncludedKmInput) {
+        deliveryIncludedKmInput.value =
+            String(
+                applicationPricing.included_km ??
+                5
+            );
+    }
+
+    if (deliveryExtraFeePerKmInput) {
+        deliveryExtraFeePerKmInput.value =
+            formatMoneyInput(
+                applicationPricing.extra_fee_per_km ??
+                10
+            );
+    }
+
+    renderDeliveryTiers(
+        Array.isArray(applicationPricing.tiers)
+            ? applicationPricing.tiers
+            : []
     );
 
     updateDeliveryFeeVisibility();
@@ -1029,13 +1207,474 @@ renderRestaurantLogo(
     );
 }
 
+function normalizeDeliveryPricingType(value) {
+    const type =
+        String(value || "fixed")
+            .trim()
+            .toLowerCase();
+
+    return ["fixed", "distance", "tiered"].includes(type)
+        ? type
+        : "fixed";
+}
+
+function isDeliveryServiceSelected() {
+    return deliveryOptionInputs.some(
+        (checkbox) =>
+            checkbox.checked &&
+            checkbox.value === "delivery"
+    );
+}
+
+function clearDeliveryPricingError() {
+    if (deliveryPricingError) {
+        deliveryPricingError.textContent = "";
+    }
+
+    deliveryFeeGroup?.classList.remove(
+        "invalid-section"
+    );
+}
+
+function updateDeliveryPricingFields() {
+    const type =
+        normalizeDeliveryPricingType(
+            deliveryPricingTypeInput?.value
+        );
+
+    fixedPricingFields?.classList.toggle(
+        "hidden",
+        type !== "fixed"
+    );
+
+    distancePricingFields?.classList.toggle(
+        "hidden",
+        type !== "distance"
+    );
+
+    tieredPricingFields?.classList.toggle(
+        "hidden",
+        type !== "tiered"
+    );
+
+    if (
+        type === "tiered" &&
+        deliveryTiersContainer &&
+        deliveryTiersContainer.children.length === 0
+    ) {
+        const startingFee =
+            Math.max(
+                0,
+                Number(
+                    deliveryFeeInput?.value ||
+                    deliveryBaseFeeInput?.value ||
+                    70
+                ) || 70
+            );
+
+        renderDeliveryTiers([
+            {
+                up_to_km: 5,
+                fee: startingFee
+            },
+            {
+                up_to_km: 8,
+                fee: startingFee + 50
+            }
+        ]);
+    }
+
+    clearDeliveryPricingError();
+}
+
+function createDeliveryTierRow(
+    tier = {},
+    index = 0
+) {
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "delivery-tier-row";
+
+    row.innerHTML = `
+        <div>
+            <label>Up to distance</label>
+            <div class="unit-input">
+                <input
+                    type="number"
+                    class="delivery-tier-km"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value="${Number(tier.up_to_km || (index + 1) * 5)}"
+                    aria-label="Tier ${index + 1} maximum distance"
+                >
+                <span>km</span>
+            </div>
+        </div>
+
+        <div>
+            <label>Delivery fee</label>
+            <div class="money-input">
+                <span>₱</span>
+                <input
+                    type="number"
+                    class="delivery-tier-fee"
+                    min="0"
+                    max="9999"
+                    step="0.01"
+                    value="${Number(tier.fee || 0).toFixed(2)}"
+                    aria-label="Tier ${index + 1} delivery fee"
+                >
+            </div>
+        </div>
+
+        <button
+            type="button"
+            class="delivery-tier-remove"
+            aria-label="Remove delivery tier ${index + 1}"
+            title="Remove tier"
+        >
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+
+    row
+        .querySelectorAll("input")
+        .forEach((input) => {
+            input.addEventListener(
+                "input",
+                () => {
+                    clearDeliveryPricingError();
+                    updateWizardButtons();
+                }
+            );
+        });
+
+    row
+        .querySelector(".delivery-tier-remove")
+        ?.addEventListener(
+            "click",
+            () => {
+                if (
+                    !deliveryTiersContainer ||
+                    deliveryTiersContainer.children.length <= 1
+                ) {
+                    if (deliveryPricingError) {
+                        deliveryPricingError.textContent =
+                            "Tiered pricing must keep at least one distance tier.";
+                    }
+                    return;
+                }
+
+                row.remove();
+                refreshDeliveryTierLabels();
+                clearDeliveryPricingError();
+                updateWizardButtons();
+            }
+        );
+
+    return row;
+}
+
+function refreshDeliveryTierLabels() {
+    deliveryTiersContainer
+        ?.querySelectorAll(".delivery-tier-row")
+        .forEach((row, index) => {
+            row
+                .querySelector(".delivery-tier-km")
+                ?.setAttribute(
+                    "aria-label",
+                    `Tier ${index + 1} maximum distance`
+                );
+
+            row
+                .querySelector(".delivery-tier-fee")
+                ?.setAttribute(
+                    "aria-label",
+                    `Tier ${index + 1} delivery fee`
+                );
+
+            row
+                .querySelector(".delivery-tier-remove")
+                ?.setAttribute(
+                    "aria-label",
+                    `Remove delivery tier ${index + 1}`
+                );
+        });
+}
+
+function renderDeliveryTiers(tiers = []) {
+    if (!deliveryTiersContainer) {
+        return;
+    }
+
+    deliveryTiersContainer.innerHTML = "";
+
+    const normalizedTiers =
+        Array.isArray(tiers) && tiers.length > 0
+            ? tiers.slice(0, 10)
+            : [
+                {
+                    up_to_km: 5,
+                    fee: Number(
+                        deliveryFeeInput?.value || 0
+                    ) || 70
+                }
+            ];
+
+    normalizedTiers.forEach(
+        (tier, index) => {
+            deliveryTiersContainer.appendChild(
+                createDeliveryTierRow(
+                    tier,
+                    index
+                )
+            );
+        }
+    );
+
+    refreshDeliveryTierLabels();
+}
+
+function collectDeliveryPricing() {
+    const type =
+        normalizeDeliveryPricingType(
+            deliveryPricingTypeInput?.value
+        );
+
+    if (type === "distance") {
+        return {
+            pricing_type: "distance",
+            base_fee:
+                Number(
+                    deliveryBaseFeeInput?.value || 0
+                ),
+            included_km:
+                Number(
+                    deliveryIncludedKmInput?.value || 0
+                ),
+            extra_fee_per_km:
+                Number(
+                    deliveryExtraFeePerKmInput?.value || 0
+                )
+        };
+    }
+
+    if (type === "tiered") {
+        const tiers = [];
+
+        deliveryTiersContainer
+            ?.querySelectorAll(
+                ".delivery-tier-row"
+            )
+            .forEach((row) => {
+                tiers.push({
+                    up_to_km:
+                        Number(
+                            row.querySelector(
+                                ".delivery-tier-km"
+                            )?.value || 0
+                        ),
+                    fee:
+                        Number(
+                            row.querySelector(
+                                ".delivery-tier-fee"
+                            )?.value || 0
+                        )
+                });
+            });
+
+        return {
+            pricing_type: "tiered",
+            tiers
+        };
+    }
+
+    return {
+        pricing_type: "fixed",
+        fixed_fee:
+            Number(
+                deliveryFeeInput?.value || 0
+            )
+    };
+}
+
+function getLegacyDeliveryFeeFromPricing(
+    pricing
+) {
+    const type =
+        normalizeDeliveryPricingType(
+            pricing?.pricing_type
+        );
+
+    if (type === "distance") {
+        return Number(
+            pricing?.base_fee || 0
+        );
+    }
+
+    if (type === "tiered") {
+        return Number(
+            pricing?.tiers?.[0]?.fee || 0
+        );
+    }
+
+    return Number(
+        pricing?.fixed_fee || 0
+    );
+}
+
+function validateDeliveryPricing(
+    showErrors = true
+) {
+    if (!isDeliveryServiceSelected()) {
+        clearDeliveryPricingError();
+        return true;
+    }
+
+    const pricing =
+        collectDeliveryPricing();
+
+    const setError = (message) => {
+        if (showErrors) {
+            if (deliveryPricingError) {
+                deliveryPricingError.textContent =
+                    message;
+            }
+
+            deliveryFeeGroup?.classList.add(
+                "invalid-section"
+            );
+        }
+
+        return false;
+    };
+
+    const validMoney = (value) =>
+        Number.isFinite(value) &&
+        value >= 0 &&
+        value <= 9999;
+
+    if (pricing.pricing_type === "fixed") {
+        return validMoney(pricing.fixed_fee)
+            ? true
+            : setError(
+                "Enter a valid fixed delivery fee from ₱0.00 to ₱9,999.00."
+            );
+    }
+
+    if (pricing.pricing_type === "distance") {
+        if (!validMoney(pricing.base_fee)) {
+            return setError(
+                "Enter a valid base delivery fee."
+            );
+        }
+
+        if (
+            !Number.isFinite(
+                pricing.included_km
+            ) ||
+            pricing.included_km <= 0 ||
+            pricing.included_km > 100
+        ) {
+            return setError(
+                "Included distance must be greater than 0 and not exceed 100 km."
+            );
+        }
+
+        if (
+            !validMoney(
+                pricing.extra_fee_per_km
+            ) ||
+            pricing.extra_fee_per_km <= 0
+        ) {
+            return setError(
+                "Additional fee per kilometer must be greater than ₱0.00."
+            );
+        }
+
+        clearDeliveryPricingError();
+        return true;
+    }
+
+    if (
+        !Array.isArray(pricing.tiers) ||
+        pricing.tiers.length < 1 ||
+        pricing.tiers.length > 10
+    ) {
+        return setError(
+            "Add between 1 and 10 delivery distance tiers."
+        );
+    }
+
+    let previousDistance = 0;
+
+    for (
+        let index = 0;
+        index < pricing.tiers.length;
+        index += 1
+    ) {
+        const tier = pricing.tiers[index];
+
+        if (
+            !Number.isFinite(tier.up_to_km) ||
+            tier.up_to_km <= 0 ||
+            tier.up_to_km > 100
+        ) {
+            return setError(
+                `Tier ${index + 1} distance must be greater than 0 and not exceed 100 km.`
+            );
+        }
+
+        if (tier.up_to_km <= previousDistance) {
+            return setError(
+                "Tier distances must increase from one tier to the next."
+            );
+        }
+
+        if (!validMoney(tier.fee)) {
+            return setError(
+                `Enter a valid fee for tier ${index + 1}.`
+            );
+        }
+
+        previousDistance =
+            tier.up_to_km;
+    }
+
+    clearDeliveryPricingError();
+    return true;
+}
+
+function formatDeliveryPricingSummary(
+    pricing
+) {
+    const type =
+        normalizeDeliveryPricingType(
+            pricing?.pricing_type
+        );
+
+    if (type === "distance") {
+        return `₱${Number(pricing.base_fee || 0).toFixed(2)} for the first ${Number(pricing.included_km || 0).toFixed(1)} km, then +₱${Number(pricing.extra_fee_per_km || 0).toFixed(2)} per succeeding km.`;
+    }
+
+    if (type === "tiered") {
+        return (pricing.tiers || [])
+            .map(
+                (tier) =>
+                    `Up to ${Number(tier.up_to_km || 0).toFixed(1)} km = ₱${Number(tier.fee || 0).toFixed(2)}`
+            )
+            .join(" • ");
+    }
+
+    return `Fixed delivery fee: ₱${Number(pricing?.fixed_fee || 0).toFixed(2)}.`;
+}
+
 function updateDeliveryFeeVisibility() {
     const deliverySelected =
-        deliveryOptionInputs.some(
-            (checkbox) =>
-                checkbox.checked &&
-                checkbox.value === "delivery"
-        );
+        isDeliveryServiceSelected();
 
     deliveryFeeGroup?.classList.toggle(
         "hidden",
@@ -1043,8 +1682,15 @@ function updateDeliveryFeeVisibility() {
     );
 
     if (!deliverySelected) {
-        deliveryFeeInput.value = "0.00";
+        if (deliveryFeeInput) {
+            deliveryFeeInput.value = "0.00";
+        }
+
+        clearDeliveryPricingError();
+        return;
     }
+
+    updateDeliveryPricingFields();
 }
 
 function populateBusinessHours(hours) {
@@ -1930,11 +2576,11 @@ function validateOrderServicesStep(
                 checkbox.checked
         );
 
-    const valid =
+    const servicesValid =
         selectedOptions.length > 0;
 
     if (showErrors) {
-        if (valid) {
+        if (servicesValid) {
             clearDeliveryOptionsError();
         } else {
             deliveryOptionsError.textContent =
@@ -1950,7 +2596,14 @@ function validateOrderServicesStep(
         }
     }
 
-    return valid;
+    const pricingValid =
+        servicesValid
+            ? validateDeliveryPricing(
+                showErrors
+            )
+            : true;
+
+    return servicesValid && pricingValid;
 }
 
 function validateConfirmationStep(
@@ -2661,6 +3314,23 @@ function renderReviewSummary() {
                     No service selected
                 </span>
             `;
+
+    if (reviewDeliveryPricing) {
+        const deliverySelected =
+            selectedOptions.includes(
+                "delivery"
+            );
+
+        reviewDeliveryPricing.hidden =
+            !deliverySelected;
+
+        reviewDeliveryPricing.textContent =
+            deliverySelected
+                ? formatDeliveryPricingSummary(
+                    collectDeliveryPricing()
+                )
+                : "";
+    }
 }
 
 /* =========================================================
@@ -2678,6 +3348,9 @@ function collectFormData(action) {
                 (checkbox) =>
                     checkbox.value
             );
+
+    const deliveryPricing =
+        collectDeliveryPricing();
 
     return {
         action,
@@ -2721,10 +3394,27 @@ function collectFormData(action) {
         delivery_options:
             selectedDeliveryOptions,
 
+        delivery_pricing_type:
+            selectedDeliveryOptions.includes("delivery")
+                ? deliveryPricing.pricing_type
+                : "fixed",
+
+        delivery_pricing:
+            selectedDeliveryOptions.includes("delivery")
+                ? deliveryPricing
+                : {
+                    pricing_type: "fixed",
+                    fixed_fee: 0
+                },
+
+        /*
+         * Legacy compatibility value. The server remains authoritative
+         * and stores the complete delivery-pricing policy separately.
+         */
         delivery_fee:
             selectedDeliveryOptions.includes("delivery")
-                ? normalizeMoneyValue(
-                    deliveryFeeInput.value
+                ? getLegacyDeliveryFeeFromPricing(
+                    deliveryPricing
                 )
                 : 0
     };

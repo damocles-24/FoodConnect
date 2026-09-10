@@ -152,6 +152,8 @@ $stmt = $conn->prepare("
     business_hours_json,
     order_types_json,
     delivery_fee,
+    delivery_pricing_type,
+    delivery_pricing_json,
     application_status,
     rejection_reason,
     submitted_at,
@@ -234,6 +236,32 @@ $application["owner_id"] =
 $application["delivery_fee"] =
     (float) $application["delivery_fee"];
 
+$deliveryPricing = json_decode(
+    (string) (
+        $application["delivery_pricing_json"] ?? ""
+    ),
+    true
+);
+
+if (!is_array($deliveryPricing)) {
+    $deliveryPricing = [
+        "fixed_fee" =>
+            (float) $application["delivery_fee"]
+    ];
+}
+
+$application["delivery_pricing_type"] =
+    in_array(
+        (string) ($application["delivery_pricing_type"] ?? "fixed"),
+        ["fixed", "distance", "tiered"],
+        true
+    )
+        ? (string) $application["delivery_pricing_type"]
+        : "fixed";
+
+$application["delivery_pricing"] =
+    $deliveryPricing;
+
 $application["business_hours"] =
     $businessHours;
 
@@ -242,7 +270,8 @@ $application["delivery_options"] =
 
 unset(
     $application["business_hours_json"],
-    $application["order_types_json"]
+    $application["order_types_json"],
+    $application["delivery_pricing_json"]
 );
 
 respond_json([

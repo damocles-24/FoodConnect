@@ -9,14 +9,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
   <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260817-staffux2" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260908-orangeowner1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
-  href="/foodconnect-theme.css?v=20260903-ownerfix1"
+  href="../css/foodconnect-theme.css?v=20260903-ownerfix1"
 >
 <script
-  src="/foodconnect-theme.js?v=20260903-ownerfix1"
+  src="../js/foodconnect-theme.js?v=20260903-ownerfix1"
   defer
 ></script>
 
@@ -2246,36 +2246,168 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
             <h3>Delivery Settings</h3>
 
             <p>
-              Configure the fixed delivery charge collected
-              from delivery customers.
+              Choose how this restaurant calculates its delivery charge.
+              Each restaurant can use its own pricing method.
             </p>
           </div>
         </div>
 
-        <div class="settings-form-grid">
-          <div class="settings-field">
-            <label for="settingsDeliveryFee">
-              Delivery Fee
+        <div class="settings-form-grid settings-delivery-pricing-grid">
+          <div class="settings-field settings-field-full">
+            <label for="settingsDeliveryPricingType">
+              Delivery Pricing Method
               <span aria-hidden="true">*</span>
             </label>
 
-            <div class="settings-money-input">
-              <span>₱</span>
+            <select
+              id="settingsDeliveryPricingType"
+              aria-describedby="settingsDeliveryPricingHelp"
+            >
+              <option value="fixed">Fixed fee</option>
+              <option value="distance">Base radius + extra per km</option>
+              <option value="tiered">Distance tiers</option>
+            </select>
 
-              <input
-                type="number"
-                id="settingsDeliveryFee"
-                min="0"
-                max="999"
-                step="0.01"
-                inputmode="decimal"
-                placeholder="0.00"
-                aria-describedby="settingsDeliveryFeeHelp"
-                required
-              />
+            <small id="settingsDeliveryPricingHelp">
+              Distance pricing uses radius distance from the restaurant address to the customer's pinned delivery location.
+            </small>
           </div>
 
-          <div class="settings-info-card">
+          <div
+            id="settingsFixedPricingFields"
+            class="settings-delivery-pricing-fields settings-field-full"
+          >
+            <div class="settings-field">
+              <label for="settingsDeliveryFee">
+                Delivery Fee
+                <span aria-hidden="true">*</span>
+              </label>
+
+              <div class="settings-money-input">
+                <span>₱</span>
+
+                <input
+                  type="number"
+                  id="settingsDeliveryFee"
+                  min="0"
+                  max="9999"
+                  step="0.01"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <small>
+                Use ₱0.00 only when this restaurant offers free delivery.
+              </small>
+            </div>
+          </div>
+
+          <div
+            id="settingsDistancePricingFields"
+            class="settings-delivery-pricing-fields settings-field-full"
+            hidden
+          >
+            <div class="settings-form-grid">
+              <div class="settings-field">
+                <label for="settingsDeliveryBaseFee">
+                  Base Delivery Fee
+                </label>
+
+                <div class="settings-money-input">
+                  <span>₱</span>
+                  <input
+                    type="number"
+                    id="settingsDeliveryBaseFee"
+                    min="0"
+                    max="9999"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="70.00"
+                  />
+                </div>
+              </div>
+
+              <div class="settings-field">
+                <label for="settingsDeliveryIncludedKm">
+                  Included Distance
+                </label>
+
+                <div class="settings-unit-input">
+                  <input
+                    type="number"
+                    id="settingsDeliveryIncludedKm"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value="5"
+                  />
+                  <span>km</span>
+                </div>
+              </div>
+
+              <div class="settings-field settings-field-full">
+                <label for="settingsDeliveryExtraFeePerKm">
+                  Additional Fee Per Succeeding KM
+                </label>
+
+                <div class="settings-money-input">
+                  <span>₱</span>
+                  <input
+                    type="number"
+                    id="settingsDeliveryExtraFeePerKm"
+                    min="0.01"
+                    max="9999"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="10.00"
+                  />
+                </div>
+
+                <small>
+                  Example: ₱70 for the first 5 km, then +₱10 for each succeeding whole kilometer.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="settingsTieredPricingFields"
+            class="settings-delivery-pricing-fields settings-field-full"
+            hidden
+          >
+            <div class="settings-delivery-tier-heading">
+              <div>
+                <strong>Distance Tiers</strong>
+                <p>
+                  Set an exact fee for each distance range. The last tier is also the maximum delivery radius.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                id="settingsAddDeliveryTierBtn"
+                class="settings-secondary-action"
+              >
+                <i class="fa-solid fa-plus"></i>
+                Add Tier
+              </button>
+            </div>
+
+            <div
+              id="settingsDeliveryTiersContainer"
+              class="settings-delivery-tiers"
+            ></div>
+          </div>
+
+          <small
+            id="settingsDeliveryPricingError"
+            class="settings-hours-error settings-field-full"
+            aria-live="polite"
+          ></small>
+
+          <div class="settings-info-card settings-field-full">
             <div class="settings-info-icon">
               ℹ
             </div>
@@ -2284,8 +2416,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
               <strong>Restaurant-owned delivery</strong>
 
               <p>
-                The cashier cannot modify this fee while assigning
-                an internal restaurant rider.
+                The owner controls the delivery pricing policy. FoodConnect calculates the final fee at checkout, and the cashier or rider cannot alter it for an order.
               </p>
             </div>
           </div>
@@ -3943,7 +4074,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
   <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
   <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/owner_dashboard.js?v=20260817-staffux2"></script>
+<script src="../js/owner_dashboard.js?v=20260909-productimagefix1"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

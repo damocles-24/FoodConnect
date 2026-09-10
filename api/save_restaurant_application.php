@@ -26,6 +26,7 @@ session_set_cookie_params(
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
+require_once __DIR__ . "/delivery_pricing_helper.php";
 
 /* =========================================================
    RESPONSE HELPERS
@@ -34,7 +35,7 @@ require_once __DIR__ . "/ph_phone.php";
 function respond_json(
     array $data,
     int $statusCode = 200
-): void {
+): never {
     http_response_code(
         $statusCode
     );
@@ -62,7 +63,7 @@ function validation_response(
     array $errors,
     string $message =
         "Complete the required restaurant information."
-): void {
+): never {
     respond_json(
         [
             "success" => false,
@@ -256,6 +257,46 @@ $postalCode =
         "postal_code"
     );
 
+/*
+ * Keep the partner application street field unchanged so the wizard can
+ * repopulate it correctly, but build one complete address for the live
+ * restaurant and location calculations.
+ */
+$restaurantFullAddressParts = [];
+
+$appendAddressPart = static function (
+    string $part
+) use (&$restaurantFullAddressParts): void {
+    $part = trim($part);
+
+    if ($part === "") {
+        return;
+    }
+
+    $current = strtolower(
+        implode(", ", $restaurantFullAddressParts)
+    );
+
+    if (
+        $current !== "" &&
+        str_contains($current, strtolower($part))
+    ) {
+        return;
+    }
+
+    $restaurantFullAddressParts[] = $part;
+};
+
+$appendAddressPart($restaurantAddress);
+$appendAddressPart($barangay);
+$appendAddressPart($cityMunicipality);
+$appendAddressPart($province);
+$appendAddressPart($postalCode);
+$appendAddressPart("Philippines");
+
+$restaurantFullAddress =
+    implode(", ", $restaurantFullAddressParts);
+
 /* =========================================================
    MONEY VALUES
    ========================================================= */
@@ -315,8 +356,72 @@ $deliveryOptions =
         )
     );
 
-if (!in_array("delivery", $deliveryOptions, true)) {
-    $deliveryFee = 0.0;
+$deliveryEnabled =
+    in_array(
+        "delivery",
+        $deliveryOptions,
+        true
+    );
+
+try {
+    $deliveryPricing =
+        fc_delivery_pricing_normalize(
+            $data,
+            $deliveryFee,
+            $deliveryEnabled
+        );
+} catch (InvalidArgumentException $error) {
+    validation_response(
+        [
+            "delivery_pricing" =>
+                $error->getMessage()
+        ],
+        $error->getMessage()
+    );
+}
+
+$deliveryFee =
+    (float) $deliveryPricing["legacy_fee"];
+
+$deliveryPricingType =
+    (string) $deliveryPricing["pricing_type"];
+
+$deliveryPricingJson =
+    (string) $deliveryPricing["pricing_json"];
+
+$restaurantPricingLatitude = null;
+$restaurantPricingLongitude = null;
+
+/*
+ * Distance-based methods need a stable restaurant origin.
+ * Validate/geocode it only on final submission so saving a draft
+ * does not depend on the external location provider.
+ */
+if (
+    $action === "submit" &&
+    $deliveryEnabled &&
+    $deliveryPricingType !== "fixed"
+) {
+    try {
+        $pricingCoordinates =
+            fc_delivery_pricing_geocode_address(
+                $restaurantFullAddress
+            );
+
+        $restaurantPricingLatitude =
+            (float) $pricingCoordinates["latitude"];
+
+        $restaurantPricingLongitude =
+            (float) $pricingCoordinates["longitude"];
+    } catch (RuntimeException $error) {
+        validation_response(
+            [
+                "restaurant_address" =>
+                    $error->getMessage()
+            ],
+            $error->getMessage()
+        );
+    }
 }
 
     /* =========================================================
@@ -935,6 +1040,8 @@ try {
                 business_hours_json = ?,
                 order_types_json = ?,
                 delivery_fee = ?,
+                delivery_pricing_type = ?,
+                delivery_pricing_json = ?,
                 application_status = 'draft',
                 rejection_reason = NULL,
                 submitted_at = NULL,
@@ -952,7 +1059,7 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssssssssssdii",
+        "sssssssssssssdssii",
         $restaurantName,
         $restaurantAddress,
         $restaurantContact,
@@ -967,6 +1074,8 @@ try {
         $businessHoursJson,
         $deliveryOptionsJson,
         $deliveryFee,
+        $deliveryPricingType,
+        $deliveryPricingJson,
         $applicationId,
         $ownerId
     );
@@ -1146,7 +1255,7 @@ try {
             $restaurantName,
             $restaurantDescription,
             $logoPath,
-            $restaurantAddress,
+            $restaurantFullAddress,
             $restaurantContact,
             $openingHours,
             $deliveryFee,
@@ -1175,6 +1284,19 @@ try {
                 "The private restaurant was not created correctly."
             );
         }
+
+        /*
+         * Save the live per-restaurant pricing policy. The existing
+         * tbl_restaurants.delivery_fee remains populated for old clients
+         * and as a safe fallback.
+         */
+        fc_delivery_pricing_upsert_active(
+            $conn,
+            $restaurantId,
+            $deliveryPricing,
+            $restaurantPricingLatitude,
+            $restaurantPricingLongitude
+        );
 
         $linkOwnerStmt =
             $conn->prepare("
