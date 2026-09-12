@@ -1,33 +1,56 @@
 <?php
-
-session_set_cookie_params(
-    0,
-    "/FoodConnect",
-    "",
-    false,
-    true
-);
-
 require_once __DIR__ . "/session_config.php";
-
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/name_helper.php";
+require_once __DIR__ . "/url_helper.php";
+
+/*
+ * Verification links must never be cached. This also prevents a browser from
+ * reusing an older redirect/page after a deployment.
+ */
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 $token = trim(
     (string) ($_GET["token"] ?? "")
 );
 
-$customerSuccessUrl =
-    "/FoodConnect/frontend/html/verified.html?status=ok";
+/*
+ * Build canonical URLs through url_helper.php. On foodconnect.store this
+ * resolves from the domain root (no legacy /FoodConnect prefix). The version
+ * parameter is unique per request so verified.html cannot be served from an
+ * old cached copy after deployment.
+ */
+$verificationPageVersion = (string) time();
 
-$ownerSuccessUrl =
-    "/FoodConnect/frontend/html/create_restaurant.html";
+$customerSuccessUrl = foodconnect_url(
+    "frontend/html/verified.html",
+    [
+        "status" => "ok",
+        "v" => $verificationPageVersion,
+    ]
+);
 
-$expiredUrl =
-    "/FoodConnect/frontend/html/verified.html?status=expired";
+$ownerSuccessUrl = foodconnect_url(
+    "frontend/html/create_restaurant.html"
+);
 
-$badUrl =
-    "/FoodConnect/frontend/html/verified.html?status=bad";
+$expiredUrl = foodconnect_url(
+    "frontend/html/verified.html",
+    [
+        "status" => "expired",
+        "v" => $verificationPageVersion,
+    ]
+);
+
+$badUrl = foodconnect_url(
+    "frontend/html/verified.html",
+    [
+        "status" => "bad",
+        "v" => $verificationPageVersion,
+    ]
+);
 
 function redirect_to(string $url): void
 {
@@ -72,7 +95,10 @@ $stmt->bind_param(
     $token
 );
 
-$stmt->execute();
+if (!$stmt->execute()) {
+    $stmt->close();
+    redirect_to($badUrl);
+}
 
 $user =
     $stmt
@@ -212,6 +238,13 @@ $_SESSION["restaurant_id"] =
 
 $_SESSION["display_name"] =
     formatUserName($user);
+
+/*
+ * Make sure the session is written before the browser is redirected to the
+ * frontend. This removes a race where the next page can load before the
+ * verified login session is persisted on some hosting setups.
+ */
+session_write_close();
 
 /* =========================================================
    REDIRECT BASED ON ROLE

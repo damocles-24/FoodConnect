@@ -2197,148 +2197,185 @@ function normalizeBrowseCategory(
     burgir: "burgers",
     chicken: "chicken",
     chickens: "chicken",
-    drink: "drinks",
-    drinks: "drinks",
-    beverage: "drinks",
-    beverages: "drinks",
-    "milk tea": "milktea",
-    milktea: "milktea",
-    "bubble tea": "milktea",
-    boba: "milktea",
     pizza: "pizza",
     pizzas: "pizza",
     coffee: "coffee",
     coffees: "coffee",
+    "milk tea": "milktea",
+    milktea: "milktea",
+    "bubble tea": "milktea",
+    boba: "milktea",
+    drink: "drinks",
+    drinks: "drinks",
+    beverage: "drinks",
+    beverages: "drinks",
+    japanese: "japanese",
     filipino: "filipino",
     pinoy: "filipino",
     dessert: "dessert",
-    desserts: "dessert"
+    desserts: "dessert",
+    pasta: "pasta"
   };
 
   return aliases[normalized] ||
     normalized;
 }
 
-function flattenBrowseValues(
-  values
+function normalizeMenuCategory(
+  value = ""
 ) {
-  const output = [];
-
-  values.flat(Infinity).forEach(
-    (value) => {
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-        return;
-      }
-
-      if (
-        typeof value === "object" &&
-        !Array.isArray(value)
-      ) {
-        output.push(
-          ...Object.values(value)
-        );
-
-        return;
-      }
-
-      output.push(value);
-    }
-  );
-
-  return output;
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[–—_-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
-function inferBrowseCategories(
-  ...values
+/*
+ * FoodConnect browse categories are intentionally mapped from
+ * tbl_products.category only. Product names, descriptions, and
+ * restaurant names are NOT used to decide a restaurant's category.
+ *
+ * This prevents false matches such as:
+ * - "Coffee Caramel Pizza" making a pizza restaurant a Coffee shop
+ * - the word "Cafe" in a restaurant name making it a Coffee category
+ * - generic "Rice Meals" making a Japanese/Korean restaurant Filipino
+ */
+function mapMenuCategoryToBrowseCategories(
+  rawCategory = ""
 ) {
-  const text =
-    flattenBrowseValues(values)
-      .map(value => String(value))
-      .join(" ")
-      .toLowerCase();
+  const category =
+    normalizeMenuCategory(
+      rawCategory
+    );
+
+  if (!category) {
+    return [];
+  }
 
   const categories =
     new Set();
 
-  if (/\bburg(?:er|ers|ir)\b/.test(text)) {
+  /* Burgers */
+  if (
+    /(^|\b)burgers?(\b|$)/.test(category) ||
+    category === "burger series"
+  ) {
     categories.add("burgers");
   }
 
+  /* Chicken */
   if (
-    /\bchicken\b|\bchickens\b|\bchicken wings?\b|\binasal\b/.test(
-      text
-    )
+    /(^|\b)chicken(\b|$)/.test(category) ||
+    /(^|\b)chicken wings?(\b|$)/.test(category)
   ) {
     categories.add("chicken");
   }
 
-  if (
-    /\bdrinks?\b|\bbeverages?\b|\bjuice\b|\bsoda\b|\bfruit tea\b|\btea based\b|\bcoffee\b|\blatte\b|\bespresso\b|\bamericano\b|\bfrappe\b|\bshake\b|\byogurt\b|\bboba\b|\bmilk tea\b|\bmilktea\b/.test(
-      text
-    )
-  ) {
-    categories.add("drinks");
-  }
+  /* Pizza. Some existing Galley categories use flavor names only. */
+  const knownPizzaCategories =
+    new Set([
+      "classic flavors",
+      "galley's favorites",
+      "neopolitan style flavors"
+    ]);
 
   if (
-    /\bmilk tea\b|\bmilktea\b|\bbubble tea\b|\bboba\b/.test(
-      text
-    )
+    /(^|\b)pizzas?(\b|$)/.test(category) ||
+    knownPizzaCategories.has(category)
   ) {
-    categories.add("milktea");
-    categories.add("drinks");
-  }
-
-  if (/\bpizza\b|\bpizzas\b/.test(text)) {
     categories.add("pizza");
   }
 
+  /* Coffee: category field only; explicitly exclude Non Coffee. */
   if (
-    /\bcoffee\b|\bcafe\b|\bespresso\b|\bamericano\b|\blatte\b|\bmacchiato\b|\bmachiatto\b|\bpour[ -]?over\b/.test(
-      text
-    )
+    !/(^|\b)non coffee(\b|$)/.test(category) &&
+    /(^|\b)coffee(\b|$)/.test(category)
   ) {
     categories.add("coffee");
     categories.add("drinks");
   }
 
+  /* Milk tea is both a specific category and a drink. */
   if (
-    /\bfilipino\b|\bpinoy\b|\bsilog\b|\brice meals?\b|\bbudget meals?\b|\bulam\b|\bkambing\b|\bpansit\b|\bpancit\b|\bbilao\b|\bshort orders?\b|\bpinakbet\b|\bhalo[ -]?halo\b|\badobo\b|\bsisig\b|\bbulalo\b|\bcaldereta\b|\bkare[ -]?kare\b/.test(
-      text
-    )
+    /(^|\b)milk ?tea(\b|$)/.test(category) ||
+    /(^|\b)bubble tea(\b|$)/.test(category) ||
+    /(^|\b)boba(\b|$)/.test(category)
+  ) {
+    categories.add("milktea");
+    categories.add("drinks");
+  }
+
+  /* General drink menu categories. */
+  if (
+    /(^|\b)drinks?(\b|$)/.test(category) ||
+    /(^|\b)beverages?(\b|$)/.test(category) ||
+    /(^|\b)non coffee(\b|$)/.test(category) ||
+    /(^|\b)lemonades?(\b|$)/.test(category) ||
+    /(^|\b)fruit tea(\b|$)/.test(category) ||
+    /(^|\b)tea based(\b|$)/.test(category) ||
+    /(^|\b)sodas?(\b|$)/.test(category) ||
+    /(^|\b)frappe(\b|$)/.test(category) ||
+    /(^|\b)yogurt(\b|$)/.test(category)
+  ) {
+    categories.add("drinks");
+  }
+
+  /* Japanese menu categories. */
+  if (
+    /(^|\b)sushi(\b|$)/.test(category) ||
+    /(^|\b)takoyaki(\b|$)/.test(category) ||
+    /(^|\b)okonomiyaki(\b|$)/.test(category) ||
+    /(^|\b)bento(\b|$)/.test(category) ||
+    /(^|\b)ramen(\b|$)/.test(category) ||
+    /(^|\b)tempura(\b|$)/.test(category)
+  ) {
+    categories.add("japanese");
+  }
+
+  /*
+   * Filipino uses unmistakably Filipino menu-category names.
+   * "Rice Meals" is intentionally NOT included because it is also
+   * used by Alon's Japanese-Korean menu.
+   */
+  if (
+    /(^|\b)filipino(\b|$)/.test(category) ||
+    /(^|\b)pinoy(\b|$)/.test(category) ||
+    /(^|\b)silog(\b|$)/.test(category) ||
+    /(^|\b)budget meal(s)?(\b|$)/.test(category) ||
+    /(^|\b)ulam(\b|$)/.test(category) ||
+    /(^|\b)kambing(\b|$)/.test(category) ||
+    /(^|\b)pansit(\b|$)/.test(category) ||
+    /(^|\b)pancit(\b|$)/.test(category) ||
+    /(^|\b)bilao(\b|$)/.test(category) ||
+    /(^|\b)boodle(\b|$)/.test(category) ||
+    /(^|\b)short orders?(\b|$)/.test(category) ||
+    /(^|\b)lutong bahay(\b|$)/.test(category)
   ) {
     categories.add("filipino");
   }
 
+  /* Desserts / baked sweets. Dessert Pizza qualifies for both. */
   if (
-    /\bdesserts?\b|\bcake\b|\bcakes\b|\bice cream\b|\bleche ?flan\b|\bhalo[ -]?halo\b|\bpastr(?:y|ies)\b|\bsweets?\b/.test(
-      text
-    )
+    /(^|\b)desserts?(\b|$)/.test(category) ||
+    /(^|\b)baked goods?(\b|$)/.test(category) ||
+    /(^|\b)pastr(y|ies)(\b|$)/.test(category) ||
+    /(^|\b)cakes?(\b|$)/.test(category) ||
+    /(^|\b)sweets?(\b|$)/.test(category) ||
+    /(^|\b)ice cream(\b|$)/.test(category)
   ) {
     categories.add("dessert");
   }
 
-  return [...categories];
-}
+  /* Pasta */
+  if (
+    /(^|\b)pasta(\b|$)/.test(category) ||
+    /(^|\b)spaghetti(\b|$)/.test(category)
+  ) {
+    categories.add("pasta");
+  }
 
-function getRestaurantSeedBrowseCategories(
-  restaurant = {}
-) {
-  return inferBrowseCategories(
-    restaurant.name,
-    restaurant.description,
-    restaurant.category,
-    restaurant.categories,
-    restaurant.food_category,
-    restaurant.food_categories,
-    restaurant.cuisine,
-    restaurant.cuisines,
-    restaurant.tags
-  );
+  return [...categories];
 }
 
 function getCardBrowseCategories(
@@ -2518,14 +2555,13 @@ async function loadRestaurantBrowseMetadata(
           return;
         }
 
-        inferBrowseCategories(
-          rawCategory,
-          product.product_name,
-          product.name,
-          product.description
+        mapMenuCategoryToBrowseCategories(
+          rawCategory
         ).forEach(
-          category =>
-            categorySet.add(category)
+          browseCategory =>
+            categorySet.add(
+              browseCategory
+            )
         );
 
         menuSearchTerms.push(
@@ -2672,10 +2708,8 @@ function createRestaurantCard(
     restaurant.description || ""
   ].join(" ");
 
-  article.dataset.categories =
-    getRestaurantSeedBrowseCategories(
-      restaurant
-    ).join(",");
+  /* Browse categories are populated from tbl_products.category. */
+  article.dataset.categories = "";
 
   article.dataset.menuSearchText = "";
 
@@ -3119,6 +3153,43 @@ function filterRestaurantsPage(
         ? "Try another search or category to see unavailable restaurants."
         : "All listed restaurants are currently available.";
   }
+}
+
+
+function scrollToRestaurantsPageResults() {
+  const hasAvailableMatch =
+    restaurantsPageCards.some(
+      (card) =>
+        card.style.display !== "none"
+    );
+
+  const hasClosedMatch =
+    closedRestaurantsPageCards.some(
+      (card) =>
+        card.style.display !== "none"
+    );
+
+  const target =
+    hasAvailableMatch
+      ? document.querySelector(
+          ".restaurants-page-list"
+        )
+      : hasClosedMatch
+        ? document.querySelector(
+            ".closed-restaurants-section"
+          )
+        : document.querySelector(
+            ".restaurants-page-list"
+          );
+
+  window.requestAnimationFrame(
+    () => {
+      target?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  );
 }
 
 
@@ -5620,6 +5691,7 @@ restaurantsPageCategories.forEach(
         await ensureRestaurantBrowseMetadata();
 
         renderRestaurantsPageCards();
+        scrollToRestaurantsPageResults();
       }
     );
   }

@@ -517,7 +517,6 @@ html[data-theme="dark"] {
   .staff-close-btn,
   .restock-close-btn,
   .activity-clear-btn,
-  .partner-request-clear-button,
   #copyStaffAccessCode,
   #backCustomerCancelModal
 ) {
@@ -626,4 +625,17 @@ img[src*="logofoodconnect-Photoroom.png"] {
 .footer img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
+}
+
+/* =========================================================
+   CART DISABLED ACTION TEXT CONTRAST FIX - 2026-09-12
+   Keep the existing cart layout, button backgrounds, and
+   disabled behavior. Only force readable white text/icons.
+========================================================= */
+body[data-fc-page="customer-cart"] .checkout-button:disabled,
+body[data-fc-page="customer-cart"] .clear-cart-button:disabled,
+body[data-fc-page="customer-cart"] .checkout-button:disabled :is(span, i),
+body[data-fc-page="customer-cart"] .clear-cart-button:disabled :is(span, i) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }

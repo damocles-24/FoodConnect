@@ -5046,3 +5046,137 @@ html[data-theme="dark"] body[data-fc-page="customer-home"] .restaurants-page-gri
     radial-gradient(circle at 25% 20%, rgba(255,255,255,.05), transparent 25%),
     linear-gradient(135deg, #1c2026, #15181d);
 }
+
+/* =========================================================
+   VIEW ALL RESTAURANTS - DESKTOP HEADER / SEARCH ALIGNMENT
+   Desktop only. Mobile/tablet layout remains unchanged.
+========================================================= */
+@media (min-width: 1101px) {
+  .restaurants-page-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+    column-gap: clamp(36px, 4vw, 64px);
+    align-items: start;
+  }
+
+  .restaurants-page-heading {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    position: relative;
+    top: 0;
+    margin-bottom: 48px;
+  }
+
+  .restaurants-page-top {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin-bottom: 48px;
+  }
+
+  .restaurants-page-search {
+    width: 100%;
+    margin-left: 0;
+    position: relative;
+    top: 0;
+  }
+
+  .restaurants-page-categories,
+  .restaurants-page-list,
+  .closed-restaurants-section {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* =========================================================
+   VIEW ALL RESTAURANTS - DESKTOP SEARCH ALIGNMENT V2
+   Fixes the desktop-only floating/high search bar by making
+   the heading and search true peers in one grid row.
+   Mobile/tablet rules remain unchanged.
+========================================================= */
+@media (min-width: 1101px) {
+  .restaurants-page-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+    column-gap: clamp(36px, 4vw, 64px);
+    row-gap: 48px;
+    align-items: center;
+  }
+
+  .restaurants-page-heading {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    position: static;
+    top: auto;
+    margin: 0;
+  }
+
+  .restaurants-page-top {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+
+  .restaurants-page-search {
+    width: 100%;
+    margin: 0;
+    position: static;
+    top: auto;
+  }
+
+  .restaurants-page-categories {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .restaurants-page-list,
+  .closed-restaurants-section {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   VIEW ALL RESTAURANTS - DESKTOP SEARCH POSITION V3
+   Desktop: search sits centered directly below the site header.
+   The page title follows underneath. Mobile/tablet are unchanged.
+========================================================= */
+@media (min-width: 1101px) {
+  .restaurants-page-container {
+    display: block;
+  }
+
+  .restaurants-page-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 0 42px;
+  }
+
+  .restaurants-page-search {
+    width: min(720px, 72vw);
+    max-width: 720px;
+    margin: 0 auto;
+    position: static;
+    top: auto;
+  }
+
+  .restaurants-page-heading {
+    position: static;
+    top: auto;
+    margin: 0 0 48px;
+  }
+
+  .restaurants-page-categories,
+  .restaurants-page-list,
+  .closed-restaurants-section {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}

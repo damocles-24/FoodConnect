@@ -173,6 +173,10 @@ $sql = "
     INNER JOIN tbl_users owner
         ON owner.user_id = r.owner_id
         AND owner.role = 'owner'
+
+    INNER JOIN tbl_partner_applications approved_application
+        ON approved_application.owner_id = r.owner_id
+        AND approved_application.application_status = 'approved'
 ";
 
 if ($search !== "") {
@@ -328,7 +332,11 @@ $summaryResult = $conn->query("
             0
         ) AS temporarily_unavailable
 
-    FROM tbl_restaurants
+    FROM tbl_restaurants r
+
+    INNER JOIN tbl_partner_applications approved_application
+        ON approved_application.owner_id = r.owner_id
+        AND approved_application.application_status = 'approved'
 ");
 
 if (!$summaryResult) {

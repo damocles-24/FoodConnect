@@ -108,9 +108,9 @@ $sql = "
 
 if ($status === "all") {
     $sql .= "
-        WHERE pa.application_status IN ('submitted', 'needs_changes', 'draft', 'email_pending')
+        WHERE pa.application_status IN ('submitted', 'needs_changes', 'draft', 'email_pending', 'approved', 'rejected')
     ";
-} elseif ($status !== "approved") {
+} else {
     $sql .= "
         WHERE pa.application_status = ?
     ";
@@ -145,7 +145,7 @@ if (!$stmt) {
     ], 500);
 }
 
-if ($status !== "all" && $status !== "approved") {
+if ($status !== "all") {
     $stmt->bind_param(
         "s",
         $status

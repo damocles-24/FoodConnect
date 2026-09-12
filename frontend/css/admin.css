@@ -1438,171 +1438,6 @@ html[data-theme="dark"] .application-review-panel {
 }
 
 /* =========================
-   PARTNER REQUEST MODAL
-========================= */
-
-.partner-request-rejection-panel {
-  margin-top: 14px;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--background);
-}
-
-.partner-request-rejection-header h3 {
-  margin: 0 0 3px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.partner-request-rejection-header p {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.partner-request-rejection-group {
-  margin-bottom: 14px;
-}
-
-.partner-request-rejection-group label {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
-}
-
-.partner-request-rejection-group textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
-  resize: vertical;
-  font-size: 13px;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.partner-request-rejection-group textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-subtle);
-}
-
-.partner-request-rejection-help {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.partner-request-rejection-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.partner-request-rejection-message {
-  min-height: 20px;
-  margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.partner-request-rejection-message.error {
-  color: var(--red);
-}
-
-.partner-request-success-panel {
-  text-align: center;
-  padding: 16px 0 8px;
-}
-
-.partner-request-success-icon {
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  background: var(--green-soft);
-  color: var(--green);
-  font-size: 24px;
-}
-
-.partner-request-success-heading h2 {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.partner-request-success-heading p {
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
-  max-width: 500px;
-  margin: 0 auto 16px;
-}
-
-.partner-request-email-result {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  text-align: left;
-  max-width: 500px;
-  margin: 0 auto 16px;
-}
-
-.partner-request-email-result.success {
-  background: var(--green-soft);
-  border: 1px solid #bce7cb;
-}
-
-.partner-request-email-result.warning {
-  background: var(--yellow-soft);
-  border: 1px solid #fde68a;
-}
-
-.partner-request-email-result i {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.partner-request-email-result.success i {
-  color: var(--green);
-}
-
-.partner-request-email-result.warning i {
-  color: var(--yellow);
-}
-
-.partner-request-email-result strong {
-  display: block;
-  font-size: 13px;
-}
-
-.partner-request-email-result p {
-  margin: 1px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.partner-request-success-actions {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/* =========================
    RESTAURANT MANAGEMENT
 ========================= */
 
@@ -2304,152 +2139,6 @@ html[data-theme="dark"] .application-review-panel {
 }
 
 /* =========================
-   PARTNER REQUESTS
-========================= */
-
-.partner-request-toolbar {
-  display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(140px, 170px) auto auto;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--background);
-  margin-bottom: 14px;
-}
-
-.partner-request-search-group {
-  position: relative;
-  min-width: 0;
-}
-
-.partner-request-search-group > i {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  z-index: 1;
-  color: var(--muted-light);
-  font-size: 13px;
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-
-#partnerRequestSearchInput {
-  width: 100%;
-  min-height: 38px;
-  padding: 0 12px 0 36px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  outline: none;
-  color: var(--text);
-  background: var(--surface);
-  font-size: 12px;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-#partnerRequestSearchInput::placeholder {
-  color: var(--muted-light);
-}
-
-#partnerRequestSearchInput:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-subtle);
-}
-
-.partner-request-status-filter {
-  width: 100%;
-  min-height: 38px;
-  padding: 0 30px 0 10px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  outline: none;
-  color: var(--text);
-  background-color: var(--surface);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.partner-request-status-filter:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-subtle);
-}
-
-.partner-request-search-button,
-.partner-request-clear-button {
-  min-width: 90px;
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0 14px;
-  border-radius: var(--radius);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  transition: all var(--transition);
-}
-
-.partner-request-search-button {
-  border: none;
-  color: #ffffff;
-  background: var(--primary);
-}
-
-.partner-request-search-button:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(245, 130, 32, 0.3);
-}
-
-.partner-request-clear-button {
-  border: 1.5px solid var(--border);
-  color: var(--text-secondary);
-  background: var(--surface);
-}
-
-.partner-request-clear-button:hover {
-  border-color: var(--muted-light);
-  background: var(--surface-hover);
-}
-
-.partner-request-result-count {
-  margin-bottom: 10px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.partner-request-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  margin-top: 14px;
-}
-
-.partner-request-pagination-info {
-  text-align: center;
-}
-
-.partner-request-pagination-info span {
-  display: block;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.partner-request-pagination-info small {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-/* =========================
    FOODCONNECT THEME - LIGHT
 ========================= */
 
@@ -2568,9 +2257,7 @@ html[data-theme="dark"] body[data-fc-page="admin"] :is(
   .table-wrapper,
   .modal-content,
   .admin-table,
-  .partner-request-toolbar,
   .application-modal,
-  .partner-request-rejection-panel
 ) {
   background: var(--surface);
   color: var(--text);
@@ -2714,15 +2401,7 @@ html[data-theme="dark"] body[data-fc-page="admin"] .application-review-panel {
   border-color: rgba(245, 130, 32, 0.15);
 }
 
-html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result.success {
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.2);
-}
 
-html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result.warning {
-  background: rgba(251, 191, 36, 0.08);
-  border-color: rgba(251, 191, 36, 0.2);
-}
 
 /* =========================
    RESPONSIVE - LAPTOP
@@ -2733,30 +2412,6 @@ html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result
   .platform-user-summary-grid,
   .activity-log-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .partner-request-toolbar {
-    grid-template-columns: minmax(180px, 1fr) minmax(130px, 160px) auto;
-    grid-template-areas:
-      "search status searchButton"
-      "search search clearButton";
-  }
-
-  .partner-request-search-group {
-    grid-area: search;
-  }
-
-  .partner-request-status-filter {
-    grid-area: status;
-  }
-
-  .partner-request-search-button {
-    grid-area: searchButton;
-  }
-
-  .partner-request-clear-button {
-    grid-area: clearButton;
-    justify-self: end;
   }
 }
 
@@ -2803,30 +2458,6 @@ html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result
   .details-grid,
   .application-details-grid {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .partner-request-toolbar {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 12px;
-  }
-
-  .partner-request-search-group,
-  .partner-request-status-filter,
-  .partner-request-search-button,
-  .partner-request-clear-button {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .partner-request-clear-button {
-    justify-self: stretch;
-  }
-
-  .partner-request-pagination {
-    flex-wrap: wrap;
-    justify-content: center;
   }
 
   .section-heading-row {
@@ -2934,14 +2565,6 @@ html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result
   }
 
   .modal-actions button {
-    width: 100%;
-  }
-
-  .partner-request-rejection-actions {
-    flex-direction: column;
-  }
-
-  .partner-request-rejection-actions button {
     width: 100%;
   }
 
@@ -3075,12 +2698,6 @@ html[data-theme="dark"] body[data-fc-page="admin"] .partner-request-email-result
     font-weight: 800;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-  }
-
-  .partner-request-pagination {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
   }
 
   .admin-login-card {
@@ -4070,3 +3687,39 @@ img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
 }
+
+/* =========================================================
+   UI FIX: ADMIN ACTIVITY LOGS - MOBILE TOOLBAR
+   Fixes the large blank gap caused by flex-basis becoming
+   vertical when the toolbar switches to column layout.
+   ========================================================= */
+@media (max-width: 820px) {
+  .activity-log-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .activity-log-search-group {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+  }
+
+  .activity-log-search-group input {
+    display: block;
+    width: 100%;
+  }
+
+  .activity-log-filter,
+  .activity-log-search-button,
+  #clearActivityLogFiltersButton {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+  }
+}
+

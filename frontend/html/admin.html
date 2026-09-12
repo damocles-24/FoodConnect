@@ -16,7 +16,7 @@
 
   <link
     rel="stylesheet"
-    href="../css/admin.css?v=20260829-attention2"
+    href="../css/admin.css?v=20260912-admin-cleanup1"
   >
 
   <link
@@ -24,7 +24,7 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   >
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260912-admin-cleanup1">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
 </head>
 
@@ -355,24 +355,7 @@
           <i class="fa-solid fa-chart-pie"></i>
           <span>Dashboard</span>
         </button>
-
-        <button
-          class="nav-item"
-          data-section="partnerRequestsSection"
-        >
-          <i class="fa-solid fa-handshake"></i>
-
-          <span>Partner Requests</span>
-
-          <span
-            id="pendingPartnerRequestsBadge"
-            class="nav-badge hidden"
-          >
-            0
-          </span>
-        </button>
-
-        <button
+<button
           class="nav-item"
           data-section="applicationsSection"
         >
@@ -625,24 +608,7 @@
             </div>
 
             <div class="dashboard-attention-list">
-              <button
-                type="button"
-                id="dashboardPartnerRequestsAttentionItem"
-                class="dashboard-attention-item dashboard-quick-action hidden"
-                data-dashboard-target="partnerRequestsSection"
-              >
-                <span class="dashboard-attention-icon blue">
-                  <i class="fa-solid fa-handshake"></i>
-                </span>
-                <span class="dashboard-attention-copy">
-                  <strong>Partner requests</strong>
-                  <small>Businesses waiting for administrator review</small>
-                </span>
-                <span id="dashboardPendingPartnerRequestsAttention" class="dashboard-attention-count">0</span>
-                <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
-              </button>
-
-              <button
+<button
                 type="button"
                 id="dashboardApplicationsAttentionItem"
                 class="dashboard-attention-item dashboard-quick-action hidden"
@@ -681,241 +647,6 @@
 
       </section>
 
-      <!-- =========================
-           PARTNER REQUESTS
-      ========================== -->
-
-      <section
-        id="partnerRequestsSection"
-        class="dashboard-section"
-      >
-        <div class="summary-grid">
-
-          <article class="summary-card">
-            <div class="summary-icon orange">
-              <i class="fa-solid fa-clock"></i>
-            </div>
-
-            <div>
-              <span>Pending Requests</span>
-
-              <strong id="pendingPartnerRequestsCount">
-                0
-              </strong>
-            </div>
-          </article>
-
-          <article class="summary-card">
-            <div class="summary-icon green">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-
-            <div>
-              <span>Approved Requests</span>
-
-              <strong id="approvedPartnerRequestsCount">
-                0
-              </strong>
-            </div>
-          </article>
-
-          <article class="summary-card">
-            <div class="summary-icon red">
-              <i class="fa-solid fa-circle-xmark"></i>
-            </div>
-
-            <div>
-              <span>Rejected Requests</span>
-
-              <strong id="rejectedPartnerRequestsCount">
-                0
-              </strong>
-            </div>
-          </article>
-
-          <article class="summary-card">
-            <div class="summary-icon blue">
-              <i class="fa-solid fa-handshake"></i>
-            </div>
-
-            <div>
-              <span>Total Requests</span>
-
-              <strong id="totalPartnerRequestsCount">
-                0
-              </strong>
-            </div>
-          </article>
-
-        </div>
-
-        <div class="content-card">
-
-          <div class="card-heading applications-heading">
-            <div>
-              <h2>Partner Requests</h2>
-
-              <p>
-                Review businesses requesting permission
-                to become FoodConnect restaurant partners.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              id="refreshPartnerRequestsButton"
-              class="secondary-button"
-            >
-              <i class="fa-solid fa-rotate"></i>
-              Refresh
-            </button>
-          </div>
-
-          <div class="partner-request-toolbar">
-
-            <div class="partner-request-search-group">
-              <i class="fa-solid fa-magnifying-glass"></i>
-
-              <input
-                type="search"
-                id="partnerRequestSearchInput"
-                placeholder="Search restaurant, owner, or email..."
-                autocomplete="off"
-                maxlength="100"
-              >
-            </div>
-
-            <select
-              id="partnerRequestStatusFilter"
-              class="partner-request-status-filter"
-              aria-label="Filter partner requests by status"
-            >
-              <option value="all">
-                All Statuses
-              </option>
-
-              <option value="pending">
-                Pending
-              </option>
-
-              <option value="approved">
-                Approved
-              </option>
-
-              <option value="rejected">
-                Rejected
-              </option>
-            </select>
-
-            <button
-              type="button"
-              id="searchPartnerRequestsButton"
-              class="primary-button partner-request-search-button"
-            >
-              <i class="fa-solid fa-magnifying-glass"></i>
-              Search
-            </button>
-
-            <button
-              type="button"
-              id="clearPartnerRequestSearchButton"
-              class="secondary-button partner-request-clear-button"
-            >
-              <i class="fa-solid fa-xmark"></i>
-              Clear
-            </button>
-
-          </div>
-
-          <div
-            id="partnerRequestResultCount"
-            class="partner-request-result-count"
-          >
-            0 requests
-          </div>
-
-          <div
-            id="partnerRequestsLoading"
-            class="table-loading hidden"
-          >
-            Loading partner requests...
-          </div>
-
-          <p
-            id="partnerRequestsMessage"
-            class="form-message"
-          ></p>
-
-          <div
-            id="partnerRequestsEmpty"
-            class="empty-placeholder hidden"
-          >
-            <i class="fa-solid fa-handshake"></i>
-
-            <h3>No partner requests</h3>
-
-            <p>
-              Partner requests will appear here.
-            </p>
-          </div>
-
-          <div
-            id="partnerRequestsTableWrapper"
-            class="table-wrapper hidden"
-          >
-            <table class="admin-table partner-requests-table">
-              <thead>
-                <tr>
-                  <th>Restaurant</th>
-                  <th>Owner</th>
-                  <th>Email</th>
-                  <th>Submitted</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody
-                id="partnerRequestsTableBody"
-              ></tbody>
-            </table>
-          </div>
-
-          <div
-            id="partnerRequestPagination"
-            class="partner-request-pagination hidden"
-          >
-            <button
-              type="button"
-              id="partnerRequestPreviousButton"
-              class="secondary-button"
-            >
-              <i class="fa-solid fa-chevron-left"></i>
-              Previous
-            </button>
-
-            <div class="partner-request-pagination-info">
-              <span id="partnerRequestPageInfo">
-                Page 1 of 1
-              </span>
-
-              <small id="partnerRequestRangeInfo">
-                Showing 0–0 of 0
-              </small>
-            </div>
-
-            <button
-              type="button"
-              id="partnerRequestNextButton"
-              class="secondary-button"
-            >
-              Next
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
-          </div>
-
-        </div>
-      </section>
 
       <!-- RESTAURANT APPLICATIONS -->
 
@@ -1776,29 +1507,8 @@
   </div>
 </div>
 
-<!-- PARTNER REQUEST MODAL -->
-
-<div
-  id="partnerRequestModal"
-  class="modal-overlay hidden"
->
-  <div class="application-modal">
-
-    <button
-      type="button"
-      id="closePartnerRequestModal"
-      class="modal-close"
-      aria-label="Close partner request details"
-    >
-      &times;
-    </button>
-
-    <div id="partnerRequestModalContent"></div>
-
-  </div>
-</div>
 
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/admin.js?v=20260829-attention2"></script>
+<script src="../js/admin.js?v=20260912-multimenu1"></script>
 </body>
 </html>

@@ -16,11 +16,60 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260910-passwordtoggle1">
+<link rel="stylesheet" href="style.css?v=20260912-restaurants-desktop-search3">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
 <link rel="stylesheet" href="frontend/css/foodconnect-theme.css?v=20260903-finalroot1">
+
+<style id="restaurants-directory-desktop-search-position-fix">
+  
+/* Final desktop/tablet-directory placement fix.
+   Keep mobile (<=800px) exactly as the existing responsive layout. */
+@media (min-width: 801px) {
+  body[data-fc-page="customer-home"] #restaurants-page.restaurants-page-view {
+    padding-top: 28px !important;
+  }
+
+  body[data-fc-page="customer-home"] #restaurants-page .restaurants-page-container {
+    display: block !important;
+  }
+
+  body[data-fc-page="customer-home"] #restaurants-page .restaurants-page-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 0 0 38px !important;
+    padding: 0 !important;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+  }
+
+  body[data-fc-page="customer-home"] #restaurants-page .restaurants-page-search {
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    float: none !important;
+  }
+
+  body[data-fc-page="customer-home"] #restaurants-page .restaurants-page-heading {
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 0 48px !important;
+  }
+}
+</style>
 
 
   
@@ -313,7 +362,7 @@
           class="section-link"
         >
 
-          View Restaurants
+          View All Restaurants
 
           <i class="fa-solid fa-arrow-right"></i>
 
@@ -323,82 +372,54 @@
 
       <div class="category-grid">
 
-        <button
-          type="button"
-          class="category-card"
-          data-search="burger"
-          data-category="Burgers"
-        >
-
+        <button type="button" class="category-card" data-category="Burgers">
           <span>🍔</span>
-
           <strong>Burgers</strong>
-
         </button>
 
-        <button
-          type="button"
-          class="category-card"
-          data-search="chicken"
-          data-category="Chicken"
-        >
-
+        <button type="button" class="category-card" data-category="Chicken">
           <span>🍗</span>
-
           <strong>Chicken</strong>
-
         </button>
 
-        <button
-          type="button"
-          class="category-card"
-          data-search="drink"
-          data-category="Drinks"
-        >
+        <button type="button" class="category-card" data-category="Pizza">
+          <span>🍕</span>
+          <strong>Pizza</strong>
+        </button>
 
+        <button type="button" class="category-card" data-category="Coffee">
+          <span>☕</span>
+          <strong>Coffee</strong>
+        </button>
+
+        <button type="button" class="category-card" data-category="Milk Tea">
+          <span>🧋</span>
+          <strong>Milk Tea</strong>
+        </button>
+
+        <button type="button" class="category-card" data-category="Drinks">
           <span>🥤</span>
-
           <strong>Drinks</strong>
-
         </button>
 
-        <button
-          type="button"
-          class="category-card"
-          data-search="filipino"
-          data-category="Filipino"
-        >
+        <button type="button" class="category-card" data-category="Japanese">
+          <span>🍣</span>
+          <strong>Japanese</strong>
+        </button>
 
+        <button type="button" class="category-card" data-category="Filipino">
           <span>🍛</span>
-
           <strong>Filipino</strong>
-
         </button>
 
-        <button
-          type="button"
-          class="category-card"
-          data-search="dessert"
-          data-category="Dessert"
-        >
-
+        <button type="button" class="category-card" data-category="Desserts">
           <span>🍰</span>
-
           <strong>Desserts</strong>
-
         </button>
 
-        <button
-          type="button"
-          class="category-card"
-          data-search=""
-          data-category=""
-        >
-
-          <span>🍽️</span>
-
-          <strong>View All</strong>
-
+        <button type="button" class="category-card" data-category="Pasta">
+          <span>🍝</span>
+          <strong>Pasta</strong>
         </button>
 
       </div>
@@ -819,94 +840,59 @@
 
       <div class="restaurants-page-category-grid">
 
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Burgers"
-        >
-          <span class="restaurants-page-category-icon">
-            🍔
-          </span>
-
+        <button type="button" class="restaurants-page-category" data-category="Burgers">
+          <span class="restaurants-page-category-icon">🍔</span>
           <strong>Burgers</strong>
         </button>
 
-
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Chickens"
-        >
-          <span class="restaurants-page-category-icon">
-            🍗
-          </span>
-
-          <strong>Chickens</strong>
+        <button type="button" class="restaurants-page-category" data-category="Chicken">
+          <span class="restaurants-page-category-icon">🍗</span>
+          <strong>Chicken</strong>
         </button>
 
-
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Milktea"
-        >
-          <span class="restaurants-page-category-icon">
-            🧋
-          </span>
-
-          <strong>Milktea</strong>
-        </button>
-
-
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Pizza"
-        >
-          <span class="restaurants-page-category-icon">
-            🍕
-          </span>
-
+        <button type="button" class="restaurants-page-category" data-category="Pizza">
+          <span class="restaurants-page-category-icon">🍕</span>
           <strong>Pizza</strong>
         </button>
 
-
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Coffee"
-        >
-          <span class="restaurants-page-category-icon">
-            ☕
-          </span>
-
+        <button type="button" class="restaurants-page-category" data-category="Coffee">
+          <span class="restaurants-page-category-icon">☕</span>
           <strong>Coffee</strong>
         </button>
 
+        <button type="button" class="restaurants-page-category" data-category="Milk Tea">
+          <span class="restaurants-page-category-icon">🧋</span>
+          <strong>Milk Tea</strong>
+        </button>
 
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Filipino"
-        >
-          <span class="restaurants-page-category-icon">
-            🍛
-          </span>
+        <button type="button" class="restaurants-page-category" data-category="Drinks">
+          <span class="restaurants-page-category-icon">🥤</span>
+          <strong>Drinks</strong>
+        </button>
 
+        <button type="button" class="restaurants-page-category" data-category="Japanese">
+          <span class="restaurants-page-category-icon">🍣</span>
+          <strong>Japanese</strong>
+        </button>
+
+        <button type="button" class="restaurants-page-category" data-category="Filipino">
+          <span class="restaurants-page-category-icon">🍛</span>
           <strong>Filipino</strong>
         </button>
 
+        <button type="button" class="restaurants-page-category" data-category="Desserts">
+          <span class="restaurants-page-category-icon">🍰</span>
+          <strong>Desserts</strong>
+        </button>
 
-        <button
-          type="button"
-          class="restaurants-page-category"
-          data-category="Dessert"
-        >
-          <span class="restaurants-page-category-icon">
-            🍰
-          </span>
+        <button type="button" class="restaurants-page-category" data-category="Pasta">
+          <span class="restaurants-page-category-icon">🍝</span>
+          <strong>Pasta</strong>
+        </button>
 
-          <strong>Dessert</strong>
+        <button type="button" class="restaurants-page-category" data-category="">
+          <span class="restaurants-page-category-icon">🍽️</span>
+          <strong>All Restaurants</strong>
         </button>
 
       </div>
@@ -1808,6 +1794,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260910-passwordtoggle1" defer></script>
+<script src="homepage.js?v=20260912-categorymap1" defer></script>
 </body>
 </html>

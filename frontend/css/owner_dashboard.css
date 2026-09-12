@@ -10199,3 +10199,54 @@ html[data-theme="dark"] body[data-fc-page="owner"] .settings-delivery-tier-row {
   color: #f5f7fa;
   border-color: #343942;
 }
+
+/* =========================================================
+   FOODCONNECT STAFF ACCESS CODE THEME READABILITY FIX
+   Keeps the verification code and eye control readable in
+   both Light Mode and Dark Mode.
+========================================================= */
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value {
+  background: #f8fafc !important;
+  border-color: #d9dee7 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-access-code-value > span {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-code-icon-button {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d9dee7 !important;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .staff-code-icon-button:hover,
+html[data-theme="light"] body[data-fc-page="owner"] .staff-code-icon-button:focus-visible {
+  background: #fff4eb !important;
+  color: #d9650d !important;
+  border-color: rgba(244, 124, 30, 0.45) !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-access-code-value {
+  background: #111317 !important;
+  border-color: #343942 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-access-code-value > span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-code-icon-button {
+  background: #20242a !important;
+  color: #f5f7fa !important;
+  border-color: #343942 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-code-icon-button:hover,
+html[data-theme="dark"] body[data-fc-page="owner"] .staff-code-icon-button:focus-visible {
+  background: rgba(244, 124, 30, 0.10) !important;
+  color: #fb923c !important;
+  border-color: rgba(244, 124, 30, 0.45) !important;
+}

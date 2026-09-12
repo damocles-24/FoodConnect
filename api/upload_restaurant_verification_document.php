@@ -212,59 +212,13 @@ $original = function_exists("mb_substr")
 $conn->begin_transaction();
 
 try {
-    $old = $conn->prepare(
-        "SELECT document_id, file_path
-         FROM tbl_partner_application_documents
-         WHERE application_id = ? AND document_type = ?
-         LIMIT 1
-         FOR UPDATE"
-    );
-    $old->bind_param("is", $appId, $type);
-    $old->execute();
-    $existing = $old->get_result()->fetch_assoc();
-    $old->close();
+    $documentId = 0;
 
-    if ($existing) {
-        $update = $conn->prepare(
-            "UPDATE tbl_partner_application_documents
-             SET original_name = ?,
-                 file_path = ?,
-                 mime_type = ?,
-                 file_size = ?,
-                 uploaded_at = NOW()
-             WHERE document_id = ? AND application_id = ?"
-        );
-
-        $documentId = (int) $existing["document_id"];
-        $update->bind_param(
-            "sssiii",
-            $original,
-            $relative,
-            $mime,
-            $fileSize,
-            $documentId,
-            $appId
-        );
-        $update->execute();
-        $update->close();
-
-        $oldRelative = ltrim((string) $existing["file_path"], "/\\");
-        $oldPath = __DIR__ . "/" . $oldRelative;
-        $rootReal = realpath($verificationRoot);
-        $oldReal = is_file($oldPath) ? realpath($oldPath) : false;
-
-        if (
-            $rootReal !== false &&
-            $oldReal !== false &&
-            str_starts_with(
-                $oldReal,
-                rtrim($rootReal, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
-            ) &&
-            $oldReal !== realpath($absolute)
-        ) {
-            @unlink($oldReal);
-        }
-    } else {
+    if ($type === "restaurant_menu") {
+        /*
+         * Restaurant menus may span multiple images/pages.
+         * Each upload is stored as a separate verification document.
+         */
         $insert = $conn->prepare(
             "INSERT INTO tbl_partner_application_documents
                 (application_id, owner_id, document_type, original_name, file_path, mime_type, file_size)
@@ -281,7 +235,89 @@ try {
             $fileSize
         );
         $insert->execute();
+        $documentId = (int) $conn->insert_id;
         $insert->close();
+    } else {
+        /*
+         * BIR Form 2303 and Applicant ID remain single-file document types.
+         * Uploading them again replaces the previous file, matching the
+         * existing FoodConnect behavior.
+         */
+        $old = $conn->prepare(
+            "SELECT document_id, file_path
+             FROM tbl_partner_application_documents
+             WHERE application_id = ? AND document_type = ?
+             ORDER BY document_id DESC
+             LIMIT 1
+             FOR UPDATE"
+        );
+        $old->bind_param("is", $appId, $type);
+        $old->execute();
+        $existing = $old->get_result()->fetch_assoc();
+        $old->close();
+
+        if ($existing) {
+            $update = $conn->prepare(
+                "UPDATE tbl_partner_application_documents
+                 SET original_name = ?,
+                     file_path = ?,
+                     mime_type = ?,
+                     file_size = ?,
+                     uploaded_at = NOW()
+                 WHERE document_id = ? AND application_id = ?"
+            );
+
+            $documentId = (int) $existing["document_id"];
+            $update->bind_param(
+                "sssiii",
+                $original,
+                $relative,
+                $mime,
+                $fileSize,
+                $documentId,
+                $appId
+            );
+            $update->execute();
+            $update->close();
+
+            $oldRelative = ltrim((string) $existing["file_path"], "/\\");
+            $oldPath = __DIR__ . "/" . $oldRelative;
+            $rootReal = realpath($verificationRoot);
+            $oldReal = is_file($oldPath) ? realpath($oldPath) : false;
+            $newReal = realpath($absolute);
+
+            if (
+                $rootReal !== false &&
+                $oldReal !== false &&
+                $newReal !== false &&
+                str_starts_with(
+                    $oldReal,
+                    rtrim($rootReal, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
+                ) &&
+                $oldReal !== $newReal
+            ) {
+                @unlink($oldReal);
+            }
+        } else {
+            $insert = $conn->prepare(
+                "INSERT INTO tbl_partner_application_documents
+                    (application_id, owner_id, document_type, original_name, file_path, mime_type, file_size)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+            );
+            $insert->bind_param(
+                "iissssi",
+                $appId,
+                $ownerId,
+                $type,
+                $original,
+                $relative,
+                $mime,
+                $fileSize
+            );
+            $insert->execute();
+            $documentId = (int) $conn->insert_id;
+            $insert->close();
+        }
     }
 
     $conn->commit();
@@ -303,6 +339,7 @@ try {
 out([
     "success" => true,
     "document" => [
+        "document_id" => $documentId,
         "document_type" => $type,
         "label" => $allowed[$type],
         "original_name" => $original

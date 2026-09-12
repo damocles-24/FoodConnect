@@ -1,65 +1,225 @@
 <!doctype html>
 <html lang="en" data-default-theme="light">
 <head>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Email Verification</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+
+  <!-- Do not reuse an old verification result page after a deployment. -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png"
+  >
+
+  <title>FoodConnect | Email Verification</title>
+
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
-    .card{background:#fff;padding:28px;border-radius:16px;max-width:460px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}
-    .btn{display:inline-block;margin-top:18px;background:#ff7a00;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold}
-    .small{margin-top:14px;color:#777;font-size:12px}
+    :root {
+      --verify-page-bg: #f6f7fb;
+      --verify-card-bg: #ffffff;
+      --verify-text: #1c2434;
+      --verify-muted: #667085;
+      --verify-border: #e6e8ec;
+      --verify-primary: #f78021;
+      --verify-primary-hover: #dc5e08;
+      --verify-success: #15803d;
+      --verify-warning: #d97706;
+      --verify-shadow: 0 18px 45px rgba(28, 36, 52, 0.11);
+    }
+
+    html[data-theme="dark"] {
+      --verify-page-bg: #111827;
+      --verify-card-bg: #1b2534;
+      --verify-text: #f8fafc;
+      --verify-muted: #cbd5e1;
+      --verify-border: #344054;
+      --verify-primary: #f78021;
+      --verify-primary-hover: #ff963f;
+      --verify-success: #4ade80;
+      --verify-warning: #fbbf24;
+      --verify-shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--verify-page-bg);
+      color: var(--verify-text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .card {
+      width: min(100%, 460px);
+      padding: 32px 28px;
+      border: 1px solid var(--verify-border);
+      border-radius: 18px;
+      background: var(--verify-card-bg);
+      color: var(--verify-text);
+      box-shadow: var(--verify-shadow);
+      text-align: center;
+    }
+
+    .status-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(247, 128, 33, 0.12);
+      color: var(--verify-primary);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .status-icon.success {
+      background: rgba(21, 128, 61, 0.12);
+      color: var(--verify-success);
+    }
+
+    .status-icon.warning {
+      background: rgba(217, 119, 6, 0.12);
+      color: var(--verify-warning);
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--verify-text);
+      font-size: 24px;
+      line-height: 1.3;
+    }
+
+    #msg {
+      margin: 12px auto 0;
+      color: var(--verify-muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      margin-top: 22px;
+      padding: 12px 20px;
+      border-radius: 11px;
+      background: var(--verify-primary);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      background: var(--verify-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .small {
+      margin-top: 16px;
+      color: var(--verify-muted);
+      font-size: 12px;
+    }
   </style>
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
-  <script src="../js/foodconnect-theme.js?v=20260817-5" defer></script>
+
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260911-verification-v2">
+  <script src="../js/foodconnect-theme.js?v=20260911-verification-v2" defer></script>
 </head>
 <body data-fc-page="customer-auth">
-  <div class="card">
-    <h2 id="title">Checking…</h2>
+  <main class="card" role="status" aria-live="polite">
+    <div class="status-icon" id="statusIcon" aria-hidden="true">...</div>
+
+    <h2 id="title">Checking...</h2>
     <p id="msg">Please wait.</p>
 
-    <!-- ✅ FIXED PATH -->
-    <a class="btn" id="btn" href="/FoodConnect/frontend/html/index.html">Go to Homepage</a>
+    <a class="btn" id="btn" href="/">Go to Homepage</a>
 
     <div class="small">FoodConnect • Email Verification</div>
-  </div>
+  </main>
 
   <script>
-    const status = new URLSearchParams(location.search).get("status");
+    (() => {
+      "use strict";
 
-    const title = document.getElementById("title");
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btn");
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get("status");
 
-    if (status === "ok") {
-      title.textContent = "Email verified ✅";
-      msg.textContent = "Your account is verified. Redirecting to homepage…";
-      btn.textContent = "Go to Homepage";
+      const title = document.getElementById("title");
+      const msg = document.getElementById("msg");
+      const btn = document.getElementById("btn");
+      const statusIcon = document.getElementById("statusIcon");
 
-      // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/index.html";
+      /*
+       * Production is served from the domain root. Keep localhost compatibility
+       * for older local setups that still run FoodConnect in a subdirectory.
+       */
+      const isLegacyLocalPath = /^\/FoodConnect\//i.test(window.location.pathname);
+      const appRoot = isLegacyLocalPath ? "/FoodConnect/" : "/";
+      const loginUrl = isLegacyLocalPath
+        ? "/FoodConnect/frontend/html/login.html"
+        : "/frontend/html/login.html";
 
-      setTimeout(() => {
-        window.location.href = "/FoodConnect/frontend/html/index.html";
-      }, 10000);
+      const homepageUrl = new URL(appRoot, window.location.origin).href;
+      const loginAbsoluteUrl = new URL(loginUrl, window.location.origin).href;
 
-    } else if (status === "expired") {
-      title.textContent = "Link expired ⚠️";
-      msg.textContent = "Your verification link expired. Please resend a new verification email.";
+      if (status === "ok") {
+        statusIcon.textContent = "✓";
+        statusIcon.classList.add("success");
+
+        title.textContent = "Email verified";
+        msg.textContent = "Your FoodConnect account is verified. Redirecting you to the homepage...";
+        btn.textContent = "Go to Homepage";
+        btn.href = homepageUrl;
+
+        window.setTimeout(() => {
+          window.location.replace(homepageUrl);
+        }, 2500);
+
+        return;
+      }
+
+      if (status === "expired") {
+        statusIcon.textContent = "!";
+        statusIcon.classList.add("warning");
+
+        title.textContent = "Verification link expired";
+        msg.textContent = "This verification link has expired. Go back to login and request a new verification email.";
+        btn.textContent = "Back to Login";
+        btn.href = loginAbsoluteUrl;
+
+        return;
+      }
+
+      statusIcon.textContent = "!";
+      statusIcon.classList.add("warning");
+
+      title.textContent = "Verification link unavailable";
+      msg.textContent = "This link is invalid or has already been used. If you already verified your account, you can log in normally.";
       btn.textContent = "Back to Login";
-
-      // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/login.html";
-
-    } else {
-      title.textContent = "Verification failed ⚠️";
-      msg.textContent = "This link is invalid or already used. Please request a new verification email.";
-      btn.textContent = "Back to Login";
-
-      // ✅ FIXED PATH
-      btn.href = "/FoodConnect/frontend/html/login.html";
-    }
+      btn.href = loginAbsoluteUrl;
+    })();
   </script>
 </body>
 </html>
