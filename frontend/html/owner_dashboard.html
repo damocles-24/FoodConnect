@@ -9,7 +9,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
   <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260912-staffcode-theme1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260913-staff-recovery1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
@@ -51,7 +51,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         <button class="nav-item" data-section="productsSection">Products</button>
         <button class="nav-item" data-section="inventorySection">Inventory</button>
         <button class="nav-item" data-section="reportsSection">Sales Report</button>
-        <button class="nav-item" data-section="usersSection">Staff Management</button>
+        <button class="nav-item" data-section="usersSection">
+          <span>Staff Management</span>
+          <span
+            id="staffManagementNavBadge"
+            class="staff-management-nav-badge"
+            aria-label="Pending staff password reset requests"
+            hidden
+          >0</span>
+        </button>
         <button class="nav-item" data-section="logsSection">Activity Logs</button>
         <button class="nav-item" data-section="settingsSection">Settings</button>
         <button class="nav-item logout-btn" id="logoutBtn">Logout</button>
@@ -977,6 +985,28 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       <button class="primary-btn" id="openAddUserModal">
         + Add User
       </button>
+    </div>
+  </div>
+
+  <div
+    id="staffPasswordResetRequestNotice"
+    class="staff-password-reset-request-notice"
+    role="status"
+    aria-live="polite"
+    hidden
+  >
+    <div class="staff-password-reset-request-icon" aria-hidden="true">
+      <i class="fa-solid fa-key"></i>
+    </div>
+
+    <div class="staff-password-reset-request-copy">
+      <strong>
+        <span id="staffPasswordResetRequestCount">0</span>
+        password reset request<span id="staffPasswordResetRequestPlural">s</span> waiting
+      </strong>
+      <p>
+        Staff who requested recovery are highlighted below. Use Reset Password to issue a temporary password; the staff member will be required to create a new private password on the next login.
+      </p>
     </div>
   </div>
 
@@ -4074,7 +4104,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
   <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
   <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/owner_dashboard.js?v=20260909-productimagefix1"></script>
+<script src="../js/owner_dashboard.js?v=20260913-staff-recovery1"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

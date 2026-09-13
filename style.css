@@ -5180,3 +5180,72 @@ html[data-theme="dark"] body[data-fc-page="customer-home"] .restaurants-page-gri
     grid-row: auto;
   }
 }
+
+/* =========================================================
+   FOODCONNECT RESTAURANT CARD UI CONSISTENCY + FULL HOURS
+   2026-09-13
+   - Replace the old yellow restaurant-type styling with the
+     FoodConnect orange brand treatment.
+   - Let Store Hours wrap instead of being cut off with "...".
+   - Shared by homepage and View All Restaurants cards.
+========================================================= */
+
+body[data-fc-page="customer-home"] .restaurant-title-row .rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border: 1px solid rgba(247, 128, 33, 0.22);
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  line-height: 1.2;
+}
+
+body[data-fc-page="customer-home"] .restaurant-title-row .rating i {
+  color: var(--primary);
+}
+
+body[data-fc-page="customer-home"] .restaurant-meta {
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+}
+
+body[data-fc-page="customer-home"] .restaurant-meta-copy .restaurant-hours {
+  display: block;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.35;
+}
+
+/* Keep the Store Hours block comfortable when the value wraps. */
+body[data-fc-page="customer-home"] .restaurant-meta-item:nth-child(2) {
+  align-items: flex-start;
+}
+
+/* Dark theme: use the same orange brand family, never yellow/gold. */
+html[data-theme="dark"] body[data-fc-page="customer-home"] .restaurant-title-row .rating {
+  border-color: rgba(255, 138, 53, 0.28);
+  background: #342115;
+  color: #ff9a52;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-home"] .restaurant-title-row .rating i {
+  color: #ff8a35;
+}
+
+@media (max-width: 680px) {
+  body[data-fc-page="customer-home"] .restaurant-meta {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  }
+}
+
+@media (max-width: 480px) {
+  body[data-fc-page="customer-home"] .restaurant-meta {
+    grid-template-columns: 1fr;
+  }
+}

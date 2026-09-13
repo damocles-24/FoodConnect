@@ -35,7 +35,7 @@
 
     <link
         rel="stylesheet"
-        href="../css/signup.css?v=20260817-7"
+        href="../css/signup.css?v=20260912-username1"
     >
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
@@ -253,6 +253,38 @@
 
                 <div class="form-group">
 
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Choose a unique username"
+                            autocomplete="username"
+                            minlength="3"
+                            maxlength="30"
+                            pattern="[A-Za-z0-9_]{3,30}"
+                            autocapitalize="none"
+                            spellcheck="false"
+                            required
+                        >
+
+                    </div>
+
+                    <p class="username-help">
+                        3–30 characters. Use letters, numbers, and underscores only.
+                    </p>
+
+                </div>
+
+                <div class="form-group">
+
                     <label for="email">
                         Email Address
                     </label>
@@ -438,6 +470,20 @@
                 </p>
 
                 <a
+                    id="openEmailInboxButton"
+                    class="primary-button email-inbox-button hidden"
+                    href="#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Open email inbox in a new tab"
+                >
+                    <i class="fa-regular fa-envelope-open"></i>
+                    <span id="openEmailInboxButtonLabel">
+                        Open Email Inbox
+                    </span>
+                </a>
+
+                <a
                     href="login.html"
                     class="secondary-button"
                 >
@@ -485,7 +531,7 @@
 
 </footer>
 
-<script src="../js/signup.js?v=5"></script>
+<script src="../js/signup.js?v=20260912-username1"></script>
 
 </body>
 </html>

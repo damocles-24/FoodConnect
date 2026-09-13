@@ -24,6 +24,7 @@ require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/addon_helper.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/restaurant_availability_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -1861,6 +1862,7 @@ $total +=
     SELECT
         r.restaurant_id,
         r.delivery_fee,
+        r.opening_hours,
         r.business_status,
         r.setup_completed,
         r.customer_visibility,
@@ -1943,18 +1945,27 @@ if (
     );
 }
 
-if (
-    strtolower(
-        trim(
-            (string) (
-                $restaurantRow["business_status"]
-                ?? "Closed"
-            )
+$restaurantAvailability =
+    fc_restaurant_evaluate_availability(
+        (string) (
+            $restaurantRow["business_status"] ??
+            "Closed"
+        ),
+        (string) (
+            $restaurantRow["opening_hours"] ??
+            ""
         )
-    ) !== "open"
+    );
+
+if (
+    empty(
+        $restaurantAvailability["is_accepting_orders"]
+    )
 ) {
     throw new RuntimeException(
-        "This restaurant is not currently accepting orders."
+        fc_restaurant_unavailable_message(
+            $restaurantAvailability
+        )
     );
 }
 

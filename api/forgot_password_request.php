@@ -27,16 +27,28 @@ rate_limit_enforce(
     "Too many password reset requests. Please wait 15 minutes and try again."
 );
 
-// ✅ Generic message for security (don't reveal if email exists)
-$generic = ["success" => true, "message" => "If that email exists, a reset link has been sent."];
-
-$stmt = $conn->prepare("SELECT user_id, email FROM tbl_users WHERE email = ? LIMIT 1");
+/*
+ * Customer password recovery intentionally gives immediate feedback when the
+ * email is not registered. Keep this endpoint customer-only so an owner or
+ * staff email cannot be used through the customer reset flow.
+ */
+$stmt = $conn->prepare("
+  SELECT user_id, email
+  FROM tbl_users
+  WHERE email = ?
+    AND role = 'customer'
+  LIMIT 1
+");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if (!$user) {
-  echo json_encode($generic);
+  http_response_code(404);
+  echo json_encode([
+    "success" => false,
+    "error" => "No customer account was found with that email. Please check the address and try again."
+  ]);
   exit;
 }
 
@@ -191,4 +203,4 @@ if (!$sent) {
   exit;
 }
 
-echo json_encode($generic);
+echo json_encode(["success" => true, "message" => "Password reset link sent. Check your email inbox and Spam/Junk folder."]);

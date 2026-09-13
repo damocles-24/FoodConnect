@@ -17,6 +17,7 @@ require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/addon_helper.php";
+require_once __DIR__ . "/restaurant_availability_helper.php";
 
 /*
  * Product promotion schedules use Philippine local time.
@@ -429,6 +430,119 @@ $product_stock = (int)(
                     "Product has an invalid restaurant."
             ],
             400
+        );
+    }
+
+    /* =====================================================
+       AUTHORITATIVE RESTAURANT AVAILABILITY
+    ===================================================== */
+
+    $restaurantStmt = $conn->prepare("
+        SELECT
+            r.business_status,
+            r.opening_hours,
+            r.setup_completed,
+            r.customer_visibility,
+            owner.status AS owner_status,
+            owner.is_verified AS owner_is_verified
+
+        FROM tbl_restaurants AS r
+
+        INNER JOIN tbl_users AS owner
+            ON owner.user_id = r.owner_id
+            AND owner.role = 'owner'
+
+        WHERE r.restaurant_id = ?
+
+        LIMIT 1
+
+        FOR UPDATE
+    ");
+
+    if (!$restaurantStmt) {
+        throw new Exception(
+            "Unable to prepare restaurant availability validation."
+        );
+    }
+
+    $restaurantStmt->bind_param(
+        "i",
+        $restaurant_id
+    );
+
+    if (!$restaurantStmt->execute()) {
+        $restaurantStmt->close();
+
+        throw new Exception(
+            "Unable to validate the restaurant."
+        );
+    }
+
+    $restaurant = $restaurantStmt
+        ->get_result()
+        ->fetch_assoc();
+
+    $restaurantStmt->close();
+
+    if (!$restaurant) {
+        rollback_and_respond(
+            $conn,
+            [
+                "success" => false,
+                "message" =>
+                    "This restaurant is currently unavailable on FoodConnect."
+            ],
+            409
+        );
+    }
+
+    if (
+        (int) ($restaurant["owner_status"] ?? 0) !== 1 ||
+        (int) ($restaurant["owner_is_verified"] ?? 0) !== 1 ||
+        (int) ($restaurant["setup_completed"] ?? 0) !== 1 ||
+        strcasecmp(
+            trim((string) ($restaurant["customer_visibility"] ?? "Hidden")),
+            "Visible"
+        ) !== 0
+    ) {
+        rollback_and_respond(
+            $conn,
+            [
+                "success" => false,
+                "message" =>
+                    "This restaurant is currently unavailable on FoodConnect."
+            ],
+            409
+        );
+    }
+
+    $restaurantAvailability =
+        fc_restaurant_evaluate_availability(
+            (string) (
+                $restaurant["business_status"] ??
+                "Closed"
+            ),
+            (string) (
+                $restaurant["opening_hours"] ??
+                ""
+            )
+        );
+
+    if (
+        empty(
+            $restaurantAvailability["is_accepting_orders"]
+        )
+    ) {
+        rollback_and_respond(
+            $conn,
+            [
+                "success" => false,
+                "message" =>
+                    fc_restaurant_unavailable_message(
+                        $restaurantAvailability
+                    )
+            ],
+            409
         );
     }
 

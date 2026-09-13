@@ -4945,6 +4945,7 @@ margin-bottom:18px;
   -webkit-appearance: none;
 
   background-color: #202020;
+  color-scheme: dark;
 
   background-image:
     linear-gradient(
@@ -4997,7 +4998,8 @@ margin-bottom:18px;
     0 0 0 3px rgba(244, 124, 30, 0.12);
 }
 
-.performance-range option {
+.performance-range option,
+.performance-range optgroup {
   background: #202020;
   color: var(--text);
 }
@@ -6815,9 +6817,16 @@ font-size: 1rem;
   outline: none;
   background: #222;
   color: var(--text);
+  color-scheme: dark;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.analytics-period-control select option,
+.analytics-period-control select optgroup {
+  background: #222;
+  color: var(--text);
 }
 
 .analytics-period-control select:focus {
@@ -8686,6 +8695,38 @@ html[data-theme="light"] body[data-fc-page="owner"] .product-card-image-empty {
 html[data-theme="light"] body[data-fc-page="owner"] .analytics-period-control select {
   background: #fff;
   color: var(--text);
+  color-scheme: light;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-period-control select option,
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-period-control select optgroup {
+  background: #fff;
+  color: var(--text);
+}
+html[data-theme="light"] body[data-fc-page="owner"] .performance-range {
+  background-color: #fff;
+  color: var(--text);
+  border-color: var(--border);
+  color-scheme: light;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .performance-range:hover {
+  background-color: #fff8f2;
+  border-color: #f6b783;
+}
+html[data-theme="light"] body[data-fc-page="owner"] .performance-range option,
+html[data-theme="light"] body[data-fc-page="owner"] .performance-range optgroup {
+  background: #fff;
+  color: var(--text);
+}
+html[data-theme="dark"] body[data-fc-page="owner"] .performance-range,
+html[data-theme="dark"] body[data-fc-page="owner"] .analytics-period-control select {
+  color-scheme: dark;
+}
+html[data-theme="dark"] body[data-fc-page="owner"] .performance-range option,
+html[data-theme="dark"] body[data-fc-page="owner"] .performance-range optgroup,
+html[data-theme="dark"] body[data-fc-page="owner"] .analytics-period-control select option,
+html[data-theme="dark"] body[data-fc-page="owner"] .analytics-period-control select optgroup {
+  background: #202020;
+  color: #f5f7fb;
 }
 html[data-theme="light"] body[data-fc-page="owner"] .analytics-secondary-btn {
   color: var(--text);
@@ -9273,12 +9314,11 @@ html[data-theme="dark"] body[data-fc-page="owner"] .staff-reset-security-note p 
   .reset-staff-password-modal .user-modal-actions {
     flex-direction: column-reverse;
     align-items: stretch;
-  }s
+  }
   .reset-staff-password-modal .user-modal-actions button {
     width: 100%;
   }
 }
-sss
 /* =========================================================
    STAFF MANAGEMENT UI/UX POLISH
    Scoped to the owner Staff Management section and reset modal.
@@ -10249,4 +10289,874 @@ html[data-theme="dark"] body[data-fc-page="owner"] .staff-code-icon-button:focus
   background: rgba(244, 124, 30, 0.10) !important;
   color: #fb923c !important;
   border-color: rgba(244, 124, 30, 0.45) !important;
+}
+
+/* =========================================================
+   OWNER WEEKLY SCHEDULE STATUS UI FIX - 2026-09-13
+   Removes the legacy yellow/gold schedule accents.
+   Open = green, Closed = red, primary/focus accent = FoodConnect orange.
+   ========================================================= */
+
+body[data-fc-page="owner"] .settings-hours-copy-btn:focus-visible {
+  outline: 2px solid #f47c1e;
+  outline-offset: 2px;
+}
+
+body[data-fc-page="owner"] .settings-hours-time:focus {
+  border-color: #f47c1e;
+  box-shadow: 0 0 0 3px rgba(244, 124, 30, .14);
+}
+
+/* Open state. The checkbox itself means "mark closed", so unchecked = open. */
+body[data-fc-page="owner"] .settings-hours-toggle {
+  border-color: rgba(34, 197, 94, .48);
+  background: rgba(34, 197, 94, .13);
+}
+
+body[data-fc-page="owner"] .settings-hours-toggle::after {
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, .12);
+}
+
+body[data-fc-page="owner"] .settings-hours-status-text {
+  color: #86efac;
+}
+
+body[data-fc-page="owner"] .settings-hours-toggle-wrap input:focus-visible + .settings-hours-toggle {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Closed state. */
+body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle {
+  border-color: rgba(239, 68, 68, .50);
+  background: rgba(239, 68, 68, .13);
+}
+
+body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle::after {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, .10);
+}
+
+body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked:focus-visible + .settings-hours-toggle {
+  outline-color: #ef4444;
+}
+
+body[data-fc-page="owner"] .settings-hours-row.is-closed .settings-hours-status-text {
+  color: #fca5a5;
+}
+
+/* Mobile status chip. */
+@media (max-width: 760px) {
+  body[data-fc-page="owner"] .settings-hours-mobile-status {
+    background: rgba(34, 197, 94, .13);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, .25);
+  }
+
+  body[data-fc-page="owner"] .settings-hours-row.is-closed .settings-hours-mobile-status {
+    background: rgba(239, 68, 68, .12);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, .24);
+  }
+}
+
+/* Light mode uses softer semantic backgrounds and darker readable text. */
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle::after {
+  background: #16a34a;
+  box-shadow: none;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-status-text {
+  color: #15803d;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-toggle-wrap input:checked + .settings-hours-toggle::after {
+  background: #dc2626;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-row.is-closed .settings-hours-status-text {
+  color: #b91c1c;
+}
+
+@media (max-width: 760px) {
+  html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-mobile-status {
+    background: #dcfce7;
+    color: #15803d;
+    border-color: #bbf7d0;
+  }
+
+  html[data-theme="light"] body[data-fc-page="owner"] .settings-hours-row.is-closed .settings-hours-mobile-status {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+  }
+}
+/* OWNER WEEKLY SCHEDULE STATUS UI FIX END */
+
+/* OWNER SALES REPORT CHART UI REFRESH START */
+body[data-fc-page="owner"] .analytics-sales-panel {
+  min-height: 430px;
+}
+
+body[data-fc-page="owner"] .analytics-sales-panel .report-chart {
+  display: block;
+  min-height: 0;
+  overflow: visible;
+  padding-top: 16px;
+}
+
+body[data-fc-page="owner"] .sales-trend-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+body[data-fc-page="owner"] .sales-trend-summary-item {
+  min-width: 150px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(244, 124, 30, 0.07);
+}
+
+body[data-fc-page="owner"] .sales-trend-summary-item span,
+body[data-fc-page="owner"] .sales-trend-summary-item strong {
+  display: block;
+}
+
+body[data-fc-page="owner"] .sales-trend-summary-item span {
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+body[data-fc-page="owner"] .sales-trend-summary-item strong {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+body[data-fc-page="owner"] .sales-trend-modern {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+body[data-fc-page="owner"] .sales-trend-y-axis {
+  height: 280px;
+  padding: 28px 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+body[data-fc-page="owner"] .sales-trend-y-axis span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .sales-trend-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(244, 124, 30, 0.45) transparent;
+}
+
+body[data-fc-page="owner"] .sales-trend-plot {
+  position: relative;
+  min-width: 560px;
+  height: 280px;
+}
+
+body[data-fc-page="owner"] .sales-trend-grid-lines {
+  position: absolute;
+  z-index: 0;
+  top: 28px;
+  right: 0;
+  bottom: 40px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+body[data-fc-page="owner"] .sales-trend-grid-lines span {
+  width: 100%;
+  border-top: 1px dashed var(--border);
+}
+
+body[data-fc-page="owner"] .sales-trend-bars-modern {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: 12px;
+}
+
+body[data-fc-page="owner"] .sales-trend-item {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 28px minmax(0, 1fr) 40px;
+  text-align: center;
+}
+
+body[data-fc-page="owner"] .sales-trend-value {
+  align-self: start;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .sales-trend-bar-area {
+  min-height: 0;
+  padding: 0 7px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+body[data-fc-page="owner"] .sales-trend-bar {
+  width: min(46px, 72%);
+  height: var(--sales-bar-height, 0%);
+  min-height: 0;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #ff9a48 0%, var(--gold) 70%, var(--gold-dark) 100%);
+  box-shadow: 0 8px 18px rgba(244, 124, 30, 0.16);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+body[data-fc-page="owner"] .sales-trend-item:not(.is-zero):hover .sales-trend-bar {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(244, 124, 30, 0.24);
+  filter: saturate(1.05);
+}
+
+body[data-fc-page="owner"] .sales-trend-item.is-zero .sales-trend-value {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+body[data-fc-page="owner"] .sales-trend-item.is-zero .sales-trend-bar {
+  width: min(46px, 72%);
+  height: 2px;
+  background: var(--border);
+  box-shadow: none;
+  opacity: 0.9;
+}
+
+body[data-fc-page="owner"] .sales-trend-label {
+  align-self: end;
+  overflow: hidden;
+  padding-top: 9px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .sales-trend-empty-state {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 30px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+body[data-fc-page="owner"] .sales-trend-empty-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 3px;
+  border-radius: 12px;
+  background: rgba(244, 124, 30, 0.10);
+  font-size: 21px;
+}
+
+body[data-fc-page="owner"] .sales-trend-empty-state strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+body[data-fc-page="owner"] .sales-trend-empty-state p {
+  max-width: 360px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .sales-trend-summary-item {
+  background: #fff8f2;
+  border-color: #f2dfcf;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .sales-trend-grid-lines span {
+  border-top-color: #e5e7eb;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .sales-trend-item.is-zero .sales-trend-bar {
+  background: #d1d5db;
+}
+
+@media (max-width: 760px) {
+  body[data-fc-page="owner"] .analytics-sales-panel {
+    min-height: 0;
+  }
+
+  body[data-fc-page="owner"] .sales-trend-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-fc-page="owner"] .sales-trend-summary-item {
+    min-width: 0;
+  }
+
+  body[data-fc-page="owner"] .sales-trend-modern {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  body[data-fc-page="owner"] .sales-trend-y-axis,
+  body[data-fc-page="owner"] .sales-trend-plot {
+    height: 250px;
+  }
+
+  body[data-fc-page="owner"] .sales-trend-plot {
+    min-width: 520px;
+  }
+}
+
+@media (max-width: 430px) {
+  body[data-fc-page="owner"] .sales-trend-summary {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="owner"] .sales-trend-modern {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  body[data-fc-page="owner"] .sales-trend-y-axis span {
+    font-size: 9px;
+  }
+}
+/* OWNER SALES REPORT CHART UI REFRESH END */
+
+/* OWNER SALES RANKING ALIGNMENT FIX START */
+/* Keep the Best-Selling Products and Best-Selling Categories rows aligned
+   as two clear columns: item details on the left and revenue on the right. */
+body[data-fc-page="owner"] .analytics-ranking-list {
+  gap: 12px;
+  min-width: 0;
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: start;
+  column-gap: 18px;
+  min-width: 0;
+  min-height: 78px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-item:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-item > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-item strong {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  overflow: visible;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-item span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+body[data-fc-page="owner"] .analytics-ranking-list .report-list-value {
+  align-self: start;
+  min-width: 72px;
+  padding-top: 0;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  body[data-fc-page="owner"] .analytics-ranking-list .report-list-item {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: start;
+    gap: 12px;
+    min-height: 74px;
+    padding: 14px 15px;
+  }
+
+  body[data-fc-page="owner"] .analytics-ranking-list .report-list-value {
+    align-self: start;
+    min-width: 64px;
+    font-size: 13px;
+  }
+}
+/* OWNER SALES RANKING ALIGNMENT FIX END */
+
+/* OWNER DASHBOARD SALES OVERVIEW CHART UI FIX START */
+/* The dashboard chart uses a compact version of the Sales Report chart:
+   real Y-axis context, no fake bars for zero revenue, and stable spacing. */
+body[data-fc-page="owner"] #salesChart.fake-chart {
+  display: block;
+  height: auto;
+  min-height: 276px;
+  padding: 4px 0 0;
+  overflow: visible;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-modern {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-y-axis {
+  height: 264px;
+  padding: 30px 0 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-y-axis span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(244, 124, 30, .38) transparent;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-plot {
+  position: relative;
+  width: 100%;
+  height: 264px;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-grid-lines {
+  position: absolute;
+  z-index: 0;
+  top: 30px;
+  right: 0;
+  bottom: 38px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-grid-lines span {
+  width: 100%;
+  border-top: 1px dashed var(--border);
+}
+
+body[data-fc-page="owner"] .dashboard-sales-bars-modern {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(56px, 1fr);
+  gap: 10px;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-item {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 30px minmax(0, 1fr) 38px;
+  text-align: center;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-value {
+  align-self: start;
+  min-height: 16px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-bar-area {
+  min-height: 0;
+  padding: 0 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-bar {
+  width: min(42px, 70%);
+  height: var(--dashboard-sales-bar-height, 0%);
+  min-height: 0;
+  border-radius: 9px 9px 3px 3px;
+  background: linear-gradient(
+    180deg,
+    #ff9a48 0%,
+    var(--fc-owner-orange, #f47c1e) 72%,
+    var(--fc-owner-orange-dark, #d9650d) 100%
+  );
+  box-shadow: 0 7px 16px rgba(244, 124, 30, .16);
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    filter .18s ease;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-item:not(.is-zero):hover .dashboard-sales-bar {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 22px rgba(244, 124, 30, .23);
+  filter: saturate(1.05);
+}
+
+/* A zero-sales period should not look like a tiny orange sale. */
+body[data-fc-page="owner"] .dashboard-sales-item.is-zero .dashboard-sales-bar {
+  width: 0;
+  height: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-label {
+  align-self: end;
+  overflow: hidden;
+  padding-top: 9px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-empty-state {
+  min-height: 250px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 15px;
+  color: var(--muted);
+  text-align: center;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-empty-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 3px;
+  border-radius: 12px;
+  background: rgba(244, 124, 30, .10);
+  font-size: 21px;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-empty-state strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+body[data-fc-page="owner"] .dashboard-sales-empty-state p {
+  max-width: 330px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .dashboard-sales-grid-lines span {
+  border-top-color: #e5e7eb;
+}
+
+@media (max-width: 760px) {
+  body[data-fc-page="owner"] #salesChart.fake-chart {
+    min-height: 250px;
+  }
+
+  body[data-fc-page="owner"] .dashboard-sales-modern {
+    grid-template-columns: 50px minmax(0, 1fr);
+  }
+
+  body[data-fc-page="owner"] .dashboard-sales-y-axis,
+  body[data-fc-page="owner"] .dashboard-sales-plot {
+    height: 238px;
+  }
+
+  body[data-fc-page="owner"] .dashboard-sales-y-axis {
+    padding-top: 28px;
+  }
+
+  body[data-fc-page="owner"] .dashboard-sales-grid-lines {
+    top: 28px;
+  }
+}
+/* OWNER DASHBOARD SALES OVERVIEW CHART UI FIX END */
+
+/* =========================================================
+   STAFF PASSWORD RECOVERY REQUEST NOTIFICATIONS
+   Responsive on desktop, tablet, and mobile.
+========================================================= */
+.staff-management-nav-badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-item.active .staff-management-nav-badge,
+.nav-item:hover .staff-management-nav-badge {
+  border-color: rgba(255, 255, 255, .75);
+}
+
+.staff-password-reset-request-notice {
+  margin: 0 0 18px;
+  padding: 15px 17px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border: 1px solid #fdba74;
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #7c2d12;
+}
+
+.staff-password-reset-request-notice[hidden] {
+  display: none !important;
+}
+
+.staff-password-reset-request-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  border-radius: 11px;
+  background: #f47c1e;
+  color: #ffffff;
+}
+
+.staff-password-reset-request-copy {
+  min-width: 0;
+}
+
+.staff-password-reset-request-copy strong {
+  display: block;
+  margin: 0 0 3px;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.staff-password-reset-request-copy p {
+  margin: 0;
+  color: #7c2d12;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+#usersSection .staff-reset-request-row > td {
+  background: rgba(244, 124, 30, .055);
+  border-top-color: rgba(244, 124, 30, .22);
+  border-bottom-color: rgba(244, 124, 30, .22);
+}
+
+#usersSection .staff-reset-request-row:hover > td {
+  background: rgba(244, 124, 30, .095);
+}
+
+#usersSection .staff-password-reset-request-badge {
+  width: max-content;
+  max-width: 155px;
+  margin-top: 7px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+#usersSection .reset-password-btn.reset-request-pending {
+  border-color: #f47c1e !important;
+  background: #f47c1e !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(244, 124, 30, .20);
+}
+
+#usersSection .reset-password-btn.reset-request-pending:hover {
+  background: #dc6810 !important;
+  border-color: #dc6810 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.staff-password-reset-request-notice {
+  background: rgba(244, 124, 30, .09);
+  border-color: rgba(244, 124, 30, .34);
+  color: #fed7aa;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.staff-password-reset-request-copy strong {
+  color: #fdba74;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+.staff-password-reset-request-copy p {
+  color: #d7dce4;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+#usersSection .staff-reset-request-row > td {
+  background: rgba(244, 124, 30, .045);
+  border-top-color: rgba(244, 124, 30, .18);
+  border-bottom-color: rgba(244, 124, 30, .18);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"]
+#usersSection .staff-password-reset-request-badge {
+  background: rgba(244, 124, 30, .10);
+  border-color: rgba(244, 124, 30, .36);
+  color: #fdba74;
+}
+
+@media (max-width: 760px) {
+  .staff-password-reset-request-notice {
+    padding: 14px;
+    gap: 11px;
+  }
+
+  .staff-password-reset-request-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .staff-password-reset-request-copy strong {
+    font-size: 12px;
+  }
+
+  .staff-password-reset-request-copy p {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .staff-password-reset-request-notice {
+    align-items: stretch;
+  }
+
+  .staff-password-reset-request-icon {
+    display: none;
+  }
+
+  .staff-management-nav-badge {
+    min-width: 20px;
+    height: 20px;
+    padding-inline: 6px;
+  }
+}
+
+
+.staff-management-nav-badge[hidden] {
+  display: none !important;
 }

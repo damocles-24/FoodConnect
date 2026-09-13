@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 11, 2026 at 10:22 PM
+-- Generation Time: Sep 13, 2026 at 07:50 AM
 -- Server version: 11.4.13-MariaDB-cll-lve-log
 -- PHP Version: 8.4.24
 
@@ -626,8 +626,6 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (736, 6, 27, 'owner', 'staff', 'Staff Password Reset', 'Ian Reigh Pagador Dela Cruz was issued a temporary password and must create a new password at the next login.', '2026-08-25 14:15:08'),
 (740, 6, 27, 'owner', 'staff', 'Staff Account Updated', 'Angel R Recepcion\'s staff account was updated.', '2026-08-26 09:49:31'),
 (741, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-08-26 09:50:35'),
-(742, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel Recepcion placed Order #40 / Queue #1.', '2026-08-26 09:54:44'),
-(743, 6, 12, 'customer', 'order', 'New Customer Order', 'Order #1 placed Order #41 / Queue #2.', '2026-08-26 10:06:14'),
 (744, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #41 from Pending to Preparing.', '2026-08-26 10:09:06'),
 (745, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Ian Reigh Pagador Dela Cruz was assigned and automatically accepted delivery Order #41.', '2026-08-26 10:10:10'),
 (746, 6, 33, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #41 from the restaurant.', '2026-08-26 10:13:07'),
@@ -658,43 +656,33 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (771, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Stawberry/Blueberry\nChanges:\nProduct image added.', '2026-08-30 06:12:03'),
 (772, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Biscoff Matcha\nChanges:\nProduct image added.', '2026-08-30 06:13:22'),
 (773, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Biscoff Matcha\nChanges:\nProduct image added.', '2026-08-30 06:14:06'),
-(774, 6, 12, 'customer', 'order', 'New Customer Order', 'test placed Order #42 / Queue #1.', '2026-09-03 05:15:36'),
-(775, 6, 12, 'customer', 'order', 'New Customer Order', 'tr placed Order #43 / Queue #2.', '2026-09-03 05:22:37'),
 (776, 6, 27, 'owner', 'staff', 'Staff Account Updated', 'Angel R Recepcion\'s staff account was updated.', '2026-09-04 10:46:55'),
 (777, 6, 27, 'owner', 'staff', 'Staff Account Updated', 'Ian Reigh P Dela Cruz\'s staff account was updated.', '2026-09-04 10:47:28'),
 (778, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-04 10:48:13'),
-(779, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel #1 placed Order #44 / Queue #1.', '2026-09-04 10:52:41'),
 (780, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #44 from Pending to Preparing.', '2026-09-04 10:53:20'),
 (781, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #44 from Preparing to Completed.', '2026-09-04 10:53:40'),
 (782, 6, 27, 'owner', 'staff', 'Staff Account Created', 'Andoy Humilde Bangal was added as delivery staff.', '2026-09-04 11:04:51'),
 (783, 6, 27, 'owner', 'staff', 'Staff Account Created', 'Andoy Humilde Bangal was added as delivery_staff.', '2026-09-04 11:04:51'),
-(784, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel #2 placed Order #45 / Queue #2.', '2026-09-04 11:07:17'),
-(785, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel #3 placed Order #46 / Queue #3.', '2026-09-04 11:11:33'),
 (786, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #46 from Pending to Preparing.', '2026-09-04 11:12:40'),
 (787, 6, 34, 'cashier', 'order', 'Order #45 Cancelled', 'Angel R Recepcion (Cashier) cancelled Queue #2, Order #45 for Angel #2. Order type: Delivery. Amount affected: ₱579.00. Reason: Unable to prepare the order. Inventory: 3 stock units restored.', '2026-09-04 11:13:11'),
 (788, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #46.', '2026-09-04 11:13:41'),
 (789, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #46 from the restaurant.', '2026-09-04 11:14:41'),
 (790, 6, 35, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #46 is now out for delivery.', '2026-09-04 11:14:50'),
 (791, 6, 35, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #46 was delivered and the COD cash payment was confirmed.', '2026-09-04 11:15:15'),
-(792, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel #4 placed Order #47 / Queue #4.', '2026-09-04 11:20:42'),
 (793, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #47 from Pending to Preparing.', '2026-09-04 11:21:47'),
 (794, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #47 from Preparing to Completed.', '2026-09-04 11:22:00'),
-(795, 6, 12, 'customer', 'order', 'New Customer Order', '#5 placed Order #48 / Queue #5.', '2026-09-04 11:32:59'),
 (796, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #48 from Pending to Preparing.', '2026-09-04 11:35:03'),
 (797, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #48.', '2026-09-04 11:35:27'),
 (798, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #48 from the restaurant.', '2026-09-04 11:36:19'),
 (799, 6, 35, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #48 is now out for delivery.', '2026-09-04 11:36:39'),
 (800, 6, 35, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #48 was delivered and the COD cash payment was confirmed.', '2026-09-04 11:36:52'),
-(801, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel Test placed Order #49 / Queue #1.', '2026-09-07 12:47:55'),
 (802, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #49 from Pending to Preparing.', '2026-09-07 12:59:24'),
 (803, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #49 from Preparing to Completed.', '2026-09-07 13:01:43'),
-(804, 6, 12, 'customer', 'order', 'New Customer Order', 'Angel (Sept. 07 #2) placed Order #50 / Queue #2.', '2026-09-07 13:12:30'),
 (805, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #50 from Pending to Preparing.', '2026-09-07 13:13:25'),
 (806, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #50.', '2026-09-07 13:13:50'),
 (807, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #50 from the restaurant.', '2026-09-07 13:15:24'),
 (808, 6, 35, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #50 is now out for delivery.', '2026-09-07 13:15:41'),
 (809, 6, 35, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #50 was completed successfully.', '2026-09-07 13:16:51'),
-(810, 6, 12, 'customer', 'order', 'New Customer Order', 'Delivery Angel (#1) placed Order #51 / Queue #3.', '2026-09-07 15:00:15'),
 (811, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #51 from Pending to Preparing.', '2026-09-07 15:03:39'),
 (812, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #51.', '2026-09-07 15:04:40'),
 (813, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #51 from the restaurant.', '2026-09-07 15:05:31'),
@@ -705,7 +693,6 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (818, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-08 15:48:22'),
 (819, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-08 15:48:55'),
 (820, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-08 15:53:29'),
-(821, 6, 12, 'customer', 'order', 'New Customer Order', 'Gel placed Order #52 / Queue #1.', '2026-09-08 15:57:40'),
 (822, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel R Recepcion (Cashier) changed Order #52 from Pending to Preparing.', '2026-09-08 15:58:27'),
 (823, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #52.', '2026-09-08 15:58:44'),
 (824, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #52 from the restaurant.', '2026-09-08 15:59:42'),
@@ -729,9 +716,6 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (842, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Strawberry Yogurt\nChanges:\nProduct image added.', '2026-09-09 15:26:21'),
 (843, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Strawberry Yogurt\nChanges:\nProduct image added.', '2026-09-09 15:26:44'),
 (844, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Blueberry Yogurt\nChanges:\nProduct image added.', '2026-09-09 15:27:05'),
-(845, 6, 37, 'customer', 'order', 'New Customer Order', 'Micah Romasoc placed Order #54 / Queue #2.', '2026-09-09 15:54:24'),
-(846, 6, 37, 'customer', 'order', 'New Customer Order', 'Micah Romasoc placed Order #55 / Queue #3.', '2026-09-09 15:57:36'),
-(847, 6, 12, 'customer', 'order', 'New Customer Order', 'kjjhgyu placed Order #56 / Queue #1.', '2026-09-11 02:26:44'),
 (848, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #56 from Pending to Preparing.', '2026-09-11 02:31:04'),
 (849, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #56 from Preparing to Completed.', '2026-09-11 02:31:15'),
 (850, 9, 17, 'admin', 'restaurant_application', 'Restaurant Approved', 'The go-live application for \"The Galley Pizza Alaminos Branch\" owned by Dary Apolinario Castro was approved. Restaurant ID 9 is now visible to customers.', '2026-09-11 02:38:31'),
@@ -743,24 +727,14 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (856, 10, 40, 'owner', 'restaurant_application', 'Go-Live Application Submitted', 'The owner submitted \"Bianca Cafe\" for administrator review.', '2026-09-11 02:46:14'),
 (857, 10, 17, 'admin', 'restaurant_application', 'Restaurant Approved', 'The go-live application for \"Bianca Cafe\" owned by Bianca Cacho was approved. Restaurant ID 10 is now visible to customers.', '2026-09-11 02:46:28'),
 (858, 10, 40, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-11 02:48:14'),
-(859, 10, 12, 'customer', 'order', 'New Customer Order', 'hahaha placed Order #57 / Queue #1.', '2026-09-11 02:49:39'),
-(860, 10, 12, 'customer', 'order', 'Customer Cancelled Order', 'hahaha cancelled Queue #1, Order #57. Order type: Delivery. Amount affected: ₱114.00. Reason: Incorrect order details. Inventory: 1 stock unit restored.', '2026-09-11 02:51:48'),
-(861, 10, 12, 'customer', 'order', 'New Customer Order', 'hatog placed Order #58 / Queue #2.', '2026-09-11 02:52:57'),
-(862, 10, 12, 'customer', 'order', 'New Customer Order', 'cege placed Order #59 / Queue #3.', '2026-09-11 02:54:04'),
 (863, 10, 40, 'owner', 'staff', 'Staff Account Created', 'Cherry Dacdacc was added as cashier.', '2026-09-11 03:17:11'),
 (864, 10, 40, 'owner', 'staff', 'Staff Account Created', 'Cherry Dacdacc was added as cashier.', '2026-09-11 03:17:12'),
 (865, 10, 40, 'owner', 'staff', 'Staff Password Reset', 'Cherry Dacdacc was issued a temporary password and must create a new password at the next login.', '2026-09-11 03:19:47'),
-(866, 10, 12, 'customer', 'order', 'New Customer Order', 'hatdig placed Order #60 / Queue #4.', '2026-09-11 03:21:41'),
 (867, 10, 42, 'cashier', 'order', 'Order Status Updated', 'Cherry Dacdacc (Cashier) changed Order #60 from Pending to Preparing.', '2026-09-11 03:22:19'),
 (868, 10, 42, 'cashier', 'order', 'Order Status Updated', 'Cherry Dacdacc (Cashier) changed Order #60 from Preparing to Completed.', '2026-09-11 03:22:30'),
-(869, 10, 46, 'customer', 'order', 'New Customer Order', 'ttyrt placed Order #61 / Queue #5.', '2026-09-11 04:09:29'),
 (870, 10, 42, 'cashier', 'order', 'Order #61 Cancelled', 'Cherry Dacdacc (Cashier) cancelled Queue #5, Order #61 for ttyrt. Order type: Takeout. Amount affected: ₱54.00. Reason: Insufficient stock. Inventory: 1 stock unit restored.', '2026-09-11 04:12:56'),
-(871, 10, 46, 'customer', 'order', 'New Customer Order', 'fyhth placed Order #62 / Queue #6.', '2026-09-11 04:13:24'),
-(872, 10, 46, 'customer', 'order', 'Customer Cancelled Order', 'fyhth cancelled Queue #6, Order #62. Order type: Takeout. Amount affected: ₱54.00. Reason: Incorrect order details. Inventory: 1 stock unit restored.', '2026-09-11 04:13:51'),
-(873, 10, 46, 'customer', 'order', 'New Customer Order', '57tyyt placed Order #63 / Queue #7.', '2026-09-11 04:14:23'),
 (874, 10, 42, 'cashier', 'order', 'Order Status Updated', 'Cherry Dacdacc (Cashier) changed Order #63 from Pending to Preparing.', '2026-09-11 04:14:49'),
 (875, 10, 42, 'cashier', 'order', 'Order Status Updated', 'Cherry Dacdacc (Cashier) changed Order #63 from Preparing to Completed.', '2026-09-11 04:16:26'),
-(876, 6, 46, 'customer', 'order', 'New Customer Order', 'trtry placed Order #64 / Queue #2.', '2026-09-11 04:17:40'),
 (877, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #64 from Pending to Preparing.', '2026-09-11 04:19:49'),
 (878, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #64.', '2026-09-11 04:22:20'),
 (879, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #64 from the restaurant.', '2026-09-11 04:23:20'),
@@ -773,9 +747,69 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (886, 6, 27, 'owner', 'inventory', 'Inventory Restocked', 'Product: Chicken Poppers\nCategory: Budget Meal\nQuantity Added: 3\nStock: 17 → 20', '2026-09-11 04:27:56'),
 (887, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-11 04:31:17'),
 (888, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Test\nChanges:\nPrice: ₱67.00 → ₱90.00\nPromotion: None → 25.00% discount (Active, permanent)', '2026-09-11 04:54:33'),
-(889, 6, 46, 'customer', 'order', 'New Customer Order', 'kugiuyyi placed Order #65 / Queue #3.', '2026-09-11 04:58:08'),
 (890, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #65 from Pending to Preparing.', '2026-09-11 04:59:29'),
-(891, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #65 from Preparing to Completed.', '2026-09-11 04:59:39');
+(891, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #65 from Preparing to Completed.', '2026-09-11 04:59:39'),
+(894, 9, 31, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-13 06:42:32'),
+(895, 8, 30, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-13 06:44:42'),
+(896, 6, 49, 'customer', 'order', 'New Customer Order', 'Justin Lee placed Order #67 / Queue #1.', '2026-09-13 07:03:59'),
+(897, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #67 from Pending to Preparing.', '2026-09-13 07:07:43'),
+(898, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #67 from Preparing to Completed.', '2026-09-13 07:07:49'),
+(899, 6, 49, 'customer', 'order', 'New Customer Order', 'alex placed Order #68 / Queue #2.', '2026-09-13 07:12:20'),
+(900, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #68 from Pending to Preparing.', '2026-09-13 07:13:47'),
+(901, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #68 from Preparing to Completed.', '2026-09-13 07:13:54'),
+(902, 6, 49, 'customer', 'order', 'New Customer Order', 'dsds placed Order #69 / Queue #3.', '2026-09-13 07:56:55'),
+(903, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #69 from Pending to Preparing.', '2026-09-13 07:58:37'),
+(904, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #69 from Preparing to Completed.', '2026-09-13 08:01:12'),
+(905, 6, 49, 'customer', 'order', 'New Customer Order', 'cj addresss placed Order #70 / Queue #4.', '2026-09-13 08:04:03'),
+(906, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #70 from Pending to Preparing.', '2026-09-13 08:04:39'),
+(907, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Andoy Humilde Bangal was assigned and automatically accepted delivery Order #70.', '2026-09-13 08:05:16'),
+(908, 6, 35, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #70 from the restaurant.', '2026-09-13 08:11:32'),
+(909, 6, 35, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #70 is now out for delivery.', '2026-09-13 08:11:40'),
+(910, 6, 35, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #70 was delivered and the COD cash payment was confirmed.', '2026-09-13 08:15:23'),
+(911, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Test\nChanges:\nPromotion: 25.00% discount (Active, permanent) → None', '2026-09-13 08:23:19'),
+(912, 6, 27, 'owner', 'staff', 'Staff Password Reset', 'Ian Reigh P Dela Cruz was issued a temporary password and must create a new password at the next login.', '2026-09-13 08:30:27'),
+(913, 6, 27, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-13 08:41:23'),
+(914, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Green Apple Yogurt\nChanges:\nProduct image added.', '2026-09-13 09:36:02'),
+(915, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Green Apple Yogurt\nChanges:\nProduct image added.', '2026-09-13 09:37:13'),
+(916, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Blueberry Lemon Soda\nChanges:\nProduct image added.', '2026-09-13 09:38:16'),
+(917, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Blueberry Lemon Soda\nChanges:\nProduct image added.', '2026-09-13 09:38:28'),
+(918, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Strawberry Lemon Soda\nChanges:\nProduct image added.', '2026-09-13 09:39:29'),
+(919, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Strawberry Lemon Soda\nChanges:\nProduct image added.', '2026-09-13 09:39:44'),
+(920, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Passion Fruit Soda\nChanges:\nProduct image added.', '2026-09-13 09:40:19'),
+(921, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Passion Fruit Soda\nChanges:\nProduct image added.', '2026-09-13 09:40:30'),
+(922, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Kiwi Soda\nChanges:\nProduct image added.', '2026-09-13 09:41:07'),
+(923, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Kiwi Soda\nChanges:\nProduct image added.', '2026-09-13 09:41:18'),
+(924, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Lychee Soda\nChanges:\nProduct image added.', '2026-09-13 09:41:44'),
+(925, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Lychee Soda\nChanges:\nProduct image added.', '2026-09-13 09:41:54'),
+(926, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Green Apple Soda\nChanges:\nProduct image added.', '2026-09-13 09:42:53'),
+(927, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Green Apple Soda\nChanges:\nProduct image added.', '2026-09-13 09:43:04'),
+(928, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Blueberry Yogurt\nChanges:\nProduct image added.', '2026-09-13 09:43:57'),
+(929, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Lychee Yogurt\nChanges:\nProduct image added.', '2026-09-13 09:44:32'),
+(930, 6, 27, 'owner', 'product', 'Product Updated', 'Product: Lychee Yogurt\nChanges:\nProduct image added.', '2026-09-13 09:44:44'),
+(931, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Four Cheese Pasta\nChanges:\nProduct image added.', '2026-09-13 10:51:53'),
+(932, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Shrimp Marinara\nChanges:\nProduct image added.', '2026-09-13 10:52:38'),
+(933, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Truffle Pasta\nChanges:\nProduct image added.', '2026-09-13 10:53:13'),
+(934, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Sprite\nChanges:\nProduct image added.', '2026-09-13 10:53:48'),
+(935, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Sprite\nChanges:\nProduct image added.', '2026-09-13 10:54:16'),
+(936, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Coke\nChanges:\nProduct image added.', '2026-09-13 11:43:30'),
+(937, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Coke\nChanges:\nProduct image added.', '2026-09-13 11:43:43'),
+(938, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Mango\nChanges:\nProduct image added.', '2026-09-13 11:44:26'),
+(939, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Mango\nChanges:\nProduct image added.', '2026-09-13 11:44:38'),
+(940, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Mango\nChanges:\nProduct image added.', '2026-09-13 11:45:02'),
+(941, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Mango\nChanges:\nProduct image added.', '2026-09-13 11:45:17'),
+(942, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Blueberry\nChanges:\nProduct image added.', '2026-09-13 11:46:07'),
+(943, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Blueberry\nChanges:\nProduct image added.', '2026-09-13 11:46:17'),
+(944, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Blueberry\nChanges:\nProduct image added.', '2026-09-13 11:46:37'),
+(945, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Blueberry\nChanges:\nProduct image added.', '2026-09-13 11:46:50'),
+(946, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Strawberry\nChanges:\nProduct image added.', '2026-09-13 11:47:30'),
+(947, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Strawberry\nChanges:\nProduct image added.', '2026-09-13 11:47:40'),
+(948, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Lychee\nChanges:\nProduct image added.', '2026-09-13 11:48:19'),
+(949, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Lychee\nChanges:\nProduct image added.', '2026-09-13 11:48:29'),
+(950, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Apple\nChanges:\nProduct image added.', '2026-09-13 11:49:11'),
+(951, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Apple\nChanges:\nProduct image added.', '2026-09-13 11:49:24'),
+(952, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Strawberry\nChanges:\nProduct image added.', '2026-09-13 11:49:39'),
+(953, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Strawberry\nChanges:\nProduct image added.', '2026-09-13 11:49:49'),
+(954, 9, 31, 'owner', 'product', 'Product Updated', 'Product: Lychee\nChanges:\nProduct image added.', '2026-09-13 11:49:59');
 
 -- --------------------------------------------------------
 
@@ -863,6 +897,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (121, '0af39001c6916dda7c5d5f1fd906b2b414721562bbafc936aec693723c0af177', '175.176.15.167', 'access_code', 1, '2026-09-11 23:43:24'),
 (107, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.199.200', 'credentials', 1, '2026-09-10 02:55:42'),
 (122, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '175.176.15.167', 'credentials', 1, '2026-09-11 23:43:45'),
+(124, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.142', 'credentials', 1, '2026-09-13 06:30:49'),
 (118, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.143', 'credentials', 0, '2026-09-11 05:06:56'),
 (119, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.143', 'credentials', 1, '2026-09-11 05:07:14'),
 (109, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.229', 'credentials', 1, '2026-09-11 02:37:53'),
@@ -979,6 +1014,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (97, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-08-29 12:15:40'),
 (100, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-08-29 12:24:58'),
 (103, 'ab6e5a226aa6481e21c3a5929519d69b58a20d958a5d65c825d6d47ddeba46c0', '::1', 'access_code', 1, '2026-09-02 10:49:56'),
+(123, 'b6f742517f05f71c24fef8321dc7e9e2740885e0a5425a750763eaab6dcb4738', '216.247.89.142', 'access_code', 1, '2026-09-13 06:30:40'),
 (105, 'e0b7b8787af640f3eb2e413c70a0b0ae30bf78cc8454649fd4bd78b661fece87', '110.54.199.200', 'access_code', 0, '2026-09-10 02:52:58'),
 (106, 'e0b7b8787af640f3eb2e413c70a0b0ae30bf78cc8454649fd4bd78b661fece87', '110.54.199.200', 'access_code', 1, '2026-09-10 02:54:16');
 
@@ -1091,13 +1127,7 @@ CREATE TABLE `tbl_delivery_assignments` (
 --
 
 INSERT INTO `tbl_delivery_assignments` (`assignment_id`, `order_id`, `restaurant_id`, `delivery_staff_id`, `assigned_by_user_id`, `assignment_type`, `delivery_status`, `delivery_fee`, `delivery_staff_payment`, `assigned_at`, `accepted_at`, `picked_up_at`, `out_for_delivery_at`, `completed_at`, `cancelled_at`, `created_at`, `updated_at`) VALUES
-(5, 41, 6, 33, 34, 'internal', 'out_for_delivery', 50.00, 0.00, '2026-08-26 10:10:09', '2026-08-26 10:10:09', '2026-08-26 10:13:06', '2026-08-26 10:14:02', NULL, NULL, '2026-08-26 10:10:09', '2026-08-26 10:14:02'),
-(6, 46, 6, 35, 34, 'internal', 'completed', 50.00, 0.00, '2026-09-04 19:13:41', '2026-09-04 19:13:41', '2026-09-04 19:14:41', '2026-09-04 19:14:50', '2026-09-04 19:15:15', NULL, '2026-09-04 11:13:41', '2026-09-04 11:15:15'),
-(7, 48, 6, 35, 34, 'internal', 'completed', 50.00, 0.00, '2026-09-04 19:35:27', '2026-09-04 19:35:27', '2026-09-04 19:36:19', '2026-09-04 19:36:39', '2026-09-04 19:36:52', NULL, '2026-09-04 11:35:27', '2026-09-04 11:36:52'),
-(8, 50, 6, 35, 34, 'internal', 'completed', 50.00, 0.00, '2026-09-07 21:13:50', '2026-09-07 21:13:50', '2026-09-07 21:15:24', '2026-09-07 21:15:41', '2026-09-07 21:16:51', NULL, '2026-09-07 13:13:50', '2026-09-07 13:16:51'),
-(9, 51, 6, 35, 34, 'internal', 'completed', 50.00, 0.00, '2026-09-07 23:04:40', '2026-09-07 23:04:40', '2026-09-07 23:05:31', '2026-09-07 23:05:46', '2026-09-07 23:08:38', NULL, '2026-09-07 15:04:40', '2026-09-07 15:08:38'),
-(10, 52, 6, 35, 34, 'internal', 'completed', 70.00, 0.00, '2026-09-08 23:58:44', '2026-09-08 23:58:44', '2026-09-08 23:59:42', '2026-09-08 23:59:48', '2026-09-09 00:02:28', NULL, '2026-09-08 15:58:44', '2026-09-08 16:02:28'),
-(11, 64, 6, 35, 34, 'internal', 'completed', 70.00, 0.00, '2026-09-11 12:22:20', '2026-09-11 12:22:20', '2026-09-11 12:23:20', '2026-09-11 12:23:33', '2026-09-11 12:23:48', NULL, '2026-09-11 04:22:20', '2026-09-11 04:23:48');
+(12, 70, 6, 35, 34, 'internal', 'completed', 70.00, 0.00, '2026-09-13 16:05:16', '2026-09-13 16:05:16', '2026-09-13 16:11:32', '2026-09-13 16:11:40', '2026-09-13 16:15:23', NULL, '2026-09-13 08:05:16', '2026-09-13 08:15:23');
 
 -- --------------------------------------------------------
 
@@ -1112,25 +1142,6 @@ CREATE TABLE `tbl_notification_reads` (
   `restaurant_id` int(11) NOT NULL,
   `read_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tbl_notification_reads`
---
-
-INSERT INTO `tbl_notification_reads` (`notification_read_id`, `log_id`, `user_id`, `restaurant_id`, `read_at`) VALUES
-(71, 742, 34, 6, '2026-08-26 09:59:38'),
-(84, 743, 34, 6, '2026-09-03 01:20:41'),
-(85, 774, 34, 6, '2026-09-03 01:20:45'),
-(86, 810, 34, 6, '2026-09-07 23:10:05'),
-(87, 804, 34, 6, '2026-09-07 23:10:09'),
-(88, 775, 34, 6, '2026-09-09 00:17:07'),
-(89, 779, 34, 6, '2026-09-09 00:17:08'),
-(90, 784, 34, 6, '2026-09-09 00:17:10'),
-(91, 785, 34, 6, '2026-09-09 00:17:11'),
-(92, 792, 34, 6, '2026-09-09 00:17:14'),
-(93, 795, 34, 6, '2026-09-09 00:17:16'),
-(94, 801, 34, 6, '2026-09-09 00:17:16'),
-(95, 821, 34, 6, '2026-09-09 00:17:16');
 
 -- --------------------------------------------------------
 
@@ -1173,32 +1184,10 @@ CREATE TABLE `tbl_orders` (
 --
 
 INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `qr_verified_at`, `qr_expires_at`, `queue_number`, `restaurant_id`, `processed_by_cashier_id`, `user_id`, `customer_name`, `contact_number`, `order_type`, `order_status`, `cancellation_reason`, `cancelled_by`, `cancelled_at`, `total_amount`, `subtotal`, `delivery_fee`, `payment_method`, `payment_status`, `address`, `landmark`, `customer_latitude`, `customer_longitude`, `table_number`, `notes`, `created_at`) VALUES
-(40, '717953397eab177c9ba778c959cf8a1407295b21cd86a83da9b544b8cb1bc8af', NULL, '2026-08-26 18:14:41', 1, 6, NULL, 12, 'Angel Recepcion', '+639123456789', 'takeout', 'pending', NULL, NULL, NULL, 365.00, 365.00, 0.00, 'Cash', 'cash_pending', '', '', NULL, NULL, '', '', '2026-08-26 09:54:40'),
-(41, '4b742445377c0c686d4b5fb55b9917be1ccb0e4ff67ea0dc1efba08648ea8e9d', NULL, NULL, 2, 6, 34, 12, 'Order #1', '+639123445465', 'delivery', 'out_for_delivery', NULL, NULL, NULL, 515.00, 465.00, 50.00, 'Cash on Delivery', 'cash_pending', 'Poblacion, City of Alaminos, Pangasinan, Philippines', '', 16.15812604, 119.98010279, '', 'basta', '2026-08-26 10:06:11'),
-(42, '6997610fe4118be1f8a6f8aba1d0e7d5c9670a79afca4e2f72c9b8bf03f79f3c', NULL, '2026-09-03 13:35:36', 1, 6, NULL, 12, 'test', '+639213232432', 'takeout', 'pending', NULL, NULL, NULL, 485.00, 485.00, 0.00, 'Cash', 'cash_pending', '', '', NULL, NULL, '', 'xjchdj', '2026-09-03 05:15:36'),
-(43, '9f48f775a036889da17551f068531eb2a4688a735280be351309b1ba64658995', NULL, '2026-09-03 13:42:36', 2, 6, NULL, 12, 'tr', '+639876543432', 'takeout', 'pending', NULL, NULL, NULL, 170.00, 170.00, 0.00, 'Cash', 'cash_pending', '', '', NULL, NULL, '', 'hjbhjg', '2026-09-03 05:22:36'),
-(44, 'dc34e3c7b139773a70727922faea720d64f61671096e671ab6f80bfd9fea0461', '2026-09-04 18:52:51', '2026-09-04 19:12:41', 1, 6, 34, 12, 'Angel #1', '+639123324354', 'takeout', 'completed', NULL, NULL, NULL, 250.00, 250.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-04 10:52:41'),
-(45, 'e62afc9b677e7b03275117b16e1edf31109c5b232fee0e959f4b6d3d422c5043', NULL, NULL, 2, 6, 34, 12, 'Angel #2', '+639732763244', 'delivery', 'cancelled', 'Unable to prepare the order', 'cashier', '2026-09-04 19:13:11', 579.00, 529.00, 50.00, 'Cash on Delivery', 'cash_pending', 'Eme lang ito, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17149100, 119.94531892, '', '', '2026-09-04 11:07:17'),
-(46, '7b782dec05642ae15edba4a5c460f81e02437ee8f4728b11d8039b04c1acacad', NULL, NULL, 3, 6, 34, 12, 'Angel #3', '+639734637254', 'delivery', 'completed', NULL, NULL, NULL, 939.00, 889.00, 50.00, 'Cash on Delivery', 'paid', 'Andito ako eh, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17142048, 119.94531924, '', '', '2026-09-04 11:11:33'),
-(47, '195607c03e545cf4c063a8460411cb02cf76bb7dccb19684a2092a0f620013a3', '2026-09-04 19:21:25', '2026-09-04 19:40:42', 4, 6, 34, 12, 'Angel #4', '+639238782647', 'dine-in', 'completed', NULL, NULL, NULL, 175.00, 175.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-04 11:20:42'),
-(48, '06e0a610540b65faeae4e262adcb375222dc1d422b7e0ba5fc090c6e7dde75d6', NULL, NULL, 5, 6, 34, 12, '#5', '+639555555555', 'delivery', 'completed', NULL, NULL, NULL, 329.00, 279.00, 50.00, 'Cash on Delivery', 'paid', 'hxggsc, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17150047, 119.94530302, '', '', '2026-09-04 11:32:59'),
-(49, '50f12aa10415b5509608c5ef696858b765c77d1250cbf4edd015741cdd312ffa', '2026-09-07 20:22:21', '2026-09-07 20:41:29', 1, 6, 34, 12, 'Angel Test', '+639783672546', 'takeout', 'completed', NULL, NULL, NULL, 239.00, 239.00, 0.00, 'PayMongo QR Ph', 'paid', '', '', NULL, NULL, '', '', '2026-09-07 12:21:29'),
-(50, 'eaf84c5fbd33a65e7c8f6c0ecf33cdab420e088df6f5023809cb1713f9e165bb', NULL, NULL, 2, 6, 34, 12, 'Angel (Sept. 07 #2)', '+639123456797', 'delivery', 'completed', NULL, NULL, NULL, 310.00, 260.00, 50.00, 'PayMongo QR Ph', 'paid', 'dito lang, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17143484, 119.94532878, '', '', '2026-09-07 13:11:09'),
-(51, 'dcb5abd414ceca6552f18ba307a211dec4174d6c0833619fc65bc43013f0a634', NULL, NULL, 3, 6, 34, 12, 'Delivery Angel (#1)', '+639123455367', 'delivery', 'completed', NULL, NULL, NULL, 400.00, 350.00, 50.00, 'Cash on Delivery', 'paid', '123, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17145422, 119.94525733, '', '', '2026-09-07 15:00:15'),
-(52, 'a8609478a6481176786e9bf6ba15f7f073ebc92cd218775e60b1c7586f2f36bb', NULL, NULL, 1, 6, 34, 12, 'Gel', '+639123454697', 'delivery', 'completed', NULL, NULL, NULL, 160.00, 90.00, 70.00, 'Cash on Delivery', 'paid', 'Greenville West Subdvision, Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17152230, 119.94541940, '', '', '2026-09-08 15:57:40'),
-(53, '1fb5a43cf790ca902d04903ef05ab1f2c7c5b4d1f5e7ed89539412d8677258ca', NULL, NULL, 1, 6, NULL, 12, 'Sept 09', '+639516164131', 'delivery', 'pending', NULL, NULL, NULL, 140.00, 70.00, 70.00, 'PayMongo QR Ph', 'pending', 'Landoc, City of Alaminos, Pangasinan, Philippines', '', 16.17152230, 119.94542280, '', '', '2026-09-08 16:23:16'),
-(54, '7b1a14fd35da7211a3fe448d23e231cf89213f82341b9da1836ff55c72ae4382', NULL, NULL, 2, 6, NULL, 37, 'Micah Romasoc', '+639164279382', 'delivery', 'pending', NULL, NULL, NULL, 310.00, 230.00, 80.00, 'Cash on Delivery', 'cash_pending', 'Olongapo-Bugallon Road, Alos, City of Alaminos, Pangasinan, Philippines', 'Vinz Car Care', 16.10825115, 119.96667100, '', 'may plantbox sa harap ng bahay namin', '2026-09-09 15:54:24'),
-(55, 'c87a5e0c28ced76112e3e8d9d8775e3c9ff2276913cf5423b5cb1d8f6c5df240', NULL, NULL, 3, 6, NULL, 37, 'Micah Romasoc', '+639164279382', 'delivery', 'pending', NULL, NULL, NULL, 175.00, 95.00, 80.00, 'Cash on Delivery', 'cash_pending', 'Olongapo-Bugallon Road, Alos, City of Alaminos, Pangasinan, Philippines', 'Vinz Car Care', 16.10825115, 119.96667100, '', 'dgethrymjnymk', '2026-09-09 15:57:36'),
-(56, '29dd6f614474de6cf7dc8793a768e9dc1b0a55c3321d95335eaf758d502d2ad9', '2026-09-11 10:30:42', '2026-09-11 10:46:44', 1, 6, 34, 12, 'kjjhgyu', '+639988755444', 'takeout', 'completed', NULL, NULL, NULL, 169.00, 169.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 02:26:44'),
-(57, 'dbd4937ba4dec65c0e19d7dd72d63ebe896d3ef6cf591b4f89553cdcb9f3db92', NULL, NULL, 1, 10, NULL, 12, 'hahaha', '+639457309228', 'delivery', 'cancelled', 'Incorrect order details', 'customer', '2026-09-11 10:51:48', 114.00, 54.00, 60.00, 'Cash on Delivery', 'cash_pending', 'E. Quintos Street, Poblacion, City of Alaminos, Pangasinan, Philippines', '', 16.15646710, 119.97933070, '', '', '2026-09-11 02:49:39'),
-(58, '880b2ea6def875167adf17fe729249785fcffed6fc68587001d4126a77551a99', NULL, '2026-09-11 11:12:57', 2, 10, NULL, 12, 'hatog', '+639457309228', 'dine-in', 'pending', NULL, NULL, NULL, 54.00, 54.00, 0.00, 'Cash', 'cash_pending', '', '', NULL, NULL, '', '', '2026-09-11 02:52:57'),
-(59, '55cbd73a36072fbfdb9284eadbd4a8c7f270a080042972a16b579b7c22c08fa2', NULL, '2026-09-11 11:14:04', 3, 10, NULL, 12, 'cege', '+639457309228', 'dine-in', 'pending', NULL, NULL, NULL, 54.00, 54.00, 0.00, 'Cash', 'cash_pending', '', '', NULL, NULL, '', '', '2026-09-11 02:54:04'),
-(60, '44cd26fe4e7cc223c0010206486fef0faec1e3e66463f9104c0f02ff10c3c779', '2026-09-11 11:21:53', '2026-09-11 11:41:41', 4, 10, 42, 12, 'hatdig', '+639457309228', 'dine-in', 'completed', NULL, NULL, NULL, 54.00, 54.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 03:21:41'),
-(61, '56a1ff22e4554acbe152f999a959b4ec0af3e56de02dfa82137ec7e607bf34e9', '2026-09-11 12:12:28', '2026-09-11 12:29:29', 5, 10, 42, 46, 'ttyrt', '+639676666667', 'takeout', 'cancelled', 'Insufficient stock', 'cashier', '2026-09-11 12:12:56', 54.00, 54.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 04:09:29'),
-(62, '2619af4346722d07d36c4f2d4c5c8ddc52ea1cf62cd2eeaf92d5210a97529701', '2026-09-11 12:13:28', '2026-09-11 12:33:24', 6, 10, NULL, 46, 'fyhth', '+639786756665', 'takeout', 'cancelled', 'Incorrect order details', 'customer', '2026-09-11 12:13:51', 54.00, 54.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 04:13:24'),
-(63, '75711430f27214be6ab61aad33cbd98502b4a532ecf4103296da0cb054df09c4', '2026-09-11 12:14:29', '2026-09-11 12:34:23', 7, 10, 42, 46, '57tyyt', '+639767667666', 'takeout', 'completed', NULL, NULL, NULL, 54.00, 54.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 04:14:23'),
-(64, 'd8fec16ffa6e78e86c8604e1234f59e39059ea04326c75f6a842ef74db045679', NULL, NULL, 2, 6, 34, 46, 'trtry', '+639786754474', 'delivery', 'completed', NULL, NULL, NULL, 344.00, 274.00, 70.00, 'Cash on Delivery', 'paid', 'M. Rabago Street, Poblacion, City of Alaminos, Pangasinan, Philippines', '', 16.15679700, 119.97946900, '', '', '2026-09-11 04:17:40'),
-(65, 'f611c7c89acea88c4b1f33638f0be0746f9e622baa83c59e3d5df19d4d95217a', '2026-09-11 12:59:06', '2026-09-11 13:18:08', 3, 6, 34, 46, 'kugiuyyi', '+639777676666', 'dine-in', 'completed', NULL, NULL, NULL, 166.50, 166.50, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-11 04:58:08');
+(67, '73034d2cfa3357a2ebea7c77cbe3cc93844eefdd145b4986dc7213bb14060116', '2026-09-13 15:04:26', '2026-09-13 15:23:59', 1, 6, 34, 49, 'Justin Lee', '+639123113332', 'dine-in', 'completed', NULL, NULL, NULL, 165.00, 165.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', 'dine in', '2026-09-13 07:03:59'),
+(68, 'a671159ebeafa7c7132d06cb9f248a48eb3915223baa08223527bc0a4acec976', '2026-09-13 15:12:34', '2026-09-13 15:32:20', 2, 6, 34, 49, 'alex', '+639457309228', 'dine-in', 'completed', NULL, NULL, NULL, 170.00, 170.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-13 07:12:20'),
+(69, 'e9fbffeb892656c52ee6967ddc231af3ee621ab32561a23a98ce5fea70fe6dd1', '2026-09-13 15:57:24', '2026-09-13 16:16:55', 3, 6, 34, 49, 'dsds', '+639133313111', 'dine-in', 'completed', NULL, NULL, NULL, 210.00, 210.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', 'asdada', '2026-09-13 07:56:55'),
+(70, 'bf55dc28447217a40f63c4abc47b09eddc01a78916c08ae5e6ef99ca5b500d79', NULL, NULL, 4, 6, 34, 49, 'cj addresss', '+639129849812', 'delivery', 'completed', NULL, NULL, NULL, 380.00, 310.00, 70.00, 'Cash on Delivery', 'paid', 'Ochave Park, Poblacion, City of Alaminos, Pangasinan, Philippines', '', 16.15640651, 119.97905119, '', 'dito malapit sa brwd', '2026-09-13 08:04:03');
 
 -- --------------------------------------------------------
 
@@ -1231,52 +1220,10 @@ CREATE TABLE `tbl_order_items` (
 --
 
 INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo_id`, `quantity`, `price`, `regular_price`, `discount_type`, `discount_value`, `discount_savings`, `discount_applied`, `product_name`, `variant_text`, `combo_choice_text`, `combo_choice_ids_json`, `addon_text`, `addon_ids_json`) VALUES
-(45, 40, 26, NULL, 1, 105.00, 105.00, 'none', 0.00, 0.00, 0, 'Garlic Parmesan', 'Solo Meal', '', '[]', 'No Add-on', '[]'),
-(46, 40, 125, NULL, 1, 260.00, 165.00, 'none', 0.00, 0.00, 0, 'Dirty Matcha Latte', 'Large', '', '[]', 'Matcha, Oatmik', '[220,221]'),
-(47, 41, 42, NULL, 1, 130.00, 130.00, 'none', 0.00, 0.00, 0, 'Overload Fries', '', '', '[]', 'No Add-on', '[]'),
-(48, 41, 55, NULL, 1, 90.00, 70.00, 'none', 0.00, 0.00, 0, 'Chicken Poppers', '', '', '[]', 'Plain Rice', '[214]'),
-(49, 41, 114, NULL, 1, 245.00, 150.00, 'none', 0.00, 0.00, 0, 'Strawberry Matcha', 'Large', '', '[]', 'Matcha, Oatmik', '[220,221]'),
-(50, 42, 142, NULL, 1, 215.00, 145.00, 'none', 0.00, 0.00, 0, 'Strawberry', 'Medium', '', '[]', 'Oatmik, Syrup', '[221,222]'),
-(51, 42, 181, NULL, 1, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Lychee Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
-(52, 42, 183, NULL, 2, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Green Apple Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
-(53, 43, 33, NULL, 1, 170.00, 145.00, 'none', 0.00, 0.00, 0, 'Tapsilog', '', '', '[]', 'Fried Rice', '[215]'),
-(54, 44, 55, NULL, 1, 70.00, 70.00, 'none', 0.00, 0.00, 0, 'Chicken Poppers', '', '', '[]', 'No Add-on', '[]'),
-(55, 44, 147, NULL, 1, 180.00, 160.00, 'none', 0.00, 0.00, 0, 'Matcha', 'Large', '', '[]', 'Whip Cream', '[226]'),
-(56, 45, 25, NULL, 1, 210.00, 210.00, 'none', 0.00, 0.00, 0, 'Buffalo', '6 pcs', '', '[]', 'No Add-on', '[]'),
-(57, 45, 39, NULL, 1, 99.00, 99.00, 'none', 0.00, 0.00, 0, 'French Fries', 'Cheese', '', '[]', 'No Add-on', '[]'),
-(58, 45, 116, NULL, 1, 220.00, 150.00, 'none', 0.00, 0.00, 0, 'Blueberry Matcha', 'Large', '', '[]', 'Matcha, Chia Seeds', '[220,225]'),
-(59, 46, 19, NULL, 1, 210.00, 210.00, 'none', 0.00, 0.00, 0, 'Teriyaki', '6pcs', '', '[]', 'No Add-on', '[]'),
-(60, 46, 42, NULL, 1, 130.00, 130.00, 'none', 0.00, 0.00, 0, 'Overload Fries', '', '', '[]', 'No Add-on', '[]'),
-(61, 46, 53, NULL, 1, 59.00, 59.00, 'none', 0.00, 0.00, 0, 'Shanghai Rice', '', '', '[]', 'No Add-on', '[]'),
-(62, 46, 60, NULL, 1, 160.00, 160.00, 'none', 0.00, 0.00, 0, 'Tofu Sisig', '', '', '[]', 'No Add-on', '[]'),
-(63, 46, 113, NULL, 1, 140.00, 140.00, 'none', 0.00, 0.00, 0, 'Strawberry Matcha', 'Medium', '', '[]', 'No Add-on', '[]'),
-(64, 46, 135, NULL, 1, 190.00, 155.00, 'none', 0.00, 0.00, 0, 'Salted Caramel', 'Large', '', '[]', 'Oatmik', '[221]'),
-(65, 47, 143, NULL, 1, 175.00, 155.00, 'none', 0.00, 0.00, 0, 'Strawberry', 'Large', '', '[]', 'Whip Cream', '[226]'),
-(66, 48, 48, NULL, 1, 180.00, 165.00, 'none', 0.00, 0.00, 0, 'Meaty Burger', '', '', '[]', 'Sliced Cheese', '[218]'),
-(67, 48, 178, NULL, 1, 99.00, 99.00, 'none', 0.00, 0.00, 0, 'Blueberry Lemon Soda', 'Large', '', '[]', 'No Add-on', '[]'),
-(68, 49, 56, NULL, 1, 99.00, 79.00, 'none', 0.00, 0.00, 0, 'Combo Cravings', '', '', '[]', 'Plain Rice', '[214]'),
-(69, 49, 88, NULL, 1, 140.00, 140.00, 'none', 0.00, 0.00, 0, 'Mocha Latte', 'Medium', '', '[]', 'No Add-on', '[]'),
-(70, 50, 29, NULL, 1, 130.00, 130.00, 'none', 0.00, 0.00, 0, 'Spamsilog', '', '', '[]', 'No Add-on', '[]'),
-(71, 50, 97, NULL, 1, 130.00, 115.00, 'none', 0.00, 0.00, 0, 'Strawberry Milk', 'Large - Iced', '', '[]', 'Condensed', '[223]'),
-(72, 51, 37, NULL, 1, 160.00, 160.00, 'none', 0.00, 0.00, 0, 'Creamy Pesto Tuna', '', '', '[]', 'No Add-on', '[]'),
-(73, 51, 49, NULL, 1, 190.00, 175.00, 'none', 0.00, 0.00, 0, 'Drop Supreme Burger', '', '', '[]', 'Sliced Cheese', '[218]'),
-(74, 52, 187, NULL, 1, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
-(75, 53, 55, NULL, 1, 70.00, 70.00, 'none', 0.00, 0.00, 0, 'Chicken Poppers', '', '', '[]', 'No Add-on', '[]'),
-(76, 54, 151, NULL, 1, 230.00, 170.00, 'none', 0.00, 0.00, 0, 'Biscoff Matcha', 'Large', '', '[]', 'Matcha', '[220]'),
-(77, 55, 55, NULL, 1, 95.00, 70.00, 'none', 0.00, 0.00, 0, 'Chicken Poppers', '', '', '[]', 'Fried Rice', '[215]'),
-(78, 56, 56, NULL, 1, 79.00, 79.00, 'none', 0.00, 0.00, 0, 'Combo Cravings', '', '', '[]', 'No Add-on', '[]'),
-(79, 56, 187, NULL, 1, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
-(80, 57, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(81, 58, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(82, 59, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(83, 60, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(84, 61, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(85, 62, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(86, 63, 616, NULL, 1, 54.00, 90.00, 'percentage', 40.00, 36.00, 1, 'Mocha', 'Large', '', '[]', 'No Add-on', '[]'),
-(87, 64, 56, NULL, 1, 99.00, 79.00, 'none', 0.00, 0.00, 0, 'Combo Cravings', '', '', '[]', 'Plain Rice', '[214]'),
-(88, 64, 82, NULL, 1, 175.00, 140.00, 'none', 0.00, 0.00, 0, 'White Choco Latte', 'Medium', '', '[]', 'Espresso', '[219]'),
-(89, 65, 40, NULL, 1, 99.00, 99.00, 'none', 0.00, 0.00, 0, 'French Fries', 'BBQ', '', '[]', 'No Add-on', '[]'),
-(90, 65, 617, NULL, 1, 67.50, 90.00, 'percentage', 25.00, 22.50, 1, 'Test', 'Regular', '', '[]', 'No Add-on', '[]');
+(92, 67, 130, NULL, 1, 165.00, 145.00, 'none', 0.00, 0.00, 0, 'Caramel Latte', 'Medium', '', '[]', 'Whip Cream', '[226]'),
+(93, 68, 148, NULL, 1, 170.00, 155.00, 'none', 0.00, 0.00, 0, 'Stawberry/Blueberry', 'Medium', '', '[]', 'Condensed', '[223]'),
+(94, 69, 26, NULL, 2, 105.00, 105.00, 'none', 0.00, 0.00, 0, 'Garlic Parmesan', 'Solo Meal', '', '[]', 'No Add-on', '[]'),
+(95, 70, 617, NULL, 4, 77.50, 90.00, 'percentage', 25.00, 22.50, 1, 'Test', 'Regular', '', '[]', 'Jelly', '[224]');
 
 -- --------------------------------------------------------
 
@@ -1335,7 +1282,8 @@ INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selec
 (45, 27, '16a65986dd55e032514f3f9940246781', '80cfa9fe55690d2b71efb661c8edcb2476dfe288df79540578741c613e83df10', '2026-10-07 19:27:42', '2026-09-07 19:27:42', NULL),
 (50, 27, 'bc5cf89f65a1913613999ade669841ef', '47bc074a8e22092b2bcc328f5bc8418637b95851388ad4aa09f5eb2c3954f95d', '2026-10-09 00:12:10', '2026-09-09 00:12:10', '2026-09-09 22:47:15'),
 (54, 40, '6ee860f6efd4519530b9dd6a892603d0', '032225c25b43d7b02e9a5b2f0bf2bd367469b40ebbf2d8cf87bee8833af39903', '2026-10-11 12:11:02', '2026-09-11 12:11:02', NULL),
-(55, 27, '3675ed1e84aa482a260a9baf3149070b', '83465a0d8a2f290b0e9960f71b61d3daebc63dc2176c77c746a3ea89bbdd9f54', '2026-10-11 12:25:35', '2026-09-11 12:25:35', '2026-09-11 12:53:29');
+(61, 27, '1d3b278bf871a27c3c1633c18f6bd0ff', '2e9a19bbf5109be055530cc178d581abb9cd7c6cbcf78d2be64847b7bfccb95c', '2026-10-13 14:49:12', '2026-09-13 14:49:12', NULL),
+(62, 27, '171cec9f5da12a5b235baf95040bc9eb', '3942cf311572f69b0340f4352fdae8ff2602c520cbda85274acae46f868d1c9f', '2026-10-13 16:17:39', '2026-09-13 16:17:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -1448,15 +1396,6 @@ CREATE TABLE `tbl_payments` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
---
--- Dumping data for table `tbl_payments`
---
-
-INSERT INTO `tbl_payments` (`payment_id`, `order_id`, `restaurant_id`, `provider`, `payment_method_type`, `payment_status`, `amount`, `currency`, `reference_number`, `checkout_session_id`, `provider_payment_id`, `paid_at`, `failed_at`, `cancelled_at`, `refunded_at`, `created_at`, `updated_at`) VALUES
-(13, 49, 6, 'paymongo', 'qrph', 'paid', 239.00, 'PHP', 'FC-6-49-T-1-7fb95670a4', 'cs_8bba3eb6d6f472258efad9f0', 'pay_YHU36fPtHwT37C3xX2E94wHs', '2026-09-07 20:47:55', NULL, NULL, NULL, '2026-09-07 12:22:26', '2026-09-07 12:47:55'),
-(14, 50, 6, 'paymongo', 'qrph', 'paid', 310.00, 'PHP', 'FC-6-50-T-1-0d8bd1474c', 'cs_cc81b64e0e9a25517effdbc4', 'pay_qvmhbfZTDX9s6Np46LSPa4xQ', '2026-09-07 21:12:30', NULL, NULL, NULL, '2026-09-07 13:11:10', '2026-09-07 13:12:30'),
-(15, 53, 6, 'paymongo', 'qrph', 'pending', 140.00, 'PHP', 'FC-6-53-L-1-2cdb9823df', 'cs_79bc976a9a5906b4bb7c90f4', NULL, NULL, NULL, NULL, NULL, '2026-09-08 16:23:17', '2026-09-08 16:23:17');
-
 -- --------------------------------------------------------
 
 --
@@ -1500,7 +1439,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (23, 6, 'Buffalo', 'Chicken Wings', '2 pcs w/ Rice', 'menu_item', 'Solo Meal', 105.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_8b1491fbfdb1d842b30fe59d7fb655a1.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (24, 6, 'Buffalo', 'Chicken Wings', NULL, 'menu_item', '4 pcs', 140.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_a466c2c8f442cdf6e4d482c93a3e24fd.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (25, 6, 'Buffalo', 'Chicken Wings', NULL, 'menu_item', '6 pcs', 210.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_774aac713a3609ca433a507a20905869.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(26, 6, 'Garlic Parmesan', 'Chicken Wings', '2 pcs w/ Rice', 'menu_item', 'Solo Meal', 105.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_a73034cccc76618c5df131ebe6534ca4.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(26, 6, 'Garlic Parmesan', 'Chicken Wings', '2 pcs w/ Rice', 'menu_item', 'Solo Meal', 105.00, 17, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_a73034cccc76618c5df131ebe6534ca4.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (27, 6, 'Garlic Parmesan', 'Chicken Wings', NULL, 'menu_item', '4 pcs', 140.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_5ed8ce496a87df8062c749101ef8b5a4.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (28, 6, 'Garlic Parmesan', 'Chicken Wings', NULL, 'menu_item', '6 pcs', 210.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_e99fc24584924877ec67acf2aaf5f4cd.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (29, 6, 'Spamsilog', 'Rice Meals', 'with egg and side dish on the side.', 'menu_item', '', 130.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_ce0dc4ca2d2cafa098b3600010e7e6f9.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -1600,7 +1539,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (127, 6, 'Hazelnut Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Large', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_13fff100c691e60d37d519709d83e83b.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (128, 6, 'Roasted Almond', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Medium', 145.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_f4e97e8955382362cf66eb7711824c4d.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (129, 6, 'Roasted Almond', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Large', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_ff642f4f02bfe3edf2a15897fa3ac928.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(130, 6, 'Caramel Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Medium', 145.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_4dc27d181bc0075c767f9e60c536ddc6.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(130, 6, 'Caramel Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Medium', 145.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_4dc27d181bc0075c767f9e60c536ddc6.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (131, 6, 'Caramel Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Large', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_23b6f2358294a6abc5eb3c0303ffa578.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (132, 6, 'White Choco Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Medium', 145.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_d31710b1a739be62a845d68273275979.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (133, 6, 'White Choco Latte', 'Drinks - Frappe (Coffee Based)', NULL, 'menu_item', 'Large', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_888190df2987e0685f6a8310147d7edc.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -1618,7 +1557,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (145, 6, 'Blueberry', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Large', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_cc76706f3d30559f1a095ecbb5866a83.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (146, 6, 'Matcha', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Medium', 150.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_2ffcdaae5a04fc2b3ae1e1138dd4116d.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (147, 6, 'Matcha', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Large', 160.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_22145fc754d9a7150669c40e57d1c413.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(148, 6, 'Stawberry/Blueberry', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Medium', 155.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_bf8dc524fc6e36d6734f3bae5fc1e39f.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(148, 6, 'Stawberry/Blueberry', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Medium', 155.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_bf8dc524fc6e36d6734f3bae5fc1e39f.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (149, 6, 'Stawberry/Blueberry', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Large', 165.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_06d152cf846eae3107f27da626f872da.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (150, 6, 'Biscoff Matcha', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Medium', 160.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_94bd964cea57f398f0d2bdb280dbe4ec.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (151, 6, 'Biscoff Matcha', 'Drinks - Frappe (Non-Coffee Based)', NULL, 'menu_item', 'Large', 170.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_e1814224a270f2000f8b4dd8cdcd76cf.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -1639,23 +1578,23 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (166, 6, 'Passion Fruit', 'Drinks - Fruit Tea', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (167, 6, 'Blueberry', 'Drinks - Fruit Tea', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (168, 6, 'Blueberry', 'Drinks - Fruit Tea', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(169, 6, 'Green Apple Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(170, 6, 'Green Apple Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(171, 6, 'Lychee Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(172, 6, 'Lychee Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(173, 6, 'Kiwi Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(174, 6, 'Kiwi Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(175, 6, 'Passion Fruit Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(176, 6, 'Passion Fruit Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(177, 6, 'Blueberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(178, 6, 'Blueberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 99.00, 19, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(179, 6, 'Strawberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(180, 6, 'Strawberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 99.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(181, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 19, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(182, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(183, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 18, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(184, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(185, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(169, 6, 'Green Apple Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_6afa2adfe870ce48a479d4839dc0e5da.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(170, 6, 'Green Apple Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_a79aa58afa1a8912fc9b34242effc832.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(171, 6, 'Lychee Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_15a674b8bdabeb8eb469fae9f612f81e.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(172, 6, 'Lychee Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_2d75475627139c83e147c3d46e40ad85.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(173, 6, 'Kiwi Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_aef63d73d392d7c1d759e5bb980c223c.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(174, 6, 'Kiwi Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_1c322d93b81de43324f71edca83ffec3.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(175, 6, 'Passion Fruit Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 79.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_7ecde9700b8ff879d7f92c8f214086fe.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(176, 6, 'Passion Fruit Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_97846803aab3475754b1c2dd88c938b7.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(177, 6, 'Blueberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_4c2835842abbf2125d9f4f686f73f5a5.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(178, 6, 'Blueberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 99.00, 19, 'Available', '/uploads/product_images/restaurant_6/product_1464f4c3f530d13a17f4b2f5561f6ff3.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(179, 6, 'Strawberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Medium', 89.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_4e343ea4e411ed2fcf00cdbc36bdef8c.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(180, 6, 'Strawberry Lemon Soda', 'Drinks - Soda', NULL, 'menu_item', 'Large', 99.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_e0fd679f2655c43839975c7164b1cf80.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(181, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 19, 'Available', '/uploads/product_images/restaurant_6/product_e4d2d7aeb35b21a4ced53fef6f4bbdae.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(182, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_8f1ea0eb062b04472909a5b74a645c39.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(183, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 18, 'Available', '/uploads/product_images/restaurant_6/product_f7cd8da6ed74cd808bbbcf945b6d9e48.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(184, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_7f59fa5bdd531ce95ef1f15fa1092415.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(185, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_63c936fedbe49bc166b0323eab0e4f90.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (186, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_d2fecbec872bde1abfc68968d414e8ca.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (187, 6, 'Strawberry Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Medium', 90.00, 18, 'Available', '/uploads/product_images/restaurant_6/product_9f48e8c9242b451ae7cc2cede3657692.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (188, 6, 'Strawberry Yogurt', 'Drinks - Yogurt Series', NULL, 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_b552de4cc6b018dd16650b24f4d8ad02.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -1724,7 +1663,8 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (271, 7, 'Canton', 'Pansit', NULL, 'menu_item', '', 80.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (272, 7, 'Bilao', 'Bilao Order', NULL, 'menu_item', 'Small (Good for 5)', 350.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (273, 7, 'Bilao', 'Bilao Order', NULL, 'menu_item', 'Medium (Good for 10)', 570.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(274, 7, 'Bilao', 'Bilao Order', NULL, 'menu_item', 'Large (Good for 15)', 770.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(274, 7, 'Bilao', 'Bilao Order', NULL, 'menu_item', 'Large (Good for 15)', 770.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive');
+INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `description`, `item_type`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
 (275, 7, 'Lecheflan', 'Dessert', NULL, 'menu_item', '', 100.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (276, 7, 'Halo-Halo', 'Dessert', NULL, 'menu_item', '', 90.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (277, 7, 'Fruitshake', 'Dessert', NULL, 'menu_item', 'Mango', 100.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -1733,8 +1673,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (280, 7, 'Special Lomi', 'Short Orders', NULL, 'menu_item', '', 95.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (281, 7, 'Beef Mami', 'Short Orders', NULL, 'menu_item', '', 65.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (282, 7, 'Beef Mami w/ Egg', 'Short Orders', NULL, 'menu_item', '', 80.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(283, 7, 'Pork Chao Fan', 'Short Orders', NULL, 'menu_item', '', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive');
-INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `description`, `item_type`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
+(283, 7, 'Pork Chao Fan', 'Short Orders', NULL, 'menu_item', '', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (284, 7, 'Beef Chao Fan', 'Short Orders', NULL, 'menu_item', '', 89.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (285, 7, 'Yang Chow', 'Short Orders', NULL, 'menu_item', '', 99.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (286, 7, 'Pork Chao Fan', 'Rice Platters', NULL, 'menu_item', '', 210.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -2025,40 +1964,40 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (578, 9, 'Choco Smores Pizza', 'Dessert Pizza', NULL, 'menu_item', 'Medium', 269.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (582, 9, 'Chicken Poppers', 'Appetizers', NULL, 'menu_item', '', 139.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (583, 9, 'Mojos', 'Appetizers', NULL, 'menu_item', '', 139.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(584, 9, 'Spinach Dip Platter', 'Appetizers', NULL, 'menu_item', '', 279.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(584, 9, 'Spinach Dip Platter', 'Appetizers', NULL, 'menu_item', '', 279.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive');
+INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `description`, `item_type`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
 (585, 9, 'Honey Buffalo', 'Chicken Wings', NULL, 'menu_item', '6 pcs', 199.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (586, 9, 'Garlic Parmesan', 'Chicken Wings', NULL, 'menu_item', '6 pcs', 199.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (587, 9, 'Apple', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (588, 9, 'Apple', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (589, 9, 'Lychee', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(590, 9, 'Lychee', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(591, 9, 'Strawberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(592, 9, 'Strawberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(593, 9, 'Blueberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive');
-INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `category`, `description`, `item_type`, `size`, `price`, `stock`, `status`, `image_path`, `discount_type`, `discount_value`, `discount_schedule`, `discount_start`, `discount_end`, `discount_status`) VALUES
-(594, 9, 'Blueberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(595, 9, 'Mango', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(596, 9, 'Mango', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(597, 9, 'Apple', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(598, 9, 'Apple', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(599, 9, 'Lychee', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(600, 9, 'Lychee', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(601, 9, 'Strawberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(602, 9, 'Strawberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(603, 9, 'Blueberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(604, 9, 'Blueberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(605, 9, 'Mango', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(606, 9, 'Mango', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(607, 9, 'Coke', 'Drinks', NULL, 'menu_item', '1.5L', 80.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(608, 9, 'Coke', 'Drinks', NULL, 'menu_item', 'Mismo', 30.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(609, 9, 'Sprite', 'Drinks', NULL, 'menu_item', '1.5L', 80.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(610, 9, 'Sprite', 'Drinks', NULL, 'menu_item', 'Mismo', 30.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(611, 9, 'Truffle Pasta', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(612, 9, 'Shrimp Marinara', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(613, 9, 'Four Cheese Pasta', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', NULL, 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(590, 9, 'Lychee', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_2bd16ab26c849ae1e0e20d6efcdb4fa6.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(591, 9, 'Strawberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_3d15537d9c7bc157366557fa47023769.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(592, 9, 'Strawberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_125569f04d206998724cda161f826e53.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(593, 9, 'Blueberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_e1d3d25f6893a93c234057c2331f1afa.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(594, 9, 'Blueberry', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_b4acf004982b43c9b3ee7b3bb42c4e37.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(595, 9, 'Mango', 'Drinks - Fruit Soda', NULL, 'menu_item', '12oz', 39.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_eccd7e9f4499735251aa05b2827d3d80.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(596, 9, 'Mango', 'Drinks - Fruit Soda', NULL, 'menu_item', '16oz', 59.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_b29e19c985dadd2f4ca7259695aa169f.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(597, 9, 'Apple', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_c33310f1a94b1176a986c2784fc29030.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(598, 9, 'Apple', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_f9fabe7a6b221e4d5d0b727938add3e7.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(599, 9, 'Lychee', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_936c416ebbf9d20343a67a0bcaa2b7ee.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(600, 9, 'Lychee', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_4314bc8d7fe47b3c393d1d8306a15046.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(601, 9, 'Strawberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_21ae44f7ebfd185ddc8266f218404c85.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(602, 9, 'Strawberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_570739ffc2b21982b57fcc4a03e7bc66.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(603, 9, 'Blueberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_a8709f6d6bd3594bb8331985ed695008.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(604, 9, 'Blueberry', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_32c0c8e40d0417e88f259f9a3a3b9a15.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(605, 9, 'Mango', 'Drinks - Fruit Yogu', NULL, 'menu_item', '12oz', 49.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_03686ab0aa47c9b7c19c6e013be29ef1.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(606, 9, 'Mango', 'Drinks - Fruit Yogu', NULL, 'menu_item', '16oz', 69.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_f10a2e329593b4e38f6b1db8cda2e4f3.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(607, 9, 'Coke', 'Drinks', NULL, 'menu_item', '1.5L', 80.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_db0e3382dca250319040fa4fd168ede5.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(608, 9, 'Coke', 'Drinks', NULL, 'menu_item', 'Mismo', 30.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_2077858d172cc6eeebcb5d9ba620c729.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(609, 9, 'Sprite', 'Drinks', NULL, 'menu_item', '1.5L', 80.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_b39faadeb6397e4d15089f2461616d1b.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(610, 9, 'Sprite', 'Drinks', NULL, 'menu_item', 'Mismo', 30.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_4103a54136b2b82d5b7cd87451fd7398.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(611, 9, 'Truffle Pasta', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_962941aabeb376f4410e7a0ef6c85e81.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(612, 9, 'Shrimp Marinara', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_4cdddbe0dff2654807af18d79aacef16.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(613, 9, 'Four Cheese Pasta', 'Pasta', NULL, 'menu_item', '', 299.00, 20, 'Available', '/uploads/product_images/restaurant_9/product_a5b884fef104139f09fc4038487a9e26.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (615, 10, 'Mocha', 'Drinks', NULL, 'menu_item', 'Medium', 50.00, 89, 'Available', '/FoodConnect/uploads/product_images/restaurant_10/product_51eacd79aa1f4fc9a51fb27d02762cde.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (616, 10, 'Mocha', 'Drinks', 'yyyyy', 'menu_item', 'Large', 90.00, 51, 'Available', '/FoodConnect/uploads/product_images/restaurant_10/product_eb319463655f4b6679dd2de8b28a64b3.jpg', 'percentage', 40.00, 'scheduled', '2026-09-11 10:45:00', '2026-09-12 11:50:00', 'Active'),
-(617, 6, 'Test', 'OKAy', 'sdfdgtgfytfy', 'menu_item', 'Regular', 90.00, 79, 'Available', '/uploads/product_images/restaurant_6/product_c8b6639306f858955eeb3427312e6bef.jpg', 'percentage', 25.00, 'permanent', NULL, NULL, 'Active');
+(617, 6, 'Test', 'OKAy', 'sdfdgtgfytfy', 'menu_item', 'Regular', 90.00, 75, 'Available', '/uploads/product_images/restaurant_6/product_c8b6639306f858955eeb3427312e6bef.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive');
 
 -- --------------------------------------------------------
 
@@ -2305,24 +2244,24 @@ INSERT INTO `tbl_product_addon_links` (`link_id`, `restaurant_id`, `product_name
 (419, 6, 'Passion Fruit', 'Drinks - Fruit Tea', 222, '2026-08-30 06:18:59'),
 (420, 6, 'Blueberry', 'Drinks - Fruit Tea', 224, '2026-08-30 06:19:19'),
 (421, 6, 'Blueberry', 'Drinks - Fruit Tea', 222, '2026-08-30 06:19:19'),
-(422, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', 223, '2026-08-30 06:20:19'),
-(423, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', 221, '2026-08-30 06:20:20'),
-(424, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', 223, '2026-08-30 06:20:38'),
-(425, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', 221, '2026-08-30 06:20:38'),
 (442, 6, 'Drop Supreme Burger', 'Burger Series', 218, '2026-09-09 15:09:44'),
 (443, 6, 'Drop Supreme Burger', 'Burger Series', 217, '2026-09-09 15:09:44'),
 (446, 6, 'Strawberry Yogurt', 'Drinks - Yogurt Series', 223, '2026-09-09 15:26:44'),
 (447, 6, 'Strawberry Yogurt', 'Drinks - Yogurt Series', 221, '2026-09-09 15:26:44'),
-(448, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', 223, '2026-09-09 15:27:05'),
-(449, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', 221, '2026-09-09 15:27:05'),
 (450, 6, 'Test', 'TEST', 226, '2026-09-11 04:26:56'),
 (451, 6, 'Test', 'TEST', 225, '2026-09-11 04:26:56'),
 (452, 6, 'Test', 'TEST', 224, '2026-09-11 04:26:56'),
 (453, 6, 'Test', 'TEST', 223, '2026-09-11 04:26:56'),
-(458, 6, 'Test', 'OKAy', 226, '2026-09-11 04:54:34'),
-(459, 6, 'Test', 'OKAy', 225, '2026-09-11 04:54:34'),
-(460, 6, 'Test', 'OKAy', 224, '2026-09-11 04:54:34'),
-(461, 6, 'Test', 'OKAy', 223, '2026-09-11 04:54:34');
+(462, 6, 'Test', 'OKAy', 226, '2026-09-13 08:23:19'),
+(463, 6, 'Test', 'OKAy', 225, '2026-09-13 08:23:19'),
+(464, 6, 'Test', 'OKAy', 224, '2026-09-13 08:23:19'),
+(465, 6, 'Test', 'OKAy', 223, '2026-09-13 08:23:19'),
+(468, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', 223, '2026-09-13 09:37:14'),
+(469, 6, 'Green Apple Yogurt', 'Drinks - Yogurt Series', 221, '2026-09-13 09:37:14'),
+(470, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', 223, '2026-09-13 09:43:57'),
+(471, 6, 'Blueberry Yogurt', 'Drinks - Yogurt Series', 221, '2026-09-13 09:43:57'),
+(474, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', 223, '2026-09-13 09:44:45'),
+(475, 6, 'Lychee Yogurt', 'Drinks - Yogurt Series', 221, '2026-09-13 09:44:45');
 
 -- --------------------------------------------------------
 
@@ -2344,54 +2283,34 @@ CREATE TABLE `tbl_rate_limits` (
 --
 
 INSERT INTO `tbl_rate_limits` (`rate_limit_key`, `scope_name`, `hits`, `window_started_at`, `blocked_until`, `updated_at`) VALUES
-('0ca86147d384d84f34f3cbcf0fb3b9d32cddcdb13ab6b218409e2e36afc7de04', 'owner-login', 1, '2026-09-10 01:06:20', NULL, '2026-09-10 01:06:20'),
-('12cea7c59eaafb56ff0accfa7695881fb38837fc26bff53361612595516583bd', 'staff-login', 1, '2026-09-09 22:58:34', NULL, '2026-09-09 22:58:34'),
-('15cb6225e6acda1d0b258ace76160713195b939a4da5292399022373fa991761', 'owner-login', 2, '2026-09-11 12:10:38', NULL, '2026-09-11 12:10:41'),
-('1c7a6cac58bfbc8a993a9dd3340b00d3cfef4084fb7e86d026523dfcc276ca34', 'staff-access-code', 2, '2026-09-11 12:11:55', NULL, '2026-09-11 12:16:08'),
-('1d94ef99d4cd3fab9efa43c5fcbd240d916898bc378d249d0c53b9b033cb6dd6', 'owner-login', 2, '2026-09-11 12:10:19', NULL, '2026-09-11 12:10:27'),
-('2377f0f2337018c248f231b983e9a5f78c18ec68dc1e33c8c607c8cb79cd00da', 'staff-login', 1, '2026-09-11 11:18:24', NULL, '2026-09-11 11:18:24'),
-('33255601de8e1a953d95e8360618208fa76d8c9251a61f06cb6aa3cf27bfe04f', 'cashier-qr-scan', 1, '2026-09-11 12:14:29', NULL, '2026-09-11 12:14:29'),
-('332759685e51f6b2a934c1da19e8fb24a0c1d936e54fd498f375a9aa3301853f', 'customer-signup', 2, '2026-09-09 23:00:04', NULL, '2026-09-09 23:20:51'),
-('3b7f46d316cda7d93cf86c8c2270512fb32bcee8bd02c23cc594ad11f95832f5', 'staff-login', 2, '2026-09-11 11:20:48', NULL, '2026-09-11 11:20:52'),
-('43e9277ffb24ab8dcbd8061af142d69313a605712e1338a82b393a857ba82b39', 'customer-order-cancel', 1, '2026-09-11 12:13:51', NULL, '2026-09-11 12:13:51'),
-('44b96cd95d041a8d4c3234952515c857d356d5b1368b64cb250ee6a380d19437', 'customer-checkout', 1, '2026-09-11 12:58:08', NULL, '2026-09-11 12:58:08'),
-('4d65f1214626cd6312f763970f2ac9e54a93a57c6251eda9428a792524939ec5', 'customer-login', 1, '2026-09-10 14:48:33', NULL, '2026-09-10 14:48:33'),
-('5961da2d4e25f1ab792869f24afefc60e03af7e944b5d6e9628934afe751b0db', 'staff-access-code', 5, '2026-09-11 12:18:23', NULL, '2026-09-11 12:22:45'),
-('5b6939169da924205b9c6d8000207a2799b1839ae404f98b8d6cb0b1742dcd3a', 'customer-login', 4, '2026-09-09 23:50:15', NULL, '2026-09-09 23:55:58'),
-('5d259dbb425783dc99b889beff0cba73a02d75f5cd8bee8e63a037155c26d2e3', 'customer-order-cancel', 1, '2026-09-11 10:51:48', NULL, '2026-09-11 10:51:48'),
-('63b54a7d6b25364ed1f03549c0b32e76261db2baeb87c5b36a509392c14c295f', 'owner-login', 1, '2026-09-11 12:25:10', NULL, '2026-09-11 12:25:10'),
-('688454c41ae2f7a793e96a5030fdec6fc9413acf0adef4115fc71fa5ca85d6f8', 'customer-signup', 1, '2026-09-09 23:21:06', NULL, '2026-09-09 23:21:06'),
-('6a7aa7b23b1ba7e047065715214be88a4d27ba229a76a6ea0fa6dd99d2e71b52', 'staff-login', 1, '2026-09-11 11:18:29', NULL, '2026-09-11 11:18:29'),
-('6f0ab98bdf110051d1c5752b7ce7466381c8bca3b14f048a2e0c407b1cfcf7a3', 'staff-access-code', 1, '2026-09-11 12:58:34', NULL, '2026-09-11 12:58:34'),
-('7415ddbd131d2626362ba1de08c347c470a3233aca9694f94591465bac312e2b', 'customer-checkout', 1, '2026-09-09 23:57:36', NULL, '2026-09-09 23:57:36'),
-('816cd3b8f831d29d28f5a9d61f43d3cf5084075ba7b0bb5b1fc0ac4921296bc9', 'customer-signup', 4, '2026-09-11 11:27:00', NULL, '2026-09-11 11:58:33'),
-('872862932fca0dc598e55c5349fb5b54a638ecf766216a37f2736b96d9629a14', 'customer-login', 1, '2026-09-11 11:41:58', NULL, '2026-09-11 11:41:58'),
-('87ed5010ee9397496cc1fa5855b0f06360994b1a1bea9c2a56e32a172ede82f5', 'staff-login', 1, '2026-09-11 12:20:43', NULL, '2026-09-11 12:20:43'),
-('94bd728719e8c37253ee5c261604987c8ac2b48ecb39a1e2c7b38a6715c9480f', 'customer-login', 1, '2026-09-11 12:31:36', NULL, '2026-09-11 12:31:36'),
-('a10a59cc5c96b5d3574159a7d282aff6823283521bf5ff5de6828a12ce8e6bfe', 'customer-login', 1, '2026-09-09 23:20:19', NULL, '2026-09-09 23:20:19'),
-('a3236cd2d1dd5590fd308fa6382fa75004fb95f9a53383469b612b8776b10286', 'verification-email-resend', 1, '2026-09-10 01:03:20', NULL, '2026-09-10 01:03:20'),
-('a776bb267da16c2a4c864ca2c3fa129e97e571bfba36c21119ed6d261e30f851', 'customer-login', 1, '2026-09-11 10:30:03', NULL, '2026-09-11 10:30:03'),
-('aa526970296540725d8e4187e2e60fbbb700fda4d8251e8362d57cdce04251c1', 'owner-login', 1, '2026-09-09 22:47:15', NULL, '2026-09-09 22:47:15'),
-('aec3d757fd14792ebf2e580e83ead5791011097eab27d541b35d9ae30b4b10b7', 'owner-login', 1, '2026-09-11 12:53:28', NULL, '2026-09-11 12:53:28'),
-('bcedda42f044d0dd4ab3ddc87c44b56c84322df399f8abdcea96c9a93b511e78', 'partner-registration', 1, '2026-09-09 23:46:11', NULL, '2026-09-09 23:46:11'),
-('c06db1e4e48118dc386a7e21ef345b85b3357ea8d0561dfc844a2699206bc9f8', 'staff-access-code', 1, '2026-09-09 22:58:21', NULL, '2026-09-09 22:58:21'),
-('c48a851985e0d93c6c523164f9e9c9e767b5c21d2dc37022eed6613c9d8cc5af', 'customer-checkout', 1, '2026-09-11 11:21:41', NULL, '2026-09-11 11:21:41'),
-('c4b1717bf6514756903ca4cbaa2b197162839b82a212f7260958a0bf25fd1c62', 'staff-login', 2, '2026-09-11 12:58:47', NULL, '2026-09-11 12:58:50'),
-('c5f9e0fbcefebbb714bd57118f67df4baa71b9f62a5c50508aaec34398a9e535', 'cashier-qr-scan', 1, '2026-09-11 12:59:06', NULL, '2026-09-11 12:59:06'),
-('ca5ecbbbf77d5a270ac3430c7e5add8fb5f59d39cb6295a384ed1de21e0a19ed', 'owner-login', 4, '2026-09-10 10:26:45', NULL, '2026-09-10 10:29:06'),
-('d04720295300247255037481570454ba0af9e6e9e455e534600570ba3e3b1375', 'cashier-qr-scan', 1, '2026-09-11 10:55:21', NULL, '2026-09-11 10:55:21'),
-('d148033e693d34903ef48bf55847187f5e0ca9b0b1efd5537ef027dccd363201', 'staff-login', 2, '2026-09-11 12:20:56', NULL, '2026-09-11 12:22:52'),
-('d1f998e21f9d173ff9f6dc857c6bd869fef2d3e304ad9756d93d8694343c9eb9', 'password-reset-submit', 1, '2026-09-11 12:02:54', NULL, '2026-09-11 12:02:54'),
-('d41a70234f95d8891631e924b6b13a7035abd318b7c0fd803b3d96bbc72c6fe1', 'staff-login', 4, '2026-09-11 12:19:17', NULL, '2026-09-11 12:22:10'),
-('da53466c8b41c502e6412d6fcdf0657a469f0f61c880614d679bb0951a82e4f5', 'staff-login', 3, '2026-09-11 12:12:17', NULL, '2026-09-11 12:16:21'),
-('e7f9a2c5954a2f4fe5f13921d014843e81e58b41642c54dbd163a286d4aafc0e', 'customer-login', 2, '2026-09-11 12:00:42', NULL, '2026-09-11 12:03:16'),
-('f2674376220d0b2707abf610f482dc22073c1dabd7d970b71ee3ddba97658b72', 'staff-login', 1, '2026-09-11 10:49:27', NULL, '2026-09-11 10:49:27'),
-('f446aaa9a9b5946dc291dd0518bdc3541ccbd86e1e952105d08b84f6aa716ced', 'customer-checkout', 1, '2026-09-11 12:17:40', NULL, '2026-09-11 12:17:40'),
-('f5d454bcb41fb7f3df0bb33af490bb033b1bd7ff5ae0255c88f85f03036407e7', 'customer-signup', 1, '2026-09-09 23:21:59', NULL, '2026-09-09 23:21:59'),
-('f767a00d613ab1fbea48da5c03da9d8d63439208fd3cb278d37f505903ff3699', 'forgot-password', 1, '2026-09-11 12:02:15', NULL, '2026-09-11 12:02:15'),
-('f95e9fd4d67404f2141a721f952e342509c43b6470b852376be298134106eedd', 'partner-registration', 1, '2026-09-11 10:34:33', NULL, '2026-09-11 10:34:33'),
-('f9977422d52e51fdad22e7b6640401b7d24651299fee63bbdbab2c6a8addbe9d', 'customer-login', 1, '2026-09-11 12:56:45', NULL, '2026-09-11 12:56:45'),
-('ff29c84848f6d1d30f1675f1112848836b8ca191ba8554741b628b50ebb68450', 'verification-email-resend', 1, '2026-09-09 23:51:37', NULL, '2026-09-09 23:51:37');
+('19ff703f7d2b2ff77c08fdccdb7f159eacf96a0b7f3c3edf06572913740cbe5b', 'customer-signup', 1, '2026-09-12 11:59:56', NULL, '2026-09-12 11:59:56'),
+('1eddfda63829085995b8a866e6aecf47c9fe37fbb360d7ea375c6f0d46525b73', 'customer-login', 6, '2026-09-12 12:09:52', NULL, '2026-09-12 12:18:09'),
+('23ba0d2c61cb68600abb5b72b1ffe9e09dc646ac5c34d3ea2718368cc1c55486', 'customer-checkout', 1, '2026-09-13 15:12:20', NULL, '2026-09-13 15:12:20'),
+('3364b5a4a3b1744ccb69fe54111119bbd2c782ff1cedbe6e465ab71d9da0c302', 'owner-login', 1, '2026-09-13 14:48:22', NULL, '2026-09-13 14:48:22'),
+('339feeb7c77d77524998e19a2084174c4755d4dec840cfeeebeed2c619702277', 'staff-login', 1, '2026-09-13 16:10:28', NULL, '2026-09-13 16:10:28'),
+('3a8174e7bbc8c431129a9787cb92753efcb59a1beb479670922871edcacb9b26', 'staff-login', 1, '2026-09-13 16:11:02', NULL, '2026-09-13 16:11:02'),
+('46152185886d86bf71e0005f475c69100aa92552c5a93cbcf02d2e22a1a94ac5', 'customer-signup', 4, '2026-09-13 14:34:16', NULL, '2026-09-13 15:00:28'),
+('48a0fa74762ab0e8d37f8577df4cffdd8e11ffbdde24a7a15409ef969b36d04c', 'customer-signup', 1, '2026-09-13 15:03:07', NULL, '2026-09-13 15:03:07'),
+('63e84cd1f11df409a4c5f0692e50768bc6d7854fbf5df31de128a3b99db02d83', 'staff-access-code', 1, '2026-09-13 17:29:06', NULL, '2026-09-13 17:29:06'),
+('6aae9ba97867541c987b4bce37519f9acf8c542304a26add51150ed9f4df5f3d', 'staff-access-code', 1, '2026-09-13 14:39:05', NULL, '2026-09-13 14:39:05'),
+('8a1b73e6124077d8e6f4a14fae8ae09d35207772e35024c32d3d40a8da5cf3a9', 'customer-checkout', 1, '2026-09-13 16:04:03', NULL, '2026-09-13 16:04:03'),
+('8f92dedfa25e9dc8c971896eff77c72fc6e0f8a7ab562ee3fa0c5520f26a1633', 'forgot-password', 1, '2026-09-12 12:04:58', NULL, '2026-09-12 12:04:58'),
+('9c3d4e0732286aa257c5388a3d01e83485fae73fb6340b13ac2775453246900b', 'verification-email-resend', 1, '2026-09-13 15:00:53', NULL, '2026-09-13 15:00:53'),
+('a3f524cd9116bf68b72f8448ed0b5ce05caee6ca858ec6ec8a08d797c3372060', 'cashier-qr-scan', 1, '2026-09-13 15:57:24', NULL, '2026-09-13 15:57:24'),
+('a7daa36eb159c8a56173d97de01820c9a78c24c685896b0385f8e7b2be8f6177', 'customer-signup', 1, '2026-09-12 12:09:44', NULL, '2026-09-12 12:09:44'),
+('ae46cb15c735e9c209d986da06b85741ee8dcf9dd49d99fff61539c94f6b110c', 'staff-login', 3, '2026-09-13 16:28:54', NULL, '2026-09-13 16:30:37'),
+('b4c928aa78fad39f7a5d5cdab8d689ee75a21773167762d2a66297ce26424afd', 'customer-order-cancel', 1, '2026-09-12 12:17:20', NULL, '2026-09-12 12:17:20'),
+('ba1ee9f6f155235431151a1f9831f152bd15c9ebec1974b168bea27b7d273e93', 'customer-login', 5, '2026-09-12 12:04:40', NULL, '2026-09-12 12:11:09'),
+('bc7cfa8cec1f5aca5e79f2e1413e3d71db2434e026ff9798d5206ca14f625825', 'owner-login', 2, '2026-09-13 18:34:40', NULL, '2026-09-13 18:49:25'),
+('bfa47de1275a9f6152be96b44a8f883294cb7d07b2c6003280b820a04f54bd61', 'customer-login', 1, '2026-09-13 16:13:08', NULL, '2026-09-13 16:13:08'),
+('dbe5de8bea1030398ba4da377415960674008571c21f2cb940c9ce6278395d36', 'owner-login', 2, '2026-09-13 14:39:15', NULL, '2026-09-13 14:39:19'),
+('dfa8559987a2691ba99410cbc1c8240d06b8b18321cc55473545fee082d81427', 'staff-login', 1, '2026-09-13 15:57:07', NULL, '2026-09-13 15:57:07'),
+('dfac0ca53fffa1669b9991c0686758d49de19fac51ab29da39edb3e0e10ddc5d', 'owner-login', 1, '2026-09-13 14:43:29', NULL, '2026-09-13 14:43:29'),
+('e1e964c22b20265af3747ff7fd84f3e1d87ec6ec7cfa667d6aef32d446e12c3e', 'staff-access-code', 1, '2026-09-13 16:28:17', NULL, '2026-09-13 16:28:17'),
+('e70d92a3eb0f85658cba98951530cf2a6378611cb4e723defb8f76795116f48d', 'owner-login', 1, '2026-09-13 17:31:12', NULL, '2026-09-13 17:31:12'),
+('eb2c1614247a68ca3ff823d5406c8b00b6adcdb8179a71d737f7ab2f9eaa5d34', 'customer-login', 2, '2026-09-13 15:53:07', NULL, '2026-09-13 15:55:03'),
+('f52a44fd95322d73f97d0dc32b2468bb91e0153056f701e69713b64568576ddb', 'staff-login', 1, '2026-09-13 17:30:41', NULL, '2026-09-13 17:30:41'),
+('f9070ffe160993cddefa2f72e2c5bccc8656a6ff6350da73ac3f1afe81cad837', 'customer-checkout', 1, '2026-09-12 12:16:49', NULL, '2026-09-12 12:16:49');
 
 -- --------------------------------------------------------
 
@@ -2417,44 +2336,14 @@ CREATE TABLE `tbl_receipt_print_jobs` (
 --
 
 INSERT INTO `tbl_receipt_print_jobs` (`print_job_id`, `order_id`, `restaurant_id`, `print_kind`, `trigger_source`, `status`, `claimed_by_user_id`, `claimed_at`, `processed_at`, `created_at`) VALUES
-(3952, 41, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-08-26 10:07:04', '2026-08-26 10:07:57', '2026-08-26 10:06:11'),
-(3953, 41, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-08-26 10:08:03', '2026-08-26 10:08:27', '2026-08-26 10:06:11'),
-(5475, 44, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-04 18:52:52', '2026-09-04 18:53:09', '2026-09-04 18:52:51'),
-(5476, 44, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-04 18:53:10', '2026-09-04 18:53:13', '2026-09-04 18:52:51'),
-(5542, 45, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-04 19:10:50', '2026-09-04 19:12:09', '2026-09-04 19:07:17'),
-(5543, 45, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-04 19:12:10', '2026-09-04 19:12:12', '2026-09-04 19:07:17'),
-(5545, 46, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-04 19:12:13', '2026-09-04 19:12:17', '2026-09-04 19:11:33'),
-(5546, 46, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-04 19:12:19', '2026-09-04 19:12:22', '2026-09-04 19:11:33'),
-(5637, 47, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-04 19:21:26', '2026-09-04 19:21:38', '2026-09-04 19:21:25'),
-(5638, 47, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-04 19:21:40', '2026-09-04 19:21:45', '2026-09-04 19:21:25'),
-(5648, 48, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-04 19:34:08', '2026-09-04 19:34:18', '2026-09-04 19:32:59'),
-(5649, 48, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-04 19:34:18', '2026-09-04 19:34:22', '2026-09-04 19:32:59'),
-(5739, 49, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-07 20:49:59', '2026-09-07 20:50:21', '2026-09-07 20:22:21'),
-(5740, 49, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-07 20:50:24', '2026-09-07 20:50:30', '2026-09-07 20:22:21'),
-(5975, 50, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-07 21:12:31', '2026-09-07 21:12:40', '2026-09-07 21:11:09'),
-(5976, 50, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-07 21:12:43', '2026-09-07 21:12:47', '2026-09-07 21:11:09'),
-(6030, 51, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-07 23:02:08', '2026-09-07 23:02:14', '2026-09-07 23:00:15'),
-(6031, 51, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-07 23:02:16', '2026-09-07 23:02:19', '2026-09-07 23:00:15'),
-(6235, 52, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-08 23:57:42', '2026-09-08 23:57:59', '2026-09-08 23:57:40'),
-(6236, 52, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-08 23:58:00', '2026-09-08 23:58:03', '2026-09-08 23:57:40'),
-(6422, 54, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-11 10:28:34', '2026-09-11 10:28:39', '2026-09-09 23:54:24'),
-(6423, 54, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-11 10:28:42', '2026-09-11 10:28:45', '2026-09-09 23:54:24'),
-(6424, 55, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-11 10:28:48', '2026-09-11 10:28:50', '2026-09-09 23:57:36'),
-(6425, 55, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-11 10:28:51', '2026-09-11 10:28:53', '2026-09-09 23:57:36'),
-(6469, 56, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-11 10:30:44', '2026-09-11 10:30:49', '2026-09-11 10:30:42'),
-(6470, 56, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-11 10:30:50', '2026-09-11 10:30:53', '2026-09-11 10:30:42'),
-(6627, 60, 10, 'customer_receipt', 'qr_verified', 'processed', 42, '2026-09-11 11:21:53', '2026-09-11 11:21:57', '2026-09-11 11:21:53'),
-(6628, 60, 10, 'kitchen_ticket', 'qr_verified', 'processed', 42, '2026-09-11 11:21:58', '2026-09-11 11:22:00', '2026-09-11 11:21:53'),
-(6651, 61, 10, 'customer_receipt', 'qr_verified', 'processed', 42, '2026-09-11 12:12:28', '2026-09-11 12:12:30', '2026-09-11 12:12:28'),
-(6652, 61, 10, 'kitchen_ticket', 'qr_verified', 'processed', 42, '2026-09-11 12:12:31', '2026-09-11 12:12:32', '2026-09-11 12:12:28'),
-(6676, 62, 10, 'customer_receipt', 'qr_verified', 'processed', 42, '2026-09-11 12:13:31', '2026-09-11 12:13:33', '2026-09-11 12:13:28'),
-(6677, 62, 10, 'kitchen_ticket', 'qr_verified', 'processed', 42, '2026-09-11 12:13:34', '2026-09-11 12:13:36', '2026-09-11 12:13:28'),
-(6699, 63, 10, 'customer_receipt', 'qr_verified', 'processed', 42, '2026-09-11 12:14:31', '2026-09-11 12:14:33', '2026-09-11 12:14:29'),
-(6700, 63, 10, 'kitchen_ticket', 'qr_verified', 'processed', 42, '2026-09-11 12:14:38', '2026-09-11 12:14:39', '2026-09-11 12:14:29'),
-(6721, 64, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-11 12:19:23', '2026-09-11 12:19:36', '2026-09-11 12:17:40'),
-(6722, 64, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-11 12:19:37', '2026-09-11 12:19:42', '2026-09-11 12:17:40'),
-(6743, 65, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-11 12:59:06', '2026-09-11 12:59:12', '2026-09-11 12:59:06'),
-(6744, 65, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-11 12:59:13', '2026-09-11 12:59:18', '2026-09-11 12:59:06');
+(6764, 67, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-13 15:04:26', '2026-09-13 15:04:28', '2026-09-13 15:04:26'),
+(6765, 67, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-13 15:04:29', '2026-09-13 15:04:30', '2026-09-13 15:04:26'),
+(6919, 68, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-13 15:12:35', '2026-09-13 15:12:36', '2026-09-13 15:12:34'),
+(6920, 68, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-13 15:12:38', '2026-09-13 15:12:39', '2026-09-13 15:12:34'),
+(7028, 69, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-13 15:57:25', '2026-09-13 15:57:27', '2026-09-13 15:57:24'),
+(7029, 69, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-13 15:57:29', '2026-09-13 15:57:30', '2026-09-13 15:57:24'),
+(7164, 70, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-13 16:04:04', '2026-09-13 16:04:05', '2026-09-13 16:04:03'),
+(7165, 70, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-13 16:04:07', '2026-09-13 16:04:08', '2026-09-13 16:04:03');
 
 -- --------------------------------------------------------
 
@@ -2487,8 +2376,8 @@ CREATE TABLE `tbl_restaurants` (
 INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `description`, `logo_path`, `banner_path`, `address`, `contact_number`, `opening_hours`, `delivery_fee`, `order_types_json`, `business_status`, `owner_id`, `staff_access_code`, `setup_completed`, `customer_visibility`) VALUES
 (6, 'Drop By Cafe', '?? All Day Breakfast & Pasta\n?? Coffee & Non-Coffee Drinks\n? Snacks and Pastries\n?? Air-Conditioned Area\n? Pet-Friendly Cafe\n? PS4 and Board Games\n?Books Collections\n? Free Wi-Fi\n?? Free Parking\n? Dine In / Take Out / Delivery/ Pick-Up', 'uploads/restaurant_logos/owner_27/restaurant_logo_20260815_022944_a228cfd995c94b93.jpg', '', 'Sabaro, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639617879757', 'Mon-Sun 9:00 AM-7:00 PM', 70.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Open', 27, 'FC-AE5A-8952', 1, 'Visible'),
 (7, 'Jai\'s Grill and Resto', 'We are open for Dine-in, Take-out, Deliveries and Reservations.', 'uploads/restaurant_logos/owner_29/restaurant_logo_20260817_005008_3139dc32c8666fbe.jpg', NULL, 'EJR Building, Marcos Avenue, Palamis, City of Alaminos, Pangasinan, Philippines', '+639273980481', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Closed', 29, '263B4FBB1E92', 1, 'Hidden'),
-(8, 'Alon\'s Cafe Alaminos', 'Japanese-Korean Cafe & Restaurant', 'uploads/restaurant_logos/owner_30/restaurant_logo_20260817_145830_ef31cd105a41575b.jpg', NULL, 'Ground floor, Davros Complex, M. Rabago St., San Jose Drive, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639165843190', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Closed', 30, '29E976A07313', 1, 'Visible'),
-(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260817_191225_f87ebff2ca452a19.jpg', NULL, 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Closed', 31, 'A7D344FDBF12', 1, 'Visible'),
+(8, 'Alon\'s Cafe Alaminos', 'Japanese-Korean Cafe & Restaurant', 'uploads/restaurant_logos/owner_30/restaurant_logo_20260817_145830_ef31cd105a41575b.jpg', '', 'Ground floor, Davros Complex, M. Rabago St., San Jose Drive, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639165843190', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Open', 30, '29E976A07313', 1, 'Visible'),
+(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260817_191225_f87ebff2ca452a19.jpg', '', 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Open', 31, 'A7D344FDBF12', 1, 'Visible'),
 (10, 'Bianca Cafe', 'BIANCA', 'uploads/restaurant_logos/owner_40/restaurant_logo_20260911_103829_b96d6aa058eec72d.jpg', '', 'Center Point, Poblacion, City of Alaminos, Pangasinan, Philippines, 2404', '+639876655444', 'Mon-Sun 8:00 AM-8:00 PM', 60.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Open', 40, '052284DB0DBA', 1, 'Visible');
 
 -- --------------------------------------------------------
@@ -2515,7 +2404,7 @@ CREATE TABLE `tbl_restaurant_delivery_settings` (
 --
 
 INSERT INTO `tbl_restaurant_delivery_settings` (`restaurant_id`, `pricing_type`, `base_fee`, `included_km`, `extra_fee_per_km`, `tiers_json`, `restaurant_latitude`, `restaurant_longitude`, `created_at`, `updated_at`) VALUES
-(6, 'distance', 70.00, 5.00, 10.00, '[]', 16.15538570, 119.97922010, '2026-09-08 12:57:17', '2026-09-08 16:13:26'),
+(6, 'tiered', 70.00, NULL, NULL, '[{\"up_to_km\":2,\"fee\":70}]', 16.15538570, 119.97922010, '2026-09-08 12:57:17', '2026-09-13 08:41:22'),
 (7, 'fixed', 50.00, NULL, NULL, '[]', NULL, NULL, '2026-09-08 12:57:17', '2026-09-08 12:57:17'),
 (8, 'fixed', 50.00, NULL, NULL, '[]', NULL, NULL, '2026-09-08 12:57:17', '2026-09-08 12:57:17'),
 (9, 'fixed', 50.00, NULL, NULL, '[]', NULL, NULL, '2026-09-08 12:57:17', '2026-09-08 12:57:17'),
@@ -2561,6 +2450,7 @@ CREATE TABLE `tbl_users` (
   `first_name` varchar(100) DEFAULT NULL,
   `middle_name` varchar(100) DEFAULT NULL,
   `last_name` varchar(100) DEFAULT NULL,
+  `username` varchar(30) DEFAULT NULL,
   `email` varchar(150) NOT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
   `address` mediumtext DEFAULT NULL,
@@ -2581,25 +2471,21 @@ CREATE TABLE `tbl_users` (
 -- Dumping data for table `tbl_users`
 --
 
-INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `first_name`, `middle_name`, `last_name`, `email`, `contact_number`, `address`, `password_hash`, `must_change_password`, `status`, `created_at`, `remember_token_hash`, `remember_token_expires`, `reset_token_hash`, `reset_token_expires`, `is_verified`, `verification_token`, `verification_expires_at`) VALUES
-(12, NULL, 'customer', 'Cj', 'Tamayo', 'Porto', 'carlosjaymiguel67@gmail.com', '', '1234 Hello, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$0pZX3FKO7GjRcebhrx2ZdOERZNfE4SZh9cfJQ5D6pvAhDgxtiv/IO', 0, 1, '2026-03-01 14:15:54', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(17, NULL, 'admin', 'Carlos Jay Miguel T. Porto', NULL, NULL, 'foodconnectv1@gmail.com', '+639457309228', NULL, '$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq', 0, 1, '2026-07-16 06:02:12', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(27, 6, 'owner', 'Jemillene ', NULL, 'Laurente', 'gelracho07@gmail.com', '+639295096884', NULL, '$2y$10$/iRsgy9Txea.Qjnc55PHd.G0o8WegRV3MIIIUviSubye8MgY8G9OC', 0, 1, '2026-08-14 18:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(28, NULL, 'owner', 'Mary Joy Peralta', NULL, NULL, 'ianc18864@gmail.com', '+639273980482', NULL, '$2y$10$plWaoFzqAxvICs1n2suZDO/2vixRFzckzL4D9iXCGbVrGCYX3J25i', 0, 0, '2026-08-16 16:14:17', NULL, NULL, NULL, NULL, 0, 'f202e730ca554b00b16a39c7a5237834795979619b2eda3ddd04a9d7f8d5a08c', '2026-08-18 00:14:20'),
-(29, 7, 'owner', 'Mary Joy Peralta', NULL, NULL, 'jaisfc2026@gmail.com', '+639273980481', NULL, '$2y$10$fc6cWhi8Iwgw7dFbi8Fy0O.SYjUnC4zjedPITeolCiDbx82to9oSe', 0, 1, '2026-08-16 16:33:17', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(30, 8, 'owner', 'Rizza D. Ranoy', NULL, NULL, 'alonsfc67@gmail.com', '+639165843190', NULL, '$2y$10$WLsZSXZsNfMFEqLuRxyLEuy./Or1MOZfA40HtQgrFZKLAxmhJdIiq', 0, 1, '2026-08-17 06:43:03', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(31, 9, 'owner', 'Dary Apolinario Castro', NULL, NULL, 'galleyfc8@gmail.com', '+639956327964', NULL, '$2y$10$2dY7d8qpfSzCGRlUiMoewO5HAWgoxs74g5vcdLCZ.1ATGpk1CVRlC', 0, 1, '2026-08-17 11:10:39', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(32, NULL, 'customer', 'Gel', 'Racho', 'Recepcion', 'eeegggihtloh@gmail.com', '+639295096884', 'V. Racho St., San Roque, City of Alaminos, Pangasinan, Philippines', '$2y$10$S2uADG/Gnwp1RWf2/5.LiutBJkGa10Vf9c2DsQ0riVxGcx3vFEfUe', 0, 1, '2026-08-25 13:11:30', '$2y$10$2hEcls6Xh32CLVG3NsgVO.zr3QxAH1WFpZy54SvNcZxeW30fGkUpO', '2026-09-24 21:13:12', NULL, NULL, 1, NULL, NULL),
-(33, 6, 'delivery_staff', 'Ian Reigh', 'P', 'Dela Cruz', 'iandelacruz@gmail.com', '+639123456788', 'Ene, Bolaney, City of Alaminos, Pangasinan, Philippines', '$2y$10$IyFnVJShQvXMcqeHOno9bO1sQMmKJUD.eTrZd/J693ssOhnkNZ8R2', 1, 1, '2026-08-25 13:27:10', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(34, 6, 'cashier', 'Angel', '', 'Recepcion', 'angelrecep123@gmail.com', '+639112233443', 'Basta, San Roque, City of Alaminos, Pangasinan, Philippines', '$2y$10$A.ks7wrNOmb41cLE13pXueHJqYWC/3XFlXxAJfAcob4tURzZy0Yya', 0, 1, '2026-08-25 13:29:58', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(35, 6, 'delivery_staff', 'Andoy', 'Humilde', 'Bangal', 'andoykuhonta@gmail.com', '+639123456666', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$B44qOP6TQfyK5Eg7ANQDqu9qmy5w.F5z5CYvY8B6nrnJ08NTKe8nC', 0, 1, '2026-09-04 11:04:51', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(36, NULL, 'customer', 'Micah', 'Ranit', 'Romasoc', 'romasocmicah@gmail.com', NULL, NULL, '$2y$10$Nl8o/bJR0H6uXR4h.4x4lujNTbbmgFhd3mC6x8FH1w1Ee2eXyOXPm', 0, 1, '2026-09-09 15:00:04', NULL, NULL, NULL, NULL, 0, 'cbdf35511aa6d66da353afc34fb18c38', '2026-09-10 23:00:04'),
-(37, NULL, 'customer', 'Micah', 'Ranit', 'Romasoc', 'galvxny@gmail.com', NULL, NULL, '$2y$10$N.JIZ6xpUelcMxreEoEe8.bvDeyKDIGTaX7DQQKFQsJW1t37mirr2', 0, 1, '2026-09-09 15:21:06', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(38, NULL, 'customer', 'Joms', 'Joms', 'Joms', 'xcontravis@gmail.com', NULL, NULL, '$2y$10$HOPzCkfNY4EqmvVzOg0akOyGCy9nXerWGUR5CAep7DZQX5EmJmS36', 0, 1, '2026-09-09 15:22:00', NULL, NULL, NULL, NULL, 0, '6b6e021c32502cd1ec34634293c93142', '2026-09-10 23:22:00'),
-(40, 10, 'owner', 'Bianca', '', 'Cacho', 'acadsonly67@gmail.com', '+639876655444', NULL, '$2y$10$88SAewL.tutS/p56cytUKeVcxnbSyFmHqW0AFjKvjVL8yh9B5rOWO', 0, 1, '2026-09-11 02:34:33', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(41, 10, 'delivery_staff', 'Cj', '', 'Porto', 'cjporto@gmail.com', '+639887766655', 'YYYY, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$DIhI/V/b9KHTGAZSYoSSGu5aMRMNl7LPsSjSr2NvZuWO0ZC6cXdVq', 0, 1, '2026-09-11 02:42:44', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(42, 10, 'cashier', 'Cherry', '', 'Dacdacc', 'cherry@gmail.com', '+639887665666', '1234, Balangobong, City of Alaminos, Pangasinan, Philippines', '$2y$10$QDLJ1W.CR5A9Cf0WumpUKujFn.FTigJehB/4Mje9AUEBizP5poOC2', 1, 1, '2026-09-11 03:17:11', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(46, NULL, 'customer', 'Dan', 'R', 'De Leon', 'jameslee050505051@gmail.com', '+639123456789', '123, Pogo, City of Alaminos, Pangasinan, Philippines', '$2y$10$OmBPoyGwLAVH7QaSJtlJC.9KYGRZcUbwtXBItPnzBfMR04.LzM4cC', 0, 1, '2026-09-11 03:58:34', '$2y$10$QY5sj7k66a0/TVlbS2O3XOUfYdIraBO2T21.g6GkZFVSTAJ7c5epe', '2026-10-11 12:56:46', NULL, NULL, 1, NULL, NULL);
+INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `first_name`, `middle_name`, `last_name`, `username`, `email`, `contact_number`, `address`, `password_hash`, `must_change_password`, `status`, `created_at`, `remember_token_hash`, `remember_token_expires`, `reset_token_hash`, `reset_token_expires`, `is_verified`, `verification_token`, `verification_expires_at`) VALUES
+(17, NULL, 'admin', 'Carlos Jay Miguel T. Porto', NULL, NULL, NULL, 'foodconnectv1@gmail.com', '+639457309228', NULL, '$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq', 0, 1, '2026-07-16 06:02:12', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(27, 6, 'owner', 'Jemillene ', NULL, 'Laurente', NULL, 'gelracho07@gmail.com', '+639295096884', NULL, '$2y$10$/iRsgy9Txea.Qjnc55PHd.G0o8WegRV3MIIIUviSubye8MgY8G9OC', 0, 1, '2026-08-14 18:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(28, NULL, 'owner', 'Mary Joy Peralta', NULL, NULL, NULL, 'ianc18864@gmail.com', '+639273980482', NULL, '$2y$10$plWaoFzqAxvICs1n2suZDO/2vixRFzckzL4D9iXCGbVrGCYX3J25i', 0, 0, '2026-08-16 16:14:17', NULL, NULL, NULL, NULL, 0, 'f202e730ca554b00b16a39c7a5237834795979619b2eda3ddd04a9d7f8d5a08c', '2026-08-18 00:14:20'),
+(29, 7, 'owner', 'Mary Joy Peralta', NULL, NULL, NULL, 'jaisfc2026@gmail.com', '+639273980481', NULL, '$2y$10$fc6cWhi8Iwgw7dFbi8Fy0O.SYjUnC4zjedPITeolCiDbx82to9oSe', 0, 1, '2026-08-16 16:33:17', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(30, 8, 'owner', 'Rizza D. Ranoy', NULL, NULL, NULL, 'alonsfc67@gmail.com', '+639165843190', NULL, '$2y$10$WLsZSXZsNfMFEqLuRxyLEuy./Or1MOZfA40HtQgrFZKLAxmhJdIiq', 0, 1, '2026-08-17 06:43:03', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(31, 9, 'owner', 'Dary Apolinario Castro', NULL, NULL, NULL, 'galleyfc8@gmail.com', '+639956327964', NULL, '$2y$10$2dY7d8qpfSzCGRlUiMoewO5HAWgoxs74g5vcdLCZ.1ATGpk1CVRlC', 0, 1, '2026-08-17 11:10:39', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(33, 6, 'delivery_staff', 'Ian Reigh', 'P', 'Dela Cruz', NULL, 'iandelacruz@gmail.com', '+639123456788', 'Ene, Bolaney, City of Alaminos, Pangasinan, Philippines', '$2y$10$Izv8o5MNj9vKwqnuzt1TZeC9wPOexBAs2A89G5FC/SRdhfR8quS1y', 1, 1, '2026-08-25 13:27:10', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(34, 6, 'cashier', 'Angel', '', 'Recepcion', NULL, 'angelrecep123@gmail.com', '+639112233443', 'Basta, San Roque, City of Alaminos, Pangasinan, Philippines', '$2y$10$A.ks7wrNOmb41cLE13pXueHJqYWC/3XFlXxAJfAcob4tURzZy0Yya', 0, 1, '2026-08-25 13:29:58', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(35, 6, 'delivery_staff', 'Andoy', 'Humilde', 'Bangal', NULL, 'andoykuhonta@gmail.com', '+639123456666', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$B44qOP6TQfyK5Eg7ANQDqu9qmy5w.F5z5CYvY8B6nrnJ08NTKe8nC', 0, 1, '2026-09-04 11:04:51', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(40, 10, 'owner', 'Bianca', '', 'Cacho', NULL, 'acadsonly67@gmail.com', '+639876655444', NULL, '$2y$10$88SAewL.tutS/p56cytUKeVcxnbSyFmHqW0AFjKvjVL8yh9B5rOWO', 0, 1, '2026-09-11 02:34:33', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(41, 10, 'delivery_staff', 'Cj', '', 'Porto', NULL, 'cjporto@gmail.com', '+639887766655', 'YYYY, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$DIhI/V/b9KHTGAZSYoSSGu5aMRMNl7LPsSjSr2NvZuWO0ZC6cXdVq', 0, 1, '2026-09-11 02:42:44', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(42, 10, 'cashier', 'Cherry', '', 'Dacdacc', NULL, 'cherry@gmail.com', '+639887665666', '1234, Balangobong, City of Alaminos, Pangasinan, Philippines', '$2y$10$QDLJ1W.CR5A9Cf0WumpUKujFn.FTigJehB/4Mje9AUEBizP5poOC2', 1, 1, '2026-09-11 03:17:11', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(49, NULL, 'customer', 'jarc criss', 'valdez', 'RARANGA', 'dyark19', 'dyarkkriss@gmail.com', NULL, NULL, '$2y$10$BmWiub5AT.6Pa9k.8EG41.B9sGnXueMHCWe94mFx3FC4MtD7oSZnW', 0, 1, '2026-09-13 06:34:16', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(50, NULL, 'customer', 'Ian', 'Reigh', 'Cruz', 'cruzian', 'customeracc709@gmail.com', NULL, NULL, '$2y$10$17HPuOpqO7mLYYCMTea6B.7xkJwyYsQ6dJKdWrB/uQ6Qjr6ZhnCAC', 0, 1, '2026-09-13 07:03:07', NULL, NULL, NULL, NULL, 1, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -2741,8 +2627,8 @@ ALTER TABLE `tbl_partner_applications`
 --
 ALTER TABLE `tbl_partner_application_documents`
   ADD PRIMARY KEY (`document_id`),
-  ADD UNIQUE KEY `uq_application_document_type` (`application_id`,`document_type`),
-  ADD KEY `idx_verification_owner` (`owner_id`);
+  ADD KEY `idx_verification_owner` (`owner_id`),
+  ADD KEY `idx_verification_application` (`application_id`);
 
 --
 -- Indexes for table `tbl_payments`
@@ -2820,6 +2706,7 @@ ALTER TABLE `tbl_stock_logs`
 ALTER TABLE `tbl_users`
   ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `uq_users_username` (`username`),
   ADD KEY `restaurant_id` (`restaurant_id`);
 
 --
@@ -2830,7 +2717,7 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=892;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=955;
 
 --
 -- AUTO_INCREMENT for table `tbl_address_cache`
@@ -2842,13 +2729,13 @@ ALTER TABLE `tbl_address_cache`
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `tbl_combos`
@@ -2878,7 +2765,7 @@ ALTER TABLE `tbl_combo_items`
 -- AUTO_INCREMENT for table `tbl_delivery_assignments`
 --
 ALTER TABLE `tbl_delivery_assignments`
-  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `tbl_notification_reads`
@@ -2890,13 +2777,13 @@ ALTER TABLE `tbl_notification_reads`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_password_reset_requests`
@@ -2908,7 +2795,7 @@ ALTER TABLE `tbl_owner_password_reset_requests`
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
 --
 ALTER TABLE `tbl_owner_trusted_devices`
-  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `tbl_partner_applications`
@@ -2938,13 +2825,13 @@ ALTER TABLE `tbl_products`
 -- AUTO_INCREMENT for table `tbl_product_addon_links`
 --
 ALTER TABLE `tbl_product_addon_links`
-  MODIFY `link_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=462;
+  MODIFY `link_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=476;
 
 --
 -- AUTO_INCREMENT for table `tbl_receipt_print_jobs`
 --
 ALTER TABLE `tbl_receipt_print_jobs`
-  MODIFY `print_job_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6764;
+  MODIFY `print_job_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7252;
 
 --
 -- AUTO_INCREMENT for table `tbl_restaurants`
@@ -2962,7 +2849,7 @@ ALTER TABLE `tbl_stock_logs`
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- Constraints for dumped tables

@@ -3370,10 +3370,20 @@ body[data-fc-page="cashier"] .notification-filter-btn.active {
   color: #ffffff !important;
 }
 
-body[data-fc-page="cashier"] .status-tab:hover,
-body[data-fc-page="cashier"] .notification-filter-btn:hover {
+body[data-fc-page="cashier"] .status-tab:hover:not(.active),
+body[data-fc-page="cashier"] .notification-filter-btn:hover:not(.active) {
   border-color: #f47c1e !important;
   color: #f47c1e !important;
+}
+
+/* Keep the active filter readable while hovered/focused. */
+body[data-fc-page="cashier"] .status-tab.active:hover,
+body[data-fc-page="cashier"] .status-tab.active:focus-visible,
+body[data-fc-page="cashier"] .notification-filter-btn.active:hover,
+body[data-fc-page="cashier"] .notification-filter-btn.active:focus-visible {
+  background: #df6810 !important;
+  border-color: #df6810 !important;
+  color: #ffffff !important;
 }
 
 /* View = secondary orange outline */
@@ -4039,3 +4049,248 @@ html[data-theme="light"] body[data-fc-page="cashier"] .toast p {
 /* Preparing statuses intentionally keep their existing blue semantic styles. */
 
 /* FOODCONNECT CASHIER ORANGE ACCENT SWEEP END */
+
+/* =========================================================
+   CASHIER DASHBOARD MOBILE LAYOUT FIX - 2026-09-13
+   Keeps desktop/tablet behavior intact and prevents the
+   orders tools/table from overflowing the phone viewport.
+   ========================================================= */
+
+@media (max-width: 768px) {
+  body[data-fc-page="cashier"] {
+    overflow-x: hidden;
+  }
+
+  body[data-fc-page="cashier"] .main-content,
+  body[data-fc-page="cashier"] .content-section,
+  body[data-fc-page="cashier"] .section-card,
+  body[data-fc-page="cashier"] .section-header,
+  body[data-fc-page="cashier"] .order-tools,
+  body[data-fc-page="cashier"] .table-wrapper {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body[data-fc-page="cashier"] .topbar {
+    width: 100%;
+    min-height: 76px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  body[data-fc-page="cashier"] .topbar > div:nth-of-type(1) {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  body[data-fc-page="cashier"] .topbar h1 {
+    margin: 0;
+    font-size: clamp(16px, 4.5vw, 18px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-fc-page="cashier"] .menu-toggle,
+  body[data-fc-page="cashier"] .scan-order-qr-btn,
+  body[data-fc-page="cashier"] .sound-btn,
+  body[data-fc-page="cashier"] .theme-icon-toggle,
+  body[data-fc-page="cashier"] .cashier-profile {
+    flex: 0 0 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body[data-fc-page="cashier"] .topbar-actions {
+    flex: 0 0 auto;
+    gap: 7px;
+  }
+
+  body[data-fc-page="cashier"] .content-section {
+    width: 100%;
+    padding: 16px 12px;
+  }
+
+  body[data-fc-page="cashier"] .section-card {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body[data-fc-page="cashier"] .section-header {
+    padding: 18px 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    align-items: start;
+    gap: 12px;
+  }
+
+  body[data-fc-page="cashier"] .section-header > div:first-child {
+    min-width: 0;
+  }
+
+  body[data-fc-page="cashier"] .section-header h2 {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  body[data-fc-page="cashier"] .section-header p {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: normal;
+  }
+
+  body[data-fc-page="cashier"] .refresh-btn {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  body[data-fc-page="cashier"] .refresh-btn i {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  body[data-fc-page="cashier"] .order-tools {
+    width: 100%;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  body[data-fc-page="cashier"] .search-box,
+  body[data-fc-page="cashier"] .order-tools select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex: none;
+  }
+
+  body[data-fc-page="cashier"] .search-box input {
+    min-width: 0;
+    width: 100%;
+    text-overflow: ellipsis;
+  }
+
+  /* The status dropdown already provides the same filter on phones.
+     Hide the duplicate horizontal tab strip to prevent clipping. */
+  body[data-fc-page="cashier"] .status-tabs {
+    display: none;
+  }
+
+  body[data-fc-page="cashier"] .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  body[data-fc-page="cashier"] .orders-table {
+    width: max-content;
+    min-width: 860px;
+    table-layout: auto;
+  }
+
+  body[data-fc-page="cashier"] .orders-table th,
+  body[data-fc-page="cashier"] .orders-table td {
+    padding: 13px 14px;
+  }
+
+  /* Keep an empty/filter message readable even though the real table is
+     wider than the phone and horizontally scrollable. */
+  body[data-fc-page="cashier"] .orders-table .empty-message {
+    position: sticky;
+    left: 0;
+    width: calc(100vw - 26px);
+    max-width: calc(100vw - 26px);
+    padding: 34px 18px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.6;
+    background: var(--card-color);
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-fc-page="cashier"] .summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  body[data-fc-page="cashier"] .summary-card {
+    min-width: 0;
+    min-height: 96px;
+    padding: 14px;
+    gap: 8px;
+  }
+
+  body[data-fc-page="cashier"] .summary-card p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body[data-fc-page="cashier"] .summary-card h3 {
+    margin-top: 5px;
+    font-size: 21px;
+  }
+
+  body[data-fc-page="cashier"] .summary-card > i {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 430px) {
+  body[data-fc-page="cashier"] .topbar {
+    padding-inline: 10px;
+    gap: 8px;
+  }
+
+  body[data-fc-page="cashier"] .topbar-actions {
+    gap: 6px;
+  }
+
+  body[data-fc-page="cashier"] .menu-toggle,
+  body[data-fc-page="cashier"] .scan-order-qr-btn,
+  body[data-fc-page="cashier"] .sound-btn,
+  body[data-fc-page="cashier"] .theme-icon-toggle,
+  body[data-fc-page="cashier"] .cashier-profile {
+    flex-basis: 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  body[data-fc-page="cashier"] .content-section {
+    padding: 12px 10px;
+  }
+
+  body[data-fc-page="cashier"] .section-header,
+  body[data-fc-page="cashier"] .order-tools {
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  body[data-fc-page="cashier"] .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="cashier"] .topbar h1 {
+    font-size: 15px;
+  }
+}

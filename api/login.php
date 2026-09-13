@@ -72,9 +72,14 @@ if (!is_array($input) || !$input) {
     );
 }
 
-$email = strtolower(
+$identifier = strtolower(
     trim(
-        (string) ($input["email"] ?? "")
+        (string) (
+            $input["identifier"] ??
+            $input["username"] ??
+            $input["email"] ??
+            ""
+        )
     )
 );
 
@@ -84,10 +89,10 @@ $password =
 $remember =
     !empty($input["remember"]);
 
-if ($email === "" || $password === "") {
+if ($identifier === "" || $password === "") {
     respond_json(
         [
-            "error" => "Please enter email and password."
+            "error" => "Please enter username and password."
         ],
         400
     );
@@ -98,7 +103,7 @@ rate_limit_enforce(
     "customer-login",
     rate_limit_identifier(
         rate_limit_client_ip(),
-        $email
+        $identifier
     ),
     10,
     900,
@@ -118,12 +123,15 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
+        username,
         email,
         password_hash,
         status,
         is_verified
     FROM tbl_users
-    WHERE email = ?
+    WHERE username = ?
+       OR LOWER(email) = ?
+    ORDER BY CASE WHEN username = ? THEN 0 ELSE 1 END
     LIMIT 1
 ");
 
@@ -142,8 +150,10 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "s",
-    $email
+    "sss",
+    $identifier,
+    $identifier,
+    $identifier
 );
 
 $stmt->execute();
@@ -164,7 +174,7 @@ if (
 ) {
     respond_json(
         [
-            "error" => "Invalid email or password."
+            "error" => "Invalid username or password."
         ],
         401
     );
@@ -196,7 +206,8 @@ if ((int) $user["status"] !== 1) {
         [
             "error" => "Your account is deactivated.",
             "deactivated" => true,
-            "reactivation_available" => true
+            "reactivation_available" => true,
+            "reactivation_email" => (string) $user["email"]
         ],
         403
     );
@@ -205,7 +216,8 @@ if ((int) $user["status"] !== 1) {
 if ((int) $user["is_verified"] !== 1) {
     respond_json(
         [
-            "error" => "Please verify your email first."
+            "error" => "Please verify your email first.",
+            "verification_email" => (string) $user["email"]
         ],
         403
     );
@@ -388,6 +400,7 @@ respond_json([
         "first_name" => (string)($user["first_name"] ?? ""),
         "middle_name" => (string)($user["middle_name"] ?? ""),
         "last_name" => (string)($user["last_name"] ?? ""),
+        "username" => (string)($user["username"] ?? ""),
         "display_name" => $displayName,
         "email" => $user["email"]
     ]

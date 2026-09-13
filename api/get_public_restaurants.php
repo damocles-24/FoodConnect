@@ -11,6 +11,22 @@ header(
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
 
+/*
+ * Load the schedule checker defensively.
+ * A missing/new helper file must never make the public restaurant directory
+ * return HTTP 500. The included helper is still used whenever available.
+ */
+$availabilityHelperPath = __DIR__ . "/restaurant_availability_helper.php";
+
+if (is_file($availabilityHelperPath)) {
+    require_once $availabilityHelperPath;
+} else {
+    error_log(
+        "FoodConnect availability helper is missing: " .
+        $availabilityHelperPath
+    );
+}
+
 /* =========================================================
    JSON RESPONSE
 ========================================================= */
@@ -126,6 +142,49 @@ while ($row = $result->fetch_assoc()) {
         )
     );
 
+    $openingHours =
+        (string) (
+            $row["opening_hours"] ?? ""
+        );
+
+    /*
+     * Do not allow one availability-calculation problem to hide every
+     * restaurant from customers. If the helper cannot run for any reason,
+     * fall back to the previous manual business-status behavior and log the
+     * server-side error for debugging.
+     */
+    $availability = [
+        "is_accepting_orders" =>
+            strtolower($businessStatus) === "open",
+        "customer_status" =>
+            strtolower($businessStatus) === "open"
+                ? "Open"
+                : (
+                    strtolower($businessStatus) === "temporarily unavailable"
+                        ? "Temporarily Unavailable"
+                        : "Closed"
+                ),
+        "availability_reason" => "manual_fallback",
+        "schedule_parsed" => false
+    ];
+
+    if (function_exists("fc_restaurant_evaluate_availability")) {
+        try {
+            $availability =
+                fc_restaurant_evaluate_availability(
+                    $businessStatus,
+                    $openingHours
+                );
+        } catch (Throwable $error) {
+            error_log(
+                "Restaurant availability check failed for restaurant " .
+                (int) $row["restaurant_id"] .
+                ": " .
+                $error->getMessage()
+            );
+        }
+    }
+
     $deliveryPricing =
         fc_delivery_pricing_get_active(
             $conn,
@@ -151,9 +210,7 @@ while ($row = $result->fetch_assoc()) {
             ),
 
         "opening_hours" =>
-            (string) (
-                $row["opening_hours"] ?? ""
-            ),
+            $openingHours,
 
         "delivery_fee" =>
             round(
@@ -169,9 +226,14 @@ while ($row = $result->fetch_assoc()) {
         "business_status" =>
             $businessStatus,
 
+        "customer_status" =>
+            (string) $availability["customer_status"],
+
+        "availability_reason" =>
+            (string) $availability["availability_reason"],
+
         "is_accepting_orders" =>
-            strtolower($businessStatus) ===
-            "open"
+            (bool) $availability["is_accepting_orders"]
     ];
 }
 

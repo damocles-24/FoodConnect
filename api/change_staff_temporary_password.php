@@ -24,6 +24,7 @@ function clear_staff_password_change_session() {
         $_SESSION["staff_password_change_restaurant_id"],
         $_SESSION["staff_password_change_role"],
         $_SESSION["staff_password_change_display_name"],
+        $_SESSION["staff_password_change_password_fingerprint"],
         $_SESSION["staff_password_change_started_at"]
     );
 }
@@ -38,12 +39,16 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") {
 $userId = (int)($_SESSION["staff_password_change_user_id"] ?? 0);
 $restaurantId = (int)($_SESSION["staff_password_change_restaurant_id"] ?? 0);
 $sessionRole = strtolower(trim((string)($_SESSION["staff_password_change_role"] ?? "")));
+$passwordFingerprint = trim((string)(
+    $_SESSION["staff_password_change_password_fingerprint"] ?? ""
+));
 $startedAt = (int)($_SESSION["staff_password_change_started_at"] ?? 0);
 
 if (
     $userId <= 0 ||
     $restaurantId <= 0 ||
     !in_array($sessionRole, ["cashier", "delivery_staff", "delivery_coordinator"], true) ||
+    !preg_match('/^[a-f0-9]{64}$/', $passwordFingerprint) ||
     $startedAt <= 0 ||
     (time() - $startedAt) > 900
 ) {
@@ -136,10 +141,29 @@ try {
         ], 403);
     }
 
+    if (strtolower(trim((string)$dbRole)) !== $sessionRole) {
+        clear_staff_password_change_session();
+        staff_password_respond([
+            "success" => false,
+            "message" => "Your password-change session is no longer valid. Log in again using the temporary password."
+        ], 401);
+    }
+
     if ((int)$dbMustChangePassword !== 1) {
         staff_password_respond([
             "success" => false,
             "message" => "A password change is not required for this account."
+        ], 409);
+    }
+
+    if (!hash_equals(
+        $passwordFingerprint,
+        hash("sha256", (string)$dbPasswordHash)
+    )) {
+        clear_staff_password_change_session();
+        staff_password_respond([
+            "success" => false,
+            "message" => "The temporary password was changed after this login. Log in again using the latest temporary password."
         ], 409);
     }
 
@@ -155,7 +179,7 @@ try {
         throw new RuntimeException("Unable to securely process the new password.");
     }
 
-    $updateStmt = $conn->prepare("\n        UPDATE tbl_users\n        SET password_hash = ?,\n            must_change_password = 0\n        WHERE user_id = ?\n          AND restaurant_id = ?\n          AND must_change_password = 1\n    ");
+    $updateStmt = $conn->prepare("\n        UPDATE tbl_users\n        SET password_hash = ?,\n            must_change_password = 0,\n            reset_token_hash = NULL,\n            reset_token_expires = NULL,\n            remember_token_hash = NULL,\n            remember_token_expires = NULL\n        WHERE user_id = ?\n          AND restaurant_id = ?\n          AND must_change_password = 1\n    ");
 
     if (!$updateStmt) {
         throw new RuntimeException("Unable to prepare the password update.");

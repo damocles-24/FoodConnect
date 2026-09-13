@@ -20,6 +20,9 @@ const middleNameInput =
 const lastNameInput =
     document.getElementById("lastName");
 
+const usernameInput =
+    document.getElementById("username");
+
 const emailInput =
     document.getElementById("email");
 
@@ -47,6 +50,12 @@ const loginPrompt =
 const createAnotherAccountButton =
     document.getElementById("createAnotherAccount");
 
+const openEmailInboxButton =
+    document.getElementById("openEmailInboxButton");
+
+const openEmailInboxButtonLabel =
+    document.getElementById("openEmailInboxButtonLabel");
+
 const passwordMatchMessage =
     document.getElementById("passwordMatchMessage");
 
@@ -61,6 +70,9 @@ const numberRequirement =
 
 const emailRegex =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const usernameRegex =
+    /^[A-Za-z0-9_]{3,30}$/;
 
 /* =========================================================
    HELPERS
@@ -119,6 +131,77 @@ async function readJsonResponse(response) {
         throw new Error(
             "Something went wrong. Please try again."
         );
+    }
+}
+
+function getEmailInboxProvider(email = "") {
+    const domain =
+        String(email)
+            .trim()
+            .toLowerCase()
+            .split("@")
+            .pop() || "";
+
+    if (["gmail.com", "googlemail.com"].includes(domain)) {
+        return {
+            name: "Gmail",
+            url: "https://mail.google.com/"
+        };
+    }
+
+    if (["outlook.com", "hotmail.com", "live.com", "msn.com"].includes(domain)) {
+        return {
+            name: "Outlook",
+            url: "https://outlook.live.com/mail/0/inbox"
+        };
+    }
+
+    if (["yahoo.com", "ymail.com", "rocketmail.com"].includes(domain)) {
+        return {
+            name: "Yahoo Mail",
+            url: "https://mail.yahoo.com/"
+        };
+    }
+
+    if (["icloud.com", "me.com", "mac.com"].includes(domain)) {
+        return {
+            name: "iCloud Mail",
+            url: "https://www.icloud.com/mail/"
+        };
+    }
+
+    return null;
+}
+
+function configureEmailInboxButton(
+    email = "",
+    emailWasSent = true
+) {
+    if (!openEmailInboxButton) {
+        return;
+    }
+
+    const provider =
+        emailWasSent
+            ? getEmailInboxProvider(email)
+            : null;
+
+    if (!provider) {
+        openEmailInboxButton.classList.add("hidden");
+        openEmailInboxButton.setAttribute("href", "#");
+        return;
+    }
+
+    openEmailInboxButton.href = provider.url;
+    openEmailInboxButton.classList.remove("hidden");
+    openEmailInboxButton.setAttribute(
+        "aria-label",
+        `Open ${provider.name} in a new tab`
+    );
+
+    if (openEmailInboxButtonLabel) {
+        openEmailInboxButtonLabel.textContent =
+            `Open ${provider.name}`;
     }
 }
 
@@ -310,6 +393,9 @@ signupForm?.addEventListener(
         const lastName =
             lastNameInput?.value.trim() || "";
 
+        const username =
+            usernameInput?.value.trim().toLowerCase() || "";
+
         const email =
             emailInput?.value.trim() || "";
 
@@ -327,6 +413,7 @@ signupForm?.addEventListener(
         if (
             !firstName ||
             !lastName ||
+            !username ||
             !email ||
             !password ||
             !confirmPassword
@@ -374,6 +461,16 @@ signupForm?.addEventListener(
                 "Please enter a shorter name.",
                 "error"
             );
+            return;
+        }
+
+        if (!usernameRegex.test(username)) {
+            setMessage(
+                "Username must be 3–30 characters and use only letters, numbers, or underscores.",
+                "error"
+            );
+
+            usernameInput?.focus();
             return;
         }
 
@@ -436,6 +533,7 @@ signupForm?.addEventListener(
                         first_name: firstName,
                         middle_name: middleName,
                         last_name: lastName,
+                        username,
                         email,
                         password,
                         confirm: confirmPassword
@@ -452,6 +550,11 @@ signupForm?.addEventListener(
                     "Unable to create your account."
                 );
             }
+
+            configureEmailInboxButton(
+                email,
+                data.email_sent !== false
+            );
 
             signupForm.reset();
 
@@ -496,6 +599,8 @@ createAnotherAccountButton?.addEventListener(
         signupSuccess?.classList.add(
             "hidden"
         );
+
+        configureEmailInboxButton("", false);
 
         signupForm?.classList.remove(
             "hidden"

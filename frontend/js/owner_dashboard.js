@@ -21,6 +21,7 @@ let dashboardSalesData = [];
 let reportSalesData = [];
 
 let users = [];
+let pendingStaffPasswordResetRequests = 0;
 let activityLogs = [];
 let currentLogFilter = "all";
 let salesReport = {
@@ -520,6 +521,26 @@ const usersTableBody = document.getElementById("usersTableBody");
 const userSearch = document.getElementById("userSearch");
 const userRoleFilter = document.getElementById("userRoleFilter");
 const userStatusFilter = document.getElementById("userStatusFilter");
+
+const staffManagementNavBadge =
+  document.getElementById(
+    "staffManagementNavBadge"
+  );
+
+const staffPasswordResetRequestNotice =
+  document.getElementById(
+    "staffPasswordResetRequestNotice"
+  );
+
+const staffPasswordResetRequestCount =
+  document.getElementById(
+    "staffPasswordResetRequestCount"
+  );
+
+const staffPasswordResetRequestPlural =
+  document.getElementById(
+    "staffPasswordResetRequestPlural"
+  );
 
 const addUserModal = document.getElementById("addUserModal");
 const editUserModal = document.getElementById("editUserModal");
@@ -3070,48 +3091,124 @@ async function loadUsers() {
   );
 
   users =
-data.success &&
-Array.isArray(data.users)
-? data.users.map(u => ({
-    id: u.user_id,
-
-    restaurant_id:
-      u.restaurant_id,
-
-    role:
-      u.role,
-
-    first_name:
-      u.first_name || "",
-
-    middle_name:
-      u.middle_name || "",
-
-    last_name:
-      u.last_name || "",
-
-    display_name:
-      u.display_name || "",
-
-    email:
-      u.email,
-
-          contact_number:
-            u.contact_number || "",
-          address:
-            u.address || "",
-          status:
-            Number(u.status),
-          must_change_password:
-            Number(
-              u.must_change_password || 0
-            ),
-          created_at:
-            u.created_at
+    data.success &&
+    Array.isArray(data.users)
+      ? data.users.map(u => ({
+          id: u.user_id,
+          restaurant_id: u.restaurant_id,
+          role: u.role,
+          first_name: u.first_name || "",
+          middle_name: u.middle_name || "",
+          last_name: u.last_name || "",
+          display_name: u.display_name || "",
+          email: u.email,
+          contact_number: u.contact_number || "",
+          address: u.address || "",
+          status: Number(u.status),
+          must_change_password: Number(
+            u.must_change_password || 0
+          ),
+          password_reset_requested: Number(
+            u.password_reset_requested || 0
+          ),
+          password_reset_requested_at:
+            u.password_reset_requested_at || null,
+          created_at: u.created_at
         }))
       : [];
 
+  const responsePendingCount =
+    Number(
+      data.password_reset_requests_pending
+    );
+
+  const calculatedPendingCount =
+    users.filter(
+      user =>
+        Number(
+          user.password_reset_requested || 0
+        ) === 1 &&
+        Number(user.status) === 1
+    ).length;
+
+  updateStaffPasswordResetRequestUI(
+    Number.isFinite(responsePendingCount)
+      ? responsePendingCount
+      : calculatedPendingCount
+  );
+
   applyUserFilters();
+}
+
+function updateStaffPasswordResetRequestUI(
+  pendingCount = 0
+) {
+  const normalizedCount =
+    Math.max(
+      0,
+      Number(pendingCount) || 0
+    );
+
+  pendingStaffPasswordResetRequests =
+    normalizedCount;
+
+  if (staffManagementNavBadge) {
+    staffManagementNavBadge.textContent =
+      normalizedCount > 99
+        ? "99+"
+        : String(normalizedCount);
+
+    staffManagementNavBadge.hidden =
+      normalizedCount <= 0;
+
+    staffManagementNavBadge.setAttribute(
+      "aria-label",
+      normalizedCount === 1
+        ? "1 pending staff password reset request"
+        : `${normalizedCount} pending staff password reset requests`
+    );
+  }
+
+  if (staffPasswordResetRequestNotice) {
+    staffPasswordResetRequestNotice.hidden =
+      normalizedCount <= 0;
+  }
+
+  if (staffPasswordResetRequestCount) {
+    staffPasswordResetRequestCount.textContent =
+      String(normalizedCount);
+  }
+
+  if (staffPasswordResetRequestPlural) {
+    staffPasswordResetRequestPlural.textContent =
+      normalizedCount === 1
+        ? ""
+        : "s";
+  }
+}
+
+async function refreshStaffPasswordResetBadge() {
+  try {
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_staff_password_reset_summary.php`
+    );
+
+    if (data.success) {
+      updateStaffPasswordResetRequestUI(
+        data.pending_requests || 0
+      );
+    }
+
+    return true;
+  } catch (error) {
+    /* A badge refresh must never break the owner dashboard. */
+    console.warn(
+      "Staff password reset badge refresh failed:",
+      error
+    );
+
+    return false;
+  }
 }
 
 /* =========================
@@ -3157,37 +3254,123 @@ function renderChart() {
   if (!salesChart) return;
 
   if (!dashboardSalesData.length) {
-  salesChart.innerHTML =
-    "<p>No completed sales for this period.</p>";
+    salesChart.innerHTML = `
+      <div class="dashboard-sales-empty-state">
+        <span class="dashboard-sales-empty-icon" aria-hidden="true">📈</span>
+        <strong>No completed sales for this period</strong>
+        <p>Revenue will appear here after completed orders are recorded.</p>
+      </div>
+    `;
+    return;
+  }
 
-  return;
-}
+  const values = dashboardSalesData.map(
+    item => Math.max(0, Number(item.total) || 0)
+  );
 
-const maxValue =
-  Math.max(
-    ...dashboardSalesData.map(
-      item =>
-        Number(item.total) || 0
-    ),
-    1
+  const maxValue = Math.max(...values, 0);
+
+  if (maxValue <= 0) {
+    salesChart.innerHTML = `
+      <div class="dashboard-sales-empty-state">
+        <span class="dashboard-sales-empty-icon" aria-hidden="true">📈</span>
+        <strong>No completed sales for this period</strong>
+        <p>All revenue values in the selected period are currently zero.</p>
+      </div>
+    `;
+    return;
+  }
+
+  function getNiceDashboardStep(value) {
+    const roughStep = Math.max(value / 4, 1);
+    const magnitude = Math.pow(
+      10,
+      Math.floor(Math.log10(roughStep))
+    );
+    const normalized = roughStep / magnitude;
+
+    const niceNormalized =
+      normalized <= 1
+        ? 1
+        : normalized <= 2
+          ? 2
+          : normalized <= 2.5
+            ? 2.5
+            : normalized <= 5
+              ? 5
+              : 10;
+
+    return niceNormalized * magnitude;
+  }
+
+  const tickStep = getNiceDashboardStep(maxValue);
+  const axisMax = tickStep * 4;
+  const axisTicks = [4, 3, 2, 1, 0].map(
+    multiplier => tickStep * multiplier
+  );
+
+  const minimumPlotWidth = Math.max(
+    560,
+    dashboardSalesData.length * 66
   );
 
   salesChart.innerHTML = `
-    <div class="chart-bars">
-      ${dashboardSalesData.map(item => {
-        const total = Number(item.total) || 0;
-        const height = Math.max((total / maxValue) * 100, 5);
+    <div
+      class="dashboard-sales-modern"
+      role="img"
+      aria-label="Completed-order revenue for the selected dashboard period"
+    >
+      <div class="dashboard-sales-y-axis" aria-hidden="true">
+        ${axisTicks.map(value => `
+          <span>${formatPeso(value)}</span>
+        `).join("")}
+      </div>
 
-        return `
-          <div class="chart-item">
-            <div class="chart-bar-wrap">
-              <div class="chart-bar" style="height:${height}%"></div>
-            </div>
-            <small>${item.label}</small>
-            <strong>${formatPeso(total)}</strong>
+      <div class="dashboard-sales-scroll">
+        <div
+          class="dashboard-sales-plot"
+          style="min-width:${minimumPlotWidth}px"
+        >
+          <div class="dashboard-sales-grid-lines" aria-hidden="true">
+            ${axisTicks.map(() => "<span></span>").join("")}
           </div>
-        `;
-      }).join("")}
+
+          <div class="dashboard-sales-bars-modern">
+            ${dashboardSalesData.map((item, index) => {
+              const total = values[index];
+              const height = Math.min(
+                100,
+                Math.max(0, (total / axisMax) * 100)
+              );
+              const isZero = total <= 0;
+              const label = escapeHtml(item.label || "");
+
+              return `
+                <div
+                  class="dashboard-sales-item${isZero ? " is-zero" : ""}"
+                  title="${label}: ${formatPeso(total)}"
+                >
+                  <div class="dashboard-sales-value">
+                    ${isZero ? "" : formatPeso(total)}
+                  </div>
+
+                  <div class="dashboard-sales-bar-area">
+                    <div
+                      class="dashboard-sales-bar"
+                      style="--dashboard-sales-bar-height:${height.toFixed(2)}%;"
+                      aria-hidden="true"
+                    ></div>
+                  </div>
+
+                  <div class="dashboard-sales-label">
+                    ${label}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -3526,38 +3709,136 @@ function renderSalesReport() {
 function renderReportSalesChart() {
   if (!reportSalesChart) return;
 
-if (!reportSalesData.length) {
-  reportSalesChart.innerHTML =
-    "<p>No completed sales for this period.</p>";
+  if (!reportSalesData.length) {
+    reportSalesChart.innerHTML = `
+      <div class="sales-trend-empty-state">
+        <span class="sales-trend-empty-icon" aria-hidden="true">📈</span>
+        <strong>No completed sales for this period</strong>
+        <p>Revenue will appear here after completed orders are recorded.</p>
+      </div>
+    `;
+    return;
+  }
 
-  return;
-}
-
-const maxValue =
-  Math.max(
-    ...reportSalesData.map(
-      item =>
-        Number(item.total) || 0
-    ),
-    1
+  const values = reportSalesData.map(
+    item => Math.max(0, Number(item.total) || 0)
   );
 
-  reportSalesChart.innerHTML = `
-    <div class="chart-bars">
-      ${reportSalesData.map(item => {
-        const total = Number(item.total) || 0;
-        const height = Math.max((total / maxValue) * 100, 5);
+  const maxValue = Math.max(...values, 0);
 
-        return `
-          <div class="chart-item">
-            <div class="chart-bar-wrap">
-              <div class="chart-bar" style="height:${height}%"></div>
-            </div>
-            <small>${item.label}</small>
-            <strong>${formatPeso(total)}</strong>
+  if (maxValue <= 0) {
+    reportSalesChart.innerHTML = `
+      <div class="sales-trend-empty-state">
+        <span class="sales-trend-empty-icon" aria-hidden="true">📈</span>
+        <strong>No completed sales for this period</strong>
+        <p>All revenue values in the selected period are currently zero.</p>
+      </div>
+    `;
+    return;
+  }
+
+  function getNiceStep(value) {
+    const roughStep = Math.max(value / 4, 1);
+    const magnitude = Math.pow(
+      10,
+      Math.floor(Math.log10(roughStep))
+    );
+    const normalized = roughStep / magnitude;
+
+    const niceNormalized =
+      normalized <= 1
+        ? 1
+        : normalized <= 2
+          ? 2
+          : normalized <= 2.5
+            ? 2.5
+            : normalized <= 5
+              ? 5
+              : 10;
+
+    return niceNormalized * magnitude;
+  }
+
+  const tickStep = getNiceStep(maxValue);
+  const axisMax = tickStep * 4;
+  const axisTicks = [4, 3, 2, 1, 0].map(
+    multiplier => tickStep * multiplier
+  );
+
+  const totalRevenue = values.reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
+  const peakIndex = values.indexOf(maxValue);
+  const peakLabel =
+    reportSalesData[peakIndex]?.label || "Peak";
+
+  reportSalesChart.innerHTML = `
+    <div class="sales-trend-summary" aria-label="Sales trend summary">
+      <div class="sales-trend-summary-item">
+        <span>Total revenue</span>
+        <strong>${formatPeso(totalRevenue)}</strong>
+      </div>
+      <div class="sales-trend-summary-item">
+        <span>Highest period</span>
+        <strong>${escapeHtml(peakLabel)} · ${formatPeso(maxValue)}</strong>
+      </div>
+    </div>
+
+    <div
+      class="sales-trend-modern"
+      role="img"
+      aria-label="Sales revenue trend for the selected report period"
+    >
+      <div class="sales-trend-y-axis" aria-hidden="true">
+        ${axisTicks.map(value => `
+          <span>${formatPeso(value)}</span>
+        `).join("")}
+      </div>
+
+      <div class="sales-trend-scroll">
+        <div class="sales-trend-plot">
+          <div class="sales-trend-grid-lines" aria-hidden="true">
+            ${axisTicks.map(() => "<span></span>").join("")}
           </div>
-        `;
-      }).join("")}
+
+          <div class="sales-trend-bars-modern">
+            ${reportSalesData.map((item, index) => {
+              const total = values[index];
+              const height = Math.min(
+                100,
+                Math.max(0, (total / axisMax) * 100)
+              );
+              const isZero = total <= 0;
+              const label = escapeHtml(item.label || "");
+
+              return `
+                <div
+                  class="sales-trend-item${isZero ? " is-zero" : ""}"
+                  title="${label}: ${formatPeso(total)}"
+                >
+                  <div class="sales-trend-value">
+                    ${isZero ? "—" : formatPeso(total)}
+                  </div>
+
+                  <div class="sales-trend-bar-area">
+                    <div
+                      class="sales-trend-bar"
+                      style="--sales-bar-height:${height.toFixed(2)}%;"
+                      aria-hidden="true"
+                    ></div>
+                  </div>
+
+                  <div class="sales-trend-label">
+                    ${label}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -5483,11 +5764,16 @@ function renderUsers(list = users) {
             u.must_change_password || 0
           ) === 1;
 
+        const resetRequested =
+          Number(
+            u.password_reset_requested || 0
+          ) === 1;
+
         const roleLabel =
           formatUserRoleLabel(u.role);
 
         return `
-          <tr>
+          <tr class="${resetRequested ? "staff-reset-request-row" : ""}">
             <td class="user-name-cell">${escapeHtml(formatUserName(u))}</td>
             <td class="user-email-cell">${escapeHtml(u.email)}</td>
             <td class="user-contact-cell">${escapeHtml(window.FoodConnectPhone.format(u.contact_number, "-"))}</td>
@@ -5501,6 +5787,16 @@ function renderUsers(list = users) {
               <span class="user-status-badge ${u.status == 1 ? "user-status-active" : "user-status-inactive"}">
                 ${u.status == 1 ? "Active" : "Inactive"}
               </span>
+              ${
+                !isOwner && resetRequested
+                  ? `
+                    <span class="staff-password-reset-request-badge">
+                      <i class="fa-solid fa-key" aria-hidden="true"></i>
+                      Reset requested
+                    </span>
+                  `
+                  : ""
+              }
               ${
                 !isOwner && passwordRequired
                   ? `
@@ -5525,10 +5821,10 @@ function renderUsers(list = users) {
                   !isOwner
                     ? `
                       <button
-                        class="action-btn reset-password-btn"
+                        class="action-btn reset-password-btn ${resetRequested ? "reset-request-pending" : ""}"
                         onclick="openResetStaffPasswordModal(${Number(u.id)})"
                       >
-                        Reset Password
+                        ${resetRequested ? "Resolve Reset" : "Reset Password"}
                       </button>
                     `
                     : ""
@@ -9307,6 +9603,36 @@ window.openResetStaffPasswordModal =
       return;
     }
 
+    const resetRequested =
+      Number(
+        user.password_reset_requested || 0
+      ) === 1;
+
+    const resetModalTitle =
+      document.getElementById(
+        "resetStaffPasswordTitle"
+      );
+
+    const resetModalDescription =
+      resetStaffPasswordModal
+        ?.querySelector(
+          ".modal-description"
+        );
+
+    if (resetModalTitle) {
+      resetModalTitle.textContent =
+        resetRequested
+          ? "Resolve Staff Password Request"
+          : "Reset Staff Password";
+    }
+
+    if (resetModalDescription) {
+      resetModalDescription.textContent =
+        resetRequested
+          ? "This staff member requested password recovery. Issue a temporary password to resolve the request. They must replace it at the next login."
+          : "Issue a temporary password. The staff member must replace it at the next login.";
+    }
+
     if (resetStaffUserId) {
       resetStaffUserId.value =
         String(user.id);
@@ -12097,7 +12423,8 @@ async function ensureOwnerSectionLoaded(
 ) {
   if (
     !force &&
-    ownerSectionLoadState[sectionId]
+    ownerSectionLoadState[sectionId] &&
+    sectionId !== "usersSection"
   ) {
     return;
   }
@@ -12189,9 +12516,19 @@ async function refreshOwnerOperationalData(
   ownerDashboardRefreshRunning = true;
 
   try {
+    const usersSectionIsActive =
+      document.getElementById(
+        "usersSection"
+      )?.classList.contains(
+        "active-section"
+      );
+
     await Promise.all([
       loadProducts(),
-      loadDashboardSummary()
+      loadDashboardSummary(),
+      usersSectionIsActive
+        ? loadUsers()
+        : refreshStaffPasswordResetBadge()
     ]);
 
     ownerDashboardLastRefreshAt = Date.now();
@@ -12292,7 +12629,8 @@ await Promise.all([
   loadProducts(),
   loadDashboardSalesChart(
     "weekly"
-  )
+  ),
+  refreshStaffPasswordResetBadge()
 ]);
 
     /*

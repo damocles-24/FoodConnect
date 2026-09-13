@@ -2677,6 +2677,28 @@ function createRestaurantCard(
       "Closed"
     ).trim();
 
+  /*
+   * get_public_restaurants.php is the authoritative availability source.
+   * It evaluates the weekly schedule in Asia/Manila on the server.
+   * Keep that result on the card instead of recalculating with the
+   * browser/device timezone.
+   */
+  const hasServerAvailability =
+    typeof restaurant.is_accepting_orders ===
+    "boolean";
+
+  const customerStatus =
+    String(
+      restaurant.customer_status ||
+      businessStatus
+    ).trim();
+
+  const availabilityReason =
+    String(
+      restaurant.availability_reason ||
+      ""
+    ).trim();
+
   const deliveryFee =
     Number(
       restaurant.delivery_fee || 0
@@ -2722,8 +2744,23 @@ function createRestaurantCard(
   article.dataset.businessStatus =
     businessStatus;
 
-    article.dataset.openingHours =
-  openingHours;
+  article.dataset.serverAvailability =
+    hasServerAvailability ? "1" : "0";
+
+  article.dataset.isAcceptingOrders =
+    hasServerAvailability &&
+    restaurant.is_accepting_orders === true
+      ? "true"
+      : "false";
+
+  article.dataset.customerStatus =
+    customerStatus;
+
+  article.dataset.availabilityReason =
+    availabilityReason;
+
+  article.dataset.openingHours =
+    openingHours;
 
   article.dataset.restaurantStatus =
     "active";
@@ -3116,7 +3153,7 @@ function filterRestaurantsPage(
     restaurantsPageEmptyState.textContent =
       query || category
         ? "No available restaurant matched your search or category."
-        : "No restaurants are currently available.";
+        : "All restaurants are currently closed. You can still browse menus and check opening hours.";
 
     restaurantsPageEmptyState.style.display =
       availableCount === 0
@@ -3451,12 +3488,12 @@ async function loadPublicRestaurants() {
 
       restaurantCards.forEach(
         (card) => {
-          const available =
-            !card.hidden &&
-            isRestaurantOpen(card);
-
+          /*
+           * Closed restaurants stay visible on the main homepage.
+           * Only administratively hidden/deactivated cards are excluded.
+           */
           const matches =
-            available &&
+            !card.hidden &&
             cardMatchesBrowseFilters(
               card,
               query,
@@ -3484,8 +3521,8 @@ async function loadPublicRestaurants() {
       if (restaurantEmptyState) {
         restaurantEmptyState.textContent =
           query || homepageCategoryFilter
-            ? "No available restaurant matched your search or category."
-            : "No restaurants are currently available.";
+            ? "No restaurant matched your search or category."
+            : "No restaurants are currently listed.";
 
         restaurantEmptyState.style.display =
           visibleCount === 0
@@ -3600,6 +3637,27 @@ function isRestaurantOpen(
   card,
   currentDate = new Date()
 ) {
+  /*
+   * Prefer the server-computed status whenever it is available.
+   * The API evaluates the weekly schedule in Asia/Manila, so using this
+   * value prevents a customer's browser timezone (or server UTC offset)
+   * from making an already-closed restaurant appear open.
+   */
+  if (
+    String(
+      card.dataset.serverAvailability ||
+      "0"
+    ) === "1"
+  ) {
+    return (
+      String(
+        card.dataset.isAcceptingOrders ||
+        "false"
+      ) === "true"
+    );
+  }
+
+  /* Legacy fallback for older API responses only. */
   const businessStatus =
     String(
       card.dataset.businessStatus ||
@@ -3741,10 +3799,41 @@ async function loadPublicRestaurantCard(
       data.restaurant || {};
     card.hidden = false;
     card.dataset.businessStatus =
-
       String(
         restaurant.business_status ||
         "Closed"
+      );
+
+    if (
+      typeof restaurant.is_accepting_orders ===
+      "boolean"
+    ) {
+      card.dataset.serverAvailability =
+        "1";
+      card.dataset.isAcceptingOrders =
+        restaurant.is_accepting_orders === true
+          ? "true"
+          : "false";
+    }
+
+    card.dataset.customerStatus =
+      String(
+        restaurant.customer_status ||
+        restaurant.business_status ||
+        "Closed"
+      );
+
+    card.dataset.availabilityReason =
+      String(
+        restaurant.availability_reason ||
+        ""
+      );
+
+    card.dataset.openingHours =
+      String(
+        restaurant.opening_hours ||
+        card.dataset.openingHours ||
+        ""
       );
 
     card.dataset.deliveryFee =
@@ -3810,8 +3899,9 @@ function updateRestaurantCard(
     isRestaurantOpen(card);
 
  if (statusBadge) {
-  const businessStatus =
+  const customerStatus =
     String(
+      card.dataset.customerStatus ||
       card.dataset.businessStatus ||
       "Closed"
     ).trim();
@@ -3819,7 +3909,7 @@ function updateRestaurantCard(
   statusBadge.textContent =
     open
       ? "Open Now"
-      : businessStatus
+      : customerStatus
           .toLowerCase() ===
         "temporarily unavailable"
         ? "Temporarily Unavailable"
@@ -3832,6 +3922,11 @@ function updateRestaurantCard(
 
   statusBadge.classList.toggle(
     "closed",
+    !open
+  );
+
+  card.classList.toggle(
+    "restaurant-unavailable-card",
     !open
   );
 }
@@ -3875,6 +3970,118 @@ function updateAllRestaurantCards() {
     )
   ) {
     renderRestaurantsPageCards();
+  }
+}
+
+async function refreshHomepageRestaurantAvailability() {
+  try {
+    const response = await fetch(
+      `${window.API}/get_public_restaurants.php`,
+      {
+        cache: "no-store"
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.success ||
+      !Array.isArray(data.restaurants)
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to refresh restaurant availability."
+      );
+    }
+
+    const restaurantById =
+      new Map(
+        data.restaurants.map(
+          (restaurant) => [
+            Number(restaurant.restaurant_id || 0),
+            restaurant
+          ]
+        )
+      );
+
+    restaurantCards.forEach(
+      (card) => {
+        const restaurantId =
+          Number(
+            card.dataset.restaurantId ||
+            0
+          );
+
+        const restaurant =
+          restaurantById.get(
+            restaurantId
+          );
+
+        if (!restaurant) {
+          /*
+           * The restaurant is no longer publicly visible. Keep it out of
+           * customer results until the next full page load.
+           */
+          card.hidden = true;
+          return;
+        }
+
+        card.hidden = false;
+
+        card.dataset.businessStatus =
+          String(
+            restaurant.business_status ||
+            "Closed"
+          );
+
+        if (
+          typeof restaurant.is_accepting_orders ===
+          "boolean"
+        ) {
+          card.dataset.serverAvailability =
+            "1";
+          card.dataset.isAcceptingOrders =
+            restaurant.is_accepting_orders === true
+              ? "true"
+              : "false";
+        } else {
+          card.dataset.serverAvailability =
+            "0";
+        }
+
+        card.dataset.customerStatus =
+          String(
+            restaurant.customer_status ||
+            restaurant.business_status ||
+            "Closed"
+          );
+
+        card.dataset.availabilityReason =
+          String(
+            restaurant.availability_reason ||
+            ""
+          );
+
+        card.dataset.openingHours =
+          String(
+            restaurant.opening_hours ||
+            ""
+          );
+      }
+    );
+
+    updateAllRestaurantCards();
+  } catch (error) {
+    /*
+     * Do not flip restaurants open on a refresh failure. Preserve the last
+     * known server-computed status and try again on the next interval.
+     */
+    console.warn(
+      "Restaurant availability refresh failed:",
+      error
+    );
   }
 }
 
@@ -5253,6 +5460,7 @@ ownerVerificationCode?.addEventListener(
               break;
 
             case "delivery_staff":
+            case "delivery_coordinator":
               setStaffMessage(
                 "Login successful. Opening the delivery dashboard...",
                 "success"
@@ -5294,11 +5502,100 @@ ownerVerificationCode?.addEventListener(
 
     staffForgotPasswordBtn?.addEventListener(
       "click",
-      () => {
-        setStaffMessage(
-          "Forgot your password? Contact your restaurant owner. The owner can issue a temporary password from Staff Management. FoodConnect never shows your current password.",
-          "info"
-        );
+      async () => {
+        const email =
+          staffEmail?.value.trim() || "";
+
+        setStaffMessage("");
+
+        if (!email) {
+          setStaffMessage(
+            "Enter your staff email first, then select Forgot Password again.",
+            "info"
+          );
+          staffEmail?.focus();
+          return;
+        }
+
+        if (
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            email
+          )
+        ) {
+          setStaffMessage(
+            "Enter a valid staff email address.",
+            "error"
+          );
+          staffEmail?.focus();
+          return;
+        }
+
+        const originalText =
+          staffForgotPasswordBtn.textContent;
+
+        try {
+          staffForgotPasswordBtn.disabled = true;
+          staffForgotPasswordBtn.textContent =
+            "Sending Request...";
+
+          const response = await fetch(
+            `${window.API}/request_staff_password_reset.php`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                "Accept":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                email
+              })
+            }
+          );
+
+          const data =
+            await readJsonResponse(
+              response
+            );
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+            setStaffMessage(
+              data.message ||
+              "Unable to send the password reset request.",
+              "error"
+            );
+            return;
+          }
+
+          if (staffPassword) {
+            staffPassword.value = "";
+          }
+
+          setStaffMessage(
+            data.message ||
+            "Password reset request sent to your restaurant owner.",
+            "success"
+          );
+        } catch (error) {
+          console.error(
+            "Staff password reset request failed:",
+            error
+          );
+
+          setStaffMessage(
+            "Unable to send the password reset request. Please check your connection and try again.",
+            "error"
+          );
+        } finally {
+          staffForgotPasswordBtn.disabled = false;
+          staffForgotPasswordBtn.textContent =
+            originalText;
+        }
       }
     );
 
@@ -5563,7 +5860,7 @@ refreshHomepageSessionAndCart();
 loadPublicRestaurants();
 
 window.setInterval(
-  updateAllRestaurantCards,
+  refreshHomepageRestaurantAvailability,
   60000
 );
 

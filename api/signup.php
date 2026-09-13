@@ -24,6 +24,7 @@ if (!is_array($input)) {
 $firstName = trim((string)($input["first_name"] ?? ""));
 $middleName = trim((string)($input["middle_name"] ?? ""));
 $lastName = trim((string)($input["last_name"] ?? ""));
+$username = strtolower(trim((string)($input["username"] ?? "")));
 $email = strtolower(trim((string)($input["email"] ?? "")));
 $password = (string)($input["password"] ?? "");
 $confirm = (string)($input["confirm"] ?? "");
@@ -33,9 +34,11 @@ $fullName = trim(implode(" ", array_filter([
     $firstName,
     $middleName,
     $lastName
-], static fn($part) => $part !== "")));
+], static function ($part) {
+    return $part !== "";
+})));
 
-if ($firstName === "" || $lastName === "" || $email === "" || $password === "" || $confirm === "") {
+if ($firstName === "" || $lastName === "" || $username === "" || $email === "" || $password === "" || $confirm === "") {
     signup_respond(["error" => "Please fill in all required fields."], 400);
 }
 
@@ -50,6 +53,12 @@ if (
     mb_strlen($fullName) > 150
 ) {
     signup_respond(["error" => "Please enter a shorter name."], 422);
+}
+
+if (!preg_match('/^[a-z0-9_]{3,30}$/', $username)) {
+    signup_respond([
+        "error" => "Username must be 3–30 characters and use only letters, numbers, or underscores."
+    ], 422);
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 150) {
@@ -80,22 +89,34 @@ if (
     ], 422);
 }
 
-$check = $conn->prepare("SELECT user_id FROM tbl_users WHERE LOWER(email) = ? LIMIT 1");
+$check = $conn->prepare("
+    SELECT username, email
+    FROM tbl_users
+    WHERE username = ? OR LOWER(email) = ?
+    LIMIT 1
+");
 if (!$check) {
     error_log("signup.php duplicate check prepare error: " . $conn->error);
     signup_respond(["error" => "Unable to create the account right now."], 500);
 }
 
-$check->bind_param("s", $email);
+$check->bind_param("ss", $username, $email);
 if (!$check->execute()) {
     error_log("signup.php duplicate check execute error: " . $check->error);
     $check->close();
     signup_respond(["error" => "Unable to create the account right now."], 500);
 }
 
-if ($check->get_result()->fetch_assoc()) {
+$existing = $check->get_result()->fetch_assoc();
+
+if ($existing) {
     $check->close();
-    signup_respond(["error" => "Email already exists"], 409);
+
+    if (strcasecmp((string)($existing["username"] ?? ""), $username) === 0) {
+        signup_respond(["error" => "Username is already taken."], 409);
+    }
+
+    signup_respond(["error" => "Email already exists."], 409);
 }
 $check->close();
 
@@ -114,6 +135,7 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
+        username,
         email,
         password_hash,
         status,
@@ -121,7 +143,7 @@ $stmt = $conn->prepare("
         verification_token,
         verification_expires_at
     )
-    VALUES (NULL, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
 ");
 
 if (!$stmt) {
@@ -130,11 +152,12 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "ssssssss",
+    "sssssssss",
     $role,
     $firstName,
     $middleName,
     $lastName,
+    $username,
     $email,
     $hash,
     $token,
@@ -147,17 +170,29 @@ if (!$stmt->execute()) {
     $stmt->close();
 
     if ($errno === 1062) {
-        signup_respond(["error" => "Email already exists"], 409);
+        signup_respond([
+            "error" => "That username or email is already in use."
+        ], 409);
     }
 
     signup_respond(["error" => "Unable to create the account right now."], 500);
 }
 $stmt->close();
 
+$verifyLink = "";
+
 try {
     $verifyLink = foodconnect_url("api/verify.php", ["token" => $token]);
 } catch (Throwable $error) {
     error_log("signup.php URL generation error: " . $error->getMessage());
+    signup_respond([
+        "success" => true,
+        "email_sent" => false,
+        "message" => "Account created. Please use Resend Verification to receive a verification email."
+    ], 201);
+}
+
+if ($verifyLink === "") {
     signup_respond([
         "success" => true,
         "email_sent" => false,

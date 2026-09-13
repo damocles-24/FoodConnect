@@ -10,6 +10,7 @@ header(
 
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/product_image_helper.php";
+require_once __DIR__ . "/restaurant_availability_helper.php";
 
 /*
  * Promotion dates are entered and stored
@@ -85,6 +86,7 @@ $restaurantStmt = $conn->prepare("
     SELECT
         r.restaurant_id,
         r.name,
+        r.opening_hours,
         r.business_status
 
     FROM tbl_restaurants AS r
@@ -143,8 +145,19 @@ $business_status = trim(
     )
 );
 
+$opening_hours =
+    (string) (
+        $restaurant["opening_hours"] ?? ""
+    );
+
+$availability =
+    fc_restaurant_evaluate_availability(
+        $business_status,
+        $opening_hours
+    );
+
 $is_accepting_orders =
-    strtolower($business_status) === "open";
+    (bool) $availability["is_accepting_orders"];
 
 /* =========================================================
    LOAD PUBLIC PRODUCTS
@@ -627,6 +640,15 @@ respond_json([
 
         "business_status" =>
             $business_status,
+
+        "customer_status" =>
+            (string) $availability["customer_status"],
+
+        "availability_reason" =>
+            (string) $availability["availability_reason"],
+
+        "opening_hours" =>
+            $opening_hours,
 
         "is_accepting_orders" =>
             $is_accepting_orders

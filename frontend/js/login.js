@@ -1,13 +1,13 @@
 const API = "/api";
 
 async function sendCustomerLogin({
-    email,
+    identifier,
     password,
     remember = false
 }) {
     const body = new URLSearchParams();
 
-    body.set("email", email);
+    body.set("identifier", identifier);
     body.set("password", password);
     body.set("remember", remember ? "1" : "0");
 
@@ -85,6 +85,7 @@ const reactivationCode =
     document.getElementById("reactivationCode");
 
 let pendingReactivation = null;
+let pendingVerificationEmail = "";
 
 const loginForm =
     document.getElementById("loginForm");
@@ -304,16 +305,16 @@ function showPanel(panelName) {
     loginPanel?.classList.remove("hidden");
 
     document
-        .getElementById("email")
+        .getElementById("username")
         ?.focus();
 }
 
 document
     .getElementById("openForgot")
     ?.addEventListener("click", () => {
-        const loginEmail =
+        const loginIdentifier =
             document
-                .getElementById("email")
+                .getElementById("username")
                 ?.value
                 .trim() || "";
 
@@ -321,7 +322,10 @@ document
             document.getElementById("forgotEmail");
 
         if (forgotEmail) {
-            forgotEmail.value = loginEmail;
+            forgotEmail.value =
+                loginIdentifier.includes("@")
+                    ? loginIdentifier
+                    : "";
         }
 
         showPanel("forgot");
@@ -342,9 +346,9 @@ loginForm?.addEventListener(
     async (event) => {
         event.preventDefault();
 
-        const email =
+        const identifier =
             document
-                .getElementById("email")
+                .getElementById("username")
                 .value
                 .trim();
 
@@ -360,11 +364,12 @@ loginForm?.addEventListener(
 
         setMessage(loginMsg);
         showVerifyHelp(false);
+        pendingVerificationEmail = "";
 
-        if (!email || !password) {
+        if (!identifier || !password) {
             setMessage(
                 loginMsg,
-                "Enter your email address and password.",
+                "Enter your username and password.",
                 "error"
             );
 
@@ -380,7 +385,7 @@ loginForm?.addEventListener(
 
         try {
             const response = await sendCustomerLogin({
-                email,
+                identifier,
                 password,
                 remember
             });
@@ -398,7 +403,8 @@ loginForm?.addEventListener(
 
                 if (data.deactivated === true) {
                     pendingReactivation = {
-                        email,
+                        identifier,
+                        email: String(data.reactivation_email || "").trim(),
                         password,
                         remember
                     };
@@ -421,6 +427,9 @@ loginForm?.addEventListener(
                 } else if (
                     lowerMessage.includes("verify")
                 ) {
+                    pendingVerificationEmail =
+                        String(data.verification_email || "").trim();
+
                     setMessage(
                         loginMsg,
                         "Verify your email before logging in.",
@@ -489,10 +498,14 @@ loginForm?.addEventListener(
 async function sendReactivationCode() {
     setMessage(reactivationMsg);
 
-    if (!pendingReactivation?.email || !pendingReactivation?.password) {
+    if (
+        !pendingReactivation?.identifier ||
+        !pendingReactivation?.email ||
+        !pendingReactivation?.password
+    ) {
         setMessage(
             reactivationMsg,
-            "Please return to login and enter your email and password again.",
+            "Please return to login and enter your username and password again.",
             "error"
         );
         return false;
@@ -758,15 +771,12 @@ resendBtn?.addEventListener(
     "click",
     async () => {
         const email =
-            document
-                .getElementById("email")
-                .value
-                .trim();
+            String(pendingVerificationEmail || "").trim();
 
         if (!email) {
             setMessage(
                 loginMsg,
-                "Enter your email address first.",
+                "Enter your username and password again so FoodConnect can resend your verification email.",
                 "error"
             );
 

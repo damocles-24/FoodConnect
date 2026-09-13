@@ -732,6 +732,10 @@ a {
    SUCCESS VIEW
    ========================================================= */
 
+.email-inbox-button {
+    margin-top: 20px;
+}
+
 .signup-success {
     padding: 20px 5px 4px;
 
@@ -1014,4 +1018,16 @@ img[src*="logofoodconnect-Photoroom.png"] {
 .footer img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
+}
+
+
+/* =========================================================
+   CUSTOMER USERNAME
+   ========================================================= */
+
+.username-help {
+    margin-top: 7px;
+    color: var(--fc-muted);
+    font-size: 10px;
+    line-height: 1.5;
 }

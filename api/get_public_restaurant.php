@@ -10,6 +10,7 @@ header(
 
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/restaurant_availability_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -151,12 +152,19 @@ $business_status = trim(
     )
 );
 
-$normalized_status = strtolower(
-    $business_status
-);
+$opening_hours =
+    (string) (
+        $restaurant["opening_hours"] ?? ""
+    );
+
+$availability =
+    fc_restaurant_evaluate_availability(
+        $business_status,
+        $opening_hours
+    );
 
 $is_accepting_orders =
-    $normalized_status === "open";
+    (bool) $availability["is_accepting_orders"];
 
 $deliveryPricing =
     fc_delivery_pricing_get_active(
@@ -190,9 +198,7 @@ respond_json([
             ),
 
         "opening_hours" =>
-            (string) (
-                $restaurant["opening_hours"] ?? ""
-            ),
+            $opening_hours,
 
         "delivery_fee" =>
             round(
@@ -207,6 +213,12 @@ respond_json([
 
         "business_status" =>
             $business_status,
+
+        "customer_status" =>
+            (string) $availability["customer_status"],
+
+        "availability_reason" =>
+            (string) $availability["availability_reason"],
 
         "is_accepting_orders" =>
             $is_accepting_orders

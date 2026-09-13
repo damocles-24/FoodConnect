@@ -728,7 +728,10 @@ if (
       ).trim();
 
     currentRestaurantStatus =
-      businessStatus;
+      String(
+        restaurant.customer_status ||
+        businessStatus
+      ).trim();
 
     restaurantAcceptingOrders =
       IS_PREVIEW_MODE
@@ -856,7 +859,7 @@ if (
       restaurantBusinessStatus.textContent =
         IS_PREVIEW_MODE
           ? "Preview only"
-          : businessStatus;
+          : currentRestaurantStatus;
     }
 
     if (restaurantAddress) {
@@ -944,6 +947,82 @@ if (
     return false;
   }
 }
+
+  async function refreshRestaurantAvailability() {
+    if (
+      IS_PREVIEW_MODE ||
+      resolvedRestaurantId <= 0
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API}/get_public_restaurant.php?restaurant_id=${encodeURIComponent(
+          resolvedRestaurantId
+        )}`,
+        {
+          credentials: "include",
+          cache: "no-store"
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        !data.success ||
+        !data.restaurant
+      ) {
+        return;
+      }
+
+      const restaurant =
+        data.restaurant;
+
+      currentRestaurantStatus =
+        String(
+          restaurant.customer_status ||
+          restaurant.business_status ||
+          "Closed"
+        ).trim();
+
+      restaurantAcceptingOrders =
+        restaurant.is_accepting_orders ===
+        true;
+
+      if (restaurantBusinessStatus) {
+        restaurantBusinessStatus.textContent =
+          currentRestaurantStatus;
+      }
+
+      if (heroRestaurantDetails) {
+        const address =
+          String(
+            restaurant.address ||
+            "Address unavailable"
+          ).trim();
+
+        heroRestaurantDetails.textContent =
+          restaurantAcceptingOrders
+            ? `${address} • Currently accepting orders`
+            : `${address} • Currently closed`;
+      }
+
+      if (
+        restaurantOpeningHours &&
+        restaurant.opening_hours
+      ) {
+        restaurantOpeningHours.textContent =
+          String(restaurant.opening_hours);
+      }
+    } catch (error) {
+      console.warn(
+        "Restaurant availability refresh failed:",
+        error
+      );
+    }
+  }
   
   async function updateCartBadge() {
     const cartLink = document.querySelector(".cart-link");
@@ -3719,6 +3798,7 @@ const restaurant =
 
 currentRestaurantStatus =
   String(
+    restaurant.customer_status ||
     restaurant.business_status ||
     "Closed"
   );
@@ -4830,6 +4910,15 @@ if (IS_PREVIEW_MODE) {
 }
 
 await loadDatabaseProducts();
+
+/*
+ * Keep the customer-facing status synchronized with the owner's
+ * weekly schedule. The API evaluates the schedule in Asia/Manila.
+ */
+window.setInterval(
+  refreshRestaurantAvailability,
+  60000
+);
 
 /*
  * The primary menu is ready now.

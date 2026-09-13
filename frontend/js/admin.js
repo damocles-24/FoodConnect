@@ -687,6 +687,89 @@ function bindEvents() {
     handleAdminLogout
   );
 
+  /*
+   * Core admin navigation bindings.
+   * These are intentionally kept separate from any feature-specific
+   * module so removing a dashboard module cannot disable the sidebar.
+   */
+  sidebarToggle?.addEventListener(
+    "click",
+    () => {
+      adminSidebar?.classList.toggle(
+        "open"
+      );
+    }
+  );
+
+  navItems.forEach((item) => {
+    item.addEventListener(
+      "click",
+      () => {
+        openDashboardSection(item);
+      }
+    );
+  });
+
+  dashboardQuickActions.forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          const targetSection =
+            button.dataset.dashboardTarget;
+
+          if (!targetSection) {
+            return;
+          }
+
+          const matchingNavItem =
+            Array.from(navItems).find(
+              (item) =>
+                item.dataset.section ===
+                targetSection
+            );
+
+          if (matchingNavItem) {
+            openDashboardSection(
+              matchingNavItem
+            );
+          }
+        }
+      );
+    }
+  );
+
+  statusFilters.forEach((filter) => {
+    filter.addEventListener(
+      "click",
+      async () => {
+        statusFilters.forEach(
+          (button) => {
+            button.classList.remove(
+              "active"
+            );
+          }
+        );
+
+        filter.classList.add(
+          "active"
+        );
+
+        currentApplicationStatus =
+          filter.dataset.status ||
+          "all";
+
+        await loadApplications();
+      }
+    );
+  });
+
+  refreshApplicationsButton
+    ?.addEventListener(
+      "click",
+      loadApplications
+    );
+
       refreshRestaurantsButton
     ?.addEventListener(
       "click",
