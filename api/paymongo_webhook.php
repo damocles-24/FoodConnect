@@ -37,14 +37,35 @@ if (!in_array($requestMethod, ["GET", "POST"], true)) {
     ], 405);
 }
 
-try {
-    require_once __DIR__ . "/paymongo_config.php";
-} catch (Throwable $e) {
+$webhookRestaurantId =
+    (int)($_GET["restaurant_id"] ?? 0);
+
+if ($webhookRestaurantId <= 0) {
     webhook_json([
         "success" => false,
         "message" =>
-            "PayMongo configuration is unavailable."
-    ], 500);
+            "A valid restaurant_id is required for this PayMongo webhook endpoint."
+    ], 400);
+}
+
+$GLOBALS["FOODCONNECT_PAYMONGO_RESTAURANT_ID"] =
+    $webhookRestaurantId;
+
+try {
+    require_once __DIR__ . "/paymongo_config.php";
+    paymongo_set_restaurant_context($webhookRestaurantId);
+    paymongo_validate_configuration($webhookRestaurantId, false);
+} catch (Throwable $e) {
+    error_log(
+        "paymongo_webhook.php configuration error for restaurant " .
+        $webhookRestaurantId . ": " . $e->getMessage()
+    );
+
+    webhook_json([
+        "success" => false,
+        "message" =>
+            "PayMongo configuration is unavailable for this restaurant."
+    ], 503);
 }
 
 if ($requestMethod === "GET") {
@@ -52,11 +73,13 @@ if ($requestMethod === "GET") {
         "success" => true,
         "message" =>
             "FoodConnect PayMongo webhook endpoint is reachable.",
-        "mode" => paymongo_mode()
+        "restaurant_id" => $webhookRestaurantId,
+        "mode" => paymongo_mode($webhookRestaurantId),
+        "qrph_only" => true
     ]);
 }
 
-if (paymongo_webhook_secret() === "") {
+if (paymongo_webhook_secret($webhookRestaurantId) === "") {
     webhook_json([
         "success" => false,
         "message" =>
@@ -65,7 +88,7 @@ if (paymongo_webhook_secret() === "") {
 }
 
 $webhookSecret =
-    paymongo_webhook_secret();
+    paymongo_webhook_secret($webhookRestaurantId);
 
 $rawBody =
     file_get_contents("php://input");
@@ -124,7 +147,7 @@ $timestamp =
     );
 
 $signatureField =
-    paymongo_is_live()
+    paymongo_is_live($webhookRestaurantId)
         ? "li"
         : "te";
 
@@ -142,7 +165,7 @@ if (
     webhook_json([
         "success" => false,
         "message" =>
-            "Invalid " . ucfirst(paymongo_mode()) . " Mode PayMongo signature."
+            "Invalid " . ucfirst(paymongo_mode($webhookRestaurantId)) . " Mode PayMongo signature."
     ], 401);
 }
 
@@ -235,7 +258,7 @@ $livemode =
         $eventAttributes["livemode"] ?? false
     );
 
-if ($livemode !== paymongo_is_live()) {
+if ($livemode !== paymongo_is_live($webhookRestaurantId)) {
     webhook_json([
         "success" => false,
         "message" =>
@@ -316,6 +339,17 @@ $metadataRestaurantId =
             "restaurant_id"
         ] ?? 0
     );
+
+if (
+    $metadataRestaurantId > 0 &&
+    $metadataRestaurantId !== $webhookRestaurantId
+) {
+    webhook_json([
+        "success" => false,
+        "message" =>
+            "PayMongo webhook restaurant metadata does not match this endpoint."
+    ], 409);
+}
 
 $providerPaymentId = null;
 $paidAmountCentavos = null;
@@ -439,6 +473,7 @@ try {
                 ON o.order_id = p.order_id
                AND o.restaurant_id = p.restaurant_id
             WHERE p.checkout_session_id = ?
+              AND p.restaurant_id = ?
             LIMIT 1
             FOR UPDATE
         ");
@@ -450,8 +485,9 @@ try {
     }
 
     $paymentStmt->bind_param(
-        "s",
-        $checkoutSessionId
+        "si",
+        $checkoutSessionId,
+        $webhookRestaurantId
     );
 
     if (!$paymentStmt->execute()) {
@@ -482,6 +518,12 @@ try {
 
     $restaurantId =
         (int)$paymentRow["restaurant_id"];
+
+    if ($restaurantId !== $webhookRestaurantId) {
+        throw new RuntimeException(
+            "PayMongo webhook endpoint does not match the FoodConnect restaurant."
+        );
+    }
 
     $storedAmount =
         round(

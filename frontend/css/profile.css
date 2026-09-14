@@ -1634,6 +1634,18 @@ body[data-fc-page="customer-account"] .input-wrap textarea:focus {
   box-shadow: 0 0 0 3px rgba(247,128,33,.115);
 }
 
+body[data-fc-page="customer-account"] .readonly-input-wrap input[readonly] {
+  background: var(--profile-soft-surface);
+  color: var(--text);
+  cursor: default;
+}
+
+body[data-fc-page="customer-account"] .readonly-input-wrap:hover input[readonly],
+body[data-fc-page="customer-account"] .readonly-input-wrap input[readonly]:focus {
+  border-color: var(--profile-soft-border);
+  box-shadow: none;
+}
+
 body[data-fc-page="customer-account"] .input-wrap > i:first-child {
   color: #98a2b1;
 }

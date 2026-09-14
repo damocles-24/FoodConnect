@@ -4,10 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+>
 <title>Restaurant | FoodConnect</title>
 <link
   rel="stylesheet"
-  href="../css/restaurant.css?v=20260817-ui3"
+  href="../css/restaurant.css?v=20260914-header-icons1"
 >
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260903-restaurantfix1">
@@ -62,25 +66,36 @@
   </div>
 
   <div class="header-icons">
-    <a href="/">
-      <img src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/home%20(1).png" alt="Home" class="icon">
+    <a
+      href="/"
+      class="restaurant-header-icon-button"
+      aria-label="Home"
+      title="Home"
+    >
+      <i class="fa-solid fa-house" aria-hidden="true"></i>
     </a>
 
-    <a href="#" class="cart-link" onclick="goToCart(); return false;">
-      <img
-        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/add-to-basket.png"
-        alt="Cart"
-        class="icon"
-      >
+    <a
+      href="#"
+      class="restaurant-header-icon-button cart-link"
+      onclick="goToCart(); return false;"
+      aria-label="Open cart"
+      title="Cart"
+    >
+      <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
     </a>
 
     <div class="account-wrapper">
-      <img
-        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/profile-picture.png"
-        alt="User"
-        class="icon"
+      <button
+        type="button"
+        class="restaurant-header-icon-button"
         id="accountBtn"
+        aria-label="Account menu"
+        aria-expanded="false"
+        title="Account"
       >
+        <i class="fa-solid fa-user" aria-hidden="true"></i>
+      </button>
 
       <div class="account-dropdown" id="accountDropdown">
         <p id="accountName">Guest</p>

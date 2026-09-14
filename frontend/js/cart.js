@@ -3578,13 +3578,18 @@ paymentMethod.innerHTML = `
     <option value="">Select payment method</option>
 `;
 
+const payMongoQrPhOption =
+    currentCartRestaurant?.paymongo_qrph_available === true
+        ? `<option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>`
+        : "";
+
     resetDeliveryAvailability();
     showCheckoutMessage();
 
     if (type === "dine-in") {
         paymentMethod.innerHTML = `
             <option value="Cash">Cash</option>
-            <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+            ${payMongoQrPhOption}
         `;
 
         dynamicFields.innerHTML = `
@@ -3603,7 +3608,7 @@ paymentMethod.innerHTML = `
     if (type === "takeout") {
         paymentMethod.innerHTML = `
             <option value="Cash">Cash</option>
-            <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+            ${payMongoQrPhOption}
         `;
 
         dynamicFields.innerHTML = `
@@ -3622,7 +3627,7 @@ paymentMethod.innerHTML = `
   if (type === "delivery") {
     paymentMethod.innerHTML = `
         <option value="Cash on Delivery">Cash on Delivery</option>
-        <option value="PayMongo QR Ph">Online Payment - PayMongo QR Ph</option>
+        ${payMongoQrPhOption}
     `;
 
     dynamicFields.innerHTML = `

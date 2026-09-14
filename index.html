@@ -16,7 +16,7 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260913-card-hours-ui1">
+<link rel="stylesheet" href="style.css?v=20260914-owner-mobile-validation1">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
@@ -1493,9 +1493,25 @@
             id="ownerResetContactNumber"
             placeholder="e.g. 09171234567"
             autocomplete="tel"
-            inputmode="tel"
-            maxlength="20"
+            inputmode="numeric"
+            maxlength="11"
+            pattern="09[0-9]{9}"
+            aria-describedby="ownerResetContactHelp ownerResetContactError"
           >
+
+          <small
+            id="ownerResetContactHelp"
+            class="owner-recovery-help"
+          >
+            Use 11 digits starting with 09. Example: 09171234567.
+          </small>
+
+          <small
+            id="ownerResetContactError"
+            class="owner-recovery-field-error"
+            role="alert"
+            aria-live="polite"
+          ></small>
         </div>
 
         <div class="staff-input-group">
@@ -1794,6 +1810,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260913-staff-recovery1" defer></script>
+<script src="homepage.js?v=20260914-owner-mobile-validation1" defer></script>
 </body>
 </html>

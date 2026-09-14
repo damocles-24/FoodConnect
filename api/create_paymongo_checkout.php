@@ -113,22 +113,31 @@ if ($amountCentavos < 100) {
     payment_json(["success" => false, "message" => "The order total is too small for online payment."], 400);
 }
 
+$restaurantId =
+    (int)$order["restaurant_id"];
+
+/*
+ * Route this order through the PayMongo account configured for the
+ * restaurant that owns the order. In multi-account mode there is no
+ * fallback to another restaurant's credentials.
+ */
+$GLOBALS["FOODCONNECT_PAYMONGO_RESTAURANT_ID"] = $restaurantId;
+
 try {
     require_once __DIR__ . "/paymongo_config.php";
+    paymongo_set_restaurant_context($restaurantId);
+    paymongo_validate_configuration($restaurantId, true);
 } catch (Throwable $e) {
-    error_log("create_paymongo_checkout.php configuration error: " . $e->getMessage());
+    error_log("create_paymongo_checkout.php configuration error for restaurant " . $restaurantId . ": " . $e->getMessage());
     payment_json([
         "success" => false,
-        "message" => "Online payment is temporarily unavailable."
-    ], 500);
+        "message" => "QR Ph online payment is not available for this restaurant right now."
+    ], 503);
 }
 
 if (!function_exists("curl_init")) {
     payment_json(["success" => false, "message" => "PHP cURL is not enabled."], 500);
 }
-
-$restaurantId =
-    (int)$order["restaurant_id"];
 
 /*
  * Production safety:
@@ -537,7 +546,8 @@ $payload = [
             "metadata" => [
                 "foodconnect_order_id" => (string)$orderId,
                 "restaurant_id" => (string)$order["restaurant_id"],
-                "customer_id" => (string)$customerId
+                "customer_id" => (string)$customerId,
+                "foodconnect_payment_channel" => "qrph"
             ]
         ]
     ]

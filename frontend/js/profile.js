@@ -7,6 +7,7 @@ const firstName = document.getElementById("firstName");
 const middleName = document.getElementById("middleName");
 const lastName = document.getElementById("lastName");
 const email = document.getElementById("email");
+const username = document.getElementById("username");
 const contactNumber = document.getElementById("contactNumber");
 const address = document.getElementById("address");
 
@@ -71,6 +72,53 @@ function redirectToLogin() {
   window.location.href = "/frontend/html/login.html";
 }
 
+function parseStoredPhilippineAddress(value) {
+  const parts = String(value || "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) return null;
+
+  if (/^philippines$/i.test(parts[parts.length - 1])) {
+    parts.pop();
+  }
+
+  // FoodConnect stores profile addresses as:
+  // [street,] barangay, city/municipality, province/area, Philippines
+  if (parts.length < 3) return null;
+
+  const areaName = parts.pop() || "";
+  const localityName = parts.pop() || "";
+  const barangayName = parts.pop() || "";
+  const streetDetails = parts.join(", ");
+
+  if (!areaName || !localityName || !barangayName) return null;
+
+  return {
+    areaName,
+    localityName,
+    barangayName,
+    streetDetails
+  };
+}
+
+async function restoreSavedAddress(value) {
+  const savedAddress = String(value || "").trim();
+  address.value = savedAddress;
+
+  if (!savedAddress) return;
+
+  const parsed = parseStoredPhilippineAddress(savedAddress);
+  if (!parsed || !window.PHAddressDropdown?.setEnhancedValues) return;
+
+  try {
+    await window.PHAddressDropdown.setEnhancedValues(address, parsed);
+  } catch (error) {
+    console.warn("Saved customer address could not be restored into the dropdowns:", error);
+  }
+}
+
 async function loadProfile() {
   clearStatus(globalStatusMessage);
 
@@ -95,9 +143,12 @@ async function loadProfile() {
     middleName.value = data.user.middle_name || "";
     lastName.value = data.user.last_name || "";
     email.value = data.user.email || "";
+    if (username) {
+      username.value = data.user.username || "";
+    }
 
     contactNumber.value = window.FoodConnectPhone.toLocalDigits(data.user.contact_number);
-    address.value = data.user.address || "";
+    await restoreSavedAddress(data.user.address || "");
   } catch (error) {
     showStatus(
       globalStatusMessage,

@@ -144,11 +144,16 @@ function paymongo_close_pending_checkout_sessions(
     int $orderId,
     int $restaurantId
 ): array {
+    $GLOBALS["FOODCONNECT_PAYMONGO_RESTAURANT_ID"] = $restaurantId;
+
     try {
         require_once __DIR__ . "/paymongo_config.php";
+        paymongo_set_restaurant_context($restaurantId);
+        paymongo_validate_configuration($restaurantId, false);
     } catch (Throwable $error) {
         error_log(
-            "PayMongo lifecycle configuration error: " .
+            "PayMongo lifecycle configuration error for restaurant " .
+            $restaurantId . ": " .
             $error->getMessage()
         );
 

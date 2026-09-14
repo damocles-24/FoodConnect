@@ -1969,6 +1969,30 @@ if (
     );
 }
 
+/* =========================================================
+   PAYMONGO QR PH ACCOUNT AVAILABILITY
+
+   Online payment is offered only when this exact restaurant has
+   its own server-side PayMongo credentials configured. In
+   multi-account mode FoodConnect never falls back to another
+   restaurant's account.
+========================================================= */
+
+if ($payment_method === "PayMongo QR Ph") {
+    require_once __DIR__ . "/paymongo_config.php";
+
+    if (
+        !paymongo_qrph_available(
+            $restaurant_id,
+            true
+        )
+    ) {
+        throw new RuntimeException(
+            "QR Ph online payment is not available for this restaurant right now. Please choose cash instead."
+        );
+    }
+}
+
     /* =====================================================
    AUTHORITATIVE ORDER TOTAL
 

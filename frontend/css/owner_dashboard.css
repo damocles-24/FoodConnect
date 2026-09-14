@@ -8829,6 +8829,16 @@ html[data-theme="light"] body[data-fc-page="owner"] .nav-item:not(.active) {
   color: #374151;
 }
 
+/* Keep sidebar labels readable when an inactive item is hovered.
+   This must come after the Light Theme inactive-text rule because
+   that selector is more specific than the base hover rule. */
+html[data-theme="light"] body[data-fc-page="owner"] .nav-item:not(.active):hover,
+html[data-theme="light"] body[data-fc-page="owner"] .nav-item.active,
+html[data-theme="dark"] body[data-fc-page="owner"] .nav-item:hover,
+html[data-theme="dark"] body[data-fc-page="owner"] .nav-item.active {
+  color: #ffffff;
+}
+
 /* Inventory table header: remove the black legacy strip in Light mode. */
 html[data-theme="light"] body[data-fc-page="owner"] .inventory-table thead th {
   background: #f8fafc !important;
@@ -11160,3 +11170,138 @@ html[data-theme="dark"] body[data-fc-page="owner"]
 .staff-management-nav-badge[hidden] {
   display: none !important;
 }
+
+/* =========================================================
+   STAFF MANAGEMENT - ADD / EDIT USER FORM UI FIX
+   ========================================================= */
+body[data-fc-page="owner"] .staff-user-form-modal {
+  max-width: 650px;
+}
+
+body[data-fc-page="owner"] .staff-user-form-modal .modal-header {
+  margin-bottom: 22px;
+}
+
+body[data-fc-page="owner"] .staff-user-form-modal .modal-body {
+  display: grid;
+  gap: 20px;
+}
+
+body[data-fc-page="owner"] .staff-user-form-modal .form-group {
+  margin: 0;
+  gap: 9px;
+}
+
+body[data-fc-page="owner"] .staff-user-form-modal .form-group label {
+  margin: 0;
+  line-height: 1.35;
+}
+
+body[data-fc-page="owner"] .staff-user-form-modal .form-group > input,
+body[data-fc-page="owner"] .staff-user-form-modal .form-group > select,
+body[data-fc-page="owner"] .staff-user-form-modal .password-input-wrapper > input {
+  width: 100%;
+  min-height: 48px;
+}
+
+/* Phone field is one unified control. Remove the legacy yellow focus state. */
+body[data-fc-page="owner"] #addUserModal .ph-phone-field,
+body[data-fc-page="owner"] #editUserModal .ph-phone-field {
+  min-height: 48px;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #222;
+  box-shadow: none;
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background-color .2s ease;
+}
+
+body[data-fc-page="owner"] #addUserModal .ph-phone-field:focus-within,
+body[data-fc-page="owner"] #editUserModal .ph-phone-field:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(244, 124, 30, .14);
+}
+
+body[data-fc-page="owner"] #addUserModal .ph-phone-prefix,
+body[data-fc-page="owner"] #editUserModal .ph-phone-prefix {
+  align-self: stretch;
+  min-width: 58px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  background: rgba(255, 255, 255, .025);
+  font-weight: 600;
+}
+
+body[data-fc-page="owner"] #addUserModal .ph-phone-field > input,
+body[data-fc-page="owner"] #editUserModal .ph-phone-field > input {
+  min-height: 46px;
+  padding: 12px 14px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Keep the action area separated from the last field without feeling cramped. */
+body[data-fc-page="owner"] .staff-user-form-modal .user-modal-actions {
+  margin-top: 4px;
+  padding-top: 20px;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] #addUserModal .ph-phone-field,
+html[data-theme="light"] body[data-fc-page="owner"] #editUserModal .ph-phone-field {
+  background: #ffffff;
+  border-color: #dfe3e8;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] #addUserModal .ph-phone-prefix,
+html[data-theme="light"] body[data-fc-page="owner"] #editUserModal .ph-phone-prefix {
+  color: #4b5563;
+  background: #f8fafc;
+  border-right-color: #dfe3e8;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] #addUserModal .ph-phone-field,
+html[data-theme="dark"] body[data-fc-page="owner"] #editUserModal .ph-phone-field {
+  background: #222;
+}
+
+@media (max-width: 600px) {
+  body[data-fc-page="owner"] #addUserModal,
+  body[data-fc-page="owner"] #editUserModal {
+    padding: 12px;
+  }
+
+  body[data-fc-page="owner"] .staff-user-form-modal {
+    max-height: calc(100dvh - 24px);
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  body[data-fc-page="owner"] .staff-user-form-modal .modal-header {
+    margin-bottom: 18px;
+  }
+
+  body[data-fc-page="owner"] .staff-user-form-modal .modal-body {
+    gap: 17px;
+  }
+
+  body[data-fc-page="owner"] .staff-user-form-modal .form-group > input,
+  body[data-fc-page="owner"] .staff-user-form-modal .form-group > select,
+  body[data-fc-page="owner"] .staff-user-form-modal .password-input-wrapper > input,
+  body[data-fc-page="owner"] #addUserModal .ph-phone-field,
+  body[data-fc-page="owner"] #editUserModal .ph-phone-field {
+    min-height: 46px;
+  }
+}
+

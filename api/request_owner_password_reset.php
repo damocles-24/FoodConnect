@@ -44,7 +44,8 @@ if (!is_array($input)) {
 }
 
 $email = strtolower(trim((string)($input["email"] ?? "")));
-$contactNumber = normalize_ph_mobile($input["contact_number"] ?? "");
+$rawContactNumber = trim((string)($input["contact_number"] ?? ""));
+$contactNumber = normalize_ph_mobile($rawContactNumber);
 $restaurantName = trim((string)($input["restaurant_name"] ?? ""));
 $reason = trim((string)($input["reason"] ?? ""));
 
@@ -52,6 +53,20 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     owner_reset_request_respond([
         "success" => false,
         "message" => "Enter a valid owner email address."
+    ], 422);
+}
+
+/*
+ * Reject malformed input before normalization. normalize_ph_mobile() is
+ * intentionally permissive for stored legacy values, but a public recovery
+ * request must not silently strip letters or arbitrary punctuation from user
+ * input. The browser submits 09XXXXXXXXX; +639XXXXXXXXX remains accepted for
+ * compatible API clients.
+ */
+if (!preg_match('/^(?:09\d{9}|\+639\d{9})$/', $rawContactNumber)) {
+    owner_reset_request_respond([
+        "success" => false,
+        "message" => "Enter a valid Philippine mobile number using 09XXXXXXXXX."
     ], 422);
 }
 

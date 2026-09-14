@@ -72,12 +72,11 @@ if (!is_array($input) || !$input) {
     );
 }
 
-$identifier = strtolower(
+$username = strtolower(
     trim(
         (string) (
-            $input["identifier"] ??
             $input["username"] ??
-            $input["email"] ??
+            $input["identifier"] ??
             ""
         )
     )
@@ -89,7 +88,7 @@ $password =
 $remember =
     !empty($input["remember"]);
 
-if ($identifier === "" || $password === "") {
+if ($username === "" || $password === "") {
     respond_json(
         [
             "error" => "Please enter username and password."
@@ -98,12 +97,26 @@ if ($identifier === "" || $password === "") {
     );
 }
 
+/*
+ * Customer sign-in is username-only. Keep this validation aligned with
+ * signup.php so an email address (or any other identifier) can never be
+ * used as a login credential, even when the API is called directly.
+ */
+if (!preg_match('/^[a-z0-9_]{3,30}$/', $username)) {
+    respond_json(
+        [
+            "error" => "Invalid username or password."
+        ],
+        401
+    );
+}
+
 rate_limit_enforce(
     $conn,
     "customer-login",
     rate_limit_identifier(
         rate_limit_client_ip(),
-        $identifier
+        $username
     ),
     10,
     900,
@@ -130,8 +143,7 @@ $stmt = $conn->prepare("
         is_verified
     FROM tbl_users
     WHERE username = ?
-       OR LOWER(email) = ?
-    ORDER BY CASE WHEN username = ? THEN 0 ELSE 1 END
+      AND LOWER(role) = 'customer'
     LIMIT 1
 ");
 
@@ -150,10 +162,8 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "sss",
-    $identifier,
-    $identifier,
-    $identifier
+    "s",
+    $username
 );
 
 $stmt->execute();

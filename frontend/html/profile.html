@@ -16,7 +16,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/profile.css?v=20260828-ui2">
+  <link rel="stylesheet" href="../css/profile.css?v=20260915-profiledata1">
   <title>Account Settings | FoodConnect</title>
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260828-ui2">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
@@ -164,6 +164,31 @@
                     required
                   >
                 </div>
+              </label>
+
+              <label class="field field-full">
+                <span class="field-label">
+                  Username
+                  <small>Sign-in ID</small>
+                </span>
+
+                <div class="input-wrap readonly-input-wrap">
+                  <i class="fa-solid fa-at"></i>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    maxlength="30"
+                    autocomplete="username"
+                    placeholder="Username"
+                    readonly
+                    aria-readonly="true"
+                  >
+                </div>
+
+                <small class="field-hint">
+                  This is the username you use to sign in to FoodConnect.
+                </small>
               </label>
 
               <label class="field field-full">
@@ -448,6 +473,6 @@
 
 <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/profile.js?v=20260903-deployfix1"></script>
+<script src="../js/profile.js?v=20260915-profiledata1"></script>
 </body>
 </html>

@@ -94,6 +94,7 @@ if (empty($_SESSION["user_id"])) {
 
 /* Only authenticated carts require the remote database. */
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/paymongo_config.php";
 require_once __DIR__ . "/product_image_helper.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
 
@@ -1307,7 +1308,17 @@ if (
             "logo_path" =>
                 $restaurantRow[
                     "logo_path"
-                ] ?? null
+                ] ?? null,
+
+            /*
+             * Only expose whether this restaurant has a server-side
+             * PayMongo QR Ph account configured. No secret is returned.
+             */
+            "paymongo_qrph_available" =>
+                paymongo_qrph_available(
+                    (int)$cart_restaurant_id,
+                    true
+                )
         ];
 
         $delivery_fee = max(

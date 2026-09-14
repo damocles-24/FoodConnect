@@ -27,6 +27,7 @@ $stmt = $conn->prepare("
     first_name,
     middle_name,
     last_name,
+    username,
     email,
     contact_number,
     address
@@ -75,6 +76,7 @@ respond([
     "first_name" => (string) ($user["first_name"] ?? ""),
     "middle_name" => (string) ($user["middle_name"] ?? ""),
     "last_name" => (string) ($user["last_name"] ?? ""),
+    "username" => (string) ($user["username"] ?? ""),
 
     "needs_name_migration" => false,
 

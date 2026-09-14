@@ -204,13 +204,22 @@ if ($checkoutSessionId === "") {
     ], 409);
 }
 
+$GLOBALS["FOODCONNECT_PAYMONGO_RESTAURANT_ID"] = $restaurantId;
+
 try {
     require_once __DIR__ . "/paymongo_config.php";
+    paymongo_set_restaurant_context($restaurantId);
+    paymongo_validate_configuration($restaurantId, false);
 } catch (Throwable $e) {
+    error_log(
+        "sync_paymongo_payment.php configuration error for restaurant " .
+        $restaurantId . ": " . $e->getMessage()
+    );
+
     sync_json([
         "success" => false,
-        "message" => "Payment verification is unavailable right now."
-    ], 500);
+        "message" => "Payment verification is unavailable for this restaurant right now."
+    ], 503);
 }
 
 if (!function_exists("curl_init")) {

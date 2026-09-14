@@ -350,7 +350,8 @@ loginForm?.addEventListener(
             document
                 .getElementById("username")
                 .value
-                .trim();
+                .trim()
+                .toLowerCase();
 
         const password =
             document
@@ -372,6 +373,23 @@ loginForm?.addEventListener(
                 "Enter your username and password.",
                 "error"
             );
+
+            return;
+        }
+
+        // Customer login is intentionally username-only. This mirrors the
+        // signup rule and prevents an email address from being submitted as
+        // a login identifier. The backend enforces the same rule as well.
+        if (!/^[a-z0-9_]{3,30}$/.test(identifier)) {
+            setMessage(
+                loginMsg,
+                "Enter your username, not your email address.",
+                "error"
+            );
+
+            document
+                .getElementById("username")
+                ?.focus();
 
             return;
         }

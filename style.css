@@ -4316,6 +4316,24 @@ body[data-fc-page="customer-home"]
   line-height: 1.5;
 }
 
+.owner-recovery-field-error {
+  display: none;
+  margin-top: 7px;
+  color: #ff9fa3;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.owner-recovery-field-error:not(:empty) {
+  display: block;
+}
+
+.staff-input-group input.is-invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
 .owner-password-requirements {
   margin: -4px 0 12px;
 }

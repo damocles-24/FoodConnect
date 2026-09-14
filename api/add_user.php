@@ -416,6 +416,7 @@ $insertStmt = $conn->prepare("
         contact_number,
         address,
         password_hash,
+        must_change_password,
         status,
         is_verified
     )
@@ -429,6 +430,7 @@ $insertStmt = $conn->prepare("
         ?,
         ?,
         ?,
+        1,
         ?,
         1
     )
@@ -545,7 +547,7 @@ respond_json([
     "success" => true,
 
     "message" =>
-        "Staff account created successfully.",
+        "Staff account created successfully. The temporary password must be replaced on first login.",
 
     "user" => [
         "user_id" =>
@@ -580,6 +582,9 @@ respond_json([
 
         "status" =>
             $status,
+
+        "must_change_password" =>
+            1,
 
         "is_verified" =>
             1

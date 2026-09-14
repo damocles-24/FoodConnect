@@ -9,7 +9,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
   <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260913-staff-recovery1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260914-sidebar-hover1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
@@ -3793,7 +3793,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 <!-- ADD USER MODAL -->
 <div class="modal-overlay" id="addUserModal">
-  <div class="modal">
+  <div class="modal staff-user-form-modal">
     <div class="modal-header">
       <h3>Add User</h3>
       <button id="closeAddUserModal">✕</button>
@@ -3801,20 +3801,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
     <div class="modal-body">
       <div class="form-group">
-        <div class="form-group">
-  <label>First Name *</label>
-  <input type="text" id="userFirstName">
-</div>
+        <label>First Name *</label>
+        <input type="text" id="userFirstName">
+      </div>
 
-<div class="form-group">
-  <label>Middle Name</label>
-  <input type="text" id="userMiddleName">
-</div>
+      <div class="form-group">
+        <label>Middle Name</label>
+        <input type="text" id="userMiddleName">
+      </div>
 
-<div class="form-group">
-  <label>Last Name *</label>
-  <input type="text" id="userLastName">
-</div>
+      <div class="form-group">
+        <label>Last Name *</label>
+        <input type="text" id="userLastName">
       </div>
 
       <div class="form-group">
@@ -3897,7 +3895,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 <!-- EDIT USER MODAL -->
 <div class="modal-overlay" id="editUserModal">
-  <div class="modal">
+  <div class="modal staff-user-form-modal">
     <div class="modal-header">
       <h3>Edit User</h3>
       <button
@@ -3913,20 +3911,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       <input type="hidden" id="editUserId">
 
       <div class="form-group">
-        <div class="form-group">
-  <label>First Name *</label>
-  <input type="text" id="editUserFirstName">
-</div>
+        <label>First Name *</label>
+        <input type="text" id="editUserFirstName">
+      </div>
 
-<div class="form-group">
-  <label>Middle Name</label>
-  <input type="text" id="editUserMiddleName">
-</div>
+      <div class="form-group">
+        <label>Middle Name</label>
+        <input type="text" id="editUserMiddleName">
+      </div>
 
-<div class="form-group">
-  <label>Last Name *</label>
-  <input type="text" id="editUserLastName">
-</div>
+      <div class="form-group">
+        <label>Last Name *</label>
+        <input type="text" id="editUserLastName">
       </div>
 
       <div class="form-group">

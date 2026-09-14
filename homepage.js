@@ -470,6 +470,11 @@ const backToOwnerLoginBtn =
         "ownerResetContactNumber"
       );
 
+    const ownerResetContactError =
+      document.getElementById(
+        "ownerResetContactError"
+      );
+
     const ownerResetReason =
       document.getElementById(
         "ownerResetReason"
@@ -1246,6 +1251,8 @@ let restaurantCategoryHydrationPromise =
       if (ownerResetContactNumber) {
         ownerResetContactNumber.value = "";
       }
+
+      setOwnerRecoveryContactError("");
 
       if (ownerResetReason) {
         ownerResetReason.value = "";
@@ -4793,6 +4800,120 @@ setStaffMessage(
       }
     );
 
+    function sanitizeOwnerRecoveryContactInput(
+      value = ""
+    ) {
+      const raw =
+        String(value || "")
+          .trim();
+
+      const compact =
+        raw.replace(/[\s()-]+/g, "");
+
+      if (/^\+63\d*$/.test(compact)) {
+        const localDigits =
+          compact
+            .slice(3)
+            .replace(/\D/g, "")
+            .slice(0, 10);
+
+        return localDigits
+          ? `0${localDigits}`.slice(0, 11)
+          : "";
+      }
+
+      const digits =
+        raw.replace(/\D/g, "");
+
+      if (digits.startsWith("63")) {
+        return (
+          "0" +
+          digits.slice(2, 12)
+        ).slice(0, 11);
+      }
+
+      return digits.slice(0, 11);
+    }
+
+    function isValidOwnerRecoveryContact(
+      value = ""
+    ) {
+      return /^09\d{9}$/.test(
+        String(value || "").trim()
+      );
+    }
+
+    function setOwnerRecoveryContactError(
+      message = ""
+    ) {
+      if (ownerResetContactError) {
+        ownerResetContactError.textContent =
+          message;
+      }
+
+      if (ownerResetContactNumber) {
+        const hasError = Boolean(message);
+
+        ownerResetContactNumber.classList.toggle(
+          "is-invalid",
+          hasError
+        );
+
+        ownerResetContactNumber.setAttribute(
+          "aria-invalid",
+          hasError ? "true" : "false"
+        );
+      }
+    }
+
+    ownerResetContactNumber?.addEventListener(
+      "input",
+      () => {
+        const sanitized =
+          sanitizeOwnerRecoveryContactInput(
+            ownerResetContactNumber.value
+          );
+
+        if (
+          ownerResetContactNumber.value !==
+          sanitized
+        ) {
+          ownerResetContactNumber.value =
+            sanitized;
+        }
+
+        if (
+          sanitized.length === 11 &&
+          !isValidOwnerRecoveryContact(
+            sanitized
+          )
+        ) {
+          setOwnerRecoveryContactError(
+            "Enter a valid Philippine mobile number starting with 09."
+          );
+        } else {
+          setOwnerRecoveryContactError("");
+        }
+      }
+    );
+
+    ownerResetContactNumber?.addEventListener(
+      "blur",
+      () => {
+        const value =
+          ownerResetContactNumber.value.trim();
+
+        if (
+          value &&
+          !isValidOwnerRecoveryContact(value)
+        ) {
+          setOwnerRecoveryContactError(
+            "Use exactly 11 digits starting with 09, for example 09171234567."
+          );
+        }
+      }
+    );
+
     /* =========================
        OWNER PASSWORD RECOVERY REQUEST
     ========================= */
@@ -4822,8 +4943,28 @@ setStaffMessage(
           setStaffMessage(
             "Complete the restaurant name, owner email, registered mobile number, and recovery reason."
           );
+
+          if (!contactNumber) {
+            setOwnerRecoveryContactError(
+              "Enter the mobile number registered to the owner account."
+            );
+          }
+
           return;
         }
+
+        if (!isValidOwnerRecoveryContact(contactNumber)) {
+          setOwnerRecoveryContactError(
+            "Use exactly 11 digits starting with 09, for example 09171234567."
+          );
+          setStaffMessage(
+            "Enter a valid Philippine mobile number."
+          );
+          ownerResetContactNumber?.focus();
+          return;
+        }
+
+        setOwnerRecoveryContactError("");
 
         if (reason.length < 10) {
           setStaffMessage(
@@ -4898,6 +5039,8 @@ setStaffMessage(
             ownerResetContactNumber.value =
               "";
           }
+
+          setOwnerRecoveryContactError("");
 
           if (ownerResetReason) {
             ownerResetReason.value =
