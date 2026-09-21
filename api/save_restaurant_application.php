@@ -107,12 +107,12 @@ $role =
         )
     );
 
-if ($role !== "owner") {
+if (!in_array($role, ["owner", "partner_applicant"], true)) {
     respond_json(
         [
             "success" => false,
             "message" =>
-                "Only restaurant owners can save this setup."
+                "Only restaurant partners can save this setup."
         ],
         403
     );
@@ -921,6 +921,54 @@ if (!$application) {
     );
 }
 
+/* =========================================================
+   OWNER EMAIL-VERIFICATION STATE
+
+   Unverified partner applicants may save onboarding progress, but completing
+   the setup remains server-gated until the database confirms verification.
+   ========================================================= */
+
+$ownerAccountStmt = $conn->prepare("
+    SELECT
+        status,
+        is_verified
+    FROM tbl_users
+    WHERE user_id = ?
+      AND role = 'owner'
+    LIMIT 1
+");
+
+if (!$ownerAccountStmt) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Unable to verify the partner account."
+        ],
+        500
+    );
+}
+
+$ownerAccountStmt->bind_param("i", $ownerId);
+$ownerAccountStmt->execute();
+$ownerAccount = $ownerAccountStmt->get_result()->fetch_assoc();
+$ownerAccountStmt->close();
+
+if (!$ownerAccount) {
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Restaurant owner account not found."
+        ],
+        404
+    );
+}
+
+$ownerIsVerified =
+    (int) ($ownerAccount["is_verified"] ?? 0) === 1 &&
+    (int) ($ownerAccount["status"] ?? 0) === 1;
+
 $currentStatus =
     strtolower(
         trim(
@@ -933,6 +981,7 @@ $currentStatus =
     );
 
 $editableStatuses = [
+    "email_pending",
     "draft",
     "needs_changes"
 ];
@@ -979,6 +1028,27 @@ $applicationId =
 
 $isCompletingSetup =
     $action === "submit";
+
+if (
+    $isCompletingSetup &&
+    !$ownerIsVerified
+) {
+    respond_json(
+        [
+            "success" => false,
+            "verification_required" => true,
+            "message" =>
+                "Verify your owner email before completing restaurant setup. Your saved setup progress will not be lost."
+        ],
+        409
+    );
+}
+
+$saveApplicationStatus =
+    $currentStatus === "email_pending" &&
+    !$ownerIsVerified
+        ? "email_pending"
+        : "draft";
 
 if ($isCompletingSetup) {
     $documentStmt = $conn->prepare("
@@ -1042,7 +1112,7 @@ try {
                 delivery_fee = ?,
                 delivery_pricing_type = ?,
                 delivery_pricing_json = ?,
-                application_status = 'draft',
+                application_status = ?,
                 rejection_reason = NULL,
                 submitted_at = NULL,
                 reviewed_at = NULL,
@@ -1059,7 +1129,7 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssssssssssdssii",
+        "sssssssssssssdsssii",
         $restaurantName,
         $restaurantAddress,
         $restaurantContact,
@@ -1076,6 +1146,7 @@ try {
         $deliveryFee,
         $deliveryPricingType,
         $deliveryPricingJson,
+        $saveApplicationStatus,
         $applicationId,
         $ownerId
     );
@@ -1340,6 +1411,33 @@ try {
 
     $conn->commit();
 
+    /*
+     * A partner_applicant session may still be open after verification was
+     * completed in another tab/device. Promote it only after the verified
+     * database state has been confirmed above.
+     */
+    if ($ownerIsVerified && $role === "partner_applicant") {
+        $_SESSION["role"] = "owner";
+        $_SESSION["restaurant_id"] =
+            $restaurantId > 0
+                ? $restaurantId
+                : null;
+
+        unset(
+            $_SESSION["partner_application_only"],
+            $_SESSION["account_role"]
+        );
+    }
+
+    if ($isCompletingSetup && $restaurantId > 0) {
+        $_SESSION["role"] = "owner";
+        $_SESSION["restaurant_id"] = $restaurantId;
+        unset(
+            $_SESSION["partner_application_only"],
+            $_SESSION["account_role"]
+        );
+    }
+
     respond_json([
         "success" => true,
 
@@ -1351,7 +1449,7 @@ try {
         "status" =>
             $isCompletingSetup
                 ? "setup_completed"
-                : "draft",
+                : $saveApplicationStatus,
 
         "application_id" =>
             $applicationId,

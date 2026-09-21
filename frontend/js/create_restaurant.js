@@ -16,6 +16,12 @@ const API = {
     uploadRestaurantLogo:
         `${API_BASE}/upload_restaurant_logo.php`,
 
+    verificationStatus:
+        `${API_BASE}/get_partner_verification_status.php`,
+
+    requestVerificationResend:
+        `${API_BASE}/request_partner_verification_resend.php`,
+
     logout:
         `${API_BASE}/logout.php`
 };
@@ -32,6 +38,41 @@ const restaurantForm =
 
 const statusBanner =
     document.getElementById("statusBanner");
+
+const partnerEmailVerificationBanner =
+    document.getElementById(
+        "partnerEmailVerificationBanner"
+    );
+
+const partnerVerificationIcon =
+    document.getElementById(
+        "partnerVerificationIcon"
+    );
+
+const partnerVerificationBadge =
+    document.getElementById(
+        "partnerVerificationBadge"
+    );
+
+const partnerVerificationTitle =
+    document.getElementById(
+        "partnerVerificationTitle"
+    );
+
+const partnerVerificationText =
+    document.getElementById(
+        "partnerVerificationText"
+    );
+
+const partnerVerificationMeta =
+    document.getElementById(
+        "partnerVerificationMeta"
+    );
+
+const requestPartnerVerificationButton =
+    document.getElementById(
+        "requestPartnerVerificationButton"
+    );
 
 const wizardStatus =
     document.getElementById("wizardStatus");
@@ -459,6 +500,13 @@ let currentStep =
 let isSubmitting =
     false;
 
+let partnerVerificationLoaded = false;
+let ownerEmailVerified = false;
+let partnerVerificationState = null;
+let partnerVerificationPollTimer = null;
+let partnerVerificationRequestBusy = false;
+let partnerVerificationInitialized = false;
+
 /* =========================================================
    INITIALIZATION
    ========================================================= */
@@ -498,6 +546,11 @@ function bindEvents() {
     "click",
     openRealCustomerPreview
 );
+
+    requestPartnerVerificationButton?.addEventListener(
+        "click",
+        handlePartnerVerificationResendRequest
+    );
 
     restaurantForm.addEventListener(
         "submit",
@@ -758,6 +811,15 @@ async function openRealCustomerPreview() {
     previewWindow.document.title =
         "Loading Restaurant Preview";
 
+    const previewFontLink =
+        previewWindow.document.createElement("link");
+
+    previewFontLink.rel = "stylesheet";
+    previewFontLink.href = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap";
+    previewWindow.document.head.appendChild(
+        previewFontLink
+    );
+
     previewWindow.document.body.innerHTML = `
         <div
             style="
@@ -765,7 +827,7 @@ async function openRealCustomerPreview() {
                 display: grid;
                 place-items: center;
                 margin: 0;
-                font-family: Arial, sans-serif;
+                font-family: "Poppins", sans-serif;
                 background: #111111;
                 color: #ffffff;
             "
@@ -1018,7 +1080,7 @@ async function loadApplication() {
 
         if (response.status === 401) {
             window.location.href =
-                "/frontend/html/login.html";
+                "/?open=partner-portal";
 
             return;
         }
@@ -1052,6 +1114,10 @@ async function loadApplication() {
             result.application || {}
         );
 
+        await loadPartnerVerificationStatus(
+            true
+        );
+
         showForm();
     } catch (error) {
         console.error(
@@ -1070,6 +1136,510 @@ async function loadApplication() {
                 ${escapeHtml(error.message)}
             </div>
         `;
+    }
+}
+
+/* =========================================================
+   PARTNER EMAIL VERIFICATION
+   ========================================================= */
+
+function stopPartnerVerificationPolling() {
+    if (partnerVerificationPollTimer) {
+        window.clearTimeout(
+            partnerVerificationPollTimer
+        );
+
+        partnerVerificationPollTimer = null;
+    }
+}
+
+function schedulePartnerVerificationPolling(
+    delay = 15000
+) {
+    stopPartnerVerificationPolling();
+
+    if (ownerEmailVerified) {
+        return;
+    }
+
+    partnerVerificationPollTimer =
+        window.setTimeout(
+            () => {
+                loadPartnerVerificationStatus(
+                    false
+                );
+            },
+            delay
+        );
+}
+
+function setPartnerVerificationBannerState(
+    stateClass = ""
+) {
+    if (!partnerEmailVerificationBanner) {
+        return;
+    }
+
+    partnerEmailVerificationBanner.classList.remove(
+        "is-waiting",
+        "is-sent",
+        "is-danger"
+    );
+
+    if (stateClass) {
+        partnerEmailVerificationBanner.classList.add(
+            stateClass
+        );
+    }
+}
+
+function renderPartnerVerificationState(
+    verification = {}
+) {
+    partnerVerificationState =
+        verification || {};
+
+    const wasVerified =
+        ownerEmailVerified;
+
+    const hadVerificationState =
+        partnerVerificationInitialized;
+
+    partnerVerificationInitialized = true;
+    partnerVerificationLoaded = true;
+    ownerEmailVerified =
+        Boolean(
+            verification.is_verified
+        );
+
+    if (ownerEmailVerified) {
+        stopPartnerVerificationPolling();
+
+        partnerEmailVerificationBanner
+            ?.classList.add("hidden");
+
+        if (
+            currentApplicationStatus ===
+            "email_pending"
+        ) {
+            currentApplicationStatus =
+                "draft";
+
+            renderApplicationStatus(
+                "draft"
+            );
+        }
+
+        updateWizardButtons();
+
+        if (
+            hadVerificationState &&
+            !wasVerified
+        ) {
+            showToast(
+                "Email verified",
+                "Your owner email is verified. You can now complete restaurant setup when all required information is ready.",
+                "success"
+            );
+        }
+
+        return;
+    }
+
+    const request =
+        verification.request &&
+        typeof verification.request === "object"
+            ? verification.request
+            : null;
+
+    const requestStatus =
+        String(
+            request?.status || "none"
+        ).toLowerCase();
+
+    const maskedEmail =
+        String(
+            verification.registered_email_masked ||
+            "your registered owner email"
+        );
+
+    const linkExpired =
+        Boolean(
+            verification.link_expired
+        );
+
+    const canRequest =
+        Boolean(
+            verification.can_request_resend
+        );
+
+    partnerEmailVerificationBanner
+        ?.classList.remove("hidden");
+
+    setPartnerVerificationBannerState("");
+
+    if (partnerVerificationIcon) {
+        partnerVerificationIcon.textContent =
+            "✉";
+    }
+
+    if (partnerVerificationBadge) {
+        partnerVerificationBadge.textContent =
+            "Email verification pending";
+    }
+
+    if (partnerVerificationTitle) {
+        partnerVerificationTitle.textContent =
+            linkExpired
+                ? "Your verification link expired"
+                : "Verify your owner email";
+    }
+
+    if (partnerVerificationText) {
+        partnerVerificationText.textContent =
+            linkExpired
+                ? "Your restaurant setup progress is still saved. Request a new verification email from the FoodConnect administrator before completing setup."
+                : "You can continue editing and saving your restaurant setup. Email verification is required only before you complete setup.";
+    }
+
+    if (partnerVerificationMeta) {
+        partnerVerificationMeta.textContent =
+            `Registered email: ${maskedEmail}`;
+    }
+
+    if (requestPartnerVerificationButton) {
+        requestPartnerVerificationButton.disabled =
+            partnerVerificationRequestBusy ||
+            !canRequest;
+
+        requestPartnerVerificationButton.textContent =
+            "Request new verification email";
+    }
+
+    if (
+        requestStatus === "pending" ||
+        requestStatus === "processing"
+    ) {
+        setPartnerVerificationBannerState(
+            "is-waiting"
+        );
+
+        if (partnerVerificationBadge) {
+            partnerVerificationBadge.textContent =
+                requestStatus === "processing"
+                    ? "Administrator processing"
+                    : "Waiting for administrator";
+        }
+
+        if (partnerVerificationTitle) {
+            partnerVerificationTitle.textContent =
+                "Verification email request submitted";
+        }
+
+        if (partnerVerificationText) {
+            partnerVerificationText.textContent =
+                "A FoodConnect administrator must approve the request before a replacement verification email can be sent. You do not need to submit another request.";
+        }
+
+        if (requestPartnerVerificationButton) {
+            requestPartnerVerificationButton.disabled =
+                true;
+
+            requestPartnerVerificationButton.textContent =
+                requestStatus === "processing"
+                    ? "Administrator processing"
+                    : "Waiting for administrator";
+        }
+    } else if (requestStatus === "sent") {
+        setPartnerVerificationBannerState(
+            "is-sent"
+        );
+
+        if (partnerVerificationIcon) {
+            partnerVerificationIcon.textContent =
+                "✓";
+        }
+
+        if (partnerVerificationBadge) {
+            partnerVerificationBadge.textContent =
+                "New email sent";
+        }
+
+        if (partnerVerificationTitle) {
+            partnerVerificationTitle.textContent =
+                "Check your verification email";
+        }
+
+        if (partnerVerificationText) {
+            partnerVerificationText.textContent =
+                "The administrator sent a new verification link. Check your Inbox and Spam/Junk folder, then open the link to verify your owner email.";
+        }
+
+        if (partnerVerificationMeta) {
+            partnerVerificationMeta.textContent =
+                `Sent to ${maskedEmail}. The replacement link is valid for 24 hours.`;
+        }
+
+        if (requestPartnerVerificationButton) {
+            requestPartnerVerificationButton.disabled =
+                true;
+
+            requestPartnerVerificationButton.textContent =
+                "Verification email sent";
+        }
+    } else if (requestStatus === "send_failed") {
+        setPartnerVerificationBannerState(
+            "is-danger"
+        );
+
+        if (partnerVerificationBadge) {
+            partnerVerificationBadge.textContent =
+                "Email delivery needs retry";
+        }
+
+        if (partnerVerificationTitle) {
+            partnerVerificationTitle.textContent =
+                "The administrator needs to retry delivery";
+        }
+
+        if (partnerVerificationText) {
+            partnerVerificationText.textContent =
+                "Your request was handled, but the verification email could not be delivered. The administrator can retry the same request; you do not need to submit another one.";
+        }
+
+        if (requestPartnerVerificationButton) {
+            requestPartnerVerificationButton.disabled =
+                true;
+
+            requestPartnerVerificationButton.textContent =
+                "Waiting for administrator retry";
+        }
+    } else if (requestStatus === "rejected") {
+        setPartnerVerificationBannerState(
+            "is-danger"
+        );
+
+        if (partnerVerificationBadge) {
+            partnerVerificationBadge.textContent =
+                "Request not approved";
+        }
+
+        if (partnerVerificationTitle) {
+            partnerVerificationTitle.textContent =
+                "Verification resend request rejected";
+        }
+
+        if (partnerVerificationText) {
+            partnerVerificationText.textContent =
+                String(
+                    request?.rejection_reason ||
+                    "The administrator did not approve the latest request. Contact FoodConnect if you still need a replacement verification link."
+                );
+        }
+
+        if (requestPartnerVerificationButton) {
+            requestPartnerVerificationButton.disabled =
+                !canRequest ||
+                partnerVerificationRequestBusy;
+
+            requestPartnerVerificationButton.textContent =
+                canRequest
+                    ? "Request again"
+                    : "Contact administrator";
+        }
+    }
+
+    updateWizardButtons();
+    schedulePartnerVerificationPolling();
+}
+
+async function loadPartnerVerificationStatus(
+    showFailure = false
+) {
+    try {
+        const response = await fetch(
+            API.verificationStatus,
+            {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store",
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+
+        const result =
+            await parseJsonResponse(
+                response
+            );
+
+        if (response.status === 401) {
+            window.location.href =
+                "/?open=partner-portal";
+
+            return false;
+        }
+
+        if (
+            !response.ok ||
+            !result.success ||
+            !result.email_verification
+        ) {
+            throw new Error(
+                result.message ||
+                "Unable to check email verification status."
+            );
+        }
+
+        renderPartnerVerificationState(
+            result.email_verification
+        );
+
+        return true;
+    } catch (error) {
+        console.error(
+            "Partner verification status error:",
+            error
+        );
+
+        partnerVerificationLoaded = false;
+        ownerEmailVerified = false;
+
+        if (showFailure) {
+            partnerEmailVerificationBanner
+                ?.classList.remove("hidden");
+
+            setPartnerVerificationBannerState(
+                "is-danger"
+            );
+
+            if (partnerVerificationBadge) {
+                partnerVerificationBadge.textContent =
+                    "Verification status unavailable";
+            }
+
+            if (partnerVerificationTitle) {
+                partnerVerificationTitle.textContent =
+                    "FoodConnect could not confirm your email status";
+            }
+
+            if (partnerVerificationText) {
+                partnerVerificationText.textContent =
+                    "You can keep editing and saving your setup, but completing setup is temporarily disabled until the verification status can be checked.";
+            }
+
+            if (partnerVerificationMeta) {
+                partnerVerificationMeta.textContent =
+                    "Refresh the page or try again shortly.";
+            }
+
+            if (requestPartnerVerificationButton) {
+                requestPartnerVerificationButton.disabled =
+                    true;
+
+                requestPartnerVerificationButton.textContent =
+                    "Status unavailable";
+            }
+        }
+
+        updateWizardButtons();
+        schedulePartnerVerificationPolling(
+            20000
+        );
+
+        return false;
+    }
+}
+
+async function handlePartnerVerificationResendRequest() {
+    if (
+        partnerVerificationRequestBusy ||
+        ownerEmailVerified ||
+        requestPartnerVerificationButton?.disabled
+    ) {
+        return;
+    }
+
+    partnerVerificationRequestBusy = true;
+
+    if (requestPartnerVerificationButton) {
+        requestPartnerVerificationButton.disabled =
+            true;
+
+        requestPartnerVerificationButton.textContent =
+            "Submitting request...";
+    }
+
+    try {
+        const response = await fetch(
+            API.requestVerificationResend,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type":
+                        "application/json",
+                    "Accept":
+                        "application/json"
+                },
+                body: JSON.stringify({})
+            }
+        );
+
+        const result =
+            await parseJsonResponse(
+                response
+            );
+
+        if (response.status === 401) {
+            window.location.href =
+                "/";
+            return;
+        }
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+            throw new Error(
+                result.message ||
+                "Unable to submit the verification email request."
+            );
+        }
+
+        showToast(
+            "Request submitted",
+            result.message ||
+                "A FoodConnect administrator must approve the request before a new verification email is sent.",
+            "success"
+        );
+
+        await loadPartnerVerificationStatus(
+            true
+        );
+    } catch (error) {
+        console.error(
+            "Partner verification resend request error:",
+            error
+        );
+
+        showToast(
+            "Request not sent",
+            error.message ||
+                "Unable to submit the verification email request.",
+            "error"
+        );
+    } finally {
+        partnerVerificationRequestBusy =
+            false;
+
+        if (!ownerEmailVerified) {
+            await loadPartnerVerificationStatus(
+                false
+            );
+        }
     }
 }
 
@@ -1820,6 +2390,29 @@ function renderApplicationStatus(
   statusBanner.className =
     "status-banner";
 
+  if (status === "email_pending") {
+    statusBanner.classList.add(
+      "status-draft"
+    );
+
+    statusBanner.innerHTML = `
+      <strong>
+        Restaurant setup in progress
+      </strong>
+
+      <br>
+
+      Your setup progress can be saved while email verification is pending.
+      Verify your owner email before completing setup.
+    `;
+
+    statusBanner.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
   if (status === "submitted") {
     statusBanner.classList.add(
       "status-submitted"
@@ -2233,12 +2826,38 @@ function updateWizardButtons() {
                 ? !validateCurrentStep(false)
                 : true;
 
-        submitButton.disabled =
+        const formReadyForSubmission =
             currentStep === TOTAL_STEPS
-                ? !validateFormForSubmission(
+                ? validateFormForSubmission(
                     false
                 )
-                : true;
+                : false;
+
+        submitButton.disabled =
+            currentStep !== TOTAL_STEPS ||
+            !partnerVerificationLoaded ||
+            !ownerEmailVerified ||
+            !formReadyForSubmission;
+
+        if (
+            currentStep === TOTAL_STEPS &&
+            !ownerEmailVerified
+        ) {
+            submitButton.textContent =
+                partnerVerificationLoaded
+                    ? "Verify email to complete setup"
+                    : "Checking email verification...";
+
+            submitButton.title =
+                "Email verification is required before completing restaurant setup.";
+        } else {
+            submitButton.textContent =
+                "Complete setup";
+
+            submitButton.removeAttribute(
+                "title"
+            );
+        }
     }
 }
 
@@ -2733,6 +3352,27 @@ async function handleSubmitApplication(
   return;
 }
 
+    if (
+        !partnerVerificationLoaded ||
+        !ownerEmailVerified
+    ) {
+        partnerEmailVerificationBanner
+            ?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        showToast(
+            "Email verification required",
+            partnerVerificationLoaded
+                ? "Request or complete owner email verification before completing restaurant setup. Your saved setup progress is safe."
+                : "FoodConnect must confirm your email verification status before completing setup.",
+            "error"
+        );
+
+        return;
+    }
+
     clearValidationErrors();
 
     const valid =
@@ -2803,7 +3443,7 @@ async function saveApplication(
 
         if (response.status === 401) {
             window.location.href =
-                "/frontend/html/login.html";
+                "/?open=partner-portal";
 
             return false;
         }
@@ -2812,6 +3452,18 @@ async function saveApplication(
             !response.ok ||
             !result.success
         ) {
+            if (result.verification_required === true) {
+                await loadPartnerVerificationStatus(
+                    true
+                );
+
+                partnerEmailVerificationBanner
+                    ?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+            }
+
             if (
                 response.status === 422 &&
                 result.errors
@@ -2855,7 +3507,7 @@ async function saveApplication(
 }
 
         renderApplicationStatus(
-            "draft"
+            currentApplicationStatus
         );
 
         showToast(
@@ -3933,7 +4585,7 @@ async function handleLogout() {
         );
     } finally {
         window.location.href =
-            "/frontend/html/login.html";
+            "/?open=partner-portal";
     }
 }
 

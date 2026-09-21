@@ -82,6 +82,35 @@ if (!$product) {
 $conn->begin_transaction();
 
 try {
+  /*
+   * Remove dependent add-on links before deleting the product.
+   * This prevents foreign key constraint failures on databases
+   * where cascade deletion is not enabled.
+   */
+  $cleanupStmt = $conn->prepare("
+    DELETE FROM tbl_product_addon_links
+    WHERE restaurant_id = ?
+      AND LOWER(TRIM(product_name)) =
+          LOWER(TRIM(?))
+      AND LOWER(TRIM(product_category)) =
+          LOWER(TRIM(?))
+  ");
+
+  if ($cleanupStmt) {
+    $cleanupName = (string)$product["product_name"];
+    $cleanupCategory = (string)$product["category"];
+
+    $cleanupStmt->bind_param(
+      "iss",
+      $restaurant_id,
+      $cleanupName,
+      $cleanupCategory
+    );
+
+    $cleanupStmt->execute();
+    $cleanupStmt->close();
+  }
+
   $stmt = $conn->prepare("
     DELETE FROM tbl_products
     WHERE product_id = ?

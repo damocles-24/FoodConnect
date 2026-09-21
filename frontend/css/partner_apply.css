@@ -54,7 +54,7 @@ html {
 
 body {
     min-height: 100vh;
-    font-family: "Poppins", Arial, sans-serif;
+    font-family: "Poppins", sans-serif;
     color: var(--fc-text);
 
     background:
@@ -1103,25 +1103,60 @@ a {
     background: #f58220;
 }
 
-.register-another-button {
-    margin-top: 18px;
-    padding: 5px;
+.open-gmail-link {
+    min-height: 50px;
 
-    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
 
-    color: #71828a;
-    background: transparent;
+    margin-top: 12px;
+    padding: 12px 18px;
 
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
+    border: 1px solid #d8dde3;
+    border-radius: 12px;
 
-    cursor: pointer;
+    color: #2f4149;
+    background: #f8fafb;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.register-another-button:hover {
+.open-gmail-link i {
     color: #f58220;
-    text-decoration: underline;
+}
+
+.open-gmail-link:hover,
+.open-gmail-link:focus-visible {
+    border-color: #f58220;
+    color: #f58220;
+    background: #fff7ef;
+    transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .open-gmail-link,
+body[data-theme="dark"] .open-gmail-link {
+    border-color: #343942;
+    color: #f5f7fa;
+    background: #20242a;
+}
+
+html[data-theme="dark"] .open-gmail-link:hover,
+html[data-theme="dark"] .open-gmail-link:focus-visible,
+body[data-theme="dark"] .open-gmail-link:hover,
+body[data-theme="dark"] .open-gmail-link:focus-visible {
+    border-color: #f58220;
+    color: #ff9a45;
+    background: rgba(245, 130, 32, 0.08);
 }
 
 
@@ -1322,4 +1357,201 @@ body[data-theme="dark"] .partner-header .back-link {
     .partner-header .header-brand-name {
         font-size: 18px;
     }
+}
+
+/* =========================================================
+   PARTNER VERIFICATION RESEND REQUEST
+   Owner requests only; administrator authorizes the actual email resend.
+   ========================================================= */
+
+.verification-request-help {
+    margin-top: 22px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #e8ecef;
+    border-radius: 14px;
+    background: #fbfcfc;
+}
+
+.verification-request-help[hidden] {
+    display: none;
+}
+
+.verification-request-help-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: #f58220;
+    background: #fff1e5;
+    font-size: 18px;
+}
+
+.verification-request-help-copy {
+    min-width: 0;
+}
+
+.verification-request-help h3 {
+    margin: 0 0 4px;
+    color: #2f4149;
+    font-size: 14px;
+}
+
+.verification-request-help p {
+    margin: 0;
+    color: #71828a;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.verification-request-toggle {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #f58220;
+    border-radius: 10px;
+    color: #f58220;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.verification-request-toggle:hover,
+.verification-request-toggle:focus-visible {
+    color: #ffffff;
+    background: #f58220;
+}
+
+.verification-request-panel {
+    grid-column: 1 / -1;
+    padding-top: 14px;
+    border-top: 1px solid #e8ecef;
+}
+
+.verification-request-panel[hidden] {
+    display: none;
+}
+
+.verification-request-panel > label {
+    display: block;
+    margin-bottom: 7px;
+    color: #455a64;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.verification-request-submit {
+    margin-top: 12px;
+}
+
+.verification-request-submit.is-submitted,
+.verification-action-button.is-submitted {
+    background: #667085;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .verification-request-help,
+body[data-theme="dark"] .verification-request-help {
+    border-color: #343942;
+    background: #1b1f24;
+}
+
+html[data-theme="dark"] .verification-request-help h3,
+body[data-theme="dark"] .verification-request-help h3,
+html[data-theme="dark"] .verification-request-panel > label,
+body[data-theme="dark"] .verification-request-panel > label {
+    color: #f5f7fa;
+}
+
+html[data-theme="dark"] .verification-request-help p,
+body[data-theme="dark"] .verification-request-help p {
+    color: #b6c0c8;
+}
+
+html[data-theme="dark"] .verification-request-panel,
+body[data-theme="dark"] .verification-request-panel {
+    border-top-color: #343942;
+}
+
+@media (max-width: 720px) {
+    .verification-request-help {
+        grid-template-columns: auto 1fr;
+    }
+
+    .verification-request-toggle {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   PARTNER VERIFICATION -> ONBOARDING CONTINUATION
+   ========================================================= */
+
+.verification-continue-link {
+    margin-top: 8px;
+    text-decoration: none;
+}
+
+.verification-continue-link:hover,
+.verification-continue-link:focus-visible {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.verification-secondary-button {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 12px;
+    padding: 12px 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    border: 1px solid #f58220;
+    border-radius: 12px;
+
+    color: #f58220;
+    background: #ffffff;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.verification-secondary-button:hover:not(:disabled),
+.verification-secondary-button:focus-visible:not(:disabled) {
+    color: #ffffff;
+    background: #f58220;
+}
+
+.verification-secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+html[data-theme="dark"] .verification-secondary-button,
+body[data-theme="dark"] .verification-secondary-button {
+    background: #171b20;
+}
+
+html[data-theme="dark"] .verification-secondary-button:hover:not(:disabled),
+html[data-theme="dark"] .verification-secondary-button:focus-visible:not(:disabled),
+body[data-theme="dark"] .verification-secondary-button:hover:not(:disabled),
+body[data-theme="dark"] .verification-secondary-button:focus-visible:not(:disabled) {
+    background: #f58220;
 }

@@ -199,6 +199,11 @@ while ($row = $result->fetch_assoc()) {
         "name" =>
             (string) $row["name"],
 
+        "logo_path" =>
+            (string) (
+                $row["logo_path"] ?? ""
+            ),
+
         "address" =>
             (string) (
                 $row["address"] ?? ""

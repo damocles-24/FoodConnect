@@ -19,7 +19,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 body {
@@ -1592,6 +1592,8 @@ padding: 17px;
   border: 1px solid var(--border);
   border-radius: 15px;
 
+  cursor: pointer;
+
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -1602,6 +1604,11 @@ padding: 17px;
   transform: translateY(-2px);
   border-color: rgba(244, 124, 30, 0.42);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+}
+
+.inventory-overview-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .inventory-card-warning {
@@ -1686,10 +1693,8 @@ padding: 17px;
 .inventory-toolbar {
   display: grid;
   grid-template-columns:
-    minmax(280px, 1.5fr)
-    minmax(170px, 0.7fr)
-    minmax(170px, 0.7fr)
-    auto;
+    minmax(280px, 1fr)
+    minmax(170px, 210px);
   gap: 12px;
   align-items: end;
 
@@ -2015,9 +2020,6 @@ padding: 14px 16px;
     grid-column: 1 / -1;
   }
 
-  .inventory-clear-button {
-    width: 100%;
-  }
 }
 
 @media (max-width: 700px) {
@@ -6598,9 +6600,7 @@ margin-bottom:18px;
   overflow: hidden;
 
   color: #ffffff;
-  font-family:
-    "Courier New",
-    monospace;
+  font-family: "Poppins", sans-serif;
 
   font-size: 1rem;
   font-weight: 800;
@@ -11305,3 +11305,93 @@ html[data-theme="dark"] body[data-fc-page="owner"] #editUserModal .ph-phone-fiel
   }
 }
 
+
+
+/* FoodConnect system font consistency */
+html, body, button, input, select, textarea, table, th, td, a, span, p, h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================================
+   FOODCONNECT OWNER ACTION TOAST - 2026-09-21
+   The owner dashboard creates this toast dynamically in JS;
+   style it here so it follows both light and dark themes.
+========================================================= */
+body[data-fc-page="owner"] .owner-action-toast {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 6000;
+
+  width: min(380px, calc(100vw - 44px));
+  padding: 15px 17px;
+
+  color: #182230;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-left: 5px solid #22c55e;
+  border-radius: 13px;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.18);
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.22s ease,
+    visibility 0.22s ease,
+    transform 0.22s ease;
+}
+
+body[data-fc-page="owner"] .owner-action-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+body[data-fc-page="owner"] .owner-action-toast.error,
+body[data-fc-page="owner"] .owner-action-toast.danger {
+  border-left-color: #ef4444;
+}
+
+body[data-fc-page="owner"] .owner-action-toast.info {
+  border-left-color: #3b82f6;
+}
+
+body[data-fc-page="owner"] .owner-action-toast.warning {
+  border-left-color: #f59e0b;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast {
+  color: #f5f7fa;
+  background: #181b20;
+  border-color: #30343b;
+  border-left-color: #22c55e;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast.error,
+html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast.danger {
+  border-left-color: #f87171;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast.info {
+  border-left-color: #60a5fa;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast.warning {
+  border-left-color: #fbbf24;
+}
+
+@media (max-width: 600px) {
+  body[data-fc-page="owner"] .owner-action-toast {
+    top: 14px;
+    right: 14px;
+    left: 14px;
+    width: auto;
+  }
+}

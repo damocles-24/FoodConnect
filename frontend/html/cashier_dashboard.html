@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../css/cashier_dashboard.css?v=20260913-hoverfix1" />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
 
@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
-  href="../css/foodconnect-theme.css?v=20260903-cashierfix1"
+  href="../css/foodconnect-theme.css?v=20260921-font1"
 >
 
 <script
@@ -889,9 +889,14 @@
 <!-- NEW ORDER TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
+<script src="../js/auth_guard.js"></script>
+<script>
+  requireRole("cashier");
+</script>
+
 <script src="../js/libraries/html5-qrcode.min.js"></script>
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/cashier_dashboard.js"></script>
+<script src="../js/cashier_dashboard.js?v=20260921-font1"></script>
 
 </body>
 </html>

@@ -67,7 +67,11 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") {
 
 if (
     empty($_SESSION["user_id"]) ||
-    strtolower((string) ($_SESSION["role"] ?? "")) !== "owner"
+    !in_array(
+        strtolower((string) ($_SESSION["role"] ?? "")),
+        ["owner", "partner_applicant"],
+        true
+    )
 ) {
     out([
         "success" => false,
@@ -159,7 +163,7 @@ if (!$app) {
 if (
     !in_array(
         strtolower((string) $app["application_status"]),
-        ["draft", "needs_changes"],
+        ["email_pending", "draft", "needs_changes"],
         true
     )
 ) {

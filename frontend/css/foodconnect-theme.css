@@ -1,6 +1,21 @@
 
 :root {
   --fc-theme-orange: #f78021;
+  --fc-font-family: "Poppins", sans-serif;
+}
+
+html,
+body {
+  font-family: var(--fc-font-family);
+}
+
+button,
+input,
+select,
+textarea,
+optgroup,
+option {
+  font-family: inherit;
 }
 
 html[data-theme="light"],
@@ -452,7 +467,6 @@ html[data-theme="dark"] {
   .status-submitted,
   .status-needs_changes,
   .activity-log-action-badge.warning,
-  .inventory-status-warning
 ) {
   color: var(--fc-warning) !important;
   background: var(--fc-warning-soft) !important;
@@ -490,7 +504,6 @@ html[data-theme="dark"] {
   .customer-order-status.canceled,
   .status-rejected,
   .activity-log-action-badge.danger,
-  .inventory-status-danger,
   .status-message.error,
   .status-message.danger
 ) {
@@ -638,4 +651,20 @@ body[data-fc-page="customer-cart"] .checkout-button:disabled :is(span, i),
 body[data-fc-page="customer-cart"] .clear-cart-button:disabled :is(span, i) {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
+}
+
+/* =========================================================
+   OWNER DASHBOARD INVENTORY SUMMARY DOT FIX
+   Keep status dots solid instead of badge-soft backgrounds.
+========================================================= */
+body[data-fc-page="owner"] .inventory-status-warning {
+  background: #f5b400 !important;
+  border-color: #f5b400 !important;
+  color: #f5b400 !important;
+}
+
+body[data-fc-page="owner"] .inventory-status-danger {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
 }

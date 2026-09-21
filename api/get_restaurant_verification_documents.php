@@ -6,7 +6,7 @@ function out(array $d,int $s=200):void{http_response_code($s);echo json_encode($
 if(empty($_SESSION["user_id"]))out(["success"=>false,"message"=>"Authentication required."],401);
 $uid=(int)$_SESSION["user_id"]; $role=strtolower((string)($_SESSION["role"]??""));
 $appId=(int)($_GET["application_id"]??0);
-if($role==="owner"){
+if(in_array($role,["owner","partner_applicant"],true)){
  $s=$conn->prepare("SELECT application_id FROM tbl_partner_applications WHERE owner_id=? ORDER BY application_id DESC LIMIT 1");$s->bind_param("i",$uid);$s->execute();$r=$s->get_result()->fetch_assoc();$s->close();if(!$r)out(["success"=>true,"documents"=>[]]);$appId=(int)$r["application_id"];
 }elseif($role!=="admin")out(["success"=>false,"message"=>"Access denied."],403);
 if($appId<=0)out(["success"=>false,"message"=>"Invalid application."],422);

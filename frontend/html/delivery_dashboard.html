@@ -24,13 +24,18 @@
   />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260904-delivery-theme1">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260921-font1">
   <link rel="stylesheet" href="../css/delivery_dashboard.css?v=20260817-delivery-polish2">
-  <script src="../js/foodconnect-theme.js?v=20260904-delivery-theme1" defer></script>
+  <script src="../js/auth_guard.js"></script>
+<script>
+  requireRole("delivery_staff");
+</script>
+
+<script src="../js/foodconnect-theme.js?v=20260904-delivery-theme1" defer></script>
 </head>
 
 <body data-fc-page="delivery">

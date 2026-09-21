@@ -430,9 +430,52 @@ try {
         );
     }
 
+    $applicationId =
+        (int) $conn->insert_id;
+
     $applicationStmt->close();
 
     $conn->commit();
+
+    /* =====================================================
+       CREATE RESTRICTED ONBOARDING SESSION
+
+       The application is safely committed before any session is created.
+       This session intentionally uses role=partner_applicant, not owner, so
+       normal owner APIs remain blocked until email verification succeeds.
+       The applicant may only use endpoints that explicitly allow the
+       restricted onboarding role.
+    ===================================================== */
+
+    session_regenerate_id(true);
+
+    $_SESSION = [];
+
+    $_SESSION["user_id"] =
+        $ownerId;
+
+    $_SESSION["role"] =
+        "partner_applicant";
+
+    $_SESSION["account_role"] =
+        "owner";
+
+    $_SESSION["restaurant_id"] =
+        null;
+
+    $_SESSION["display_name"] =
+        $fullName;
+
+    $_SESSION["logged_in"] =
+        true;
+
+    $_SESSION["authenticated_at"] =
+        time();
+
+    $_SESSION["partner_application_only"] =
+        true;
+
+    session_write_close();
 } catch (Throwable $error) {
     if ($conn->errno === 0) {
         /*
@@ -582,8 +625,9 @@ $emailBody = "
         font-size:15px;
         line-height:1.7;
     '>
-        Verify your email address to continue with
-        your restaurant setup.
+        You can continue filling in your restaurant setup now.
+        Verify your email address before completing the setup
+        and sending it for FoodConnect review.
     </p>
 
     <div style='
@@ -632,20 +676,43 @@ $emailBody = "
    SEND VERIFICATION EMAIL
 ========================================================= */
 
-$emailSent =
-    sendBrevoSMTP(
-        $email,
-        "Verify your FoodConnect partner application",
-        $emailBody
+$emailSent = false;
+
+try {
+    $emailSent =
+        sendBrevoSMTP(
+            $email,
+            "Verify your FoodConnect partner application",
+            $emailBody
+        );
+} catch (Throwable $mailError) {
+    error_log(
+        "partner_register verification email error: " .
+        $mailError->getMessage()
     );
 
+    $emailSent = false;
+}
+
 if (!$emailSent) {
+    /*
+     * The account and application were already committed successfully. Do
+     * not make the browser think registration failed and tempt the applicant
+     * to submit a duplicate application. The restricted onboarding session
+     * remains valid so the applicant can continue setup and request an
+     * administrator-approved replacement email from the wizard.
+     */
     respond_json(
-        false,
-        "Your application was saved, but the verification email could not be sent. Use the resend verification option.",
-        500,
+        true,
+        "Your application was saved. The first verification email could not be delivered, but you can continue restaurant setup and request a new verification email from the FoodConnect administrator.",
+        201,
         [
-            "application_saved" => true
+            "application_saved" => true,
+            "application_id" => $applicationId,
+            "application_status" => "email_pending",
+            "restricted_onboarding" => true,
+            "verification_email_sent" => false,
+            "redirect_url" => "/frontend/html/create_restaurant.html"
         ]
     );
 }
@@ -656,9 +723,14 @@ if (!$emailSent) {
 
 respond_json(
     true,
-    "Application submitted successfully. Please check your email for the verification link.",
+    "Application submitted successfully. Check your email for the verification link. You can continue setting up your restaurant while verification is pending.",
     201,
     [
-        "application_saved" => true
+        "application_saved" => true,
+        "application_id" => $applicationId,
+        "application_status" => "email_pending",
+        "restricted_onboarding" => true,
+        "verification_email_sent" => true,
+        "redirect_url" => "/frontend/html/create_restaurant.html"
     ]
 );

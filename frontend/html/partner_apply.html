@@ -25,7 +25,7 @@
     >
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
@@ -36,11 +36,11 @@
 
     <link
         rel="stylesheet"
-        href="../css/partner_apply.css"
+        href="../css/partner_apply.css?v=20260921-gmail1"
     >
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260817-semantic1">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260921-font1">
   <script src="../js/foodconnect-theme.js?v=20260908-live-sync1" defer></script>
 </head>
 
@@ -724,6 +724,76 @@
 
         </form>
 
+        <section
+            id="verificationResendRequestHelp"
+            class="verification-request-help"
+            aria-labelledby="verificationRequestHelpTitle"
+        >
+            <div class="verification-request-help-icon" aria-hidden="true">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+
+            <div class="verification-request-help-copy">
+                <h3 id="verificationRequestHelpTitle">
+                    Verification link expired or missing?
+                </h3>
+
+                <p>
+                    If you already submitted a restaurant partner application,
+                    request a new verification email from the FoodConnect administrator.
+                    The administrator must approve the request before a new link is sent.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="openVerificationRequestButton"
+                class="verification-request-toggle"
+                aria-expanded="false"
+                aria-controls="verificationRequestPanel"
+            >
+                Request New Verification Email
+            </button>
+
+            <div
+                id="verificationRequestPanel"
+                class="verification-request-panel"
+                hidden
+            >
+                <label for="verificationRequestEmail">
+                    Registered Partner Email
+                </label>
+
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input
+                        type="email"
+                        id="verificationRequestEmail"
+                        maxlength="150"
+                        autocomplete="email"
+                        placeholder="Enter the email used in your application"
+                    >
+                </div>
+
+                <div
+                    id="verificationRequestMessage"
+                    class="form-message"
+                    aria-live="polite"
+                ></div>
+
+                <button
+                    type="button"
+                    id="submitVerificationRequestButton"
+                    class="submit-button verification-request-submit"
+                >
+                    <span class="button-text">
+                        Send Request to Administrator
+                    </span>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </section>
+
         <div
     id="verificationSuccessPanel"
     class="verification-success-panel"
@@ -738,11 +808,11 @@
     </p>
 
     <h2>
-        Check your email
+        Verify your email
     </h2>
 
     <p class="verification-success-description">
-        We sent a verification link to:
+        Partner email address:
     </p>
 
     <strong
@@ -750,10 +820,23 @@
         class="submitted-partner-email"
     ></strong>
 
-    <p class="verification-success-note">
+    <p id="verificationSuccessNote" class="verification-success-note">
         Verify your email to continue setting up your restaurant.
-        The verification link is valid for 24 hours.
+        The verification link is valid for 24 hours. If it expires or does not arrive,
+        request a new link from the FoodConnect administrator.
     </p>
+
+    <a
+        href="/frontend/html/create_restaurant.html"
+        id="continuePartnerSetupButton"
+        class="submit-button verification-continue-link"
+    >
+        <span class="button-text">
+            Continue Restaurant Setup
+        </span>
+
+        <i class="fa-solid fa-arrow-right"></i>
+    </a>
 
     <div
         id="resendVerificationMessage"
@@ -764,14 +847,26 @@
     <button
         type="button"
         id="resendPartnerVerificationButton"
-        class="submit-button verification-action-button"
+        class="verification-secondary-button"
     >
         <span class="button-text">
-            Resend Verification Email
+            Request New Verification Email
         </span>
 
         <i class="fa-regular fa-paper-plane"></i>
     </button>
+
+    <a
+        href="https://mail.google.com/"
+        class="open-gmail-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open Gmail inbox"
+    >
+        <i class="fa-solid fa-envelope"></i>
+
+        Open Gmail Inbox
+    </a>
 
     <a
         href="/?open=partner-portal"
@@ -781,14 +876,6 @@
 
         Open Partner Access Portal
     </a>
-
-    <button
-        type="button"
-        id="registerAnotherPartnerButton"
-        class="register-another-button"
-    >
-        Register another restaurant
-    </button>
 </div>
 
     </section>
@@ -807,6 +894,6 @@
 
 <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="/frontend/js/partner_apply.js?v=20260909-prodapi2"></script>
+<script src="/frontend/js/partner_apply.js?v=20260915-partner-wizard-verification2"></script>
 </body>
 </html>

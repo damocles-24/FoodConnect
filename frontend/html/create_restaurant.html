@@ -15,11 +15,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260910-themefix2">
+  <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260921-font1">
 
     <link
         rel="stylesheet"
-        href="../css/create_restaurant.css?v=20260910-logoutfix1"
+        href="../css/create_restaurant.css?v=20260921-logout-placement1"
     >
 
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
@@ -145,32 +145,83 @@
 
         <main class="setup-main">
             <header class="setup-header">
-                <div>
+                <div class="setup-header-copy">
                     <p class="eyebrow">
                         Restaurant onboarding
                     </p>
 
-                    <h2>Create your restaurant</h2>
+                    <div class="setup-title-row">
+                        <h2>Create your restaurant</h2>
+
+                        <button
+                            type="button"
+                            class="logout-button"
+                            id="logoutButton"
+                        >
+                            Log out
+                        </button>
+                    </div>
 
                     <p class="header-description">
                         Complete your restaurant details before submitting
                         your application for FoodConnect confirm restaurant information.
                     </p>
                 </div>
-
-                <button
-                    type="button"
-                    class="logout-button"
-                    id="logoutButton"
-                >
-                    Log out
-                </button>
             </header>
 
             <div
                 class="status-banner hidden"
                 id="statusBanner"
             ></div>
+
+            <!-- =========================================
+                 PARTNER EMAIL VERIFICATION RECOVERY
+                 The applicant may keep saving setup progress, but only an
+                 administrator can authorize a replacement verification email.
+                 ========================================= -->
+            <section
+                class="partner-email-verification hidden"
+                id="partnerEmailVerificationBanner"
+                aria-live="polite"
+                aria-labelledby="partnerVerificationTitle"
+            >
+                <div class="partner-email-verification-main">
+                    <span
+                        class="partner-email-verification-icon"
+                        id="partnerVerificationIcon"
+                        aria-hidden="true"
+                    >
+                        ✉
+                    </span>
+
+                    <div class="partner-email-verification-copy">
+                        <span
+                            class="partner-email-verification-badge"
+                            id="partnerVerificationBadge"
+                        >
+                            Email verification pending
+                        </span>
+
+                        <h3 id="partnerVerificationTitle">
+                            Verify your owner email
+                        </h3>
+
+                        <p id="partnerVerificationText">
+                            Your setup progress is saved. Verify your owner email before completing restaurant setup.
+                        </p>
+
+                        <small id="partnerVerificationMeta"></small>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="partner-email-verification-action"
+                    id="requestPartnerVerificationButton"
+                >
+                    Request new verification email
+                </button>
+            </section>
 
             <div
                 class="wizard-status hidden"
@@ -1171,6 +1222,6 @@
     <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
     <script src="../js/restaurant_verification_documents.js?v=20260912-multimenu1"></script>
     <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/create_restaurant.js"></script>
+<script src="../js/create_restaurant.js?v=20260921-font1"></script>
 </body>
 </html>

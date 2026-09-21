@@ -47,7 +47,7 @@ if (!$document) {
 
 $isAdmin = $role === "admin";
 $isOwner =
-    $role === "owner" &&
+    in_array($role, ["owner", "partner_applicant"], true) &&
     (int) $document["owner_id"] === $userId;
 
 if (!$isAdmin && !$isOwner) {

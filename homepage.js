@@ -2184,6 +2184,89 @@ function escapeHtml(
     .replaceAll("'", "&#039;");
 }
 
+const DEFAULT_RESTAURANT_LOGO =
+  "https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png";
+
+function resolveRestaurantLogoUrl(
+  value = ""
+) {
+  const rawPath =
+    String(value || "").trim();
+
+  if (!rawPath) {
+    return DEFAULT_RESTAURANT_LOGO;
+  }
+
+  if (/^https?:\/\//i.test(rawPath)) {
+    return rawPath;
+  }
+
+  /*
+   * Restaurant logos are stored in the database as paths such as:
+   * uploads/restaurant_logos/owner_27/restaurant_logo_xxx.jpg
+   *
+   * Older local responses can include /FoodConnect/ at the front. On the
+   * live site public_html is already the web root, so normalize both forms
+   * to one root-relative URL.
+   */
+  const normalizedPath =
+    rawPath
+      .replace(/^\/+/, "")
+      .replace(/^FoodConnect\//i, "");
+
+  if (!normalizedPath) {
+    return DEFAULT_RESTAURANT_LOGO;
+  }
+
+  return `/${normalizedPath}`;
+}
+
+function applyRestaurantLogoToCard(
+  card,
+  logoPath = ""
+) {
+  const image =
+    card?.querySelector(
+      ".restaurant-card-logo"
+    );
+
+  if (!image) {
+    return;
+  }
+
+  const resolvedUrl =
+    resolveRestaurantLogoUrl(
+      logoPath
+    );
+
+  card.dataset.logoPath =
+    String(logoPath || "").trim();
+
+  image.dataset.fallbackApplied = "0";
+
+  image.onerror = () => {
+    if (
+      image.dataset.fallbackApplied ===
+      "1"
+    ) {
+      return;
+    }
+
+    image.dataset.fallbackApplied = "1";
+    image.src =
+      DEFAULT_RESTAURANT_LOGO;
+  };
+
+  image.src = resolvedUrl;
+
+  if (
+    image.complete &&
+    image.naturalWidth === 0
+  ) {
+    image.onerror();
+  }
+}
+
 /* =========================
    RESTAURANT BROWSE METADATA
 ========================= */
@@ -2208,10 +2291,11 @@ function normalizeBrowseCategory(
     pizzas: "pizza",
     coffee: "coffee",
     coffees: "coffee",
-    "milk tea": "milktea",
-    milktea: "milktea",
-    "bubble tea": "milktea",
-    boba: "milktea",
+    /* Milk tea is grouped under Drinks in the public restaurant browser. */
+    "milk tea": "drinks",
+    milktea: "drinks",
+    "bubble tea": "drinks",
+    boba: "drinks",
     drink: "drinks",
     drinks: "drinks",
     beverage: "drinks",
@@ -2303,13 +2387,12 @@ function mapMenuCategoryToBrowseCategories(
     categories.add("drinks");
   }
 
-  /* Milk tea is both a specific category and a drink. */
+  /* Milk tea belongs to the general Drinks browse category. */
   if (
     /(^|\b)milk ?tea(\b|$)/.test(category) ||
     /(^|\b)bubble tea(\b|$)/.test(category) ||
     /(^|\b)boba(\b|$)/.test(category)
   ) {
-    categories.add("milktea");
     categories.add("drinks");
   }
 
@@ -2672,6 +2755,17 @@ function createRestaurantCard(
       "Address not available"
     ).trim();
 
+  const restaurantLogoPath =
+    String(
+      restaurant.logo_path ||
+      ""
+    ).trim();
+
+  const restaurantLogoUrl =
+    resolveRestaurantLogoUrl(
+      restaurantLogoPath
+    );
+
   const openingHours =
     String(
       restaurant.opening_hours ||
@@ -2730,6 +2824,9 @@ function createRestaurantCard(
 
   article.dataset.name =
     restaurantName;
+
+  article.dataset.logoPath =
+    restaurantLogoPath;
 
   article.dataset.description = [
     restaurantName,
@@ -2790,8 +2887,10 @@ function createRestaurantCard(
     <div class="restaurant-card-image">
 
       <img
-        src="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/05f3b888-5229-477b-87a0-0b27c7ddee38%20(1)-Photoroom.png"
-        alt="${escapeHtml(restaurantName)}"
+        class="restaurant-card-logo"
+        src="${escapeHtml(restaurantLogoUrl)}"
+        alt="${escapeHtml(restaurantName)} logo"
+        loading="lazy"
       >
 
       <span class="status-badge">
@@ -2884,6 +2983,11 @@ function createRestaurantCard(
 
     </div>
   `;
+
+  applyRestaurantLogoToCard(
+    article,
+    restaurantLogoPath
+  );
 
   return article;
 }
@@ -3010,6 +3114,11 @@ function renderRestaurantsPageCards() {
 
       updateRestaurantCard(
         clonedCard
+      );
+
+      applyRestaurantLogoToCard(
+        clonedCard,
+        card.dataset.logoPath || ""
       );
 
       if (isRestaurantOpen(card)) {
@@ -4076,6 +4185,25 @@ async function refreshHomepageRestaurantAvailability() {
             restaurant.opening_hours ||
             ""
           );
+
+        const nextLogoPath =
+          String(
+            restaurant.logo_path ||
+            ""
+          ).trim();
+
+        if (
+          nextLogoPath !==
+          String(
+            card.dataset.logoPath ||
+            ""
+          ).trim()
+        ) {
+          applyRestaurantLogoToCard(
+            card,
+            nextLogoPath
+          );
+        }
       }
     );
 
@@ -6037,23 +6165,42 @@ restaurantsPageSearchForm?.addEventListener(
 
     setTimeout(() => {
 
-      const matchedCard =
+      const candidateCards =
         [
           ...restaurantsPageCards,
           ...closedRestaurantsPageCards
-        ].find(
-          (card) => {
-
-            const restaurantName =
-              String(
-                card.dataset.name || ""
-              )
-                .trim()
-                .toLowerCase();
-
-            return restaurantName === query;
-          }
+        ].filter(
+          (card) =>
+            card.style.display !== "none"
         );
+
+      const getRestaurantName =
+        (card) =>
+          String(
+            card?.dataset?.name || ""
+          )
+            .trim()
+            .toLowerCase();
+
+      /*
+       * Prefer a restaurant whose name starts with the submitted text,
+       * then any restaurant whose name contains it. If the live filter
+       * matched only menu/category text, fall back to the first visible
+       * restaurant result instead of leaving the user at the search bar.
+       */
+      const matchedCard =
+        candidateCards.find(
+          (card) =>
+            getRestaurantName(card)
+              .startsWith(query)
+        ) ||
+        candidateCards.find(
+          (card) =>
+            getRestaurantName(card)
+              .includes(query)
+        ) ||
+        candidateCards[0] ||
+        null;
 
       if (!matchedCard) {
         return;

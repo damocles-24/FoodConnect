@@ -8,12 +8,13 @@ rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
-  <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260914-sidebar-hover1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Owner Dashboard | FoodConnect</title>
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260921-font1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
-  href="../css/foodconnect-theme.css?v=20260903-ownerfix1"
+  href="../css/foodconnect-theme.css?v=20260921-font1"
 >
 <script
   src="../js/foodconnect-theme.js?v=20260903-ownerfix1"
@@ -759,7 +760,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     class="inventory-overview"
     aria-label="Inventory overview"
   >
-    <article class="inventory-overview-card">
+    <article
+      class="inventory-overview-card"
+      data-inventory-stock-filter="all"
+      role="button"
+      tabindex="0"
+      aria-pressed="true"
+      aria-label="Show all inventory products"
+    >
       <div
         class="inventory-overview-card-icon"
         aria-hidden="true"
@@ -780,7 +788,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </div>
     </article>
 
-    <article class="inventory-overview-card">
+    <article
+      class="inventory-overview-card"
+      data-inventory-stock-filter="available"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      aria-label="Show in-stock inventory products"
+    >
       <div
         class="inventory-overview-card-icon inventory-icon-success"
         aria-hidden="true"
@@ -801,7 +816,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </div>
     </article>
 
-    <article class="inventory-overview-card inventory-card-warning">
+    <article
+      class="inventory-overview-card inventory-card-warning"
+      data-inventory-stock-filter="low"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      aria-label="Show low-stock inventory products"
+    >
       <div
         class="inventory-overview-card-icon inventory-icon-warning"
         aria-hidden="true"
@@ -822,7 +844,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </div>
     </article>
 
-    <article class="inventory-overview-card inventory-card-danger">
+    <article
+      class="inventory-overview-card inventory-card-danger"
+      data-inventory-stock-filter="out"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+      aria-label="Show out-of-stock inventory products"
+    >
       <div
         class="inventory-overview-card-icon inventory-icon-danger"
         aria-hidden="true"
@@ -864,33 +893,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     </div>
 
     <div class="inventory-filter-group">
-      <label for="inventoryFilter">
-        Stock Status
-      </label>
-
-      <select
-        id="inventoryFilter"
-        aria-label="Filter inventory by stock status"
-      >
-        <option value="all">
-          All Stock
-        </option>
-
-        <option value="low">
-          Low Stock
-        </option>
-
-        <option value="out">
-          Out of Stock
-        </option>
-
-        <option value="available">
-          In Stock
-        </option>
-      </select>
-    </div>
-
-    <div class="inventory-filter-group">
       <label for="inventoryCategoryFilter">
         Category
       </label>
@@ -905,13 +907,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </select>
     </div>
 
-    <button
-      type="button"
-      class="inventory-clear-button"
-      id="clearInventoryFilters"
-    >
-      Clear Filters
-    </button>
   </div>
 
   <!-- Inventory table -->
@@ -4098,9 +4093,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   </div>
 </div>
 
-  <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
+  <script src="../js/auth_guard.js"></script>
+<script>
+  requireRole("owner");
+</script>
+
+<script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
   <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/owner_dashboard.js?v=20260913-staff-recovery1"></script>
+<script src="../js/owner_dashboard.js?v=20260921-font1"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

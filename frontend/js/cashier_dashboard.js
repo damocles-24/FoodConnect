@@ -4901,6 +4901,8 @@ function buildPrintDocumentMarkup(title, content) {
         content="width=device-width, initial-scale=1.0"
       >
 
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
       <title>${escapeHTML(title)}</title>
 
       <style>
@@ -4924,10 +4926,7 @@ function buildPrintDocumentMarkup(title, content) {
         }
 
         body {
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
+          font-family: "Poppins", sans-serif;
 
           font-size: 11px;
           font-weight: 600;

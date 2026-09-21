@@ -23,6 +23,16 @@ const submittedPartnerEmail =
         "submittedPartnerEmail"
     );
 
+const verificationSuccessNote =
+    document.getElementById(
+        "verificationSuccessNote"
+    );
+
+const continuePartnerSetupButton =
+    document.getElementById(
+        "continuePartnerSetupButton"
+    );
+
 const resendVerificationMessage =
     document.getElementById(
         "resendVerificationMessage"
@@ -31,6 +41,36 @@ const resendVerificationMessage =
 const resendPartnerVerificationButton =
     document.getElementById(
         "resendPartnerVerificationButton"
+    );
+
+const verificationResendRequestHelp =
+    document.getElementById(
+        "verificationResendRequestHelp"
+    );
+
+const openVerificationRequestButton =
+    document.getElementById(
+        "openVerificationRequestButton"
+    );
+
+const verificationRequestPanel =
+    document.getElementById(
+        "verificationRequestPanel"
+    );
+
+const verificationRequestEmail =
+    document.getElementById(
+        "verificationRequestEmail"
+    );
+
+const verificationRequestMessage =
+    document.getElementById(
+        "verificationRequestMessage"
+    );
+
+const submitVerificationRequestButton =
+    document.getElementById(
+        "submitVerificationRequestButton"
     );
 
 const registerAnotherPartnerButton =
@@ -48,8 +88,9 @@ const otherCuisineInput =
     document.getElementById("other_cuisine");
 
 let registeredPartnerEmail = "";
-
-let resendCooldownInterval = null;
+let verificationRequestSubmitted = false;
+let partnerSetupRedirectUrl =
+    "/frontend/html/create_restaurant.html";
 
 /* =========================================================
    MESSAGE HELPERS
@@ -106,6 +147,30 @@ function clearResendMessage() {
         "";
 }
 
+function showVerificationRequestMessage(type, message) {
+    if (!verificationRequestMessage) {
+        return;
+    }
+
+    verificationRequestMessage.className =
+        `form-message ${type}`;
+
+    verificationRequestMessage.textContent =
+        message;
+}
+
+function clearVerificationRequestMessage() {
+    if (!verificationRequestMessage) {
+        return;
+    }
+
+    verificationRequestMessage.className =
+        "form-message";
+
+    verificationRequestMessage.textContent =
+        "";
+}
+
 /* =========================================================
    BUTTON LOADING
    ========================================================= */
@@ -136,13 +201,42 @@ function setResendButtonLoading(isLoading) {
             .querySelector(".button-text");
 
     resendPartnerVerificationButton.disabled =
-        isLoading;
+        isLoading || verificationRequestSubmitted;
 
     if (label) {
         label.textContent =
-            isLoading
-                ? "Sending Verification..."
-                : "Resend Verification Email";
+            verificationRequestSubmitted
+                ? "Waiting for Administrator"
+                : isLoading
+                    ? "Submitting Request..."
+                    : "Request New Verification Email";
+    }
+}
+
+function setVerificationRequestButtonLoading(isLoading) {
+    if (!submitVerificationRequestButton) {
+        return;
+    }
+
+    const label =
+        submitVerificationRequestButton
+            .querySelector(".button-text");
+
+    submitVerificationRequestButton.disabled =
+        isLoading || verificationRequestSubmitted;
+
+    submitVerificationRequestButton.classList.toggle(
+        "is-submitted",
+        verificationRequestSubmitted
+    );
+
+    if (label) {
+        label.textContent =
+            verificationRequestSubmitted
+                ? "Waiting for Administrator"
+                : isLoading
+                    ? "Submitting Request..."
+                    : "Send Request to Administrator";
     }
 }
 
@@ -172,9 +266,40 @@ async function readJsonResponse(response) {
    SUCCESS PANEL
    ========================================================= */
 
-function showVerificationSuccess(email) {
+function showVerificationSuccess(
+    email,
+    options = {}
+) {
     registeredPartnerEmail =
         email;
+
+    partnerSetupRedirectUrl =
+        String(
+            options.redirect_url ||
+            "/frontend/html/create_restaurant.html"
+        ).trim() ||
+        "/frontend/html/create_restaurant.html";
+
+    if (continuePartnerSetupButton) {
+        continuePartnerSetupButton.href =
+            partnerSetupRedirectUrl;
+    }
+
+    const verificationEmailSent =
+        options.verification_email_sent !== false;
+
+    if (verificationSuccessNote) {
+        verificationSuccessNote.textContent =
+            verificationEmailSent
+                ? "Your application is saved. Check your email for the 24-hour verification link. You may continue filling in your restaurant details while verification is pending; email verification is required before final setup completion."
+                : "Your application is saved, but the first verification email could not be delivered. You may continue filling in your restaurant details. From the restaurant setup page, request a new verification email for FoodConnect administrator approval.";
+    }
+
+    verificationRequestSubmitted = false;
+    verificationResendRequestHelp?.setAttribute(
+        "hidden",
+        ""
+    );
 
     if (submittedPartnerEmail) {
         submittedPartnerEmail.textContent =
@@ -201,13 +326,13 @@ function showVerificationSuccess(email) {
 
 function showApplicationForm() {
     registeredPartnerEmail = "";
+    verificationRequestSubmitted = false;
+    partnerSetupRedirectUrl =
+        "/frontend/html/create_restaurant.html";
 
-    if (resendCooldownInterval) {
-        window.clearInterval(
-            resendCooldownInterval
-        );
-
-        resendCooldownInterval = null;
+    if (continuePartnerSetupButton) {
+        continuePartnerSetupButton.href =
+            partnerSetupRedirectUrl;
     }
 
     verificationSuccessPanel?.setAttribute(
@@ -219,26 +344,32 @@ function showApplicationForm() {
         "hidden"
     );
 
+    verificationResendRequestHelp?.removeAttribute(
+        "hidden"
+    );
+
+    verificationRequestPanel?.setAttribute(
+        "hidden",
+        ""
+    );
+
+    openVerificationRequestButton?.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
     partnerForm?.reset();
+
+    if (verificationRequestEmail) {
+        verificationRequestEmail.value = "";
+    }
 
     clearMessage();
     clearResendMessage();
+    clearVerificationRequestMessage();
 
-    if (
-        resendPartnerVerificationButton
-    ) {
-        resendPartnerVerificationButton.disabled =
-            false;
-
-        const label =
-            resendPartnerVerificationButton
-                .querySelector(".button-text");
-
-        if (label) {
-            label.textContent =
-                "Resend Verification Email";
-        }
-    }
+    setResendButtonLoading(false);
+    setVerificationRequestButtonLoading(false);
 
     document
         .getElementById("first_name")
@@ -574,6 +705,7 @@ if (
                 `${API_BASE}/partner_register.php`,
                 {
                     method: "POST",
+                    credentials: "include",
 
                     headers: {
                         "Content-Type":
@@ -597,6 +729,22 @@ if (
                 !response.ok ||
                 !result.success
             ) {
+                if (result.application_saved) {
+                    showVerificationSuccess(
+                        email,
+                        result
+                    );
+                    partnerForm.reset();
+
+                    showResendMessage(
+                        "error",
+                        result.message ||
+                        "Your application was saved, but the verification email could not be sent. Request a new verification email from the FoodConnect administrator."
+                    );
+
+                    return;
+                }
+
                 throw new Error(
                     result.message ||
                     "Unable to submit the application."
@@ -609,7 +757,8 @@ if (
             */
 
             showVerificationSuccess(
-                email
+                email,
+                result
             );
 
             partnerForm.reset();
@@ -631,144 +780,248 @@ if (
 );
 
 /* =========================================================
-   RESEND VERIFICATION
+   PARTNER VERIFICATION RESEND REQUEST
+   The owner requests; only an authenticated administrator can send.
    ========================================================= */
 
-function startResendCooldown(seconds) {
-    if (
-        !resendPartnerVerificationButton
-    ) {
-        return;
+async function submitPartnerVerificationResendRequest(email, messageTarget = "success") {
+    const normalizedEmail =
+        String(email || "")
+            .trim()
+            .toLowerCase();
+
+    if (!normalizedEmail) {
+        const message =
+            "Enter the email address used for your partner application.";
+
+        if (messageTarget === "panel") {
+            showVerificationRequestMessage("error", message);
+        } else {
+            showResendMessage("error", message);
+        }
+
+        return false;
     }
 
-    if (resendCooldownInterval) {
-        window.clearInterval(
-            resendCooldownInterval
+    const emailLooksValid =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            normalizedEmail
         );
+
+    if (!emailLooksValid) {
+        const message =
+            "Enter a valid email address.";
+
+        if (messageTarget === "panel") {
+            showVerificationRequestMessage("error", message);
+        } else {
+            showResendMessage("error", message);
+        }
+
+        return false;
     }
 
-    let remaining =
-        seconds;
-
-    const label =
-        resendPartnerVerificationButton
-            .querySelector(".button-text");
-
-    resendPartnerVerificationButton.disabled =
-        true;
-
-    if (label) {
-        label.textContent =
-            `Resend in ${remaining}s`;
+    if (messageTarget === "panel") {
+        clearVerificationRequestMessage();
+        setVerificationRequestButtonLoading(true);
+    } else {
+        clearResendMessage();
+        setResendButtonLoading(true);
     }
 
-    resendCooldownInterval =
-        window.setInterval(() => {
-            remaining -= 1;
-
-            if (remaining <= 0) {
-                window.clearInterval(
-                    resendCooldownInterval
-                );
-
-                resendCooldownInterval =
-                    null;
-
-                resendPartnerVerificationButton.disabled =
-                    false;
-
-                if (label) {
-                    label.textContent =
-                        "Resend Verification Email";
-                }
-
-                return;
+    try {
+        const response = await fetch(
+            `${API_BASE}/request_partner_verification_resend.php`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    email: normalizedEmail
+                })
             }
+        );
 
-            if (label) {
-                label.textContent =
-                    `Resend in ${remaining}s`;
-            }
-        }, 1000);
+        const result =
+            await readJsonResponse(
+                response
+            );
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message ||
+                "Unable to submit the verification resend request."
+            );
+        }
+
+        verificationRequestSubmitted =
+            Boolean(result.request_pending);
+
+        const successMessage =
+            result.message ||
+            "Your request is waiting for FoodConnect administrator review.";
+
+        if (messageTarget === "panel") {
+            showVerificationRequestMessage(
+                "success",
+                successMessage
+            );
+        } else {
+            showResendMessage(
+                "success",
+                successMessage
+            );
+        }
+
+        setResendButtonLoading(false);
+        setVerificationRequestButtonLoading(false);
+
+        return true;
+    } catch (error) {
+        console.error(
+            "Partner verification resend request error:",
+            error
+        );
+
+        verificationRequestSubmitted = false;
+
+        if (messageTarget === "panel") {
+            showVerificationRequestMessage(
+                "error",
+                error.message ||
+                "Unable to submit the verification resend request."
+            );
+        } else {
+            showResendMessage(
+                "error",
+                error.message ||
+                "Unable to submit the verification resend request."
+            );
+        }
+
+        setResendButtonLoading(false);
+        setVerificationRequestButtonLoading(false);
+
+        return false;
+    }
 }
 
 resendPartnerVerificationButton
     ?.addEventListener(
         "click",
         async () => {
-            clearResendMessage();
-
             if (!registeredPartnerEmail) {
                 showResendMessage(
                     "error",
                     "The registered partner email is unavailable."
                 );
-
                 return;
             }
 
-            setResendButtonLoading(true);
+            await submitPartnerVerificationResendRequest(
+                registeredPartnerEmail,
+                "success"
+            );
+        }
+    );
 
-            try {
-                const response = await fetch(
-                    `${API_BASE}/resend_verification.php`,
-                    {
-                        method: "POST",
+openVerificationRequestButton
+    ?.addEventListener(
+        "click",
+        () => {
+            const isHidden =
+                verificationRequestPanel
+                    ?.hasAttribute("hidden");
 
-                        headers: {
-                            "Content-Type":
-                                "application/json",
+            if (isHidden) {
+                verificationRequestPanel
+                    ?.removeAttribute("hidden");
 
-                            "Accept":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            email:
-                                registeredPartnerEmail
-                        })
-                    }
-                );
-
-                const result =
-                    await readJsonResponse(
-                        response
+                openVerificationRequestButton
+                    .setAttribute(
+                        "aria-expanded",
+                        "true"
                     );
 
-                if (
-                    !response.ok ||
-                    !result.success
-                ) {
-                    throw new Error(
-                        result.message ||
-                        result.error ||
-                        "Unable to resend the verification email."
+                window.setTimeout(() => {
+                    verificationRequestEmail
+                        ?.focus();
+                }, 50);
+            } else {
+                verificationRequestPanel
+                    ?.setAttribute(
+                        "hidden",
+                        ""
                     );
-                }
 
-                showResendMessage(
-                    "success",
-                    result.message ||
-                    "Verification email sent. Please check your inbox."
-                );
-
-                startResendCooldown(30);
-            } catch (error) {
-                console.error(
-                    "Partner resend verification error:",
-                    error
-                );
-
-                showResendMessage(
-                    "error",
-                    error.message ||
-                    "Unable to resend the verification email."
-                );
-
-                setResendButtonLoading(false);
+                openVerificationRequestButton
+                    .setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
             }
         }
     );
+
+submitVerificationRequestButton
+    ?.addEventListener(
+        "click",
+        async () => {
+            await submitPartnerVerificationResendRequest(
+                verificationRequestEmail?.value || "",
+                "panel"
+            );
+        }
+    );
+
+verificationRequestEmail
+    ?.addEventListener(
+        "keydown",
+        async (event) => {
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            await submitPartnerVerificationResendRequest(
+                verificationRequestEmail.value,
+                "panel"
+            );
+        }
+    );
+
+/*
+ * Expired owner links are redirected here by verify.php. Open the request
+ * panel automatically so an older applicant is never stranded.
+ */
+const verificationQuery =
+    new URLSearchParams(
+        window.location.search
+    ).get("verification");
+
+if (verificationQuery === "expired") {
+    verificationRequestPanel
+        ?.removeAttribute("hidden");
+
+    openVerificationRequestButton
+        ?.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
+    showVerificationRequestMessage(
+        "error",
+        "Your partner verification link has expired. Enter the email used in your application to request a new verification email from the FoodConnect administrator."
+    );
+
+    window.setTimeout(() => {
+        verificationRequestEmail
+            ?.focus();
+    }, 80);
+}
 
 /* =========================================================
    REGISTER ANOTHER PARTNER

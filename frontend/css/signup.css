@@ -47,7 +47,7 @@ body {
     flex-direction: column;
 
     color: var(--fc-text);
-    font-family: "Poppins", Arial, sans-serif;
+    font-family: "Poppins", sans-serif;
 
     background:
         radial-gradient(
@@ -1030,4 +1030,44 @@ img[src*="logofoodconnect-Photoroom.png"] {
     color: var(--fc-muted);
     font-size: 10px;
     line-height: 1.5;
+}
+
+
+/* FOODCONNECT SIGNUP DARK MODE FIX */
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.password-requirements {
+    background: #20242a;
+    border-color: #343941;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.password-requirements > p {
+    color: #f5f7fa;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.password-requirement {
+    color: #a2aab7;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.password-requirement i {
+    color: #697386;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.input-wrapper input:focus {
+    background: #20242a;
+}
+
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.custom-checkbox {
+    background: #20242a;
+    border-color: #4a515c;
 }

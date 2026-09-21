@@ -285,6 +285,69 @@ if ($documentStmt) {
     $documentStmt->close();
 }
 
+/* =========================================================
+   LATEST PARTNER VERIFICATION RESEND REQUEST
+========================================================= */
+
+$resendStmt = $conn->prepare("
+    SELECT
+        r.request_id,
+        r.request_status,
+        r.requested_email,
+        r.rejection_reason,
+        r.requested_at,
+        r.reviewed_at,
+        r.sent_at,
+        r.reviewed_by,
+        r.updated_at,
+        TRIM(CONCAT_WS(' ',
+            NULLIF(TRIM(reviewer.first_name), ''),
+            NULLIF(TRIM(reviewer.middle_name), ''),
+            NULLIF(TRIM(reviewer.last_name), '')
+        )) AS reviewer_name
+    FROM tbl_partner_verification_resend_requests r
+    LEFT JOIN tbl_users reviewer
+        ON reviewer.user_id = r.reviewed_by
+    WHERE r.application_id = ?
+    ORDER BY r.request_id DESC
+    LIMIT 1
+");
+
+foreach ($applications as &$applicationItem) {
+    $applicationItem["verification_resend_request"] = null;
+
+    if (!$resendStmt) {
+        continue;
+    }
+
+    $applicationIdForRequest = (int)$applicationItem["application_id"];
+    $resendStmt->bind_param("i", $applicationIdForRequest);
+    $resendStmt->execute();
+    $resendRow = $resendStmt->get_result()->fetch_assoc();
+
+    if ($resendRow) {
+        $applicationItem["verification_resend_request"] = [
+            "request_id" => (int)$resendRow["request_id"],
+            "request_status" => strtolower((string)$resendRow["request_status"]),
+            "requested_email" => (string)$resendRow["requested_email"],
+            "rejection_reason" => $resendRow["rejection_reason"],
+            "requested_at" => $resendRow["requested_at"],
+            "reviewed_at" => $resendRow["reviewed_at"],
+            "sent_at" => $resendRow["sent_at"],
+            "reviewed_by" => !empty($resendRow["reviewed_by"])
+                ? (int)$resendRow["reviewed_by"]
+                : null,
+            "reviewer_name" => $resendRow["reviewer_name"] ?: null,
+            "updated_at" => $resendRow["updated_at"]
+        ];
+    }
+}
+unset($applicationItem);
+
+if ($resendStmt) {
+    $resendStmt->close();
+}
+
 $counts = [
     "all" => 0,
     "email_pending" => 0,

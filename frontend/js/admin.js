@@ -4341,6 +4341,192 @@ async function loadApplications() {
   }
 }
 
+function getApplicationVerificationResendRequest(application = {}) {
+  const request =
+    application.verification_resend_request;
+
+  return request && typeof request === "object"
+    ? request
+    : null;
+}
+
+function formatVerificationResendStatus(status = "") {
+  const labels = {
+    pending: "Resend Requested",
+    processing: "Sending Verification",
+    sent: "Verification Resent",
+    rejected: "Resend Rejected",
+    send_failed: "Send Failed - Retry",
+    cancelled: "Request Closed"
+  };
+
+  const normalized =
+    String(status || "")
+      .trim()
+      .toLowerCase();
+
+  return labels[normalized] ||
+    "Verification Request";
+}
+
+function renderVerificationResendTableBadge(application = {}) {
+  if (application.application_status !== "email_pending") {
+    return "";
+  }
+
+  const request =
+    getApplicationVerificationResendRequest(
+      application
+    );
+
+  if (!request) {
+    return "";
+  }
+
+  const status =
+    String(request.request_status || "")
+      .toLowerCase();
+
+  return `
+    <span class="verification-resend-badge verification-resend-${escapeHtml(status)}">
+      ${escapeHtml(
+        formatVerificationResendStatus(status)
+      )}
+    </span>
+  `;
+}
+
+function buildVerificationResendAdminCard(application = {}) {
+  if (application.application_status !== "email_pending") {
+    return "";
+  }
+
+  const request =
+    getApplicationVerificationResendRequest(
+      application
+    );
+
+  if (!request) {
+    return `
+      <div class="application-preview-card verification-resend-admin-card is-idle">
+        <div class="application-preview-card-copy">
+          <span class="application-preview-label">Email verification recovery</span>
+          <h3>No resend request from the owner</h3>
+          <p>FoodConnect will not send another partner verification email until the applying owner requests one from the partner application page.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  const status =
+    String(request.request_status || "")
+      .toLowerCase();
+
+  const requestedAt =
+    request.requested_at
+      ? formatDate(request.requested_at)
+      : "—";
+
+  const sentAt =
+    request.sent_at
+      ? formatDate(request.sent_at)
+      : "—";
+
+  const reviewedAt =
+    request.reviewed_at
+      ? formatDate(request.reviewed_at)
+      : "—";
+
+  const canReview =
+    ["pending", "send_failed"].includes(status);
+
+  const statusCopy = {
+    pending: "The applying owner requested a new verification email. Review the request before FoodConnect creates and sends a fresh 24-hour link.",
+    processing: "An administrator is currently processing this resend request. Refresh before taking another action.",
+    sent: `A new verification email was authorized and sent on ${sentAt}. The application remains Email Pending until the owner clicks the link.`,
+    rejected: `This resend request was rejected on ${reviewedAt}.`,
+    send_failed: "The request was approved previously, but email delivery failed. You may retry sending the new verification email.",
+    cancelled: "This request was closed because the owner was no longer waiting for email verification."
+  }[status] || "Review the latest partner verification resend request.";
+
+  return `
+    <div class="application-preview-card verification-resend-admin-card verification-resend-admin-${escapeHtml(status)}">
+      <div class="application-preview-card-copy">
+        <span class="application-preview-label">Email verification recovery</span>
+        <h3>${escapeHtml(formatVerificationResendStatus(status))}</h3>
+        <p>${escapeHtml(statusCopy)}</p>
+        <div class="verification-resend-request-meta">
+          <span><strong>Requested:</strong> ${escapeHtml(requestedAt)}</span>
+          <span><strong>Email:</strong> ${escapeHtml(request.requested_email || application.owner_email || "—")}</span>
+          ${request.reviewer_name ? `<span><strong>Reviewed by:</strong> ${escapeHtml(request.reviewer_name)}</span>` : ""}
+        </div>
+        ${request.rejection_reason ? `
+          <div class="verification-resend-reason">
+            <strong>Admin note:</strong> ${escapeHtml(request.rejection_reason)}
+          </div>
+        ` : ""}
+
+        ${canReview ? `
+          <div class="verification-resend-admin-actions">
+            <button
+              type="button"
+              id="sendPartnerVerificationEmailButton"
+              class="approve-button"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+              ${status === "send_failed" ? "Retry Verification Email" : "Send New Verification Email"}
+            </button>
+
+            <button
+              type="button"
+              id="rejectPartnerVerificationRequestButton"
+              class="reject-button"
+            >
+              <i class="fa-solid fa-ban"></i>
+              Reject Request
+            </button>
+          </div>
+
+          <div
+            id="partnerVerificationRejectReasonGroup"
+            class="verification-resend-reject-group hidden"
+          >
+            <label for="partnerVerificationRejectReason">Reason for rejection</label>
+            <textarea
+              id="partnerVerificationRejectReason"
+              rows="3"
+              maxlength="500"
+              placeholder="Explain why a new verification email will not be sent."
+            ></textarea>
+            <small>Use at least 10 characters.</small>
+            <div class="verification-resend-reject-actions">
+              <button
+                type="button"
+                id="confirmPartnerVerificationRejectButton"
+                class="reject-button"
+              >
+                Confirm Rejection
+              </button>
+              <button
+                type="button"
+                id="cancelPartnerVerificationRejectButton"
+                class="secondary-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ` : ""}
+
+        <p
+          id="partnerVerificationResendAdminMessage"
+          class="application-review-message"
+        ></p>
+      </div>
+    </div>
+  `;
+}
+
 function renderApplications(
   applications
 ) {
@@ -4410,18 +4596,23 @@ function renderApplications(
         </td>
 
         <td>
-          <span class="
-            status-badge
-            status-${escapeHtml(
-              application.application_status
-            )}
-          ">
-            ${escapeHtml(
-              formatStatus(
+          <div class="application-status-stack">
+            <span class="
+              status-badge
+              status-${escapeHtml(
                 application.application_status
-              )
+              )}
+            ">
+              ${escapeHtml(
+                formatStatus(
+                  application.application_status
+                )
+              )}
+            </span>
+            ${renderVerificationResendTableBadge(
+              application
             )}
-          </span>
+          </div>
         </td>
 
         <td>
@@ -4647,6 +4838,10 @@ ${createDetail(
       }
     </div>
 
+    ${buildVerificationResendAdminCard(
+      application
+    )}
+
     <div class="application-preview-card">
       <div class="application-preview-card-copy">
         <span class="application-preview-label">Verification documents</span>
@@ -4797,9 +4992,254 @@ ${createDetail(
   document.body.style.overflow =
     "hidden";
 
+  bindApplicationVerificationResendControls(
+    application
+  );
+
   bindApplicationReviewControls(
     application
   );
+}
+
+function bindApplicationVerificationResendControls(
+  application
+) {
+  const request =
+    getApplicationVerificationResendRequest(
+      application
+    );
+
+  if (
+    application.application_status !== "email_pending" ||
+    !request ||
+    !["pending", "send_failed"].includes(
+      String(request.request_status || "").toLowerCase()
+    )
+  ) {
+    return;
+  }
+
+  const sendButton =
+    document.getElementById(
+      "sendPartnerVerificationEmailButton"
+    );
+
+  const rejectButton =
+    document.getElementById(
+      "rejectPartnerVerificationRequestButton"
+    );
+
+  const rejectGroup =
+    document.getElementById(
+      "partnerVerificationRejectReasonGroup"
+    );
+
+  const rejectReason =
+    document.getElementById(
+      "partnerVerificationRejectReason"
+    );
+
+  const confirmRejectButton =
+    document.getElementById(
+      "confirmPartnerVerificationRejectButton"
+    );
+
+  const cancelRejectButton =
+    document.getElementById(
+      "cancelPartnerVerificationRejectButton"
+    );
+
+  sendButton?.addEventListener(
+    "click",
+    async () => {
+      const confirmed =
+        window.confirm(
+          `Send a new 24-hour verification email to ${application.owner_email}? The previous verification link will become invalid.`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      await reviewPartnerVerificationResendRequest({
+        requestId: request.request_id,
+        decision: "send"
+      });
+    }
+  );
+
+  rejectButton?.addEventListener(
+    "click",
+    () => {
+      rejectGroup?.classList.remove(
+        "hidden"
+      );
+      rejectReason?.focus();
+    }
+  );
+
+  cancelRejectButton?.addEventListener(
+    "click",
+    () => {
+      rejectGroup?.classList.add(
+        "hidden"
+      );
+      if (rejectReason) {
+        rejectReason.value = "";
+      }
+      setPartnerVerificationResendAdminMessage("");
+    }
+  );
+
+  confirmRejectButton?.addEventListener(
+    "click",
+    async () => {
+      const reason =
+        rejectReason?.value.trim() || "";
+
+      if (reason.length < 10) {
+        setPartnerVerificationResendAdminMessage(
+          "Enter a clear rejection reason with at least 10 characters."
+        );
+        rejectReason?.focus();
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          "Reject this verification resend request? No new email will be sent for this request."
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      await reviewPartnerVerificationResendRequest({
+        requestId: request.request_id,
+        decision: "reject",
+        rejectionReason: reason
+      });
+    }
+  );
+}
+
+async function reviewPartnerVerificationResendRequest({
+  requestId,
+  decision,
+  rejectionReason = ""
+}) {
+  const controls = [
+    document.getElementById("sendPartnerVerificationEmailButton"),
+    document.getElementById("rejectPartnerVerificationRequestButton"),
+    document.getElementById("confirmPartnerVerificationRejectButton"),
+    document.getElementById("cancelPartnerVerificationRejectButton")
+  ].filter(Boolean);
+
+  controls.forEach((button) => {
+    button.disabled = true;
+  });
+
+  setPartnerVerificationResendAdminMessage(
+    decision === "send"
+      ? "Creating and sending a new verification link..."
+      : "Rejecting verification resend request...",
+    "loading"
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/review_partner_verification_resend_request.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          request_id: Number(requestId),
+          decision,
+          rejection_reason: rejectionReason
+        })
+      }
+    );
+
+    const data =
+      await readJson(response);
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      closeDetailsModal();
+      showAdminAccess();
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+        "Unable to process the verification resend request."
+      );
+    }
+
+    setPartnerVerificationResendAdminMessage(
+      data.message,
+      "success"
+    );
+
+    showDashboardMessage(
+      data.message,
+      "success"
+    );
+
+    window.setTimeout(
+      async () => {
+        closeDetailsModal();
+        await loadApplications();
+      },
+      700
+    );
+  } catch (error) {
+    console.error(
+      "Partner verification resend review failed:",
+      error
+    );
+
+    setPartnerVerificationResendAdminMessage(
+      error.message ||
+      "Unable to process the verification resend request."
+    );
+
+    controls.forEach((button) => {
+      button.disabled = false;
+    });
+  }
+}
+
+function setPartnerVerificationResendAdminMessage(
+  message = "",
+  type = "error"
+) {
+  const element =
+    document.getElementById(
+      "partnerVerificationResendAdminMessage"
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message;
+  element.classList.remove(
+    "success",
+    "error",
+    "loading"
+  );
+
+  if (message) {
+    element.classList.add(type);
+  }
 }
 
 function bindApplicationReviewControls(

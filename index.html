@@ -16,11 +16,11 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260914-owner-mobile-validation1">
+<link rel="stylesheet" href="style.css?v=20260921-search-cleanup-ui2">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
-<link rel="stylesheet" href="frontend/css/foodconnect-theme.css?v=20260903-finalroot1">
+<link rel="stylesheet" href="frontend/css/foodconnect-theme.css?v=20260921-font1">
 
 <style id="restaurants-directory-desktop-search-position-fix">
   
@@ -268,7 +268,11 @@
           <input
             id="restaurantSearch"
             type="search"
+            name="foodconnect-home-restaurant-search"
             placeholder="Search restaurants or food..."
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
           >
 
           <button type="submit">
@@ -390,11 +394,6 @@
         <button type="button" class="category-card" data-category="Coffee">
           <span>☕</span>
           <strong>Coffee</strong>
-        </button>
-
-        <button type="button" class="category-card" data-category="Milk Tea">
-          <span>🧋</span>
-          <strong>Milk Tea</strong>
         </button>
 
         <button type="button" class="category-card" data-category="Drinks">
@@ -858,11 +857,6 @@
         <button type="button" class="restaurants-page-category" data-category="Coffee">
           <span class="restaurants-page-category-icon">☕</span>
           <strong>Coffee</strong>
-        </button>
-
-        <button type="button" class="restaurants-page-category" data-category="Milk Tea">
-          <span class="restaurants-page-category-icon">🧋</span>
-          <strong>Milk Tea</strong>
         </button>
 
         <button type="button" class="restaurants-page-category" data-category="Drinks">
@@ -1810,6 +1804,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260914-owner-mobile-validation1" defer></script>
+<script src="homepage.js?v=20260921-search-navigation-ui1" defer></script>
 </body>
 </html>

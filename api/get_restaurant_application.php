@@ -62,11 +62,11 @@ $role =
         )
     );
 
-if ($role !== "owner") {
+if (!in_array($role, ["owner", "partner_applicant"], true)) {
     respond_json(
         [
             "success" => false,
-            "message" => "Only restaurant owners can access this page."
+            "message" => "Only restaurant partners can access this page."
         ],
         403
     );

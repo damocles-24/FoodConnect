@@ -73,12 +73,12 @@ $role =
         )
     );
 
-if ($role !== "owner") {
+if (!in_array($role, ["owner", "partner_applicant"], true)) {
     respond_json(
         [
             "success" => false,
             "message" =>
-                "Only restaurant owners can upload a restaurant logo."
+                "Only restaurant partners can upload a restaurant logo."
         ],
         403
     );

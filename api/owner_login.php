@@ -377,23 +377,161 @@ if ($role !== "owner") {
     );
 }
 
+/* =========================================================
+   RESTRICTED PARTNER-APPLICANT ACCESS BEFORE EMAIL VERIFICATION
+
+   An applying owner may authenticate with the password created during the
+   partner application and continue SAVING onboarding work while the email is
+   still pending. This session is intentionally NOT an owner session. Existing
+   owner/staff APIs that require role=owner therefore remain inaccessible.
+   Only the onboarding endpoints explicitly allow partner_applicant below.
+   ========================================================= */
+
+if ((int) $user["is_verified"] !== 1) {
+    $pendingApplicationStmt = $conn->prepare("
+        SELECT
+            application_id,
+            application_status,
+            restaurant_name
+        FROM tbl_partner_applications
+        WHERE owner_id = ?
+        ORDER BY application_id DESC
+        LIMIT 1
+    ");
+
+    if (!$pendingApplicationStmt) {
+        error_log(
+            "owner_login.php pending application prepare error: " .
+            $conn->error
+        );
+
+        respond_json(
+            [
+                "success" => false,
+                "message" =>
+                    "Unable to check your partner application right now."
+            ],
+            500
+        );
+    }
+
+    $pendingOwnerId = (int) $user["user_id"];
+
+    $pendingApplicationStmt->bind_param(
+        "i",
+        $pendingOwnerId
+    );
+
+    $pendingApplicationStmt->execute();
+
+    $pendingApplication =
+        $pendingApplicationStmt
+            ->get_result()
+            ->fetch_assoc();
+
+    $pendingApplicationStmt->close();
+
+    $pendingStatus = strtolower(
+        trim(
+            (string) (
+                $pendingApplication["application_status"] ?? ""
+            )
+        )
+    );
+
+    $hasLinkedRestaurant =
+        !empty($user["restaurant_id"]);
+
+    if (
+        $pendingApplication &&
+        !$hasLinkedRestaurant &&
+        $pendingStatus === "email_pending"
+    ) {
+        clear_owner_trusted_cookie();
+
+        session_regenerate_id(true);
+
+        $_SESSION["user_id"] =
+            $pendingOwnerId;
+
+        /*
+         * Keep this different from "owner". This is the security boundary
+         * that prevents an unverified applicant from opening normal owner APIs.
+         */
+        $_SESSION["role"] =
+            "partner_applicant";
+
+        $_SESSION["account_role"] =
+            "owner";
+
+        $_SESSION["restaurant_id"] =
+            null;
+
+        $_SESSION["display_name"] =
+            formatUserName($user);
+
+        $_SESSION["logged_in"] =
+            true;
+
+        $_SESSION["authenticated_at"] =
+            time();
+
+        $_SESSION["partner_application_only"] =
+            true;
+
+        session_write_close();
+
+        respond_json(
+            [
+                "success" => true,
+                "verification_required" => false,
+                "pending_partner_verification" => true,
+                "restricted_onboarding" => true,
+                "message" =>
+                    "Email verification is still pending. You can continue your restaurant setup, but you must verify your email before completing setup.",
+                "redirect_url" =>
+                    "/FoodConnect/frontend/html/create_restaurant.html",
+                "onboarding_required" => true,
+                "application_status" =>
+                    "email_pending",
+                "user" => [
+                    "user_id" =>
+                        $pendingOwnerId,
+                    "restaurant_id" =>
+                        null,
+                    "role" =>
+                        "owner",
+                    "first_name" =>
+                        (string) ($user["first_name"] ?? ""),
+                    "middle_name" =>
+                        (string) ($user["middle_name"] ?? ""),
+                    "last_name" =>
+                        (string) ($user["last_name"] ?? ""),
+                    "display_name" =>
+                        formatUserName($user),
+                    "email" =>
+                        (string) ($user["email"] ?? "")
+                ]
+            ]
+        );
+    }
+
+    respond_json(
+        [
+            "success" => false,
+            "message" =>
+                "Verify your email before logging in."
+        ],
+        403
+    );
+}
+
 if ((int) $user["status"] !== 1) {
     respond_json(
         [
             "success" => false,
             "message" =>
                 "Your owner account is currently disabled."
-        ],
-        403
-    );
-}
-
-if ((int) $user["is_verified"] !== 1) {
-    respond_json(
-        [
-            "success" => false,
-            "message" =>
-                "Verify your email before logging in."
         ],
         403
     );

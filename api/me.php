@@ -465,14 +465,101 @@ if (!empty($_SESSION["user_id"])) {
             $userId
         );
 
+    if (!$user) {
+        clear_authentication();
+        respond_not_logged_in();
+    }
+
+    $databaseRole = strtolower(
+        trim(
+            (string) ($user["role"] ?? "")
+        )
+    );
+
+    $sessionRole = strtolower(
+        trim(
+            (string) ($_SESSION["role"] ?? "")
+        )
+    );
+
+    $restrictedPartnerSession =
+        !empty($_SESSION["partner_application_only"]) &&
+        $sessionRole === "partner_applicant" &&
+        $databaseRole === "owner";
+
+    /*
+     * Before email verification, partner applicants get a deliberately
+     * restricted onboarding session. It keeps the wizard usable without
+     * turning the session into a normal restaurant-owner session.
+     */
     if (
-        !$user ||
+        $restrictedPartnerSession &&
+        (int) $user["is_verified"] !== 1
+    ) {
+        $application =
+            get_owner_application(
+                $conn,
+                $userId
+            );
+
+        $applicationStatus = strtolower(
+            trim(
+                (string) (
+                    $application["status"] ?? ""
+                )
+            )
+        );
+
+        if (
+            !$application ||
+            $applicationStatus !== "email_pending" ||
+            !empty($user["restaurant_id"])
+        ) {
+            clear_authentication();
+            respond_not_logged_in();
+        }
+
+        $_SESSION["role"] =
+            "partner_applicant";
+
+        $_SESSION["restaurant_id"] =
+            null;
+
+        $_SESSION["display_name"] =
+            formatUserName($user);
+
+        $response =
+            build_logged_in_response(
+                $conn,
+                $user
+            );
+
+        $response["restricted_onboarding"] =
+            true;
+
+        $response["email_verified"] =
+            false;
+
+        respond_json($response);
+    }
+
+    /*
+     * If verification was completed in another tab/device while this browser
+     * still has the restricted session, safely promote it only after the
+     * database confirms the owner is active and verified.
+     */
+    if (
         (int) $user["status"] !== 1 ||
         (int) $user["is_verified"] !== 1
     ) {
         clear_authentication();
         respond_not_logged_in();
     }
+
+    unset(
+        $_SESSION["partner_application_only"],
+        $_SESSION["account_role"]
+    );
 
     $_SESSION["role"] =
         $user["role"];
@@ -485,12 +572,19 @@ if (!empty($_SESSION["user_id"])) {
     $_SESSION["display_name"] =
         formatUserName($user);
 
-    respond_json(
+    $response =
         build_logged_in_response(
             $conn,
             $user
-        )
-    );
+        );
+
+    $response["restricted_onboarding"] =
+        false;
+
+    $response["email_verified"] =
+        true;
+
+    respond_json($response);
 }
 
 /* =========================================================

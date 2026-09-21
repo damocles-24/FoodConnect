@@ -4364,6 +4364,13 @@ function matchesCurrentFilters(
     });
 
     searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (searchResults) {
+          searchResults.classList.remove("show");
+        }
+        return;
+      }
+
       if (e.key === "Enter") {
         e.preventDefault();
 

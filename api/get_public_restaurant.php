@@ -77,6 +77,7 @@ $stmt = $conn->prepare("
     SELECT
         r.restaurant_id,
         r.name,
+        r.logo_path,
         r.address,
         r.contact_number,
         r.opening_hours,
@@ -186,6 +187,11 @@ respond_json([
 
         "name" =>
             (string) $restaurant["name"],
+
+        "logo_path" =>
+            (string) (
+                $restaurant["logo_path"] ?? ""
+            ),
 
         "address" =>
             (string) (

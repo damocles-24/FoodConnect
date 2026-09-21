@@ -505,13 +505,13 @@ const cancelRestockBtn =
   );
 const inventoryTableBody = document.getElementById("inventoryTableBody");
 const inventorySearch = document.getElementById("inventorySearch");
-const inventoryFilter = document.getElementById("inventoryFilter");
 const inventoryCategoryFilter = document.getElementById("inventoryCategoryFilter");
-
-const clearInventoryFilters =
-  document.getElementById(
-    "clearInventoryFilters"
-  );
+const inventoryStockCards = [
+  ...document.querySelectorAll(
+    "[data-inventory-stock-filter]"
+  )
+];
+let activeInventoryStockFilter = "all";
 
 const inventoryResultCount =
   document.getElementById(
@@ -1243,18 +1243,59 @@ function getStockLabel(stock) {
   return "In Stock";
 }
 
+function getInventoryStockState(product) {
+  const stock =
+    Math.max(
+      0,
+      Number(product?.stock) || 0
+    );
+
+  const status =
+    String(product?.status || "")
+      .trim()
+      .toLowerCase();
+
+  /*
+   * Inventory cards represent customer-order availability.
+   * A manually unavailable product belongs under Out of Stock /
+   * unavailable even when it still has physical stock remaining.
+   */
+  if (
+    stock <= 0 ||
+    status === "unavailable"
+  ) {
+    return "out";
+  }
+
+  if (stock <= 5) {
+    return "low";
+  }
+
+  return "available";
+}
+
 function sortInventoryList(list) {
   return [...list].sort((a, b) => {
-    const priority = stock => {
-      if (stock <= 0) return 1;
-      if (stock <= 5) return 2;
+    const priority = product => {
+      const state =
+        getInventoryStockState(product);
+
+      if (state === "out") return 1;
+      if (state === "low") return 2;
       return 3;
     };
 
-    const stockSort = priority(a.stock) - priority(b.stock);
-    if (stockSort !== 0) return stockSort;
+    const stockSort =
+      priority(a) - priority(b);
 
-    return a.stock - b.stock;
+    if (stockSort !== 0) {
+      return stockSort;
+    }
+
+    return (
+      (Number(a.stock) || 0) -
+      (Number(b.stock) || 0)
+    );
   });
 }
 
@@ -1278,26 +1319,6 @@ function updateInventoryResultCount(
         : "products"
     }`;
 }
-
-clearInventoryFilters?.addEventListener(
-  "click",
-  () => {
-    if (inventorySearch) {
-      inventorySearch.value = "";
-    }
-
-    if (inventoryFilter) {
-      inventoryFilter.value = "all";
-    }
-
-    if (inventoryCategoryFilter) {
-      inventoryCategoryFilter.value =
-        "all";
-    }
-
-  applyInventoryFilters();
-  }
-);
 
 async function loadActivityLogs() {
   if (logsList) {
@@ -4323,7 +4344,7 @@ function exportSalesReportExcel() {
       <meta charset="UTF-8">
       <style>
         body {
-          font-family: Arial, sans-serif;
+          font-family: "Poppins", sans-serif;
         }
 
         h1 {
@@ -5509,26 +5530,22 @@ function renderInventory(
   const available =
     inventoryProducts.filter(
       product =>
-        Number(product.stock) > 0
+        getInventoryStockState(product) ===
+        "available"
     ).length;
 
   const low =
     inventoryProducts.filter(
-      product => {
-        const stock =
-          Number(product.stock) || 0;
-
-        return (
-          stock > 0 &&
-          stock <= 5
-        );
-      }
+      product =>
+        getInventoryStockState(product) ===
+        "low"
     ).length;
 
   const out =
     inventoryProducts.filter(
       product =>
-        Number(product.stock) <= 0
+        getInventoryStockState(product) ===
+        "out"
     ).length;
 
   const overviewTotalProducts =
@@ -5602,11 +5619,20 @@ function renderInventory(
             Number(product.stock) || 0
           );
 
+        const inventoryStockState =
+          getInventoryStockState(product);
+
         const stockLevel =
-          getStockLevel(stock);
+          inventoryStockState === "available"
+            ? "good"
+            : inventoryStockState;
 
         const stockLabel =
-          getStockLabel(stock);
+          inventoryStockState === "out"
+            ? "Out of Stock"
+            : inventoryStockState === "low"
+              ? "Restock Soon"
+              : "In Stock";
 
         const category =
           escapeHtml(
@@ -5706,13 +5732,75 @@ function populateInventoryCategories() {
   }
 }
 
+function setActiveInventoryStockFilter(
+  stockFilter = "all"
+) {
+  const allowedFilters = new Set([
+    "all",
+    "available",
+    "low",
+    "out"
+  ]);
+
+  activeInventoryStockFilter =
+    allowedFilters.has(stockFilter)
+      ? stockFilter
+      : "all";
+
+  inventoryStockCards.forEach(card => {
+    const isActive =
+      card.dataset.inventoryStockFilter ===
+      activeInventoryStockFilter;
+
+    card.setAttribute(
+      "aria-pressed",
+      String(isActive)
+    );
+  });
+}
+
+function activateInventoryStockCard(card) {
+  if (!card) {
+    return;
+  }
+
+  setActiveInventoryStockFilter(
+    card.dataset.inventoryStockFilter ||
+    "all"
+  );
+
+  applyInventoryFilters();
+}
+
+inventoryStockCards.forEach(card => {
+  card.addEventListener(
+    "click",
+    () => activateInventoryStockCard(card)
+  );
+
+  card.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key !== "Enter" &&
+        event.key !== " "
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      activateInventoryStockCard(card);
+    }
+  );
+});
+
 function applyInventoryFilters() {
   let list = products.filter(
     product => product.itemType !== "add_on"
   );
 
   const search = inventorySearch?.value.toLowerCase().trim() || "";
-  const stockFilter = inventoryFilter?.value || "all";
+  const stockFilter = activeInventoryStockFilter;
   const categoryFilter = inventoryCategoryFilter?.value || "all";
 
   if (search) {
@@ -5723,16 +5811,12 @@ function applyInventoryFilters() {
     );
   }
 
-  if (stockFilter === "low") {
-    list = list.filter(p => p.stock > 0 && p.stock <= 5);
-  }
-
-  if (stockFilter === "out") {
-    list = list.filter(p => p.stock <= 0);
-  }
-
-  if (stockFilter === "available") {
-    list = list.filter(p => p.stock > 0);
+  if (stockFilter !== "all") {
+    list = list.filter(
+      product =>
+        getInventoryStockState(product) ===
+        stockFilter
+    );
   }
 
   if (categoryFilter !== "all") {
@@ -8727,7 +8811,6 @@ globalSearch?.addEventListener(
 );
 
 inventorySearch?.addEventListener("input", applyInventoryFilters);
-inventoryFilter?.addEventListener("change", applyInventoryFilters);
 inventoryCategoryFilter?.addEventListener("change", applyInventoryFilters);
 
 productSearch?.addEventListener("input", applyProductFilters);
@@ -10142,7 +10225,7 @@ window.deleteProduct = async function(id) {
     alert("Product deleted successfully.");
   } catch (error) {
     console.error("Delete product failed:", error);
-    alert("Error deleting product. Check console.");
+    alert("Unable to delete product. This item may be linked to an existing order.");
   }
 };
 
@@ -10190,9 +10273,10 @@ function exportSalesReportPDF() {
     <html>
     <head>
       <title>FoodConnect Sales Report</title>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
       <style>
         body {
-          font-family: Arial, sans-serif;
+          font-family: "Poppins", sans-serif;
           padding: 30px;
           color: #111;
         }

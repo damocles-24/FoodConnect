@@ -44,6 +44,14 @@ $expiredUrl = foodconnect_url(
     ]
 );
 
+$ownerExpiredUrl = foodconnect_url(
+    "frontend/html/partner_apply.html",
+    [
+        "verification" => "expired",
+        "v" => $verificationPageVersion,
+    ]
+);
+
 $badUrl = foodconnect_url(
     "frontend/html/verified.html",
     [
@@ -118,13 +126,6 @@ if (!$user) {
 $expiresAt =
     $user["verification_expires_at"] ?? null;
 
-if (
-    !empty($expiresAt) &&
-    strtotime($expiresAt) < time()
-) {
-    redirect_to($expiredUrl);
-}
-
 $userId =
     (int) $user["user_id"];
 
@@ -134,6 +135,17 @@ $role =
             (string) $user["role"]
         )
     );
+
+if (
+    !empty($expiresAt) &&
+    strtotime($expiresAt) < time()
+) {
+    redirect_to(
+        $role === "owner"
+            ? $ownerExpiredUrl
+            : $expiredUrl
+    );
+}
 
 try {
     $conn->begin_transaction();
@@ -205,6 +217,34 @@ try {
         }
 
         $updateApplication->close();
+
+        /*
+         * If the owner verified using an older still-valid link before the
+         * administrator handled a resend request, close only those active
+         * resend requests. Sent/rejected rows remain as an audit trail.
+         */
+        $closeResendRequests = $conn->prepare("
+            UPDATE tbl_partner_verification_resend_requests
+            SET
+                request_status = 'cancelled',
+                reviewed_at = COALESCE(reviewed_at, NOW()),
+                rejection_reason = COALESCE(
+                    rejection_reason,
+                    'Email verified before a resend was needed.'
+                )
+            WHERE owner_id = ?
+              AND request_status IN ('pending', 'processing', 'send_failed')
+        ");
+
+        if ($closeResendRequests) {
+            $closeResendRequests->bind_param(
+                "i",
+                $userId
+            );
+
+            $closeResendRequests->execute();
+            $closeResendRequests->close();
+        }
     }
 
     $conn->commit();

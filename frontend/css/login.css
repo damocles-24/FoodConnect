@@ -47,7 +47,7 @@ body {
     flex-direction: column;
 
     color: var(--fc-text);
-    font-family: "Poppins", Arial, sans-serif;
+    font-family: "Poppins", sans-serif;
 
     background:
         radial-gradient(
@@ -995,6 +995,14 @@ html[data-theme="dark"] body[data-fc-page="customer-auth"] {
   --fc-background: #101216;
   --fc-input: #20242a;
   --fc-border: #30343b;
+
+  --fc-success: #86efac;
+  --fc-success-bg: rgba(21, 128, 61, 0.14);
+  --fc-success-border: rgba(74, 222, 128, 0.28);
+
+  --fc-error: #fca5a5;
+  --fc-error-bg: rgba(220, 38, 38, 0.13);
+  --fc-error-border: rgba(248, 113, 113, 0.30);
 }
 
 html[data-theme="dark"] body[data-fc-page="customer-auth"] {
@@ -1045,4 +1053,23 @@ img[src*="logofoodconnect-Photoroom.png"] {
 .footer img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
+}
+
+/* =========================================================
+   CUSTOMER LOGIN - FORGOT PASSWORD PLACEMENT
+   Keep the recovery action centered below the login button.
+   ========================================================= */
+#loginPanel #openForgot {
+  display: block;
+  width: fit-content;
+  margin: 15px auto 4px;
+  text-align: center;
+}
+
+/* Keep the customer login button flat; no orange glow/shadow. */
+#loginSubmitButton,
+#loginSubmitButton:hover,
+#loginSubmitButton:focus,
+#loginSubmitButton:focus-visible {
+  box-shadow: none;
 }

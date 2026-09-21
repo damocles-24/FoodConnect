@@ -58,7 +58,7 @@ body {
     flex-direction: column;
 
     color: var(--fc-text);
-    font-family: "Poppins", Arial, sans-serif;
+    font-family: "Poppins", sans-serif;
 
     background:
         radial-gradient(
@@ -3595,8 +3595,8 @@ html[data-theme="dark"] body[data-fc-page="customer-cart"] :is(
   .checkout-button:disabled,
   .clear-cart-button:disabled
 ) :is(span, i) {
-  color: #7f8997 !important;
-  -webkit-text-fill-color: #7f8997 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   opacity: 1 !important;
 }
 

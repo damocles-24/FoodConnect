@@ -4294,3 +4294,53 @@ html[data-theme="light"] body[data-fc-page="cashier"] .toast p {
     font-size: 15px;
   }
 }
+
+/* =========================================================
+   FOODCONNECT THEME-AWARE TOASTS - 2026-09-21
+   Explicit text/surface contrast for both application themes.
+========================================================= */
+html[data-theme="light"] body[data-fc-page="cashier"] .toast {
+  color: #182230 !important;
+  background: #ffffff !important;
+  border-color: rgba(244, 124, 30, 0.34) !important;
+  border-left-color: var(--fc-orange, #f47c1e) !important;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.18) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .toast h4 {
+  color: var(--fc-orange, #f47c1e) !important;
+}
+
+html[data-theme="light"] body[data-fc-page="cashier"] .toast p {
+  color: #667085 !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="cashier"] .toast {
+  color: #f5f7fa !important;
+  background: #181b20 !important;
+  border-color: #30343b !important;
+  border-left-color: var(--fc-orange, #f47c1e) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42) !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="cashier"] .toast h4 {
+  color: #ff9a4c !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="cashier"] .toast p {
+  color: #aeb7c6 !important;
+}
+
+@media (max-width: 600px) {
+  body[data-fc-page="cashier"] .toast-container {
+    top: 14px;
+    right: 14px;
+    left: 14px;
+  }
+
+  body[data-fc-page="cashier"] .toast {
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+  }
+}
