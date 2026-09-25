@@ -82,6 +82,7 @@ $stmt = $conn->prepare("
         r.contact_number,
         r.opening_hours,
         r.delivery_fee,
+        r.order_types_json,
         r.business_status
 
     FROM tbl_restaurants AS r
@@ -216,6 +217,11 @@ respond_json([
 
         "delivery_pricing_type" =>
             (string) $deliveryPricing["pricing_type"],
+
+        "order_types_json" =>
+            (string) (
+                $restaurant["order_types_json"] ?? "[]"
+            ),
 
         "business_status" =>
             $business_status,

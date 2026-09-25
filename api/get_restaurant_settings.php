@@ -57,7 +57,8 @@ try {
         contact_number,
         opening_hours,
         delivery_fee,
-        business_status
+        business_status,
+        order_types_json
     FROM tbl_restaurants
     WHERE restaurant_id = ?
       AND owner_id = ?
@@ -249,6 +250,8 @@ try {
     }
 
     unset($restaurant["owner_id"]);
+
+    $restaurant["delivery_options"] = json_decode($restaurant["order_types_json"] ?? "[]", true) ?: [];
 
     echo json_encode([
         "success" => true,

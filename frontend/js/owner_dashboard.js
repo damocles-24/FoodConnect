@@ -840,6 +840,9 @@ const settingsBusinessHours = document.getElementById("settingsBusinessHours");
 const settingsApplyMondayHours = document.getElementById("settingsApplyMondayHours");
 const settingsHoursError = document.getElementById("settingsHoursError");
 const settingsDeliveryFee = document.getElementById("settingsDeliveryFee");
+const settingsServiceDineIn = document.getElementById("settingsServiceDineIn");
+const settingsServiceTakeout = document.getElementById("settingsServiceTakeout");
+const settingsServiceDelivery = document.getElementById("settingsServiceDelivery");
 const settingsDeliveryPricingType = document.getElementById("settingsDeliveryPricingType");
 const settingsFixedPricingFields = document.getElementById("settingsFixedPricingFields");
 const settingsDistancePricingFields = document.getElementById("settingsDistancePricingFields");
@@ -11289,6 +11292,13 @@ function getCurrentRestaurantSettings() {
     delivery_pricing:
       deliveryPricing,
 
+    delivery_options:
+      [
+        settingsServiceDineIn?.checked ? "dine-in" : null,
+        settingsServiceTakeout?.checked ? "takeout" : null,
+        settingsServiceDelivery?.checked ? "delivery" : null
+      ].filter(Boolean),
+
     business_status:
       getSelectedBusinessStatus()
   };
@@ -12163,6 +12173,14 @@ function handleSettingsChange() {
       "saved",
       "All changes saved"
     );
+
+    const serviceOptions = Array.isArray(loadedSettings.delivery_options)
+      ? loadedSettings.delivery_options
+      : [];
+
+    if (settingsServiceDineIn) settingsServiceDineIn.checked = serviceOptions.includes("dine-in");
+    if (settingsServiceTakeout) settingsServiceTakeout.checked = serviceOptions.includes("takeout");
+    if (settingsServiceDelivery) settingsServiceDelivery.checked = serviceOptions.includes("delivery");
 
     if (saveSettingsBtn) {
       saveSettingsBtn.disabled = true;

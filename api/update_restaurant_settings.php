@@ -153,6 +153,16 @@ $delivery_fee =
 $deliveryPricingType =
     (string) $deliveryPricing["pricing_type"];
 
+$delivery_options = $data["delivery_options"] ?? [];
+if (!is_array($delivery_options)) {
+    $delivery_options = [];
+}
+$delivery_options = array_values(array_intersect(
+    $delivery_options,
+    ["dine-in", "takeout", "delivery"]
+));
+$order_types_json = json_encode($delivery_options);
+
 $business_status = trim(
     (string) (
         $data["business_status"] ??
@@ -439,7 +449,8 @@ try {
             contact_number = ?,
             opening_hours = ?,
             delivery_fee = ?,
-            business_status = ?
+            business_status = ?,
+            order_types_json = ?
         WHERE restaurant_id = ?
           AND owner_id = ?
     ";
@@ -453,7 +464,7 @@ try {
     }
 
     $stmt->bind_param(
-        "ssssssdsii",
+        "ssssssdssii",
         $name,
         $logo_path,
         $banner_path,
@@ -462,6 +473,7 @@ try {
         $opening_hours,
         $delivery_fee,
         $business_status,
+        $order_types_json,
         $restaurant_id,
         $owner_id
     );

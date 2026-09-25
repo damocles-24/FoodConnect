@@ -554,6 +554,15 @@ function renderRestaurantServices(
   }
 
   const labels = {
+    "dine-in":
+      "Dine-in",
+
+    takeout:
+      "Takeout",
+
+    delivery:
+      "Delivery",
+
     pickup:
       "Customer pickup",
 
@@ -564,12 +573,20 @@ function renderRestaurantServices(
       "FoodConnect delivery"
   };
 
-  const options =
-    Array.isArray(
-      deliveryOptions
-    )
+  let options = [];
+
+  try {
+    options = Array.isArray(deliveryOptions)
       ? deliveryOptions
-      : [];
+      : JSON.parse(deliveryOptions || "[]");
+
+    if (!Array.isArray(options)) {
+      options = [];
+    }
+  } catch (error) {
+    console.warn("Unable to parse restaurant services:", error);
+    options = [];
+  }
 
   restaurantServiceTags.innerHTML =
     options.length > 0
@@ -901,6 +918,7 @@ if (
     }
 
     renderRestaurantServices(
+      restaurant.order_types_json ||
       restaurant.delivery_options
     );
 
