@@ -4,6 +4,7 @@ require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
 require_once __DIR__ . "/url_helper.php";
+require_once __DIR__ . "/ph_phone.php";
 
 function signup_respond(array $data, int $statusCode = 200): void
 {
@@ -28,6 +29,7 @@ $username = strtolower(trim((string)($input["username"] ?? "")));
 $email = strtolower(trim((string)($input["email"] ?? "")));
 $password = (string)($input["password"] ?? "");
 $confirm = (string)($input["confirm"] ?? "");
+$contactNumber = normalize_ph_mobile($input["contact_number"] ?? "");
 $role = "customer";
 
 $fullName = trim(implode(" ", array_filter([
@@ -38,7 +40,7 @@ $fullName = trim(implode(" ", array_filter([
     return $part !== "";
 })));
 
-if ($firstName === "" || $lastName === "" || $username === "" || $email === "" || $password === "" || $confirm === "") {
+if ($firstName === "" || $lastName === "" || $username === "" || $email === "" || $contactNumber === "" || $password === "" || $confirm === "") {
     signup_respond(["error" => "Please fill in all required fields."], 400);
 }
 
@@ -137,13 +139,14 @@ $stmt = $conn->prepare("
         last_name,
         username,
         email,
+        contact_number,
         password_hash,
         status,
         is_verified,
         verification_token,
         verification_expires_at
     )
-    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
 ");
 
 if (!$stmt) {
@@ -152,13 +155,14 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "sssssssss",
+    "ssssssssss",
     $role,
     $firstName,
     $middleName,
     $lastName,
     $username,
     $email,
+    $contactNumber,
     $hash,
     $token,
     $expiresAt

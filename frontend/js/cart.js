@@ -173,15 +173,13 @@ function updateCustomerCancelCountdowns() {
 
 
 function startCustomerCancelCountdown() {
-    if (
-        customerCancelCountdownInterval
-    ) {
-        clearInterval(
-            customerCancelCountdownInterval
-        );
-
-        customerCancelCountdownInterval =
-            null;
+    /*
+     * Do not restart the timer every time orders are polled.
+     * loadCustomerOrders() runs repeatedly for live updates, and restarting
+     * the interval here makes the countdown appear frozen on slower devices.
+     */
+    if (customerCancelCountdownInterval) {
+        return;
     }
 
     const hasCancellableOrder =
@@ -6253,6 +6251,9 @@ const canCustomerCancel =
         order
     );
 
+    const queueNumber =
+        Number(order.queue_number || 0) || orderId;
+
     return `
         <article
             class="customer-order-card ${
@@ -6270,7 +6271,7 @@ const canCustomerCancel =
             >
                 <span>
                     <span class="customer-order-number">
-                        Order #${orderId}
+                        QUEUE #${queueNumber}
                     </span>
 
                     <span class="customer-order-date">
@@ -6501,20 +6502,19 @@ const canCustomerCancel =
                                         Time Remaining
                                     </span>
 
-                                    <strong
-                                        class="
-                                            customer-cancel-countdown
-                                            ${
-                                                cancelRemainingMs <=
-                                                60000
-                                                    ? "danger"
-                                                    : cancelRemainingMs <=
-                                                      180000
-                                                        ? "warning"
-                                                        : ""
-                                            }
-                                        "
-                                    >
+                                  <strong
+    class="
+        customer-cancel-countdown
+        ${
+            cancelRemainingMs <= 60000
+                ? "danger"
+                : cancelRemainingMs <= 180000
+                    ? "warning"
+                    : ""
+        }
+    "
+    data-customer-cancel-countdown="${orderId}"
+>
                                         ${formatCustomerCancelCountdown(
                                             cancelRemainingMs
                                         )}
@@ -8125,7 +8125,7 @@ async function syncPendingPayMongoOrders(
                 !data.success
             ) {
                 console.warn(
-                    `PayMongo background sync for Order #${orderId}:`,
+                    `PayMongo background sync for QUEUE #${queueNumber}:`,
                     data.message ||
                     `HTTP ${response.status}`
                 );
@@ -8142,7 +8142,7 @@ async function syncPendingPayMongoOrders(
             }
         } catch (error) {
             console.warn(
-                `PayMongo background sync for Order #${orderId} failed:`,
+                `PayMongo background sync for QUEUE #${queueNumber} failed:`,
                 error
             );
         }

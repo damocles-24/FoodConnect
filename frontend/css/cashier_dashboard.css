@@ -4344,3 +4344,163 @@ html[data-theme="dark"] body[data-fc-page="cashier"] .toast p {
     max-width: none;
   }
 }
+
+/* MOBILE NOTIFICATION HEADER FIX */
+@media (max-width: 640px) {
+  .notification-section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .notification-header-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .notification-header-actions .notification-filters {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .notification-filter-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .mark-all-read-btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+}
+
+/* FINAL MOBILE NOTIFICATION HEADER OVERFLOW FIX */
+@media (max-width: 640px) {
+  body[data-fc-page="cashier"] .notification-section-header,
+  body[data-fc-page="cashier"] .notification-header-actions {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body[data-fc-page="cashier"] .notification-header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    gap: 10px;
+  }
+
+  body[data-fc-page="cashier"] .notification-header-actions .notification-filters {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-left: 0;
+  }
+
+  body[data-fc-page="cashier"] .notification-filter-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
+
+  body[data-fc-page="cashier"] .mark-all-read-btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+}
+
+
+/* =========================================
+   CASHIER NOTIFICATION MOBILE OVERFLOW FIX
+   FINAL OVERRIDE
+   ========================================= */
+
+@media (max-width: 720px) {
+
+  .notification-section-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+
+  .notification-header-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .notification-header-actions .notification-filters {
+    width: 100% !important;
+    margin-left: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+
+  .notification-header-actions .notification-filter-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .notification-header-actions .mark-all-read-btn {
+    width: 100% !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* =========================================
+   CASHIER NOTIFICATION MOBILE HEADER FIX
+   FINAL PARENT OVERRIDE
+   ========================================= */
+
+@media (max-width: 720px) {
+
+  .section-header.notification-section-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  .notification-header-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .notification-header-actions .notification-filters {
+    width: 100% !important;
+    margin-left: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+
+  .notification-header-actions .notification-filter-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .notification-header-actions .mark-all-read-btn {
+    width: 100% !important;
+    white-space: nowrap !important;
+  }
+
+}

@@ -4515,6 +4515,12 @@ if (!restaurantAcceptingOrders) {
       data.error_code ===
         "different_restaurant"
     ) {
+      // Close product customization modal first so the cart conflict modal
+      // appears above the page instead of being hidden behind it.
+      if (productOptionsModal?.classList.contains("show")) {
+        closeProductOptionsModal();
+      }
+
       const shouldStartNewOrder =
         await showCartRestaurantSwitchModal(
           data.current_cart || {}
@@ -4868,12 +4874,9 @@ confirmProductAddToCart?.addEventListener(
 
         quantity,
         addonIds,
-        comboChoiceIds
+        comboChoiceIds,
+        button: confirmProductAddToCart
       });
-
-    confirmProductAddToCart.disabled = false;
-    confirmProductAddToCart.textContent =
-      "Add to Cart";
 
     if (success) {
       closeProductOptionsModal();

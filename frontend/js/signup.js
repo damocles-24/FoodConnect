@@ -26,6 +26,9 @@ const usernameInput =
 const emailInput =
     document.getElementById("email");
 
+const contactNumberInput =
+    document.getElementById("contactNumber");
+
 const passwordInput =
     document.getElementById("password");
 
@@ -484,6 +487,19 @@ signupForm?.addEventListener(
             return;
         }
 
+      const contactNumber =
+    contactNumberInput?.value.trim() || "";
+
+if (!/^9\d{9}$/.test(contactNumber)) {
+    setMessage(
+        "Mobile number must contain 10 digits and start with 9.",
+        "error"
+    );
+
+    contactNumberInput?.focus();
+    return;
+}
+
         const passwordRequirements =
             validatePasswordRequirements();
 
@@ -535,6 +551,7 @@ signupForm?.addEventListener(
                         last_name: lastName,
                         username,
                         email,
+                        contact_number: `+63${contactNumber}`,
                         password,
                         confirm: confirmPassword
                     })

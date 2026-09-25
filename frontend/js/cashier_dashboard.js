@@ -5330,7 +5330,98 @@ function buildPrintDocumentMarkup(title, content) {
   `;
 }
 
+
+function buildRawBTReceiptText(content) {
+  const parser = document.createElement("div");
+  parser.innerHTML = String(content || "");
+
+  const clean = (value) =>
+    String(value || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const lines = [];
+
+  const title =
+    clean(parser.querySelector(".restaurant-name")?.textContent) ||
+    "FoodConnect";
+
+  lines.push("        " + title);
+  lines.push("------------------------------");
+  lines.push("       CUSTOMER RECEIPT");
+  lines.push("------------------------------");
+
+  const queue = clean(parser.querySelector(".customer-queue-number")?.textContent);
+  if (queue) lines.push("Queue: " + queue);
+
+  const rows = parser.querySelectorAll(".receipt-meta-row");
+  rows.forEach(row => {
+    const parts = row.innerText.split("\n").map(clean).filter(Boolean);
+    if (parts.length >= 2) {
+      lines.push(parts[0] + ": " + parts[1]);
+    }
+  });
+
+  lines.push("------------------------------");
+  lines.push("ITEMS");
+
+  parser.querySelectorAll(".receipt-item").forEach(item => {
+    const name = clean(item.querySelector(".receipt-item-name")?.textContent);
+    const total = clean(item.querySelector(".receipt-item-total")?.textContent);
+    const sub = clean(item.querySelector(".receipt-item-subline")?.textContent);
+
+    if (name) lines.push(name);
+    if (sub) lines.push(" " + sub);
+    if (total) lines.push(" " + total);
+    lines.push("");
+  });
+
+  const total = clean(parser.querySelector(".receipt-grand-total strong")?.textContent);
+  if (total) {
+    lines.push("------------------------------");
+    lines.push("TOTAL: " + total);
+  }
+
+  lines.push("------------------------------");
+  lines.push("        THANK YOU!");
+
+  return lines.join("\n") + "\n\n\n";
+}
+
+function openRawBTPrint(content) {
+  try {
+    const receiptText = buildRawBTReceiptText(content);
+
+    const encoded = btoa(
+      unescape(
+        encodeURIComponent(receiptText)
+      )
+    );
+
+    const rawbtUrl = "rawbt:base64," + encoded;
+
+    // Use a direct navigation first. If Chrome blocks the custom scheme,
+    // the normal browser print fallback should handle it.
+    window.location.assign(rawbtUrl);
+
+    return true;
+  } catch (error) {
+    console.error("RawBT print error:", error);
+    return false;
+  }
+}
+
+function isAndroidDevice() {
+  return /Android/i.test(navigator.userAgent || "");
+}
+
 function openPrintWindow(title, content) {
+  if (isAndroidDevice()) {
+    if (openRawBTPrint(content)) {
+      return true;
+    }
+  }
+
   const printWindow = window.open(
     "",
     "_blank",

@@ -1071,3 +1071,63 @@ body[data-fc-page="customer-auth"]
     background: #20242a;
     border-color: #4a515c;
 }
+
+.phone-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+    padding: 0 16px;
+
+    background: var(--fc-input);
+    border: 1px solid var(--fc-border);
+    border-radius: 11px;
+}
+
+.phone-prefix {
+    margin-right: 8px;
+
+    color: var(--fc-heading);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.phone-input-wrapper > i {
+    margin-right: 12px;
+    color: var(--fc-orange);
+    font-size: 13px;
+}
+
+.phone-input-wrapper input {
+    flex: 1;
+    height: 100%;
+
+    color: var(--fc-heading);
+    font-size: 13px;
+
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.phone-help {
+    margin-top: 7px;
+    color: #667085;
+    font-size: 11px;
+}
+
+
+/* FINAL PHONE FIELD FIX */
+.phone-input-wrapper input,
+.phone-input-wrapper input:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.phone-input-wrapper:focus-within {
+    border-color: var(--fc-orange);
+    box-shadow: 0 0 0 4px rgba(247,128,33,0.11);
+}

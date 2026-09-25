@@ -703,6 +703,16 @@ img {
   );
 }
 
+
+.food-illustration img {
+  width: 100%;
+  max-width: 330px;
+  height: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 22px rgba(108, 65, 24, 0.18));
+}
+
 .visual-card-main strong {
   font-size: 18px;
 }

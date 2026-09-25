@@ -3883,3 +3883,27 @@ html[data-theme="dark"] body[data-fc-page="admin"] .verification-resend-cancelle
   align-items: flex-start;
   gap: 2px;
 }
+
+
+/* Admin logo polish: use full FoodConnect branding without placeholder backgrounds */
+.brand-symbol.logo-brand {
+    background: transparent;
+    box-shadow: none;
+}
+
+.brand-symbol.logo-brand img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.profile-avatar.logo-avatar {
+    background: transparent;
+    box-shadow: none;
+}
+
+.profile-avatar.logo-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}

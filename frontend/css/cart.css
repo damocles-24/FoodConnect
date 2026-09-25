@@ -3605,3 +3605,25 @@ body[data-fc-page="customer-cart"] :is(.checkout-button, .clear-cart-button) {
   -webkit-appearance: none;
   appearance: none;
 }
+
+
+/* Customer order queue number display */
+.customer-order-number.queue-number-display {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.1;
+}
+
+.customer-order-number.queue-number-display small {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--muted, #667085);
+}
+
+.customer-order-number.queue-number-display strong {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary, #f78021);
+}

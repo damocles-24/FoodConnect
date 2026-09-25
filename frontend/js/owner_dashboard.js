@@ -753,10 +753,40 @@ const deliveryPerformanceBody =
     "deliveryPerformanceBody"
   );
 
-  const settingsBannerPath = document.getElementById("settingsBannerPath");
-const settingsBannerInput = document.getElementById("settingsBannerInput");
-const settingsBannerPreviewImage = document.getElementById("settingsBannerPreviewImage");
-const settingsBannerPlaceholder = document.getElementById("settingsBannerPlaceholder");
+const settingsBannerPath =
+  document.getElementById(
+    "settingsBannerPath"
+  );
+
+const settingsBannerInput =
+  document.getElementById(
+    "settingsBannerInput"
+  );
+
+const selectSettingsBannerBtn =
+  document.getElementById(
+    "selectSettingsBannerBtn"
+  );
+
+const removeSettingsBannerBtn =
+  document.getElementById(
+    "removeSettingsBannerBtn"
+  );
+
+const settingsBannerPreviewImage =
+  document.getElementById(
+    "settingsBannerPreviewImage"
+  );
+
+const settingsBannerPlaceholder =
+  document.getElementById(
+    "settingsBannerPlaceholder"
+  );
+
+const settingsBannerMessage =
+  document.getElementById(
+    "settingsBannerMessage"
+  );
 
 const settingsLogoPath =
   document.getElementById(
@@ -931,6 +961,38 @@ selectSettingsLogoBtn?.addEventListener(
 removeSettingsLogoBtn?.addEventListener(
   "click",
   removeSettingsLogo
+);
+
+settingsBannerInput?.addEventListener(
+  "change",
+  event => {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    uploadSettingsBanner(file);
+  }
+);
+
+selectSettingsBannerBtn?.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      settingsBannerInput?.click();
+    }
+  }
+);
+
+removeSettingsBannerBtn?.addEventListener(
+  "click",
+  removeSettingsBanner
 );
 
 settingsPreviewLogoImage?.addEventListener(
@@ -8491,6 +8553,19 @@ navItems.forEach(btn => {
             savedRestaurantSettings.name;
         }
 
+        if (settingsBannerPath) {
+          settingsBannerPath.value =
+            String(
+              savedRestaurantSettings.banner_path || ""
+            ).trim();
+
+          renderSettingsBanner(
+            settingsBannerPath.value
+          );
+
+          setSettingsBannerMessage("");
+        }
+
       if (settingsContactNumber) {
     settingsContactNumber.value =
         window.FoodConnectPhone.toLocalDigits(
@@ -9644,6 +9719,15 @@ function showOwnerActionToast(message, type = "success") {
 function closeResetStaffPasswordDialog() {
   resetStaffPasswordModal?.classList.remove(
     "show"
+  );
+
+  resetStaffPasswordModal?.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.classList.remove(
+    "modal-scroll-locked"
   );
 
   if (resetStaffUserId) {
@@ -11602,6 +11686,277 @@ function removeSettingsLogo() {
   handleSettingsChange();
 }
 
+function renderSettingsBanner(
+  bannerPath
+) {
+  const bannerUrl =
+    resolveSettingsLogoUrl(
+      bannerPath
+    );
+
+  const hasBanner =
+    Boolean(bannerUrl);
+
+  if (settingsBannerPreviewImage) {
+    settingsBannerPreviewImage.src =
+      hasBanner ? bannerUrl : "";
+
+    settingsBannerPreviewImage.hidden =
+      !hasBanner;
+  }
+
+  if (settingsBannerPlaceholder) {
+    settingsBannerPlaceholder.hidden =
+      hasBanner;
+  }
+
+  if (removeSettingsBannerBtn) {
+    removeSettingsBannerBtn.hidden =
+      !hasBanner;
+  }
+}
+
+function setSettingsBannerMessage(
+  message = "",
+  type = ""
+) {
+  if (!settingsBannerMessage) {
+    return;
+  }
+
+  settingsBannerMessage.textContent =
+    message;
+
+  settingsBannerMessage.className =
+    "settings-logo-message";
+
+  if (type) {
+    settingsBannerMessage.classList.add(
+      `is-${type}`
+    );
+  }
+}
+
+function validateSettingsBannerFile(
+  file
+) {
+  if (!file) {
+    return "Select a restaurant banner.";
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    return "Only JPG, PNG, and WEBP banner files are allowed.";
+  }
+
+  const maximumSize =
+    2 * 1024 * 1024;
+
+  if (
+    file.size <= 0 ||
+    file.size > maximumSize
+  ) {
+    return "The restaurant banner must not exceed 2 MB.";
+  }
+
+  return "";
+}
+
+async function uploadSettingsBanner(
+  file
+) {
+  const validationMessage =
+    validateSettingsBannerFile(file);
+
+  if (validationMessage) {
+    setSettingsBannerMessage(
+      validationMessage,
+      "error"
+    );
+    return;
+  }
+
+  const previousBannerPath =
+    settingsBannerPath?.value || "";
+
+  const previewUrl =
+    URL.createObjectURL(file);
+
+  if (settingsBannerPreviewImage) {
+    settingsBannerPreviewImage.src =
+      previewUrl;
+    settingsBannerPreviewImage.hidden =
+      false;
+  }
+
+  if (settingsBannerPlaceholder) {
+    settingsBannerPlaceholder.hidden =
+      true;
+  }
+
+  setSettingsBannerMessage(
+    "Uploading banner...",
+    "uploading"
+  );
+
+  if (settingsBannerInput) {
+    settingsBannerInput.disabled = true;
+  }
+
+  if (selectSettingsBannerBtn) {
+    selectSettingsBannerBtn.setAttribute(
+      "aria-disabled",
+      "true"
+    );
+  }
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "restaurant_banner",
+    file
+  );
+
+  try {
+    const response = await fetch(
+      `${OWNER_API_BASE}/upload_restaurant_banner.php`,
+      {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+        cache: "no-store"
+      }
+    );
+
+    const responseText =
+      await response.text();
+
+    let result;
+
+    try {
+      result = JSON.parse(
+        responseText
+      );
+    } catch (parseError) {
+      console.error(
+        "Banner upload response:",
+        responseText
+      );
+
+      throw new Error(
+        "The banner upload API returned an invalid response."
+      );
+    }
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        "Unable to upload the restaurant banner."
+      );
+    }
+
+    const bannerPath =
+      String(
+        result.banner_path || ""
+      ).trim();
+
+    if (!bannerPath) {
+      throw new Error(
+        "The banner upload completed without a saved banner path."
+      );
+    }
+
+    if (settingsBannerPath) {
+      settingsBannerPath.value =
+        bannerPath;
+    }
+
+    renderSettingsBanner(
+      bannerPath
+    );
+
+    setSettingsBannerMessage(
+      "Banner uploaded. Click Save Changes to apply it to your restaurant.",
+      "success"
+    );
+
+    handleSettingsChange();
+  } catch (error) {
+    if (settingsBannerPath) {
+      settingsBannerPath.value =
+        previousBannerPath;
+    }
+
+    renderSettingsBanner(
+      previousBannerPath
+    );
+
+    setSettingsBannerMessage(
+      error.message ||
+      "Unable to upload the restaurant banner.",
+      "error"
+    );
+  } finally {
+    URL.revokeObjectURL(
+      previewUrl
+    );
+
+    if (settingsBannerInput) {
+      settingsBannerInput.disabled =
+        false;
+      settingsBannerInput.value = "";
+    }
+
+    if (selectSettingsBannerBtn) {
+      selectSettingsBannerBtn.removeAttribute(
+        "aria-disabled"
+      );
+    }
+  }
+}
+
+function removeSettingsBanner() {
+  const hasBanner =
+    Boolean(
+      settingsBannerPath?.value
+    );
+
+  if (!hasBanner) {
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      "Remove the restaurant banner? The change will only become permanent after you click Save Changes."
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  if (settingsBannerPath) {
+    settingsBannerPath.value = "";
+  }
+
+  renderSettingsBanner("");
+
+  setSettingsBannerMessage(
+    "Banner marked for removal. Click Save Changes to confirm.",
+    "warning"
+  );
+
+  handleSettingsChange();
+}
+
 function updateSettingsPreview() {
 
   if (
@@ -11711,6 +12066,11 @@ function settingsHaveChanges() {
     current.logo_path !==
       String(
         savedRestaurantSettings.logo_path || ""
+      ).trim() ||
+
+    current.banner_path !==
+      String(
+        savedRestaurantSettings.banner_path || ""
       ).trim() ||
 
     current.name !==
@@ -12091,7 +12451,22 @@ renderSettingsLogo(
   ).trim()
 );
 
-setSettingsLogoMessage("");   
+setSettingsLogoMessage("");
+
+if (settingsBannerPath) {
+  settingsBannerPath.value =
+    String(
+      restaurant.banner_path || ""
+    ).trim();
+}
+
+renderSettingsBanner(
+  String(
+    restaurant.banner_path || ""
+  ).trim()
+);
+
+setSettingsBannerMessage("");
 
 const loadedPricingType =
   normalizeSettingsDeliveryPricingType(
@@ -12150,6 +12525,10 @@ if (loadedPricingType === "distance") {
 const loadedSettings = {
   logo_path: String(
     restaurant.logo_path || ""
+  ).trim(),
+
+  banner_path: String(
+    restaurant.banner_path || ""
   ).trim(),
 
   name: String(
