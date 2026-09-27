@@ -20,6 +20,7 @@ function fail_export(
 ): void {
     http_response_code($statusCode);
     header("Content-Type: text/plain; charset=utf-8");
+    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
     echo $message;
     exit;
 }
@@ -192,8 +193,8 @@ try {
     $ownerStmt = prepare_or_fail(
         $conn,
         "
-            SELECT
-                r.restaurant_name
+           SELECT
+    r.name AS restaurant_name
             FROM tbl_users u
 
             INNER JOIN tbl_restaurants r

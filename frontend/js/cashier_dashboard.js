@@ -4907,7 +4907,7 @@ function buildPrintDocumentMarkup(title, content) {
 
       <style>
         @page {
-          size: 58mm auto;
+          size: 57mm auto;
           margin: 0;
         }
 
@@ -4917,8 +4917,8 @@ function buildPrintDocumentMarkup(title, content) {
 
         html,
         body {
-          width: 58mm;
-          min-width: 58mm;
+          width: 57mm;
+          min-width: 57mm;
           margin: 0;
           padding: 0;
           background: #ffffff;
@@ -4937,8 +4937,8 @@ function buildPrintDocumentMarkup(title, content) {
         }
 
         .receipt {
-          width: 48mm;
-          max-width: 48mm;
+          width: 47mm;
+          max-width: 47mm;
           margin: 0 auto;
           padding: 2mm 1mm 4mm;
           overflow-wrap: anywhere;

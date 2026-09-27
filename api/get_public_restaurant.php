@@ -75,15 +75,16 @@ if (
 
 $stmt = $conn->prepare("
     SELECT
-        r.restaurant_id,
-        r.name,
-        r.logo_path,
-        r.address,
-        r.contact_number,
-        r.opening_hours,
-        r.delivery_fee,
-        r.order_types_json,
-        r.business_status
+    r.restaurant_id,
+    r.name,
+    r.logo_path,
+    r.banner_path,
+    r.address,
+    r.contact_number,
+    r.opening_hours,
+    r.delivery_fee,
+    r.order_types_json,
+    r.business_status
 
     FROM tbl_restaurants AS r
 
@@ -193,6 +194,10 @@ respond_json([
             (string) (
                 $restaurant["logo_path"] ?? ""
             ),
+        "banner_path" =>
+    (string) (
+        $restaurant["banner_path"] ?? ""
+    ),
 
         "address" =>
             (string) (

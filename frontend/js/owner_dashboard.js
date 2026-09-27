@@ -925,7 +925,10 @@ const settingsFormControls = [
   settingsDeliveryPricingType,
   settingsDeliveryBaseFee,
   settingsDeliveryIncludedKm,
-  settingsDeliveryExtraFeePerKm
+  settingsDeliveryExtraFeePerKm,
+  settingsServiceDineIn,
+  settingsServiceTakeout,
+  settingsServiceDelivery
 ].filter(Boolean);
 
 let savedRestaurantSettings = null;
@@ -4421,7 +4424,7 @@ function exportSalesReportExcel() {
 
         h2 {
           color: #111111;
-          margin-top: 25px;
+          margin-top: 18px;
         }
 
         table {
@@ -10356,6 +10359,11 @@ function exportSalesReportPDF() {
 
   const reportWindow = window.open("", "_blank");
 
+  if (!reportWindow) {
+    alert("Please allow pop-ups to export the sales report.");
+    return;
+  }
+
   reportWindow.document.write(`
     <html>
     <head>
@@ -10364,33 +10372,37 @@ function exportSalesReportPDF() {
       <style>
         body {
           font-family: "Poppins", sans-serif;
-          padding: 30px;
+          padding: 18px 24px;
           color: #111;
+          max-width: 900px;
+          margin: 0 auto;
         }
 
         h1 {
           text-align: center;
           color: #f47c1e;
-          margin-bottom: 5px;
+          margin-bottom: 4px;
+          font-size: 28px;
         }
 
         .subtitle {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 18px;
           color: #555;
+          font-size: 13px;
         }
 
         .summary {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 12px;
-          margin-bottom: 30px;
+          margin-bottom: 18px;
         }
 
         .card {
           border: 1px solid #ccc;
           border-radius: 10px;
-          padding: 15px;
+          padding: 12px;
           background: #f8f8f8;
         }
 
@@ -10401,7 +10413,7 @@ function exportSalesReportPDF() {
         }
 
         .card p {
-          font-size: 22px;
+          font-size: 18px;
           font-weight: bold;
           margin: 0;
         }
@@ -10409,36 +10421,52 @@ function exportSalesReportPDF() {
         table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 28px;
+          margin-bottom: 18px;
         }
 
         th {
           background: #f47c1e;
           color: white;
-          padding: 10px;
+          padding: 7px 8px;
           border: 1px solid #aaa;
+          font-size: 12px;
         }
 
         td {
-          padding: 10px;
+          padding: 7px 8px;
           border: 1px solid #aaa;
+          font-size: 12px;
         }
 
         h2 {
-          margin-top: 25px;
+          margin-top: 18px;
           color: #111;
+          font-size: 17px;
         }
 
         .footer {
-          margin-top: 25px;
+          margin-top: 18px;
           font-size: 12px;
           color: #666;
           text-align: center;
         }
 
         @media print {
+          @page {
+            margin: 12mm;
+          }
+
+          body {
+            padding: 0;
+          }
+
           button {
             display: none;
+          }
+
+          .card,
+          table {
+            page-break-inside: avoid;
           }
         }
       </style>
@@ -10522,7 +10550,15 @@ function exportSalesReportPDF() {
 
       <script>
         window.onload = function() {
-          window.print();
+          document.title = "FoodConnect Sales Report";
+
+          setTimeout(() => {
+            window.print();
+          }, 700);
+        };
+
+        window.onafterprint = function() {
+          window.close();
         };
       <\/script>
     </body>
@@ -10530,6 +10566,7 @@ function exportSalesReportPDF() {
   `);
 
   reportWindow.document.close();
+  reportWindow.focus();
 }
 
 function normalizeBusinessStatus(value) {
@@ -11297,7 +11334,7 @@ function getCurrentRestaurantSettings() {
         settingsServiceDineIn?.checked ? "dine-in" : null,
         settingsServiceTakeout?.checked ? "takeout" : null,
         settingsServiceDelivery?.checked ? "delivery" : null
-      ].filter(Boolean),
+      ].filter(Boolean).sort(),
 
     business_status:
       getSelectedBusinessStatus()
@@ -12101,7 +12138,13 @@ function settingsHaveChanges() {
     currentPricing !== savedPricing ||
 
     current.business_status !==
-      savedRestaurantSettings.business_status
+      savedRestaurantSettings.business_status ||
+
+    JSON.stringify(
+      current.delivery_options || []
+    ) !== JSON.stringify(
+      savedRestaurantSettings.delivery_options || []
+    )
   );
 }
 
@@ -12152,6 +12195,26 @@ function setSettingsSaveState(
   }
 }
 
+
+function restoreAvailableServicesState(restaurant = {}) {
+  const services =
+    Array.isArray(restaurant.delivery_options)
+      ? [...restaurant.delivery_options].sort()
+      : [];
+
+  if (settingsServiceDineIn) {
+    settingsServiceDineIn.checked = services.includes("dine-in");
+  }
+
+  if (settingsServiceTakeout) {
+    settingsServiceTakeout.checked = services.includes("takeout");
+  }
+
+  if (settingsServiceDelivery) {
+    settingsServiceDelivery.checked = services.includes("delivery");
+  }
+}
+
 function handleSettingsChange() {
   if (restaurantSettingsLoading) {
     return;
@@ -12173,14 +12236,6 @@ function handleSettingsChange() {
       "saved",
       "All changes saved"
     );
-
-    const serviceOptions = Array.isArray(loadedSettings.delivery_options)
-      ? loadedSettings.delivery_options
-      : [];
-
-    if (settingsServiceDineIn) settingsServiceDineIn.checked = serviceOptions.includes("dine-in");
-    if (settingsServiceTakeout) settingsServiceTakeout.checked = serviceOptions.includes("takeout");
-    if (settingsServiceDelivery) settingsServiceDelivery.checked = serviceOptions.includes("delivery");
 
     if (saveSettingsBtn) {
       saveSettingsBtn.disabled = true;
@@ -12576,6 +12631,11 @@ const loadedSettings = {
   delivery_pricing:
     loadedDeliveryPricing,
 
+  delivery_options:
+    Array.isArray(restaurant.delivery_options)
+      ? [...restaurant.delivery_options].sort()
+      : [],
+
   business_status:
     normalizeBusinessStatus(
       restaurant.business_status
@@ -12686,6 +12746,8 @@ const loadedSettings = {
     savedRestaurantSettings = {
       ...loadedSettings
     };
+
+    restoreAvailableServicesState(restaurant);
 
     updateSettingsPreview();
 
@@ -13141,4 +13203,3 @@ initDashboard().then(
     }
   }
 );
-

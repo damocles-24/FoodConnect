@@ -4260,3 +4260,40 @@ html[data-theme="dark"] body[data-fc-page="restaurant"] .search-bar input:focus 
     font-size: 13px;
   }
 }
+
+/* Restaurant banner display */
+.restaurant-banner-section {
+    width: 100%;
+    height: clamp(220px, 32vw, 380px);
+    overflow: hidden;
+    background: var(--section);
+}
+
+.restaurant-banner-section[hidden] {
+    display: none;
+}
+
+.restaurant-banner-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+}
+.hours-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] footer,
+html[data-theme="light"] body[data-fc-page="restaurant"] .footer-bottom {
+  background: #ffffff;
+  color: #1c2434;
+}
+
+html[data-theme="light"] body[data-fc-page="restaurant"] .footer-brand-info p,
+html[data-theme="light"] body[data-fc-page="restaurant"] .contact-item,
+html[data-theme="light"] body[data-fc-page="restaurant"] .hours-row {
+  color: #667085;
+}

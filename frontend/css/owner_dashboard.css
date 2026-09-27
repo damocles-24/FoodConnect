@@ -11433,3 +11433,189 @@ html[data-theme="dark"] body[data-fc-page="owner"] .owner-action-toast.warning {
     width: auto;
   }
 }
+
+/* =========================================================
+   FOODCONNECT VARIANT UI MOBILE FIX
+   Sizes / Versions Builder
+========================================================= */
+
+.product-variants-builder {
+    border-radius: var(--radius);
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.product-variant-rows {
+    display: grid;
+    gap: 12px;
+}
+
+.product-variant-row {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card2);
+    padding: 14px;
+}
+
+@media (max-width: 600px) {
+
+    .product-variants-builder {
+        padding: 14px;
+    }
+
+    .product-variants-builder-header {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .add-variant-row-btn {
+        width: 100%;
+        min-height: 42px;
+    }
+
+    .product-variant-row {
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .product-variant-row input,
+    .product-variant-row select {
+        min-height: 42px;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .product-variant-row label {
+        font-size: 12px;
+    }
+
+    .product-variant-row button {
+        min-height: 40px;
+        font-size: 13px;
+    }
+}
+
+html[data-theme="light"] .product-variant-row {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+html[data-theme="dark"] .product-variant-row {
+    background: var(--card2);
+    border-color: var(--border);
+}
+
+
+/* =========================================================
+   SETTINGS AVAILABLE SERVICES UI FIX
+   FoodConnect Owner Dashboard
+========================================================= */
+
+.settings-service-group,
+.available-services,
+.settings-services-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.settings-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-service-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card2);
+    color: var(--text);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.settings-service-option:hover {
+    border-color: rgba(244,124,30,.45);
+}
+
+.settings-service-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+
+.settings-service-option label {
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+}
+
+@media (max-width: 700px) {
+    .settings-services-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-service-option {
+        padding: 12px 14px;
+    }
+}
+
+html[data-theme="light"] .settings-service-option {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+html[data-theme="dark"] .settings-service-option {
+    background: var(--card2);
+    border-color: var(--border);
+}
+
+
+/* Available Services final layout */
+.settings-services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.settings-service-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 64px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.settings-service-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.settings-service-card span {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.settings-service-card input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--primary);
+}
+
+@media (max-width: 800px) {
+    .settings-services-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1217,7 +1217,8 @@ let restaurantCategoryHydrationPromise =
       syncModalScrollLock();
 
       if (staffRestaurantId) {
-        staffRestaurantId.value = "1";
+        staffRestaurantId.value = "";
+        loadStaffRestaurantSelector();
       }
 
       if (staffAccessCode) {
@@ -3424,6 +3425,44 @@ function showHomePage() {
     behavior: "smooth"
   });
 
+}
+
+async function loadStaffRestaurantSelector() {
+  if (!staffRestaurantId) {
+    return;
+  }
+
+  updateStaffRestaurantOptions([]);
+
+  try {
+    const response = await fetch(
+      `${window.API}/get_public_restaurants.php`,
+      {
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Unable to load restaurants."
+      );
+    }
+
+    updateStaffRestaurantOptions(
+      Array.isArray(data.restaurants)
+        ? data.restaurants
+        : []
+    );
+  } catch (error) {
+    console.error(
+      "Load staff restaurant selector failed:",
+      error
+    );
+
+    updateStaffRestaurantOptions([]);
+  }
 }
 
 async function loadPublicRestaurants() {

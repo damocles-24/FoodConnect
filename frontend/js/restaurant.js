@@ -262,6 +262,16 @@ const restaurantInformationSection =
     "restaurantInformationSection"
   );
 
+const restaurantBannerSection =
+  document.getElementById(
+    "restaurantBannerSection"
+  );
+
+const restaurantBannerImage =
+  document.getElementById(
+    "restaurantBannerImage"
+  );
+
 const restaurantAboutName =
   document.getElementById(
     "restaurantAboutName"
@@ -810,6 +820,24 @@ if (
     ) {
       footerRestaurantLogo.src =
         logoUrl;
+    }
+
+    const bannerUrl =
+      resolveRestaurantImageUrl(
+        restaurant.banner_path ||
+        restaurant.banner_image ||
+        restaurant.banner
+      );
+
+    if (
+      bannerUrl &&
+      restaurantBannerImage &&
+      restaurantBannerSection
+    ) {
+      restaurantBannerImage.src = bannerUrl;
+      restaurantBannerSection.hidden = false;
+    } else if (restaurantBannerSection) {
+      restaurantBannerSection.hidden = true;
     }
 
     let openingHoursText =

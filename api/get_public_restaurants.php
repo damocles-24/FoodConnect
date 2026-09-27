@@ -82,6 +82,7 @@ $stmt = $conn->prepare("
         r.contact_number,
         r.opening_hours,
         r.delivery_fee,
+        r.order_types_json,
         r.business_status
 
     FROM tbl_restaurants AS r
@@ -227,6 +228,9 @@ while ($row = $result->fetch_assoc()) {
 
         "delivery_pricing_type" =>
             (string) $deliveryPricing["pricing_type"],
+
+        "order_types_json" =>
+            (string) ($row["order_types_json"] ?? "[]"),
 
         "business_status" =>
             $businessStatus,
