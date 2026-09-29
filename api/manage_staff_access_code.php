@@ -218,9 +218,14 @@ if (!$updateStmt) {
     ], 500);
 }
 
+$hashedCode = password_hash(
+    $newCode,
+    PASSWORD_DEFAULT
+);
+
 $updateStmt->bind_param(
     "sii",
-    $newCode,
+    $hashedCode,
     $restaurantId,
     $userId
 );

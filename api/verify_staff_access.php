@@ -88,12 +88,13 @@ $storedCode =
     (string) $restaurant["staff_access_code"];
 
 if (
-    $storedCode === "" ||
-    !hash_equals(
-        $storedCode,
-        $code
-    )
-) {
+  $storedCode === "" ||
+  !password_verify(
+      $code,
+      $storedCode
+  )
+)
+{
   respond_json([
     "success" => false,
     "message" => "Invalid access code."

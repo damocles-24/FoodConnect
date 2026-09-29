@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 26, 2026 at 11:05 PM
+-- Generation Time: Sep 28, 2026 at 09:34 AM
 -- Server version: 11.4.13-MariaDB-cll-lve-log
 -- PHP Version: 8.4.25
 
@@ -1736,7 +1736,29 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (1913, 6, 27, 'owner', 'staff', 'Staff Password Reset', 'Test Cashier was issued a temporary password and must create a new password at the next login.', '2026-09-26 15:36:04'),
 (1914, 6, 27, 'owner', 'staff', 'Staff Password Reset', 'Test Cashier was issued a temporary password and must create a new password at the next login.', '2026-09-26 15:37:23'),
 (1915, 6, 84, 'cashier', 'staff', 'Staff Password Changed', 'Test Cashier created a new private password after a temporary password reset.', '2026-09-26 15:38:09'),
-(1916, 9, 31, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-27 03:03:45');
+(1916, 9, 31, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-27 03:03:45'),
+(1917, 9, 31, 'owner', 'system', 'Settings Updated', 'Restaurant settings were updated.', '2026-09-27 03:25:20'),
+(1918, 6, 81, 'customer', 'order', 'New Customer Order', 'Russ placed Order #115 / Queue #1.', '2026-09-27 04:26:30'),
+(1919, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #115 from Pending to Preparing.', '2026-09-27 04:28:26'),
+(1920, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #115 from Preparing to Completed.', '2026-09-27 04:28:38'),
+(1921, 6, 81, 'customer', 'order', 'New Customer Order', 'Russ placed Order #116 / Queue #2.', '2026-09-27 04:43:08'),
+(1922, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #116 from Pending to Preparing.', '2026-09-27 04:44:04'),
+(1923, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Ian Reigh P Dela Cruz was assigned and automatically accepted delivery Order #116.', '2026-09-27 04:44:23'),
+(1924, 6, 33, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #116 from the restaurant.', '2026-09-27 04:45:19'),
+(1925, 6, 33, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #116 is now out for delivery.', '2026-09-27 04:45:24'),
+(1926, 6, 33, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #116 was delivered and the COD cash payment was confirmed.', '2026-09-27 04:46:07'),
+(1927, 6, 81, 'customer', 'order', 'New Customer Order', 'Russ placed Order #117 / Queue #3.', '2026-09-27 06:03:58'),
+(1928, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #117 from Pending to Preparing.', '2026-09-27 06:04:23'),
+(1929, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Ian Reigh P Dela Cruz was assigned and automatically accepted delivery Order #117.', '2026-09-27 06:04:36'),
+(1930, 6, 33, NULL, 'delivery_status', 'Order Picked Up', 'The rider picked up delivery Order #117 from the restaurant.', '2026-09-27 06:05:38'),
+(1931, 6, 33, NULL, 'delivery_status', 'Out for Delivery', 'Delivery Order #117 is now out for delivery.', '2026-09-27 06:05:47'),
+(1932, 6, 33, NULL, 'delivery_status', 'Delivery Completed', 'Delivery Order #117 was delivered and the COD cash payment was confirmed.', '2026-09-27 06:17:32'),
+(1933, 6, 75, 'customer', 'order', 'New Customer Order', 'Cj Tamayo Porto placed Order #118 / Queue #4.', '2026-09-27 14:53:30'),
+(1934, 6, 34, 'cashier', 'order', 'Order Status Updated', 'Angel Recepcion (Cashier) changed Order #118 from Pending to Preparing.', '2026-09-27 14:56:04'),
+(1935, 6, 34, NULL, 'delivery_assignment', 'Rider Assigned', 'Ian Reigh P Dela Cruz was assigned and automatically accepted delivery Order #118.', '2026-09-27 14:56:33'),
+(1936, 7, 61, 'cashier', 'security', 'Staff Password Reset Requested', 'text cashier 1234 requested owner-assisted password recovery from the staff portal.', '2026-09-28 07:38:34'),
+(1937, 7, 61, 'cashier', 'staff', 'Staff Password Changed', 'text cashier 1234 created a new private password after a temporary password reset.', '2026-09-28 07:39:46'),
+(1938, 7, 75, 'customer', 'order', 'Customer Cancelled Order', 'Cj Tamayo Porto cancelled Queue #1, Order #119. Order type: Dine-in. Amount affected: ₱150.00. Reason: Incorrect order details. Inventory: 2 stock units restored.', '2026-09-28 07:42:14');
 
 -- --------------------------------------------------------
 
@@ -1832,6 +1854,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (143, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '111.90.233.143', 'credentials', 1, '2026-09-22 14:13:09'),
 (146, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '111.90.233.143', 'credentials', 1, '2026-09-22 17:03:11'),
 (148, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '111.90.233.143', 'credentials', 1, '2026-09-23 02:52:36'),
+(156, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '175.176.15.156', 'credentials', 1, '2026-09-27 15:41:36'),
 (122, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '175.176.15.167', 'credentials', 1, '2026-09-11 23:43:45'),
 (124, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.142', 'credentials', 1, '2026-09-13 06:30:49'),
 (118, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '216.247.89.143', 'credentials', 0, '2026-09-11 05:06:56'),
@@ -1890,6 +1913,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (116, '410a4d533a2a55a518c1fc846c0f5878376c969fbddd5f87673bbb1be50c356d', '216.247.89.143', 'access_code', 0, '2026-09-11 05:03:27'),
 (117, '410a4d533a2a55a518c1fc846c0f5878376c969fbddd5f87673bbb1be50c356d', '216.247.89.143', 'access_code', 1, '2026-09-11 05:05:47'),
 (134, '49cc25412dc0ca72440bc5eabc7f6f34b89af65e59235020da201b12faec36d4', '110.54.153.65', 'access_code', 1, '2026-09-18 08:34:00'),
+(155, '5a02841413aa17c6407fbeada1e70bb42b278aabee8d02880905b7e87ab55e0d', '175.176.15.156', 'access_code', 1, '2026-09-27 15:41:31'),
 (108, '7473dd5377c1b8a0411db9599a2f2d0202bcf1149cf66fc7e3530189a6b4c3ae', '216.247.89.229', 'access_code', 1, '2026-09-11 02:36:04'),
 (149, '7ece8521bfb9f581df63192edea6f7b800ebe20db1498ce79724341ec673d622', '49.150.33.49', 'access_code', 0, '2026-09-25 11:26:18'),
 (154, '7ece8521bfb9f581df63192edea6f7b800ebe20db1498ce79724341ec673d622', '49.150.33.49', 'access_code', 0, '2026-09-25 16:38:26'),
@@ -2000,7 +2024,8 @@ CREATE TABLE `tbl_cart` (
 --
 
 INSERT INTO `tbl_cart` (`cart_id`, `user_id`, `restaurant_id`, `product_id`, `addon_ids_json`, `combo_choice_ids_json`, `quantity`, `price_at_time`, `subtotal`, `created_at`, `updated_at`) VALUES
-(156, 82, 6, 48, '[217]', '[]', 1, 175.00, 175.00, '2026-09-26 15:45:59', '2026-09-26 15:45:59');
+(156, 82, 6, 48, '[217]', '[]', 1, 175.00, 175.00, '2026-09-26 15:45:59', '2026-09-26 15:45:59'),
+(160, 81, 6, 19, '[]', '[]', 3, 210.00, 630.00, '2026-09-27 06:14:52', '2026-09-27 06:14:52');
 
 -- --------------------------------------------------------
 
@@ -2092,7 +2117,10 @@ CREATE TABLE `tbl_delivery_assignments` (
 
 INSERT INTO `tbl_delivery_assignments` (`assignment_id`, `order_id`, `restaurant_id`, `delivery_staff_id`, `assigned_by_user_id`, `assignment_type`, `delivery_status`, `delivery_fee`, `delivery_staff_payment`, `assigned_at`, `accepted_at`, `picked_up_at`, `out_for_delivery_at`, `completed_at`, `cancelled_at`, `created_at`, `updated_at`) VALUES
 (17, 110, 8, 53, 52, 'internal', 'completed', 0.95, 0.00, '2026-09-26 01:34:47', '2026-09-26 01:34:47', '2026-09-26 01:35:02', '2026-09-26 01:35:08', '2026-09-26 01:35:27', NULL, '2026-09-25 17:34:47', '2026-09-25 17:35:27'),
-(18, 113, 6, 35, 34, 'internal', 'out_for_delivery', 70.00, 0.00, '2026-09-26 23:22:08', '2026-09-26 23:22:08', '2026-09-26 23:32:24', '2026-09-26 23:33:33', NULL, NULL, '2026-09-26 15:22:08', '2026-09-26 15:33:33');
+(18, 113, 6, 35, 34, 'internal', 'out_for_delivery', 70.00, 0.00, '2026-09-26 23:22:08', '2026-09-26 23:22:08', '2026-09-26 23:32:24', '2026-09-26 23:33:33', NULL, NULL, '2026-09-26 15:22:08', '2026-09-26 15:33:33'),
+(19, 116, 6, 33, 34, 'internal', 'completed', 70.00, 0.00, '2026-09-27 12:44:23', '2026-09-27 12:44:23', '2026-09-27 12:45:19', '2026-09-27 12:45:24', '2026-09-27 12:46:07', NULL, '2026-09-27 04:44:23', '2026-09-27 04:46:07'),
+(20, 117, 6, 33, 34, 'internal', 'completed', 70.00, 0.00, '2026-09-27 14:04:36', '2026-09-27 14:04:36', '2026-09-27 14:05:38', '2026-09-27 14:05:47', '2026-09-27 14:17:32', NULL, '2026-09-27 06:04:36', '2026-09-27 06:17:32'),
+(21, 118, 6, 33, 34, 'internal', 'accepted', 70.00, 0.00, '2026-09-27 22:56:33', '2026-09-27 22:56:33', NULL, NULL, NULL, NULL, '2026-09-27 14:56:33', '2026-09-27 14:56:33');
 
 -- --------------------------------------------------------
 
@@ -2131,7 +2159,21 @@ INSERT INTO `tbl_notification_reads` (`notification_read_id`, `log_id`, `user_id
 (113, 1850, 52, 8, '2026-09-24 12:41:19'),
 (114, 1851, 52, 8, '2026-09-24 12:41:19'),
 (115, 1852, 52, 8, '2026-09-24 12:41:19'),
-(116, 1853, 52, 8, '2026-09-24 12:41:19');
+(116, 1853, 52, 8, '2026-09-24 12:41:19'),
+(117, 1683, 34, 6, '2026-09-27 12:27:01'),
+(118, 1696, 34, 6, '2026-09-27 12:27:01'),
+(119, 1697, 34, 6, '2026-09-27 12:27:01'),
+(120, 1705, 34, 6, '2026-09-27 12:27:01'),
+(121, 1711, 34, 6, '2026-09-27 12:27:01'),
+(122, 1752, 34, 6, '2026-09-27 12:27:01'),
+(123, 1756, 34, 6, '2026-09-27 12:27:01'),
+(124, 1757, 34, 6, '2026-09-27 12:27:01'),
+(125, 1897, 34, 6, '2026-09-27 12:27:01'),
+(126, 1900, 34, 6, '2026-09-27 12:27:01'),
+(127, 1901, 34, 6, '2026-09-27 12:27:01'),
+(128, 1903, 34, 6, '2026-09-27 12:27:01'),
+(129, 1906, 34, 6, '2026-09-27 12:27:01'),
+(130, 1918, 34, 6, '2026-09-27 12:27:01');
 
 -- --------------------------------------------------------
 
@@ -2191,7 +2233,12 @@ INSERT INTO `tbl_orders` (`order_id`, `order_qr_token`, `qr_verified_at`, `qr_ex
 (111, '621731be9fe5ad68720f98c8121e10d34d10173f095bafb4fdfb1ce0865cb486', '2026-09-26 23:14:04', '2026-09-26 23:31:47', 1, 6, 34, 83, 'Jarc Criss', '+639000000000', 'dine-in', 'completed', NULL, NULL, NULL, 270.00, 270.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', 'Yjaha', '2026-09-26 15:11:47'),
 (112, 'e07a91a5d39b0116e08948b03dbecbbf814b2a788fa6ed50516705528eac82ed', '2026-09-26 23:16:31', '2026-09-26 23:36:23', 2, 6, NULL, 83, 'Ddds', '+639077777884', 'takeout', 'cancelled', 'Duplicate order', 'customer', '2026-09-26 23:16:58', 90.00, 90.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-26 15:16:23'),
 (113, '54ad9d40e7a28addf702808f83cb273bcb5e5c3a1760030a07ed7852c035c820', NULL, NULL, 3, 6, 34, 83, 'Sss', '+639000000000', 'delivery', 'out_for_delivery', NULL, NULL, NULL, 520.00, 450.00, 70.00, 'Cash on Delivery', 'cash_pending', 'San Jose Drive, Bued, City of Alaminos, Pangasinan, Philippines', '', 16.16486720, 119.98947820, '', '', '2026-09-26 15:19:46'),
-(114, '58ec479b757b37df3adf5debfe43cf2aae321c2deb6905f2e8cb2016e6411b3b', '2026-09-26 23:29:56', '2026-09-26 23:49:15', 4, 6, 34, 83, 'Elle Basila', '+639108716862', 'dine-in', 'completed', NULL, NULL, NULL, 135.00, 135.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', 'Pure Strawberry', '2026-09-26 15:29:15');
+(114, '58ec479b757b37df3adf5debfe43cf2aae321c2deb6905f2e8cb2016e6411b3b', '2026-09-26 23:29:56', '2026-09-26 23:49:15', 4, 6, 34, 83, 'Elle Basila', '+639108716862', 'dine-in', 'completed', NULL, NULL, NULL, 135.00, 135.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', 'Pure Strawberry', '2026-09-26 15:29:15'),
+(115, 'ba11c6d42c5e68bfa637d78538e55f95c0ffc88687b9cf1a1eada589114cb634', '2026-09-27 12:27:46', '2026-09-27 12:46:30', 1, 6, 34, 81, 'Russ', '+639943107866', 'dine-in', 'completed', NULL, NULL, NULL, 125.00, 125.00, 0.00, 'Cash', 'paid', '', '', NULL, NULL, '', '', '2026-09-27 04:26:30'),
+(116, '85dd0a36d369c40dd7baef2590a2c7a6e2c5f5cd6a28cd31607ed42e153ced7c', NULL, NULL, 2, 6, 34, 81, 'Russ', '+639943107866', 'delivery', 'completed', NULL, NULL, NULL, 370.00, 300.00, 70.00, 'Cash on Delivery', 'paid', 'Olongapo-Bugallon Road, Alos, City of Alaminos, Pangasinan, Philippines', '', 16.10836480, 119.96639670, '', '', '2026-09-27 04:43:08'),
+(117, '129326bab679c3636caac722fb185566b64bf0e179cf6c78c6426d0d81cf1296', NULL, NULL, 3, 6, 34, 81, 'Russ', '+639943107866', 'delivery', 'completed', NULL, NULL, NULL, 700.00, 630.00, 70.00, 'Cash on Delivery', 'paid', 'Olongapo-Bugallon Road, Alos, City of Alaminos, Pangasinan, Philippines', '', 16.10836470, 119.96639300, '', '', '2026-09-27 06:03:58'),
+(118, 'e70ca62dbed24aa4df6af104a624c00c443cef384e0138ce64e1b2ef63aa86c8', NULL, NULL, 4, 6, 34, 75, 'Cj Tamayo Porto', '+639457309228', 'delivery', 'assigned', NULL, NULL, NULL, 175.00, 105.00, 70.00, 'Cash on Delivery', 'cash_pending', 'Poblacion, Select city / municipality first, Select province / area first, Pangasinan, Philippines', '', 16.15425333, 119.98134172, '', '', '2026-09-27 14:53:30'),
+(119, 'cf416d1a22e3035e85c54b5ef9b5274df269dfc59d54ea74ef26916e52463b79', '2026-09-28 15:40:47', '2026-09-28 16:00:33', 1, 7, NULL, 75, 'Cj Tamayo Porto', '+639457309228', 'dine-in', 'cancelled', 'Incorrect order details', 'customer', '2026-09-28 15:42:14', 150.00, 150.00, 0.00, 'PayMongo QR Ph', 'cancelled', '', '', NULL, NULL, '', '', '2026-09-28 07:40:33');
 
 -- --------------------------------------------------------
 
@@ -2245,7 +2292,12 @@ INSERT INTO `tbl_order_items` (`order_item_id`, `order_id`, `product_id`, `combo
 (143, 111, 187, NULL, 3, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
 (144, 112, 187, NULL, 1, 90.00, 90.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Medium', '', '[]', 'No Add-on', '[]'),
 (145, 113, 188, NULL, 3, 150.00, 100.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Large', '', '[]', 'Oatmik, Condensed', '[221,223]'),
-(146, 114, 188, NULL, 1, 135.00, 100.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Large', '', '[]', 'Oatmik', '[221]');
+(146, 114, 188, NULL, 1, 135.00, 100.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Large', '', '[]', 'Oatmik', '[221]'),
+(147, 115, 50, NULL, 1, 125.00, 125.00, 'none', 0.00, 0.00, 0, 'Tuna Sandwich', '', '', '[]', 'No Add-on', '[]'),
+(148, 116, 184, NULL, 2, 150.00, 100.00, 'none', 0.00, 0.00, 0, 'Green Apple Yogurt', 'Large', '', '[]', 'Oatmik, Condensed', '[221,223]'),
+(149, 117, 19, NULL, 3, 210.00, 210.00, 'none', 0.00, 0.00, 0, 'Teriyaki', '6pcs', '', '[]', 'No Add-on', '[]'),
+(150, 118, 187, NULL, 1, 105.00, 90.00, 'none', 0.00, 0.00, 0, 'Strawberry Yogurt', 'Medium', '', '[]', 'Condensed', '[223]'),
+(151, 119, 306, NULL, 2, 75.00, 75.00, 'none', 0.00, 0.00, 0, 'Pure Lemonade', '16oz', '', '[]', 'No Add-on', '[]');
 
 -- --------------------------------------------------------
 
@@ -2317,7 +2369,7 @@ INSERT INTO `tbl_owner_trusted_devices` (`trusted_device_id`, `owner_id`, `selec
 (94, 78, '0de21099b5c75f6edea1d28b573695a5', '17f4c943203e8d2742100b6789936b31c34957eeb1941d132a491941b6a8d703', '2026-10-25 21:42:49', '2026-09-25 21:42:49', NULL),
 (99, 30, 'a7fa511657cd09c25a8f6560f715a33f', '29ea87eb4696ff80062f9eba822aed5c0da2ed42259e722cead669b1d9c5c7a8', '2026-10-26 20:17:39', '2026-09-26 20:17:39', NULL),
 (100, 29, '6b55e59abeb8524982bb5204eacc7756', 'a5a4e94a0d99a59d95c530c7da4129c64080244b03092d809b08f1188fb6fb26', '2026-10-26 22:57:50', '2026-09-26 22:57:50', '2026-09-26 23:10:09'),
-(101, 31, '9d129ffaffa56ed4e123be10aa940394', 'a814d6a4b8fecf33ba9b3b84342e7c55e9536a7ad93e1c37fb086d353ba6fc10', '2026-10-27 11:03:06', '2026-09-27 11:03:06', NULL);
+(103, 29, 'e458f188b4da9572e08574f83abe039f', '157e4efa1bf05ea2fcb27ce344b1564fd7fb1e2a04047ce5cc609612f70007e0', '2026-10-28 15:36:31', '2026-09-28 15:36:31', '2026-09-28 15:38:46');
 
 -- --------------------------------------------------------
 
@@ -2450,6 +2502,13 @@ CREATE TABLE `tbl_payments` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+--
+-- Dumping data for table `tbl_payments`
+--
+
+INSERT INTO `tbl_payments` (`payment_id`, `order_id`, `restaurant_id`, `provider`, `payment_method_type`, `payment_status`, `amount`, `currency`, `reference_number`, `checkout_session_id`, `provider_payment_id`, `paid_at`, `failed_at`, `cancelled_at`, `refunded_at`, `created_at`, `updated_at`) VALUES
+(21, 119, 7, 'paymongo', 'qrph', 'cancelled', 150.00, 'PHP', 'FC-7-119-L-1-fdacf9d69a', 'cs_1ae03fb7c114d313b3a8dc27', NULL, NULL, NULL, '2026-09-28 15:42:14', NULL, '2026-09-28 07:40:54', '2026-09-28 07:42:14');
+
 -- --------------------------------------------------------
 
 --
@@ -2486,7 +2545,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (16, 6, 'Sweet and Spicy', 'Chicken Wings', NULL, 'menu_item', '6pcs', 210.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_a083390254a66dda2dde3638e6d2a69d.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (17, 6, 'Teriyaki', 'Chicken Wings', '2 pcs w/ Rice', 'menu_item', 'Solo Meal', 105.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_463c96ed322074011ce26ae57532e145.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (18, 6, 'Teriyaki', 'Chicken Wings', NULL, 'menu_item', '4pcs', 140.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_81231d0024a6dd6a3c9f16df5085f9b8.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(19, 6, 'Teriyaki', 'Chicken Wings', NULL, 'menu_item', '6pcs', 210.00, 19, 'Available', '/uploads/product_images/restaurant_6/product_f862da8b49766e0af3b1076c47d623ca.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(19, 6, 'Teriyaki', 'Chicken Wings', NULL, 'menu_item', '6pcs', 210.00, 16, 'Available', '/uploads/product_images/restaurant_6/product_f862da8b49766e0af3b1076c47d623ca.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (20, 6, 'Honey BBQ', 'Chicken Wings', '2 pcs w/ Rice', 'menu_item', 'Solo Meal', 105.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_b100dfcbfd718af23312d41a67a81d3a.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (21, 6, 'Honey BBQ', 'Chicken Wings', NULL, 'menu_item', '4 pcs', 140.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_2d889623a3db2963d3b5f67261b4d029.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (22, 6, 'Honey BBQ', 'Chicken Wings', NULL, 'menu_item', '6 pcs', 210.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_265a6129ae09d3f244d1b64c054622d6.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -2517,7 +2576,7 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (47, 6, 'Double Cheese Burger', 'Burger Series', NULL, 'menu_item', '', 160.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_fcd42097d899c37dcf2b001eb6301198.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (48, 6, 'Meaty Burger', 'Burger Series', NULL, 'menu_item', '', 165.00, 19, 'Available', '/uploads/product_images/restaurant_6/product_c11d051f40d3bfcfcc141058fe1bfb23.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (49, 6, 'Drop Supreme Burger', 'Burger Series', NULL, 'menu_item', '', 175.00, 18, 'Available', '/uploads/product_images/restaurant_6/product_380a54791c196b1a3ce916d89eec7c65.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(50, 6, 'Tuna Sandwich', 'Sandwiches', NULL, 'menu_item', '', 125.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_42c664bd9bfac209de1df049adce448d.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(50, 6, 'Tuna Sandwich', 'Sandwiches', NULL, 'menu_item', '', 125.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_42c664bd9bfac209de1df049adce448d.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (51, 6, 'Clubhouse Sandwich', 'Sandwiches', NULL, 'menu_item', '', 140.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_9b66b75be79c930a5174806d7aabb6eb.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (52, 6, 'Siomai Rice', 'Budget Meal', NULL, 'menu_item', '', 59.00, 20, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_e25a19f94617191938e48a1adb910372.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (53, 6, 'Shanghai Rice', 'Budget Meal', NULL, 'menu_item', '', 59.00, 19, 'Available', '/FoodConnect/uploads/product_images/restaurant_6/product_67a63daea4c8b2213e144ab845e212ca.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -2647,10 +2706,10 @@ INSERT INTO `tbl_products` (`product_id`, `restaurant_id`, `product_name`, `cate
 (181, 6, 'Lychee Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Medium', 90.00, 19, 'Available', '/uploads/product_images/restaurant_6/product_e4d2d7aeb35b21a4ced53fef6f4bbdae.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (182, 6, 'Lychee Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_8f1ea0eb062b04472909a5b74a645c39.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (183, 6, 'Green Apple Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Medium', 90.00, 18, 'Available', '/uploads/product_images/restaurant_6/product_f7cd8da6ed74cd808bbbcf945b6d9e48.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(184, 6, 'Green Apple Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_7f59fa5bdd531ce95ef1f15fa1092415.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(184, 6, 'Green Apple Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Large', 100.00, 18, 'Available', '/uploads/product_images/restaurant_6/product_7f59fa5bdd531ce95ef1f15fa1092415.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (185, 6, 'Blueberry Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Medium', 90.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_63c936fedbe49bc166b0323eab0e4f90.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (186, 6, 'Blueberry Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Large', 100.00, 20, 'Available', '/uploads/product_images/restaurant_6/product_d2fecbec872bde1abfc68968d414e8ca.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
-(187, 6, 'Strawberry Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Medium', 90.00, 13, 'Available', '/uploads/product_images/restaurant_6/product_9f48e8c9242b451ae7cc2cede3657692.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
+(187, 6, 'Strawberry Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Medium', 90.00, 12, 'Available', '/uploads/product_images/restaurant_6/product_9f48e8c9242b451ae7cc2cede3657692.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (188, 6, 'Strawberry Yogurt', 'Drinks', 'Yogurt Series', 'menu_item', 'Large', 100.00, 8, 'Available', '/uploads/product_images/restaurant_6/product_b552de4cc6b018dd16650b24f4d8ad02.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (209, 7, 'Pinapaitan', 'Kambing', NULL, 'menu_item', '', 180.00, 20, 'Available', '/uploads/product_images/restaurant_7/product_e2fc6944c805c4d7c89eb97d1fd33f8b.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
 (210, 7, 'Sinampalukan', 'Kambing', NULL, 'menu_item', '', 180.00, 20, 'Available', '/uploads/product_images/restaurant_7/product_c4c4567505dcabe3d38325f85689c96c.jpg', 'none', 0.00, 'permanent', NULL, NULL, 'Inactive'),
@@ -3536,44 +3595,61 @@ INSERT INTO `tbl_rate_limits` (`rate_limit_key`, `scope_name`, `hits`, `window_s
 ('13406714f4c72ca662ec6bc16ae6b6dea3938561665ba784b28f5d976cb43ee3', 'customer-signup', 1, '2026-09-26 22:24:33', NULL, '2026-09-26 22:24:33'),
 ('1bb6784c9bd3e6d1d082b7729f7e66d0abcc9f1f561a638ac11ea4ce8d2654e5', 'owner-login', 1, '2026-09-26 00:35:12', NULL, '2026-09-26 00:35:12'),
 ('1c38600ce1643e8d8eae36946d05b4af0e702d4735de20a7e298661183ae474b', 'cashier-qr-scan', 1, '2026-09-26 23:29:56', NULL, '2026-09-26 23:29:56'),
+('1c47bdc89a3d10313f8027fca49d6935991edd2d496a80f2ea1db89b43d432cf', 'staff-login', 1, '2026-09-27 14:14:02', NULL, '2026-09-27 14:14:02'),
+('1fe0c23a866121cd767f22acd67e2fcc12c0da5c3666b5bf28f437de265257e6', 'staff-login', 1, '2026-09-27 14:02:02', NULL, '2026-09-27 14:02:02'),
 ('202aef0d1b77ddfe9f68c3e68ba4d49adab35a0852133f224eebbbe3914c4e42', 'admin-owner-password-reset-review', 1, '2026-09-25 21:37:59', NULL, '2026-09-25 21:37:59'),
 ('220b3ef1a483af7d5184424f96937e764d9ac61091689b44fd3108f7b76a5ddd', 'staff-login', 4, '2026-09-26 23:36:45', NULL, '2026-09-26 23:37:32'),
 ('2c50fe81d756c790485d7e3d65f9b701decb71a6deb4b6deb8962f0aeadaadcc', 'owner-login', 1, '2026-09-26 00:37:05', NULL, '2026-09-26 00:37:05'),
 ('2e61d8804bb927182b43ac7b8217054a0b1b2fc80db50f4a14716f096d1caba7', 'staff-access-code', 1, '2026-09-26 23:16:17', NULL, '2026-09-26 23:16:17'),
 ('33837078e85da2bb4e6cdb45417f483f58637ff47e5451a081fabfed6338cc2f', 'owner-password-reset-status', 7, '2026-09-25 21:37:23', NULL, '2026-09-25 21:38:35'),
+('33f57a6bf8067586ecc830680e0ad0344c7ad987f3bfd8dd20a9a109c368d361', 'customer-checkout', 1, '2026-09-27 14:03:58', NULL, '2026-09-27 14:03:58'),
 ('34abfbc3db050a324627cff4fef08e0a62cdab6c90686c53299b23759d0de98e', 'staff-login', 1, '2026-09-26 19:50:41', NULL, '2026-09-26 19:50:41'),
 ('352480f60363bba99c1e87786be0d867a4118871fc23fbe33eca9c5c947bf597', 'staff-login', 1, '2026-09-26 23:37:45', NULL, '2026-09-26 23:37:45'),
 ('36e75d5e47dc36b6ad710e46a76049d957f2bb780796f068d8870611c3a17186', 'owner-login', 2, '2026-09-26 22:57:23', NULL, '2026-09-26 23:10:09'),
+('43eed84813152f861538d20ecb0307caa9f45de2afd3d01315128a08411c041e', 'customer-order-cancel', 1, '2026-09-28 15:42:12', NULL, '2026-09-28 15:42:12'),
+('527609246a4900589419439771c8a049fb1b60b51f45ab8721980448e577e774', 'cashier-qr-scan', 1, '2026-09-28 15:40:47', NULL, '2026-09-28 15:40:47'),
 ('58918f31738712bf3182d112b4568b5f47126e02d5cdafa8905027af049a418d', 'staff-login', 1, '2026-09-26 23:14:55', NULL, '2026-09-26 23:14:55'),
+('5e23f1fc4291e2716ca91fe77e48d2c4b6ad3faea0124dfb40b18267ac23389b', 'staff-login', 1, '2026-09-27 23:38:06', NULL, '2026-09-27 23:38:06'),
 ('650d834288d5bb1ca2d196c05567fd5f9fae87939c74a6e74e2df1eb928bfba6', 'customer-login', 3, '2026-09-26 22:35:09', NULL, '2026-09-26 22:49:39'),
-('6786419412e563cb81ce2c2aaf5cd1557c69d97522a8beab85aa0395b04479e9', 'customer-login', 1, '2026-09-26 01:43:56', NULL, '2026-09-26 01:43:56'),
+('6786419412e563cb81ce2c2aaf5cd1557c69d97522a8beab85aa0395b04479e9', 'customer-login', 3, '2026-09-28 15:31:27', NULL, '2026-09-28 15:41:06'),
+('71e0eb2a1c8f129a6ffc03af80fc0ae39d2a13aa086a0b67f0dd82f2b744ded1', 'customer-checkout', 1, '2026-09-27 22:53:30', NULL, '2026-09-27 22:53:30'),
 ('78c7504fcbfefbbcb7a230b6da7e737f8602f56ca4f9807b3042c7379b0a54f4', 'customer-order-cancel', 1, '2026-09-26 23:16:58', NULL, '2026-09-26 23:16:58'),
+('79323937f57069b9bd0ef49275da91057f612740758a34500ee723f9c75cea2e', 'staff-access-code', 1, '2026-09-27 14:12:51', NULL, '2026-09-27 14:12:51'),
+('7b08d0610cc2d328c21ee514df3842cd29e1b173b9d772e5d1a6377947f67f7c', 'cashier-qr-scan', 1, '2026-09-27 12:27:46', NULL, '2026-09-27 12:27:46'),
+('7dc5da5c30e184b888895e3afd8c45c1ecb1cf32ced72ae52428ded9bba31887', 'staff-login', 1, '2026-09-27 23:40:33', NULL, '2026-09-27 23:40:33'),
 ('8632f4885a0e6d7b102f0605b0189676eb95bc29283758b7ebeac5f07b54ebf6', 'staff-owner-password-reset-request', 1, '2026-09-26 00:59:39', NULL, '2026-09-26 00:59:39'),
 ('89795194c1a9a40edb2df4435ca53e0d67b04b9e73c30e846a370cb6ff46a217', 'staff-login', 2, '2026-09-26 23:13:56', NULL, '2026-09-26 23:15:43'),
+('8bf6f207690d70e7f3e77591aa9c37bc736af4463ee4ae234ae1118a4228ec0f', 'staff-login', 1, '2026-09-27 13:59:47', NULL, '2026-09-27 13:59:47'),
 ('8d1319ce0f8cfeeb8b20220a283a2a7260cda15c937edff4ab4e1b8e64c93ae2', 'owner-password-reset-request', 1, '2026-09-25 21:37:20', NULL, '2026-09-25 21:37:20'),
 ('8f26cbe1dc918d32a40fb3073e962092be60b944d4593c1627be03046837024a', 'staff-login', 2, '2026-09-26 01:33:41', NULL, '2026-09-26 01:33:56'),
 ('93984ca86b3cf824f8caab9393c8e441ebd0e825b3b8c2e0b1cb5f6ad6c60bc9', 'owner-login', 1, '2026-09-26 20:17:02', NULL, '2026-09-26 20:17:02'),
-('9740049a2116dd444c97f9a64cae7a93bf6740f1be75971ea65559bb4af1b5e9', 'owner-login', 1, '2026-09-26 23:04:50', NULL, '2026-09-26 23:04:50'),
+('9740049a2116dd444c97f9a64cae7a93bf6740f1be75971ea65559bb4af1b5e9', 'owner-login', 1, '2026-09-27 23:26:39', NULL, '2026-09-27 23:26:39'),
 ('9aed535b482e4385821cbdd5c27d4020db14873fb71e8e033345934325e03405', 'owner-login', 2, '2026-09-26 22:45:05', NULL, '2026-09-26 22:45:28'),
 ('9f181c2f4085dbfb8f235871d0baba781336de6f95459130a7dc65eac6096ae2', 'customer-login', 1, '2026-09-26 22:23:34', NULL, '2026-09-26 22:23:34'),
 ('9f1af6910ce1990a174a77de573880a127dd04f11997a2abff97b64d9c961bfc', 'cashier-qr-scan', 1, '2026-09-26 01:06:13', NULL, '2026-09-26 01:06:13'),
-('ac56519ffc764f0a5e817cdb30653f0b2a4e96b6b9851652b86dde86c6f994b8', 'customer-login', 1, '2026-09-27 11:03:54', NULL, '2026-09-27 11:03:54'),
-('ae85a6a89a95ccf70a516733a5855c49556c033013681c3536ace0fa722e47c5', 'customer-login', 1, '2026-09-27 00:57:40', NULL, '2026-09-27 00:57:40'),
+('ac56519ffc764f0a5e817cdb30653f0b2a4e96b6b9851652b86dde86c6f994b8', 'customer-login', 2, '2026-09-27 22:49:52', NULL, '2026-09-27 22:56:47'),
+('ae85a6a89a95ccf70a516733a5855c49556c033013681c3536ace0fa722e47c5', 'customer-login', 1, '2026-09-27 13:54:17', NULL, '2026-09-27 13:54:17'),
 ('b6745b6b951888cafe21a80ba788bda068d40b29884803a3d8f2b6f58a255ce6', 'owner-login', 1, '2026-09-26 23:34:04', NULL, '2026-09-26 23:34:04'),
-('b8a4c5f2aa87932b5d8d8a47d0d8fa87bd83781c44e33041a0e30f5dac4107e0', 'owner-login', 1, '2026-09-27 11:02:32', NULL, '2026-09-27 11:02:32'),
+('b8a4c5f2aa87932b5d8d8a47d0d8fa87bd83781c44e33041a0e30f5dac4107e0', 'owner-login', 1, '2026-09-27 23:26:23', NULL, '2026-09-27 23:26:23'),
 ('b91c274feec29136df6960e31f80f620b93d65264cf4761a6866cf8c4c85cbc5', 'partner-registration', 1, '2026-09-25 20:42:59', NULL, '2026-09-25 20:42:59'),
 ('b9250e5f75028b1b1a3f5c320aad0d222e87ce40ef3b56d104df01f7fb015fc1', 'staff-access-code', 1, '2026-09-26 19:49:45', NULL, '2026-09-26 19:49:45'),
 ('bf8e6f08d4cae68d2e234c0466711423f2d84aa82e3cf0bdbeee59676562e42b', 'customer-signup', 1, '2026-09-26 22:33:36', NULL, '2026-09-26 22:33:36'),
+('c1056a5cef7ffcdb83dde4ef93a8668994370554626f97b6e472d588a68f0e3b', 'paymongo-checkout-create', 2, '2026-09-28 15:40:53', NULL, '2026-09-28 15:41:17'),
+('c1550faf373de895d452fb2ff160c266fefa0d942827c0077ab3f0bacf0e5a26', 'staff-access-code', 2, '2026-09-27 23:38:03', NULL, '2026-09-27 23:40:30'),
 ('c94d315e900bba3fbec7e322a2227a782a2b75666a4145e79ce36d8ffaabff8b', 'owner-login', 6, '2026-09-25 21:38:46', NULL, '2026-09-25 21:43:31'),
+('d227bbc0167d881a4bb23f15bc5a1e23e84f300771c30107952657d304fd138d', 'staff-login', 5, '2026-09-28 15:38:02', NULL, '2026-09-28 15:39:33'),
+('d3194b54f83e7a6167ff4328cada41d4e075c7f8e84d5ba68ef3acb02194ae55', 'staff-access-code', 3, '2026-09-28 15:35:58', NULL, '2026-09-28 15:39:27'),
 ('d453efe08a96dc4da5d119da32069fa55655acc0c11e95ac6cce8edff19af8c9', 'staff-login', 1, '2026-09-26 23:16:37', NULL, '2026-09-26 23:16:37'),
-('d5135423ed7366bf3c1ab80a87296cf4a3200b152086565ffe328e141b4b5522', 'customer-checkout', 1, '2026-09-26 01:32:11', NULL, '2026-09-26 01:32:11'),
+('d5135423ed7366bf3c1ab80a87296cf4a3200b152086565ffe328e141b4b5522', 'customer-checkout', 1, '2026-09-28 15:40:33', NULL, '2026-09-28 15:40:33'),
 ('d5807b1dcc958d75cc9b8441842c8a44e86cb8e37280209d5cf78edbcae8f8e8', 'staff-access-code', 1, '2026-09-26 23:31:32', NULL, '2026-09-26 23:31:32'),
 ('dd831d08662a4e2d1d278681d42f767b0a3302b242b83c6e5e3431d243235bce', 'customer-signup', 1, '2026-09-26 19:46:20', NULL, '2026-09-26 19:46:20'),
 ('debbe9edb3b60b36419fd1a2339b4709221b08f0e9ef4bc9bfe31c5c293477ce', 'customer-login', 1, '2026-09-26 23:45:12', NULL, '2026-09-26 23:45:12'),
 ('ec8d3e0ff90493b93c5ce1f3bdcc4a40daf0c6582b9ad29bb89db4d80c58abc2', 'customer-checkout', 1, '2026-09-26 23:29:15', NULL, '2026-09-26 23:29:15'),
-('ef67cee88351675877d084acd27294a4d9e662bec17e6229303f836c44ed2ccc', 'staff-access-code', 1, '2026-09-26 23:36:22', NULL, '2026-09-26 23:36:22'),
+('ef67cee88351675877d084acd27294a4d9e662bec17e6229303f836c44ed2ccc', 'staff-access-code', 1, '2026-09-27 13:59:34', NULL, '2026-09-27 13:59:34'),
 ('ef9e7d51ebd199ba7b1623c2b323c11b6d151e0bbf87bfaeea69225bda7052af', 'owner-temporary-password-change', 1, '2026-09-25 21:39:36', NULL, '2026-09-25 21:39:36'),
-('fd31687068c776ed6549a91cd17e40b498c6fa7f2e007e08066ea0175a0037f6', 'staff-login', 1, '2026-09-26 23:13:29', NULL, '2026-09-26 23:13:29');
+('f331210a86342f366b1640f0b2c567e7e519a642af87926222967c95eebb4394', 'owner-login', 2, '2026-09-28 15:36:14', NULL, '2026-09-28 15:38:45'),
+('fd31687068c776ed6549a91cd17e40b498c6fa7f2e007e08066ea0175a0037f6', 'staff-login', 1, '2026-09-26 23:13:29', NULL, '2026-09-26 23:13:29'),
+('fea4e9e545e8fab042aac48c0bee3063bd91d8337f07ff137e6a5692622c33a4', 'staff-owner-password-reset-request', 1, '2026-09-28 15:38:34', NULL, '2026-09-28 15:38:34');
 
 -- --------------------------------------------------------
 
@@ -3626,7 +3702,15 @@ INSERT INTO `tbl_receipt_print_jobs` (`print_job_id`, `order_id`, `restaurant_id
 (12790, 113, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-26 23:19:47', '2026-09-26 23:19:53', '2026-09-26 23:19:46'),
 (12791, 113, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-26 23:19:56', '2026-09-26 23:19:59', '2026-09-26 23:19:46'),
 (12985, 114, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-26 23:29:57', '2026-09-26 23:30:01', '2026-09-26 23:29:56'),
-(12986, 114, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-26 23:30:03', '2026-09-26 23:30:22', '2026-09-26 23:29:56');
+(12986, 114, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-26 23:30:03', '2026-09-26 23:30:22', '2026-09-26 23:29:56'),
+(13086, 115, 6, 'customer_receipt', 'qr_verified', 'processed', 34, '2026-09-27 12:27:49', '2026-09-27 12:27:56', '2026-09-27 12:27:46'),
+(13087, 115, 6, 'kitchen_ticket', 'qr_verified', 'processed', 34, '2026-09-27 12:27:58', '2026-09-27 12:28:02', '2026-09-27 12:27:46'),
+(13175, 116, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-27 12:43:40', '2026-09-27 12:43:45', '2026-09-27 12:43:08'),
+(13176, 116, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-27 12:43:46', '2026-09-27 12:43:48', '2026-09-27 12:43:08'),
+(13232, 117, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-27 14:03:59', '2026-09-27 14:04:04', '2026-09-27 14:03:58'),
+(13233, 117, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-27 14:04:07', '2026-09-27 14:04:10', '2026-09-27 14:03:58'),
+(13380, 118, 6, 'customer_receipt', 'delivery_order', 'processed', 34, '2026-09-27 22:55:11', '2026-09-27 22:55:14', '2026-09-27 22:53:30'),
+(13381, 118, 6, 'kitchen_ticket', 'delivery_order', 'processed', 34, '2026-09-27 22:55:16', '2026-09-27 22:55:18', '2026-09-27 22:53:30');
 
 -- --------------------------------------------------------
 
@@ -3660,7 +3744,7 @@ INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `description`, `logo_pat
 (6, 'Drop By Cafe', '?? All Day Breakfast & Pasta\n?? Coffee & Non-Coffee Drinks\n? Snacks and Pastries\n?? Air-Conditioned Area\n? Pet-Friendly Cafe\n? PS4 and Board Games\n?Books Collections\n? Free Wi-Fi\n?? Free Parking\n? Dine In / Take Out / Delivery/ Pick-Up', 'uploads/restaurant_logos/owner_27/restaurant_logo_20260921_231318_36f66fad165b317e.png', '', 'Sabaro, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639617879757', 'Mon-Sun 9:00 AM-11:59 PM', 70.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 27, 'FC-AE5A-8952', 1, 'Visible'),
 (7, 'Jai\'s Grill and Resto', 'We are open for Dine-in, Take-out, Deliveries and Reservations.', 'uploads/restaurant_logos/owner_29/restaurant_logo_20260921_232034_d68f2914ccdac348.png', '', 'EJR Building, Marcos Avenue, Palamis, City of Alaminos, Pangasinan, Philippines', '+639273980481', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 29, 'FC-113A-4FB3', 1, 'Visible'),
 (8, 'Alon\'s Cafe Alaminos', 'Japanese-Korean Cafe & Restaurant', 'uploads/restaurant_logos/owner_30/restaurant_logo_20260921_232940_68c3578a029a7700.png', '', 'Ground floor, Davros Complex, M. Rabago St., San Jose Drive, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639165843190', 'Mon-Fri 8:00 AM-11:59 PM; Sat 12:15 AM-8:59 PM; Sun 8:00 AM-11:59 PM', 0.95, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 30, 'FC-C0F2-32E5', 1, 'Visible'),
-(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260921_232457_fa94daad8ef06bdb.png', 'uploads/restaurant_banners/owner_31/restaurant_banner_20260927_110338_b7c704b19ee8396c.jpg', 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 31, 'FC-63BB-0E8C', 1, 'Visible'),
+(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260921_232457_fa94daad8ef06bdb.png', 'uploads/restaurant_banners/owner_31/restaurant_banner_20260927_112515_f9a3bb43549dfe49.jpg', 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 31, 'FC-63BB-0E8C', 1, 'Visible'),
 (15, 'Ian specialty', 'Masarap to', 'uploads/restaurant_logos/owner_78/restaurant_logo_20260925_204858_d028fbcbacdcd987.jpg', NULL, '......., Bolaney, City of Alaminos, Pangasinan, Philippines, 2404', '+639475623488', 'Mon 7:00 AM-10:00 PM; Tue-Fri 8:00 AM-8:00 PM; Sat-Sun Closed', 50.00, '[\"dine-in\",\"takeout\",\"delivery\"]', 'Closed', 78, 'E6235A324171', 1, 'Hidden');
 
 -- --------------------------------------------------------
@@ -3772,13 +3856,13 @@ INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `first_name`, `midd
 (52, 8, 'cashier', 'test', '', 'Cashier', NULL, 'testcashier@gmail.com', '+639418773819', 'Poblacion, Bayaoas, Aguilar, Pangasinan, Philippines', '$2y$10$YG1dfCkb93SUVIPf9QzZZ.fcT24HoNe6L9IZkcAdUvnEkS7bYVq5m', 0, 1, '2026-09-14 15:08:38', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (53, 8, 'delivery_staff', 'test', '', 'Driver', NULL, 'testdriver@gmail.com', '+639654487646', 'Banao, Bacacay, Albay, Philippines', '$2y$10$7rASFR/9CJ8cOhCNbt37t.KR4wO9PMIe39TCrGTb06G4YtrUvcVqG', 0, 1, '2026-09-14 15:09:29', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (55, NULL, 'delivery_staff', 'Jarc', '', 'Criss', NULL, 'jarc@gmail.com', '+639123456789', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$RWOvxDOhZZKrd5DWvUPsleLGsLvhsuLRKILzMLWXYPZibPLrzE0ty', 1, 1, '2026-09-15 04:26:26', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(61, 7, 'cashier', 'text', 'cashier', '1234', NULL, 'ofeliavaldez@gmail.com', '+639464469494', '123, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$lq.Cq3NACvBYcUyItTpNZOG5V9djFsrD/e0zvwsmxRmR2/He/LFya', 1, 1, '2026-09-18 08:06:29', NULL, NULL, NULL, NULL, 1, NULL, NULL),
+(61, 7, 'cashier', 'text', 'cashier', '1234', NULL, 'ofeliavaldez@gmail.com', '+639464469494', '123, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$7UMIi.A/JtA.TgUheRJlTuRSFfm523M2CNSJvsP286ph0qZFrl77C', 0, 1, '2026-09-18 08:06:29', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (75, NULL, 'customer', 'Cj', '', 'Porto', 'james', 'jameslee050505051@gmail.com', '+639090421394', 'Bao-yan, Boliney, Abra, Philippines', '$2y$10$BBCoXtadZvUCdr0qEfi/0ejVK3RXQsX5OauMuAeh0HR18zo/tqeaq', 0, 1, '2026-09-23 14:58:43', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (77, NULL, 'customer', 'FATIMA', '', 'GATCHALIAN', 'amitaf', 'gwc.faculty.gatchalian@gmail.com', '+639073634200', NULL, '$2y$10$DS8sqVdqojDuzVZ9StGsFO6e3sMfNqXwhtcjzuj9HIQ.Ke4yzCJbi', 0, 1, '2026-09-24 10:14:48', '$2y$10$rPoXE5wrWpvqLj/mbt3n3uND6YtP7iFSuGYl9cenSq5hhcEB5ACOa', '2026-10-24 20:55:35', NULL, NULL, 1, NULL, NULL),
 (78, 15, 'owner', 'Ian', '', 'Cruz', NULL, 'ianc18864@gmail.com', '+639475623488', NULL, '$2y$10$7JXO05xPKgrlX.lnHKC6O.rgzZ5NTAZveyjLAe4fnLmZM75qpWpd2', 0, 1, '2026-09-25 12:42:59', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (79, 15, 'cashier', 'Aso', '', 'Killer', NULL, 'ianreigh341@gmail.com', '+639475623488', '......., Bolaney, City of Alaminos, Pangasinan, Philippines, Bolaney, City of Alaminos, Pangasinan, Philippines', '$2y$10$BJFbxi8EbMq5/kESsxDicOSAiRH0u3C9sC2Xv1TgtxnH6FsGesoJO', 1, 1, '2026-09-25 13:06:26', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (80, 15, 'delivery_staff', 'Dog', '', 'Finder', NULL, 'reighdelacruz69@gmail.com', '+639475623488', '', '$2y$10$mCg2WM9vJncnqDuQ9TMdwu4w3DglqjzUmigVhIK1MiOLe42fuKXly', 1, 1, '2026-09-25 13:13:55', NULL, NULL, NULL, NULL, 1, NULL, NULL),
-(81, NULL, 'customer', 'Russ', '', 'Bangal', 'russpogi', 'rjareylebangal@gmail.com', '+639995188492', NULL, '$2y$10$3oED9oiYc03ys1wvzdtVAuRTX.lqhn/AsOREVm3KxRQc7UvtgrE2W', 0, 1, '2026-09-26 11:46:20', '$2y$10$nLPo5JQaUyVxbewG0aJhlealZH9KTMLmUmMUekqJVGJ0Da5ZNSycS', '2026-10-27 00:57:40', NULL, NULL, 1, NULL, NULL),
+(81, NULL, 'customer', 'Russ', '', 'Bangal', 'russpogi', 'rjareylebangal@gmail.com', '+639995188492', NULL, '$2y$10$3oED9oiYc03ys1wvzdtVAuRTX.lqhn/AsOREVm3KxRQc7UvtgrE2W', 0, 1, '2026-09-26 11:46:20', '$2y$10$wFS.tLytVGQa4nu7EO.mAuuACplZMACbX0x5I9nhaCsYpBBbxVBH.', '2026-10-27 13:54:17', NULL, NULL, 1, NULL, NULL),
 (82, NULL, 'customer', 'Ke Ann', 'Ann', 'Recepcion', 'keann', 'recepcionkeann@gmail.com', '+639123456789', NULL, '$2y$10$U2fZZXQQ7DeWUCFtupZ9Au9h6mnkFhhlDTNaI74Nh4rfdDKCHBuTO', 0, 1, '2026-09-26 14:24:33', NULL, NULL, NULL, NULL, 1, NULL, NULL),
 (83, NULL, 'customer', 'Jarc', 'kriss', 'Criss', 'jc13', 'jarccriss@gmail.com', '+639000000000', 'San Jose Drive, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$mnBeXt4zagpmUgMsjOK5U.tBlu/wvaJYhra2ugimoQ5vlvZbVS0im', 0, 1, '2026-09-26 14:33:36', NULL, NULL, NULL, NULL, 1, NULL, NULL);
 
@@ -4022,7 +4106,7 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1917;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1939;
 
 --
 -- AUTO_INCREMENT for table `tbl_address_cache`
@@ -4034,13 +4118,13 @@ ALTER TABLE `tbl_address_cache`
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
 --
 ALTER TABLE `tbl_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
 
 --
 -- AUTO_INCREMENT for table `tbl_combos`
@@ -4070,25 +4154,25 @@ ALTER TABLE `tbl_combo_items`
 -- AUTO_INCREMENT for table `tbl_delivery_assignments`
 --
 ALTER TABLE `tbl_delivery_assignments`
-  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `assignment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `tbl_notification_reads`
 --
 ALTER TABLE `tbl_notification_reads`
-  MODIFY `notification_read_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `notification_read_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `tbl_order_items`
 --
 ALTER TABLE `tbl_order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=147;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_password_reset_requests`
@@ -4100,7 +4184,7 @@ ALTER TABLE `tbl_owner_password_reset_requests`
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
 --
 ALTER TABLE `tbl_owner_trusted_devices`
-  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `trusted_device_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `tbl_partner_applications`
@@ -4124,7 +4208,7 @@ ALTER TABLE `tbl_partner_verification_resend_requests`
 -- AUTO_INCREMENT for table `tbl_payments`
 --
 ALTER TABLE `tbl_payments`
-  MODIFY `payment_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `payment_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `tbl_products`
@@ -4142,7 +4226,7 @@ ALTER TABLE `tbl_product_addon_links`
 -- AUTO_INCREMENT for table `tbl_receipt_print_jobs`
 --
 ALTER TABLE `tbl_receipt_print_jobs`
-  MODIFY `print_job_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13010;
+  MODIFY `print_job_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13456;
 
 --
 -- AUTO_INCREMENT for table `tbl_restaurants`

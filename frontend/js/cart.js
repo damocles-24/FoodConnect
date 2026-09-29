@@ -3474,14 +3474,67 @@ const addressInput =
     ).addTo(deliveryLocationMap);
 
     deliveryLocationMap.on(
-        "click",
-        (event) => {
-            setDeliveryLocation(
-                event.latlng.lat,
-                event.latlng.lng
+    "click",
+    async (event) => {
+
+        const latitude = event.latlng.lat;
+        const longitude = event.latlng.lng;
+
+        setDeliveryLocation(
+            latitude,
+            longitude
+        );
+
+        try {
+
+            const data =
+                await reverseGeocodeDeliveryLocation(
+                    latitude,
+                    longitude
+                );
+
+            const location =
+                data.location &&
+                typeof data.location === "object"
+                    ? data.location
+                    : {};
+
+            const formattedAddress =
+                String(
+                    location.display_name || ""
+                ).trim();
+
+            const addressInput =
+                document.getElementById("address");
+
+            if (
+                addressInput &&
+                formattedAddress
+            ) {
+                addressInput.value =
+                    formattedAddress;
+
+                addressInput.dispatchEvent(
+                    new Event("input", {
+                        bubbles: true
+                    })
+                );
+
+                addressInput.dispatchEvent(
+                    new Event("change", {
+                        bubbles: true
+                    })
+                );
+            }
+
+        } catch(error) {
+            console.error(
+                "Manual pin reverse geocode error:",
+                error
             );
         }
-    );
+    }
+);
 
     currentLocationButton?.addEventListener(
         "click",
