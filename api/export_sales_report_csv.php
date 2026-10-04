@@ -59,6 +59,62 @@ function csv_safe_text($value): string
     return $text;
 }
 
+
+function parse_export_date(
+    string $value,
+    DateTimeZone $timezone
+): ?DateTimeImmutable {
+    if (
+        !preg_match(
+            '/^\d{4}-\d{2}-\d{2}$/',
+            $value
+        )
+    ) {
+        return null;
+    }
+
+    $date = DateTimeImmutable::createFromFormat(
+        '!Y-m-d',
+        $value,
+        $timezone
+    );
+
+    $errors = DateTimeImmutable::getLastErrors();
+
+    if (
+        !$date ||
+        (
+            is_array($errors) &&
+            (
+                ($errors['warning_count'] ?? 0) > 0 ||
+                ($errors['error_count'] ?? 0) > 0
+            )
+        ) ||
+        $date->format('Y-m-d') !== $value
+    ) {
+        return null;
+    }
+
+    return $date;
+}
+
+function format_export_period_label(
+    DateTimeImmutable $from,
+    DateTimeImmutable $to
+): string {
+    if (
+        $from->format('Y-m-d') ===
+        $to->format('Y-m-d')
+    ) {
+        return $from->format('M j, Y');
+    }
+
+    return
+        $from->format('M j, Y') .
+        ' – ' .
+        $to->format('M j, Y');
+}
+
 if (
     strtoupper(
         (string) (
@@ -119,7 +175,8 @@ $range = strtolower(
 $allowedRanges = [
     "daily",
     "weekly",
-    "monthly"
+    "monthly",
+    "custom"
 ];
 
 if (
@@ -132,57 +189,159 @@ if (
     $range = "weekly";
 }
 
-switch ($range) {
-    case "daily":
-        $dateCondition = "
-            o.created_at >= CURDATE()
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+$reportTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
 
-        $rangeLabel = "Today";
-        $filenameRange = "today";
-        break;
+if ($range === "custom") {
+    $fromValue = trim(
+        (string) (
+            $_GET["from"] ?? ""
+        )
+    );
 
-    case "monthly":
-        $dateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 29 DAY
-                )
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    $toValue = trim(
+        (string) (
+            $_GET["to"] ?? ""
+        )
+    );
 
-        $rangeLabel = "Last 30 Days";
-        $filenameRange = "last_30_days";
-        break;
+    $fromDate = parse_export_date(
+        $fromValue,
+        $reportTimezone
+    );
 
-    case "weekly":
-    default:
-        $dateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 6 DAY
-                )
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    $toDate = parse_export_date(
+        $toValue,
+        $reportTimezone
+    );
 
-        $rangeLabel = "Last 7 Days";
-        $filenameRange = "last_7_days";
-        break;
+    if (!$fromDate || !$toDate) {
+        fail_export(
+            "Choose valid From and To dates.",
+            422
+        );
+    }
+
+    if ($fromDate > $toDate) {
+        fail_export(
+            "The From date cannot be later than the To date.",
+            422
+        );
+    }
+
+    $today = new DateTimeImmutable(
+        "today",
+        $reportTimezone
+    );
+
+    if ($toDate > $today) {
+        fail_export(
+            "The To date cannot be later than today.",
+            422
+        );
+    }
+
+    $days =
+        (int) (
+            $fromDate
+                ->diff($toDate)
+                ->days
+        ) + 1;
+
+    if ($days > 366) {
+        fail_export(
+            "Custom sales reports can cover up to 366 days at a time.",
+            422
+        );
+    }
+
+    $toExclusive =
+        $toDate->modify(
+            "+1 day"
+        );
+
+    $fromSql =
+        $fromDate->format(
+            "Y-m-d 00:00:00"
+        );
+
+    $toExclusiveSql =
+        $toExclusive->format(
+            "Y-m-d 00:00:00"
+        );
+
+    $dateCondition = "
+        o.created_at >= '{$fromSql}'
+        AND o.created_at < '{$toExclusiveSql}'
+    ";
+
+    $rangeLabel =
+        format_export_period_label(
+            $fromDate,
+            $toDate
+        );
+
+    $filenameRange =
+        "from_" .
+        $fromDate->format("Y-m-d") .
+        "_to_" .
+        $toDate->format("Y-m-d");
+
+} else {
+    switch ($range) {
+        case "daily":
+            $dateCondition = "
+                o.created_at >= CURDATE()
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel = "Today";
+            $filenameRange = "today";
+            break;
+
+        case "monthly":
+            $dateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 29 DAY
+                    )
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel = "Last 30 Days";
+            $filenameRange = "last_30_days";
+            break;
+
+        case "weekly":
+        default:
+            $dateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 6 DAY
+                    )
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel = "Last 7 Days";
+            $filenameRange = "last_7_days";
+            break;
+    }
 }
 
 try {

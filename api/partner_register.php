@@ -101,11 +101,13 @@ if (!is_array($data)) {
 $firstName = trim((string)($data["first_name"] ?? ""));
 $middleName = trim((string)($data["middle_name"] ?? ""));
 $lastName = trim((string)($data["last_name"] ?? ""));
+$suffix = trim((string)($data["suffix"] ?? ""));
 
 $fullName = formatUserName([
     "first_name" => $firstName,
     "middle_name" => $middleName,
-    "last_name" => $lastName
+    "last_name" => $lastName,
+    "suffix" => $suffix
 ]);
 
 $email =
@@ -150,6 +152,9 @@ $restaurantContact =
         )
     );
 
+$termsAccepted = !empty($data["terms_accepted"]);
+$termsVersion = trim((string)($data["terms_version"] ?? "2026.1"));
+
 $cuisine =
     trim(
         (string) (
@@ -170,6 +175,8 @@ if ($restaurantContactRaw !== "" && $restaurantContact === "") {
     respond_json(false, "Enter a valid Philippine mobile number for the restaurant contact.", 422);
 }
 
+if (!$termsAccepted) { respond_json(false, "You must accept the Partner Agreement.", 422); }
+
 /* =========================================================
    REQUIRED FIELD VALIDATION
 ========================================================= */
@@ -183,7 +190,10 @@ if (
     $restaurantName === "" ||
     $restaurantAddress === "" ||
     $restaurantContact === "" ||
-    $cuisine === ""
+    $termsAccepted = !empty($data["terms_accepted"]);
+$termsVersion = trim((string)($data["terms_version"] ?? "2026.1"));
+
+$cuisine === ""
 ) {
     respond_json(
         false,
@@ -192,8 +202,14 @@ if (
     );
 }
 
-if (strlen($firstName) > 100 || strlen($middleName) > 100 || strlen($lastName) > 100) {
-    respond_json(false, "Owner name fields must not exceed 100 characters.", 422);
+if (
+    strlen($firstName) > 100 ||
+    strlen($middleName) > 100 ||
+    strlen($lastName) > 100 ||
+    strlen($suffix) > 30 ||
+    strlen($fullName) > 180
+) {
+    respond_json(false, "Please enter a shorter owner name.", 422);
 }
 
 if (
@@ -325,6 +341,7 @@ try {
                 first_name,
                 middle_name,
                 last_name,
+                suffix,
                 email,
                 contact_number,
                 password_hash,
@@ -336,6 +353,7 @@ try {
 
             VALUES (
                 NULL,
+                ?,
                 ?,
                 ?,
                 ?,
@@ -357,11 +375,12 @@ try {
     }
 
     $userStmt->bind_param(
-        "sssssssss",
+        "ssssssssss",
         $role,
         $firstName,
         $middleName,
         $lastName,
+        $suffix,
         $email,
         $contactNumber,
         $passwordHash,
@@ -394,7 +413,7 @@ try {
                 restaurant_address,
                 restaurant_contact,
                 cuisine,
-                application_status
+                application_status, partner_terms_accepted, partner_terms_accepted_at, partner_terms_version
             )
 
             VALUES (
@@ -403,7 +422,7 @@ try {
                 ?,
                 ?,
                 ?,
-                'email_pending'
+                'email_pending', 1, NOW(), ?
             )
         ");
 
@@ -414,12 +433,13 @@ try {
     }
 
     $applicationStmt->bind_param(
-        "issss",
+        "isssss",
         $ownerId,
         $restaurantName,
         $restaurantAddress,
         $restaurantContact,
-        $cuisine
+        $cuisine,
+        $termsVersion
     );
 
     if (!$applicationStmt->execute()) {

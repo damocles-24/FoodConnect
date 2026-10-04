@@ -55,6 +55,177 @@ let currentCartItems = [];
 let currentCartRestaurant = null;
 let currentCustomerTab = "cart";
 
+const CART_SELECTION_KEY = "foodconnect_selected_cart_items";
+let selectedCartItemIds = new Set();
+
+function loadSelectedCartItems() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(CART_SELECTION_KEY) || "[]");
+        selectedCartItemIds = new Set(saved.map(Number).filter(Boolean));
+    } catch (_) {
+        selectedCartItemIds = new Set();
+    }
+}
+
+function saveSelectedCartItems() {
+    localStorage.setItem(CART_SELECTION_KEY, JSON.stringify([...selectedCartItemIds]));
+}
+
+function getSelectedCartItems() {
+    return currentCartItems.filter(item =>
+        selectedCartItemIds.has(Number(item.cart_id))
+    );
+}
+
+function updateSelectedCartSummary() {
+    const selectedItems = getSelectedCartItems();
+    const selectedQuantity = selectedItems.reduce(
+        (total, item) => total + Number(item.quantity || 0),
+        0
+    );
+
+    const selectedSubtotal = selectedItems.reduce(
+        (total, item) => total + Number(item.subtotal || 0),
+        0
+    );
+
+    const button = document.getElementById("checkoutBtn");
+    if (button) {
+        button.disabled = selectedQuantity <= 0;
+        button.setAttribute("aria-disabled", String(selectedQuantity <= 0));
+
+        const span = button.querySelector("span");
+        if (span) {
+            span.textContent = selectedQuantity > 0
+                ? `Checkout ${selectedQuantity} Item${selectedQuantity === 1 ? "" : "s"}`
+                : "Select items to checkout";
+        }
+    }
+
+    const count = document.getElementById("selectedCartCount");
+    if (count) {
+        count.textContent = `${selectedQuantity} selected`;
+    }
+
+    const removeButton = document.getElementById("removeSelectedCartBtn");
+    if (removeButton) {
+        removeButton.disabled = selectedQuantity <= 0;
+        removeButton.textContent = selectedQuantity > 0
+            ? `Remove Selected (${selectedQuantity})`
+            : "Remove Selected";
+    }
+
+    const selectAll = document.getElementById("selectAllCartItems");
+    if (selectAll) {
+        const allSelected = currentCartItems.length > 0 &&
+            currentCartItems.every(item => selectedCartItemIds.has(Number(item.cart_id)));
+
+        selectAll.checked = allSelected;
+        selectAll.indeterminate = selectedQuantity > 0 && !allSelected;
+    }
+
+    document.querySelectorAll(".cart-item[data-cart-id]").forEach(card => {
+        card.classList.toggle(
+            "selected",
+            selectedCartItemIds.has(Number(card.dataset.cartId))
+        );
+
+        const checkbox = card.querySelector(".cart-item-checkbox");
+        if (checkbox) {
+            checkbox.checked = selectedCartItemIds.has(Number(card.dataset.cartId));
+        }
+    });
+
+    const subtotalElement = document.getElementById("subtotalPrice");
+    if (subtotalElement) {
+        subtotalElement.textContent = formatPrice(selectedSubtotal);
+    }
+
+    const totalPriceElement = document.getElementById("totalPrice");
+    if (totalPriceElement) {
+        const delivery = cartPricing.selectedOrderType === "delivery"
+            ? Number(cartPricing.deliveryFee || 0)
+            : 0;
+        totalPriceElement.textContent = formatPrice(selectedSubtotal + delivery);
+    }
+
+    renderCheckoutSummary();
+}
+
+function toggleCartSelection(cartId, checked) {
+    const id = Number(cartId);
+
+    if (checked) {
+        selectedCartItemIds.add(id);
+    } else {
+        selectedCartItemIds.delete(id);
+    }
+
+    saveSelectedCartItems();
+    updateSelectedCartSummary();
+}
+
+function toggleSelectAllCartItems(checked) {
+    currentCartItems.forEach(item => {
+        const id = Number(item.cart_id);
+
+        if (checked) {
+            selectedCartItemIds.add(id);
+        } else {
+            selectedCartItemIds.delete(id);
+        }
+    });
+
+    saveSelectedCartItems();
+    updateSelectedCartSummary();
+}
+
+async function removeSelectedCartItems() {
+    const selectedIds = [...selectedCartItemIds];
+
+    if (selectedIds.length === 0) {
+        return;
+    }
+
+    if (!window.confirm("Remove selected items from your cart?")) {
+        return;
+    }
+
+    try {
+        await Promise.all(
+            selectedIds.map(async (cartId) => {
+                const response = await fetch(`${API}/cart_remove.php`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ cart_id: cartId })
+                });
+
+                const data = await readJsonResponse(response);
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Unable to remove selected item.");
+                }
+            })
+        );
+
+        selectedCartItemIds.clear();
+        saveSelectedCartItems();
+        await loadCart();
+        showCartNotice("Selected items removed.", "success");
+    } catch (error) {
+        console.error("Remove selected items error:", error);
+        showCartNotice(error.message || "Unable to remove selected items.", "error");
+        await loadCart();
+    }
+}
+
+window.toggleCartSelection = toggleCartSelection;
+window.toggleSelectAllCartItems = toggleSelectAllCartItems;
+window.removeSelectedCartItems = removeSelectedCartItems;
+
 /*
  * Per-cart-item quantity sync state.
  *
@@ -407,9 +578,11 @@ function renderCheckoutSummary() {
     }
 
     if (itemsElement) {
+        const summaryItems = getSelectedCartItems();
+
         itemsElement.innerHTML =
-            currentCartItems.length > 0
-                ? currentCartItems
+            summaryItems.length > 0
+                ? summaryItems
                     .map((item) => {
                         const quantity =
                             Math.max(
@@ -444,7 +617,10 @@ function renderCheckoutSummary() {
     }
 
     const subtotal =
-        Number(cartPricing.subtotal || 0);
+        getSelectedCartItems().reduce(
+            (total, item) => total + Number(item.subtotal || 0),
+            0
+        );
 
     const deliveryFee =
         cartPricing.selectedOrderType ===
@@ -1089,6 +1265,9 @@ async function loadCart() {
                 ...item
             }));
 
+        loadSelectedCartItems();
+        selectedCartItemIds = new Set([...selectedCartItemIds].filter(id => currentCartItems.some(item => Number(item.cart_id) === id)));
+
         currentCartRestaurant =
             data.restaurant ||
             (
@@ -1159,6 +1338,8 @@ cartPricing.selectedOrderType =
 updateTotals(
     data.total_items
 );
+
+       updateSelectedCartSummary();
 
        setCartActionState(true);
 
@@ -1313,6 +1494,10 @@ const addonTotal =
             class="cart-item"
             data-cart-id="${cartId}"
         >
+            <label class="cart-selection-control">
+                <input class="cart-item-checkbox" type="checkbox" ${selectedCartItemIds.has(cartId) ? "checked" : ""} onchange="toggleCartSelection(${cartId}, this.checked)" aria-label="Select ${escapeHtml(item.product_name)}">
+                <span></span>
+            </label>
 
            <div class="cart-item-image">
 
@@ -1732,6 +1917,8 @@ function applyLocalQuantity(
         getLocalCartTotalItems()
     );
 
+    updateSelectedCartSummary();
+
     return true;
 }
 
@@ -1799,6 +1986,7 @@ function applyLocalRemove(cartId) {
         getLocalCartTotalItems();
 
     updateTotals(totalItems);
+    updateSelectedCartSummary();
 
     if (
         currentCartItems.length ===
@@ -5303,7 +5491,10 @@ if (!deliveryFeeConfirmed) {
                         "application/json"
                 },
 
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    ...payload,
+                    selected_cart_ids: [...selectedCartItemIds]
+                })
             }
         );
 
@@ -8384,6 +8575,11 @@ return true;
 ========================================================= */
 
 function switchCustomerTab(tabName) {
+    const customerOrderNavigation =
+        document.querySelector(
+            ".customer-order-navigation"
+        );
+
     const cartTabButton =
         document.getElementById(
             "showCartTabBtn"
@@ -8411,6 +8607,16 @@ function switchCustomerTab(tabName) {
         showingOrders
             ? "orders"
             : "cart";
+
+    if (customerOrderNavigation) {
+        customerOrderNavigation.style.display =
+            showingOrders ? "none" : "";
+
+        customerOrderNavigation.setAttribute(
+            "aria-hidden",
+            String(showingOrders)
+        );
+    }
 
     cartTabButton?.classList.toggle(
         "active",
@@ -8451,6 +8657,28 @@ function switchCustomerTab(tabName) {
             showingOrders
         );
     }
+
+    const viewUrl =
+        new URL(window.location.href);
+
+    if (showingOrders) {
+        viewUrl.searchParams.set(
+            "view",
+            "orders"
+        );
+    } else {
+        viewUrl.searchParams.delete(
+            "view"
+        );
+    }
+
+    window.history.replaceState(
+        {},
+        "",
+        viewUrl.pathname +
+            viewUrl.search +
+            viewUrl.hash
+    );
 
     if (showingOrders) {
         void loadCustomerOrders(
@@ -8595,6 +8823,7 @@ async function handlePayMongoReturn() {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+        loadSelectedCartItems();
 
         void handlePayMongoReturn();
 
@@ -9225,6 +9454,13 @@ clearCartButton?.addEventListener(
         checkoutButton?.addEventListener(
             "click",
             () => {
+                const selectedCount = selectedCartItemIds.size;
+
+                if (selectedCount <= 0) {
+                    showCartNotice("Please select items to checkout.", "error");
+                    return;
+                }
+
                 const totalItems =
                     Number(
                         document
@@ -9293,7 +9529,20 @@ clearCartButton?.addEventListener(
             placeOrder
         );
 
-        switchCustomerTab("cart");
+        const initialCustomerView =
+            String(
+                new URLSearchParams(
+                    window.location.search
+                ).get("view") || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        switchCustomerTab(
+            initialCustomerView === "orders"
+                ? "orders"
+                : "cart"
+        );
 
 clearedCompletedOrderIds =
     getClearedCompletedOrderIds();

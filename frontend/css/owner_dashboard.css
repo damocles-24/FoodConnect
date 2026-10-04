@@ -3167,9 +3167,10 @@ padding: 14px 16px;
 .activity-toolbar {
   display: grid;
   grid-template-columns:
-    minmax(280px, 1.5fr)
-    minmax(160px, 0.6fr)
-    minmax(160px, 0.6fr)
+    minmax(260px, 1.45fr)
+    minmax(150px, 0.62fr)
+    minmax(145px, 0.52fr)
+    minmax(145px, 0.52fr)
     auto;
   gap: 12px;
   align-items: end;
@@ -3242,50 +3243,63 @@ padding: 14px 16px;
   font-weight: 700;
 }
 
-.activity-filter-group select {
+.activity-filter-group select,
+.activity-filter-group input[type="date"] {
   width: 100%;
   height: 44px;
-
   padding: 0 12px;
-
   border: 1px solid var(--border);
   border-radius: 11px;
-
   outline: none;
-
   background: #222;
   color: var(--text);
-
   cursor: pointer;
   font-size: 13px;
 }
 
-.activity-filter-group select:focus {
+.activity-filter-group select:focus,
+.activity-filter-group input[type="date"]:focus {
   border-color: var(--gold);
-
-  box-shadow:
-    0 0 0 2px
-    rgba(244, 124, 30, 0.15);
+  box-shadow: 0 0 0 2px rgba(244, 124, 30, 0.15);
 }
 
+.activity-date-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-apply-btn,
 .activity-clear-btn {
   height: 44px;
   padding: 0 15px;
-
-  border: 1px solid var(--border);
   border-radius: 11px;
-
-  background: transparent;
-  color: var(--muted);
-
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.activity-apply-btn {
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: #fff;
+}
+
+.activity-apply-btn:hover {
+  border-color: var(--gold-dark);
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+}
+
+.activity-clear-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
 }
 
 .activity-clear-btn:hover {
@@ -3659,6 +3673,15 @@ padding: 14px 16px;
 
   .activity-search-box {
     grid-column: auto;
+  }
+
+  .activity-date-actions {
+    width: 100%;
+  }
+
+  .activity-date-actions .activity-apply-btn,
+  .activity-date-actions .activity-clear-btn {
+    flex: 1 1 0;
   }
 
   .activity-timeline-header {
@@ -8766,6 +8789,28 @@ body[data-fc-page="owner"] :is(button, input, select, textarea):focus-visible {
   outline-offset: 2px;
 }
 
+/* Activity log controls: explicit light/dark form rendering. */
+html[data-theme="light"] body[data-fc-page="owner"] :is(
+  .activity-search-box input,
+  .activity-filter-group select,
+  .activity-filter-group input[type="date"]
+) {
+  background: #ffffff;
+  color: #111827;
+  border-color: #d7dde5;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] :is(
+  .activity-search-box input,
+  .activity-filter-group select,
+  .activity-filter-group input[type="date"]
+) {
+  background: #222222;
+  color: #ffffff;
+  color-scheme: dark;
+}
+
 /* FOODCONNECT OWNER LIGHT READABILITY AND UI BUG FIX START */
 
 /* Light mode: prioritize strong readable text. */
@@ -11619,3 +11664,256 @@ html[data-theme="dark"] .settings-service-option {
         grid-template-columns: 1fr;
     }
 }
+
+/* OWNER SALES REPORT CUSTOM DATE FILTER START */
+body[data-fc-page="owner"] .analytics-header-controls {
+  flex-wrap: wrap;
+}
+
+body[data-fc-page="owner"] .analytics-date-range {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+body[data-fc-page="owner"] .analytics-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+body[data-fc-page="owner"] .analytics-date-field label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body[data-fc-page="owner"] .analytics-date-field input[type="date"] {
+  min-width: 145px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  outline: none;
+  background: #222;
+  color: var(--text);
+  color-scheme: dark;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+body[data-fc-page="owner"] .analytics-date-field input[type="date"]:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(244, 124, 30, 0.14);
+}
+
+body[data-fc-page="owner"] .analytics-date-separator {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-bottom: 1px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body[data-fc-page="owner"] .analytics-filter-btn {
+  min-width: 78px;
+}
+
+body[data-fc-page="owner"] .analytics-filter-btn:disabled,
+body[data-fc-page="owner"] .analytics-period-control select:disabled,
+body[data-fc-page="owner"] .analytics-date-field input:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+html[data-theme="light"] body[data-fc-page="owner"] .analytics-date-field input[type="date"] {
+  background: #fff;
+  color: var(--text);
+  color-scheme: light;
+}
+
+html[data-theme="dark"] body[data-fc-page="owner"] .analytics-date-field input[type="date"] {
+  color-scheme: dark;
+}
+
+@media (max-width: 1150px) {
+  body[data-fc-page="owner"] .analytics-date-range {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 720px) {
+  body[data-fc-page="owner"] .analytics-date-range {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    width: 100%;
+  }
+
+  body[data-fc-page="owner"] .analytics-date-field input[type="date"] {
+    min-width: 0;
+    width: 100%;
+  }
+
+  body[data-fc-page="owner"] .analytics-filter-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  body[data-fc-page="owner"] .analytics-date-range {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-fc-page="owner"] .analytics-date-separator {
+    display: none;
+  }
+}
+/* OWNER SALES REPORT CUSTOM DATE FILTER END */
+
+/* OWNER SALES REPORT HEADER LAYOUT FIX START */
+body[data-fc-page="owner"] #reportsSection .analytics-page-header {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body[data-fc-page="owner"] #reportsSection .analytics-page-heading {
+  width: 100%;
+  max-width: 820px;
+}
+
+body[data-fc-page="owner"] #reportsSection .analytics-header-controls {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1280px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-header-controls {
+    align-items: stretch;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    grid-template-columns: 1fr;
+  }
+}
+/* OWNER SALES REPORT HEADER LAYOUT FIX END */
+
+/* OWNER SALES REPORT FILTER POSITION REFINEMENT START */
+@media (min-width: 901px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-header-controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    grid-template-areas:
+      "period dates"
+      "exports exports";
+    column-gap: clamp(36px, 7vw, 120px);
+    row-gap: 18px;
+    align-items: end;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-period-control {
+    grid-area: period;
+    justify-self: start;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-date-range {
+    grid-area: dates;
+    justify-self: end;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    grid-area: exports;
+    width: auto;
+    margin-left: 0;
+    justify-self: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-header-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-period-control {
+    align-self: flex-start;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-date-range {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+  }
+}
+/* OWNER SALES REPORT FILTER POSITION REFINEMENT END */
+
+/* OWNER SALES REPORT CONTROL PLACEMENT UPDATE START */
+@media (min-width: 901px) {
+  body[data-fc-page="owner"] #reportsSection .analytics-header-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "period exports"
+      "dates exports";
+    column-gap: clamp(36px, 7vw, 120px);
+    row-gap: 16px;
+    align-items: start;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-period-control {
+    grid-area: period;
+    justify-self: start;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-date-range {
+    grid-area: dates;
+    justify-self: start;
+    margin-left: 0;
+  }
+
+  body[data-fc-page="owner"] #reportsSection .analytics-export-actions {
+    grid-area: exports;
+    width: auto;
+    margin-left: 0;
+    align-self: start;
+    justify-self: end;
+    justify-content: flex-end;
+  }
+}
+/* OWNER SALES REPORT CONTROL PLACEMENT UPDATE END */

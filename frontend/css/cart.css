@@ -3627,3 +3627,181 @@ body[data-fc-page="customer-cart"] :is(.checkout-button, .clear-cart-button) {
     font-weight: 800;
     color: var(--primary, #f78021);
 }
+
+.cart-selection-control{position:absolute;top:18px;left:18px;z-index:2;}
+.cart-selection-control input{width:22px;height:22px;accent-color:var(--primary);cursor:pointer;}
+.cart-item{position:relative;}
+.cart-item:has(.cart-item-checkbox:checked){border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft);}
+
+/* Cart selection controls */
+.cart-selection-control {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 2;
+}
+
+.cart-item {
+    position: relative;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.cart-item.selected {
+    border-color: var(--fc-orange);
+    box-shadow: 0 0 0 3px rgba(247,128,33,.12), var(--shadow-small);
+    background: var(--fc-orange-soft);
+}
+
+.cart-selection-control input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cart-selection-control span {
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--fc-surface);
+    border: 2px solid var(--fc-border);
+    cursor: pointer;
+}
+
+.cart-selection-control input:checked + span {
+    background: var(--fc-orange);
+    border-color: var(--fc-orange);
+}
+
+.cart-selection-control input:checked + span::after {
+    content: "✓";
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.cart-selection-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--fc-border);
+    background: var(--fc-surface);
+}
+
+.remove-selected-cart-button {
+    margin-left: auto;
+    padding: 9px 14px;
+    border-radius: 10px;
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    border: 1px solid var(--fc-danger-border);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.remove-selected-cart-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CART ITEM SELECTION UI
+========================================================= */
+
+.cart-selection-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.select-all-control,
+.cart-selection-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fc-heading);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.select-all-control input,
+.cart-selection-control input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.select-all-control span,
+.cart-selection-control span {
+    width: 20px;
+    height: 20px;
+    display: inline-grid;
+    place-items: center;
+    border: 2px solid var(--fc-orange-border);
+    background: var(--fc-surface);
+    border-radius: 6px;
+    transition: .2s ease;
+}
+
+.select-all-control input:checked + span,
+.cart-selection-control input:checked + span {
+    background: var(--fc-orange);
+    border-color: var(--fc-orange);
+}
+
+.select-all-control input:checked + span::after,
+.cart-selection-control input:checked + span::after {
+    content: "✓";
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.selected-cart-count {
+    padding: 6px 10px;
+    color: var(--fc-orange-dark);
+    background: var(--fc-orange-soft);
+    border: 1px solid var(--fc-orange-border);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.remove-selected-cart-button {
+    min-height: 34px;
+    padding: 0 12px;
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    border: 1px solid var(--fc-danger-border);
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.remove-selected-cart-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.cart-item.selected {
+    border-color: var(--fc-orange);
+    background: var(--fc-orange-soft);
+}
+
+@media (max-width: 650px) {
+    .cart-selection-toolbar {
+        width: 100%;
+    }
+
+    .remove-selected-cart-button {
+        width: 100%;
+    }
+}

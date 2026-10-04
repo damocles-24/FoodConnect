@@ -1380,6 +1380,32 @@
         </option>
       </select>
 
+      <div class="activity-log-date-field">
+        <label for="activityLogDateFrom">From</label>
+        <input
+          type="date"
+          id="activityLogDateFrom"
+          aria-label="Filter platform activity logs from date"
+        >
+      </div>
+
+      <div class="activity-log-date-field">
+        <label for="activityLogDateTo">To</label>
+        <input
+          type="date"
+          id="activityLogDateTo"
+          aria-label="Filter platform activity logs to date"
+        >
+      </div>
+
+      <button
+        type="button"
+        id="applyActivityLogDateFilterButton"
+        class="secondary-button activity-log-date-apply-button"
+      >
+        Apply
+      </button>
+
       <button
         type="button"
         id="searchActivityLogsButton"
@@ -1514,5 +1540,38 @@
 
 <script src="../js/ph-phone.js?v=20260816"></script>
 <script src="../js/admin.js?v=20260915-partner-resend-request1"></script>
+
+<!-- Owner account status modal -->
+<div id="ownerStatusModal" class="modal-overlay hidden">
+  <div class="application-modal owner-status-modal">
+    <button type="button" id="closeOwnerStatusModal" class="modal-close">&times;</button>
+    <h2 id="ownerStatusModalTitle">Deactivate Owner Account</h2>
+    <p id="ownerStatusModalOwner" class="owner-status-owner"></p>
+    <label>Reason</label>
+    <select id="ownerStatusReason">
+      <option value="">Select reason</option>
+      <option>Violation of FoodConnect Terms</option>
+      <option>Suspicious account activity</option>
+      <option>Incorrect restaurant information</option>
+      <option>Restaurant permanently closed</option>
+      <option>Owner requested account closure</option>
+      <option>Other</option>
+    </select>
+    <textarea id="ownerStatusNote" rows="4" placeholder="Additional notes (optional)"></textarea>
+    <div class="owner-status-actions">
+      <button type="button" id="cancelOwnerStatusModal" class="secondary-button">Cancel</button>
+      <button type="button" id="confirmOwnerStatusModal" class="primary-button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="ownerHistoryModal" class="modal-overlay hidden">
+  <div class="application-modal owner-status-modal">
+    <button type="button" id="closeOwnerHistoryModal" class="modal-close">&times;</button>
+    <h2>Owner Account History</h2>
+    <div id="ownerHistoryContent"></div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -25,20 +25,26 @@ if (!is_array($input)) {
 $firstName = trim((string)($input["first_name"] ?? ""));
 $middleName = trim((string)($input["middle_name"] ?? ""));
 $lastName = trim((string)($input["last_name"] ?? ""));
+$suffix = trim((string)($input["suffix"] ?? ""));
 $username = strtolower(trim((string)($input["username"] ?? "")));
 $email = strtolower(trim((string)($input["email"] ?? "")));
 $password = (string)($input["password"] ?? "");
 $confirm = (string)($input["confirm"] ?? "");
 $contactNumber = normalize_ph_mobile($input["contact_number"] ?? "");
 $role = "customer";
+$termsAccepted = !empty($input["terms_accepted"]);
+$termsVersion = trim((string)($input["terms_version"] ?? "2026.1"));
 
 $fullName = trim(implode(" ", array_filter([
     $firstName,
     $middleName,
-    $lastName
+    $lastName,
+    $suffix
 ], static function ($part) {
     return $part !== "";
 })));
+
+if (!$termsAccepted) { signup_respond(["error" => "You must accept the Terms and Conditions."], 422); }
 
 if ($firstName === "" || $lastName === "" || $username === "" || $email === "" || $contactNumber === "" || $password === "" || $confirm === "") {
     signup_respond(["error" => "Please fill in all required fields."], 400);
@@ -52,7 +58,8 @@ if (
     mb_strlen($firstName) > 100 ||
     mb_strlen($middleName) > 100 ||
     mb_strlen($lastName) > 100 ||
-    mb_strlen($fullName) > 150
+    mb_strlen($suffix) > 30 ||
+    mb_strlen($fullName) > 180
 ) {
     signup_respond(["error" => "Please enter a shorter name."], 422);
 }
@@ -137,6 +144,7 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
+        suffix,
         username,
         email,
         contact_number,
@@ -144,9 +152,10 @@ $stmt = $conn->prepare("
         status,
         is_verified,
         verification_token,
-        verification_expires_at
+        verification_expires_at,
+        terms_accepted, terms_accepted_at, terms_version
     )
-    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?, 1, NOW(), ?)
 ");
 
 if (!$stmt) {
@@ -155,17 +164,19 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    "ssssssssss",
+    "ssssssssssss",
     $role,
     $firstName,
     $middleName,
     $lastName,
+    $suffix,
     $username,
     $email,
     $contactNumber,
     $hash,
     $token,
-    $expiresAt
+    $expiresAt,
+    $termsVersion
 );
 
 if (!$stmt->execute()) {

@@ -7,7 +7,7 @@ function formatUserName(array $user): string
 {
     $parts = [];
 
-    foreach (["first_name", "middle_name", "last_name"] as $field) {
+    foreach (["first_name", "middle_name", "last_name", "suffix"] as $field) {
         $value = trim((string)($user[$field] ?? ""));
 
         if ($value !== "") {
@@ -33,6 +33,7 @@ function userNameSqlExpression(string $alias = ""): string
     return "TRIM(CONCAT_WS(' ', " .
         "NULLIF(TRIM({$prefix}first_name), ''), " .
         "NULLIF(TRIM({$prefix}middle_name), ''), " .
-        "NULLIF(TRIM({$prefix}last_name), '')" .
+        "NULLIF(TRIM({$prefix}last_name), ''), " .
+        "NULLIF(TRIM({$prefix}suffix), '')" .
     "))";
 }

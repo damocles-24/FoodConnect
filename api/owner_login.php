@@ -277,7 +277,9 @@ $accountStmt =
             password_hash,
             must_change_password,
             status,
-            is_verified
+            is_verified,
+            deactivation_reason,
+            deactivated_at
         FROM
             tbl_users
         WHERE
@@ -530,8 +532,11 @@ if ((int) $user["status"] !== 1) {
     respond_json(
         [
             "success" => false,
+            "account_deactivated" => true,
+            "reason" => (string)($user["deactivation_reason"] ?? ""),
+            "deactivated_at" => (string)($user["deactivated_at"] ?? ""),
             "message" =>
-                "Your owner account is currently disabled."
+                "Your owner account is currently deactivated."
         ],
         403
     );

@@ -195,6 +195,8 @@ $contact_number = trim(
 $contact_number_raw = $contact_number;
 $contact_number = normalize_ph_mobile($contact_number_raw);
 
+$selected_cart_ids = decode_id_array($data["selected_cart_ids"] ?? []);
+
 $payment_method = trim(
     (string)(
         $data["payment_method"] ?? ""

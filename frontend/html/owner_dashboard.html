@@ -1291,44 +1291,41 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </select>
     </div>
 
-    <div class="activity-filter-group">
-      <label for="activityDateFilter">
-        Date
-      </label>
-
-      <select
-        id="activityDateFilter"
-        aria-label="Filter activity logs by date"
+    <div class="activity-filter-group activity-date-filter-group">
+      <label for="activityDateFrom">From</label>
+      <input
+        type="date"
+        id="activityDateFrom"
+        aria-label="Filter activity logs from date"
       >
-        <option value="all">
-          All Dates
-        </option>
-
-        <option value="today">
-          Today
-        </option>
-
-        <option value="yesterday">
-          Yesterday
-        </option>
-
-        <option value="week">
-          Last 7 Days
-        </option>
-
-        <option value="month">
-          Last 30 Days
-        </option>
-      </select>
     </div>
 
-    <button
-      type="button"
-      class="activity-clear-btn"
-      id="clearActivityFilters"
-    >
-      Clear Filters
-    </button>
+    <div class="activity-filter-group activity-date-filter-group">
+      <label for="activityDateTo">To</label>
+      <input
+        type="date"
+        id="activityDateTo"
+        aria-label="Filter activity logs to date"
+      >
+    </div>
+
+    <div class="activity-date-actions">
+      <button
+        type="button"
+        class="activity-apply-btn"
+        id="applyActivityDateFilter"
+      >
+        Apply
+      </button>
+
+      <button
+        type="button"
+        class="activity-clear-btn"
+        id="clearActivityFilters"
+      >
+        Clear Filters
+      </button>
+    </div>
   </div>
 
   <!-- Timeline panel -->
@@ -1416,7 +1413,55 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         <option value="monthly">
           Last 30 Days
         </option>
+
+        <option value="custom">
+          Custom Range
+        </option>
       </select>
+    </div>
+
+    <div
+      class="analytics-date-range"
+      aria-label="Custom sales report date range"
+    >
+      <div class="analytics-date-field">
+        <label for="reportDateFrom">
+          From
+        </label>
+
+        <input
+          type="date"
+          id="reportDateFrom"
+          aria-label="Sales report start date"
+        >
+      </div>
+
+      <span
+        class="analytics-date-separator"
+        aria-hidden="true"
+      >
+        to
+      </span>
+
+      <div class="analytics-date-field">
+        <label for="reportDateTo">
+          To
+        </label>
+
+        <input
+          type="date"
+          id="reportDateTo"
+          aria-label="Sales report end date"
+        >
+      </div>
+
+      <button
+        type="button"
+        class="analytics-primary-btn analytics-filter-btn"
+        id="applyReportDateFilter"
+      >
+        Apply
+      </button>
     </div>
 
     <div class="analytics-export-actions">
@@ -1801,6 +1846,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         <option value="daily">Daily</option>
         <option value="weekly" selected>Weekly</option>
         <option value="monthly">Monthly</option>
+        <option value="custom">Custom</option>
       </select>
     </div>
 
@@ -1864,6 +1910,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         <option value="daily">Daily</option>
         <option value="weekly" selected>Weekly</option>
         <option value="monthly">Monthly</option>
+        <option value="custom">Custom</option>
       </select>
     </div>
 
@@ -3889,6 +3936,22 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </div>
 
       <div class="form-group">
+        <label>Suffix (Optional)</label>
+        <select
+          id="userSuffix"
+          autocomplete="honorific-suffix"
+        >
+          <option value="">No suffix</option>
+          <option value="Jr.">Jr.</option>
+          <option value="Sr.">Sr.</option>
+          <option value="II">II</option>
+          <option value="III">III</option>
+          <option value="IV">IV</option>
+          <option value="V">V</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label>Email</label>
         <input type="email" id="userEmail">
       </div>
@@ -3996,6 +4059,22 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       <div class="form-group">
         <label>Last Name *</label>
         <input type="text" id="editUserLastName">
+      </div>
+
+      <div class="form-group">
+        <label>Suffix (Optional)</label>
+        <select
+          id="editUserSuffix"
+          autocomplete="honorific-suffix"
+        >
+          <option value="">No suffix</option>
+          <option value="Jr.">Jr.</option>
+          <option value="Sr.">Sr.</option>
+          <option value="II">II</option>
+          <option value="III">III</option>
+          <option value="IV">IV</option>
+          <option value="V">V</option>
+        </select>
       </div>
 
       <div class="form-group">

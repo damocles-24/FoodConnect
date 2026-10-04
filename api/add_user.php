@@ -177,11 +177,13 @@ if (!is_array($data)) {
 $firstName = trim((string)($data["first_name"] ?? ""));
 $middleName = trim((string)($data["middle_name"] ?? ""));
 $lastName = trim((string)($data["last_name"] ?? ""));
+$suffix = trim((string)($data["suffix"] ?? ""));
 
 $fullName = formatUserName([
     "first_name" => $firstName,
     "middle_name" => $middleName,
-    "last_name" => $lastName
+    "last_name" => $lastName,
+    "suffix" => $suffix
 ]);
 
 $email = strtolower(
@@ -249,7 +251,8 @@ if (
     mb_strlen($firstName) > 100 ||
     mb_strlen($middleName) > 100 ||
     mb_strlen($lastName) > 100 ||
-    mb_strlen($fullName) > 150
+    mb_strlen($suffix) > 30 ||
+    mb_strlen($fullName) > 180
 ) {
     respond_json([
         "success" => false,
@@ -412,6 +415,7 @@ $insertStmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
+        suffix,
         email,
         contact_number,
         address,
@@ -421,6 +425,7 @@ $insertStmt = $conn->prepare("
         is_verified
     )
     VALUES (
+        ?,
         ?,
         ?,
         ?,
@@ -450,12 +455,13 @@ if (!$insertStmt) {
 }
 
 $insertStmt->bind_param(
-    "issssssssi",
+    "isssssssssi",
     $restaurantId,
     $role,
     $firstName,
     $middleName,
     $lastName,
+    $suffix,
     $email,
     $contactNumber,
     $address,
@@ -564,6 +570,9 @@ respond_json([
 
         "last_name" =>
             $lastName ?? "",
+
+        "suffix" =>
+            $suffix ?? "",
 
         "display_name" =>
             $fullName,

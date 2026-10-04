@@ -2,7 +2,8 @@ function formatUserName(user) {
   return [
     user?.first_name,
     user?.middle_name,
-    user?.last_name
+    user?.last_name,
+    user?.suffix
   ]
     .map((part) => String(part || "").trim())
     .filter(Boolean)
@@ -150,6 +151,141 @@ async function updateHomepageCartBadge() {
   }
 }
 
+async function updateHomepageOrdersBadge() {
+  const badge =
+    document.getElementById(
+      "homepageOrdersBadge"
+    );
+
+  const accountBadge =
+    document.getElementById(
+      "accountOrdersBadge"
+    );
+
+  const accountButton =
+    document.getElementById(
+      "accountBtn"
+    );
+
+  if (!badge && !accountBadge) {
+    return;
+  }
+
+  const renderBadgeCount = (count = 0) => {
+    const safeCount =
+      Math.max(0, Number(count) || 0);
+
+    const text =
+      safeCount > 99
+        ? "99+"
+        : String(safeCount);
+
+    [badge, accountBadge]
+      .filter(Boolean)
+      .forEach((target) => {
+        target.textContent = text;
+        target.hidden = safeCount <= 0;
+      });
+
+    if (accountButton) {
+      accountButton.setAttribute(
+        "aria-label",
+        safeCount > 0
+          ? `Account menu, ${safeCount} active order${
+              safeCount === 1 ? "" : "s"
+            }`
+          : "Account menu"
+      );
+    }
+  };
+
+  try {
+    const response = await fetch(
+      `${window.API}/get_customer_orders.php`,
+      {
+        credentials: "include",
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      renderBadgeCount(0);
+      return;
+    }
+
+    const data = await response.json();
+
+    const orders =
+      data.success &&
+      Array.isArray(data.orders)
+        ? data.orders
+        : [];
+
+    const normalizeStatus =
+      (value) =>
+        String(value || "")
+          .trim()
+          .toLowerCase()
+          .replaceAll("-", "_")
+          .replaceAll(" ", "_");
+
+    const inactiveStatuses =
+      new Set([
+        "completed",
+        "cancelled",
+        "done",
+        "picked_up_by_customer"
+      ]);
+
+    const activeCount =
+      orders.filter((order) => {
+        const orderStatus =
+          normalizeStatus(
+            order?.order_status
+          );
+
+        const deliveryStatus =
+          normalizeStatus(
+            order?.delivery
+              ?.delivery_status
+          );
+
+        return (
+          !inactiveStatuses.has(
+            orderStatus
+          ) &&
+          deliveryStatus !==
+            "completed"
+        );
+      }).length;
+
+    renderBadgeCount(activeCount);
+
+    const ordersButton =
+      document.getElementById(
+        "goMyOrders"
+      );
+
+    if (ordersButton) {
+      ordersButton.setAttribute(
+        "aria-label",
+        activeCount > 0
+          ? `My Orders, ${activeCount} active order${
+              activeCount === 1 ? "" : "s"
+            }`
+          : "My Orders"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Homepage My Orders badge error:",
+      error
+    );
+
+    renderBadgeCount(0);
+  }
+}
+
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
@@ -183,6 +319,9 @@ document.addEventListener(
 
     const signupBtn =
       document.getElementById("signupBtn");
+
+    const goMyOrdersBtn =
+      document.getElementById("goMyOrders");
 
     const goProfileBtn =
       document.getElementById("goProfile");
@@ -2127,6 +2266,13 @@ let restaurantCategoryHydrationPromise =
             "none";
         }
 
+        if (goMyOrdersBtn) {
+          goMyOrdersBtn.style.display =
+            role === "customer"
+              ? "block"
+              : "none";
+        }
+
         if (goProfileBtn) {
           goProfileBtn.style.display =
             "block";
@@ -2154,6 +2300,11 @@ let restaurantCategoryHydrationPromise =
         if (signupBtn) {
           signupBtn.style.display =
             "block";
+        }
+
+        if (goMyOrdersBtn) {
+          goMyOrdersBtn.style.display =
+            "none";
         }
 
         if (goProfileBtn) {
@@ -4407,6 +4558,23 @@ async function refreshHomepageRestaurantAvailability() {
     );
 
     /* =========================
+       MY ORDERS
+    ========================= */
+
+    goMyOrdersBtn?.addEventListener(
+      "click",
+      () => {
+        localStorage.setItem(
+          "lastPage",
+          window.location.href
+        );
+
+        window.location.href =
+          "/frontend/html/cart.html?view=orders";
+      }
+    );
+
+    /* =========================
        ACCOUNT SETTINGS
     ========================= */
 
@@ -6145,27 +6313,149 @@ async function refreshHomepageSessionAndCart() {
   const auth =
     await setupAccountUI();
 
-  const badge =
+  const cartBadge =
     document.getElementById(
       "homepageCartBadge"
     );
 
+  const ordersBadge =
+    document.getElementById(
+      "homepageOrdersBadge"
+    );
+
+  const accountOrdersBadge =
+    document.getElementById(
+      "accountOrdersBadge"
+    );
+
+  const role =
+    String(
+      auth?.user?.role || ""
+    ).toLowerCase();
+
   if (!auth?.logged_in) {
-    if (badge) {
-      badge.hidden = true;
-      badge.textContent = "0";
+    if (cartBadge) {
+      cartBadge.hidden = true;
+      cartBadge.textContent = "0";
     }
+
+    if (ordersBadge) {
+      ordersBadge.hidden = true;
+      ordersBadge.textContent = "0";
+    }
+
+    if (accountOrdersBadge) {
+      accountOrdersBadge.hidden = true;
+      accountOrdersBadge.textContent = "0";
+    }
+
+    document.getElementById("accountBtn")?.setAttribute(
+      "aria-label",
+      "Account menu"
+    );
 
     return;
   }
 
   await updateHomepageCartBadge();
+
+  if (role === "customer") {
+    await updateHomepageOrdersBadge();
+  } else {
+    if (ordersBadge) {
+      ordersBadge.hidden = true;
+      ordersBadge.textContent = "0";
+    }
+
+    if (accountOrdersBadge) {
+      accountOrdersBadge.hidden = true;
+      accountOrdersBadge.textContent = "0";
+    }
+
+    document.getElementById("accountBtn")?.setAttribute(
+      "aria-label",
+      "Account menu"
+    );
+  }
 }
 
 window.refreshHomepageSessionAndCart =
   refreshHomepageSessionAndCart;
 
 refreshHomepageSessionAndCart();
+
+/* =========================================================
+   LIVE ACTIVE ORDER BADGE REFRESH
+   Keep both My Orders badges synchronized with server status
+   without requiring a manual page refresh.
+========================================================= */
+const HOMEPAGE_ORDER_BADGE_REFRESH_MS = 8000;
+let homepageOrderBadgeRefreshInFlight = false;
+
+async function refreshHomepageOrderBadgesLive() {
+  if (
+    document.hidden ||
+    homepageOrderBadgeRefreshInFlight
+  ) {
+    return;
+  }
+
+  const ordersButton =
+    document.getElementById(
+      "goMyOrders"
+    );
+
+  /*
+   * Only poll when the signed-in account is a customer.
+   * setupAccountUI() keeps this button hidden for guests
+   * and non-customer roles.
+   */
+  if (
+    !ordersButton ||
+    ordersButton.style.display === "none"
+  ) {
+    return;
+  }
+
+  homepageOrderBadgeRefreshInFlight = true;
+
+  try {
+    await updateHomepageOrdersBadge();
+  } finally {
+    homepageOrderBadgeRefreshInFlight = false;
+  }
+}
+
+window.setInterval(
+  refreshHomepageOrderBadgesLive,
+  HOMEPAGE_ORDER_BADGE_REFRESH_MS
+);
+
+/* Refresh immediately when the customer returns to the tab/window. */
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (!document.hidden) {
+      refreshHomepageOrderBadgesLive();
+    }
+  }
+);
+
+window.addEventListener(
+  "focus",
+  refreshHomepageOrderBadgesLive
+);
+
+/* Make the count fresh whenever the account menu is opened. */
+accountBtn?.addEventListener(
+  "click",
+  () => {
+    window.setTimeout(
+      refreshHomepageOrderBadgesLive,
+      0
+    );
+  }
+);
 
 loadPublicRestaurants();
 

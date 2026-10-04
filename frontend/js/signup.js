@@ -1,3 +1,11 @@
+
+// FoodConnect Terms modal
+document.addEventListener("DOMContentLoaded", () => {
+ const modal=document.getElementById("fc-terms-modal");
+ document.querySelectorAll(".fc-terms-link").forEach(a=>a.addEventListener("click",e=>{e.preventDefault(); modal?.setAttribute("aria-hidden","false"); modal?.classList.add("open");}));
+ document.querySelectorAll(".fc-terms-close,.fc-terms-done").forEach(b=>b.addEventListener("click",()=>{modal?.classList.remove("open"); modal?.setAttribute("aria-hidden","true");}));
+});
+
 const API = "/api";
 
 window.addEventListener("load", () => {
@@ -19,6 +27,9 @@ const middleNameInput =
 
 const lastNameInput =
     document.getElementById("lastName");
+
+const suffixInput =
+    document.getElementById("suffix");
 
 const usernameInput =
     document.getElementById("username");
@@ -396,6 +407,9 @@ signupForm?.addEventListener(
         const lastName =
             lastNameInput?.value.trim() || "";
 
+        const suffix =
+            suffixInput?.value.trim() || "";
+
         const username =
             usernameInput?.value.trim().toLowerCase() || "";
 
@@ -450,7 +464,7 @@ signupForm?.addEventListener(
         }
 
         const composedName =
-            [firstName, middleName, lastName]
+            [firstName, middleName, lastName, suffix]
                 .filter(Boolean)
                 .join(" ");
 
@@ -458,7 +472,8 @@ signupForm?.addEventListener(
             firstName.length > 100 ||
             middleName.length > 100 ||
             lastName.length > 100 ||
-            composedName.length > 150
+            suffix.length > 30 ||
+            composedName.length > 180
         ) {
             setMessage(
                 "Please enter a shorter name.",
@@ -549,11 +564,14 @@ if (!/^9\d{9}$/.test(contactNumber)) {
                         first_name: firstName,
                         middle_name: middleName,
                         last_name: lastName,
+                        suffix,
                         username,
                         email,
                         contact_number: `+63${contactNumber}`,
                         password,
-                        confirm: confirmPassword
+                        confirm: confirmPassword,
+                        terms_accepted: agreement,
+                        terms_version: "2026.1"
                     })
                 }
             );

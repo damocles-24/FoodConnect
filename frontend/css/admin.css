@@ -1998,6 +1998,45 @@ html[data-theme="dark"] .application-review-panel {
   box-shadow: 0 0 0 3px var(--primary-subtle);
 }
 
+.activity-log-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 138px;
+}
+
+.activity-log-date-field label {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.activity-log-date-field input {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  font-size: 12px;
+  color-scheme: light;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.activity-log-date-field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+}
+
+.activity-log-date-apply-button {
+  align-self: end;
+  width: auto;
+  min-height: 38px;
+  padding: 0 15px;
+  font-size: 12px;
+}
+
 .activity-log-search-button {
   width: auto;
   min-height: 38px;
@@ -2346,6 +2385,10 @@ html[data-theme="dark"] body[data-fc-page="admin"] .current-admin-label {
   background: rgba(167, 139, 250, 0.15);
 }
 
+html[data-theme="dark"] body[data-fc-page="admin"] .activity-log-date-field input {
+  color-scheme: dark;
+}
+
 html[data-theme="dark"] body[data-fc-page="admin"] .activity-log-date {
   color: #9ca3af;
 }
@@ -2476,6 +2519,8 @@ html[data-theme="dark"] body[data-fc-page="admin"] .application-review-panel {
 
   .activity-log-search-group,
   .activity-log-filter,
+  .activity-log-date-field,
+  .activity-log-date-apply-button,
   .activity-log-search-button,
   #clearActivityLogFiltersButton {
     width: 100%;
@@ -3715,6 +3760,8 @@ img[src*="logofoodconnect-Photoroom.png"] {
   }
 
   .activity-log-filter,
+  .activity-log-date-field,
+  .activity-log-date-apply-button,
   .activity-log-search-button,
   #clearActivityLogFiltersButton {
     flex: 0 0 auto;
@@ -3952,3 +3999,13 @@ html[data-theme="dark"] body[data-fc-page="admin"] .verification-resend-cancelle
         flex: 1 1 100%;
     }
 }
+
+
+.owner-status-modal { max-width: 460px; }
+.owner-status-modal label { display:block; margin-top:15px; font-weight:700; }
+.owner-status-modal select, .owner-status-modal textarea { width:100%; margin-top:8px; padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); }
+.owner-status-owner { color:var(--muted); margin-bottom:10px; }
+.owner-status-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+.owner-history-item{padding:14px;border:1px solid var(--border,#e6e8ec);border-radius:14px;margin-bottom:12px;background:var(--surface,#fff)}
+.owner-history-item strong{color:var(--primary,#f78021)}
+.owner-history-item small{color:var(--muted,#667085)}

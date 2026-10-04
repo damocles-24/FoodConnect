@@ -434,7 +434,8 @@ a {
     pointer-events: none;
 }
 
-.input-wrapper input {
+.input-wrapper input,
+.input-wrapper select {
     width: 100%;
     height: 50px;
     padding: 0 47px 0 43px;
@@ -457,11 +458,19 @@ a {
     color: #98a2b3;
 }
 
-.input-wrapper input:hover {
+.input-wrapper select {
+    appearance: auto;
+    padding-right: 18px;
+    cursor: pointer;
+}
+
+.input-wrapper input:hover,
+.input-wrapper select:hover {
     border-color: #d0d5dd;
 }
 
-.input-wrapper input:focus {
+.input-wrapper input:focus,
+.input-wrapper select:focus {
     background: white;
     border-color: var(--fc-orange);
 
@@ -1061,7 +1070,10 @@ body[data-fc-page="customer-auth"]
 
 html[data-theme="dark"]
 body[data-fc-page="customer-auth"]
-.input-wrapper input:focus {
+.input-wrapper input:focus,
+html[data-theme="dark"]
+body[data-fc-page="customer-auth"]
+.input-wrapper select:focus {
     background: #20242a;
 }
 
@@ -1131,3 +1143,46 @@ body[data-fc-page="customer-auth"]
     border-color: var(--fc-orange);
     box-shadow: 0 0 0 4px rgba(247,128,33,0.11);
 }
+
+
+.fc-terms-modal{display:none;position:fixed;inset:0;background:rgba(15,23,36,.65);z-index:9999;padding:20px;align-items:center;justify-content:center;}
+.fc-terms-modal.open{display:flex;}
+.fc-terms-card{max-width:520px;max-height:80vh;overflow:auto;background:var(--surface,#fff);color:var(--text,#1c2434);padding:30px;border-radius:24px;box-shadow:0 25px 60px rgba(0,0,0,.25);position:relative;}
+.fc-terms-card h2{margin-bottom:15px;}
+.fc-terms-card p{margin-bottom:12px;color:var(--muted,#667085);}
+.fc-terms-close{position:absolute;right:15px;top:10px;background:none;font-size:28px;cursor:pointer;}
+.fc-terms-done{margin-top:15px;background:var(--primary,#f78021);color:#fff;padding:10px 22px;border-radius:12px;cursor:pointer;}
+.fc-terms-link{color:#f78021;font-weight:700;}
+
+.fc-terms-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,36,.65);padding:20px;overflow:auto;}
+.fc-terms-modal.open{display:flex;align-items:center;justify-content:center;}
+.fc-terms-card{width:min(600px,100%);background:var(--surface,#fff);color:var(--text,#111);border-radius:24px;padding:28px;box-shadow:0 25px 70px rgba(0,0,0,.25);position:relative;}
+.fc-terms-close{position:absolute;right:18px;top:12px;font-size:28px;background:none;cursor:pointer;}
+.fc-terms-body{max-height:55vh;overflow:auto;margin:18px 0;}
+.fc-terms-body h3{margin-top:16px;}
+.fc-terms-done{margin-top:12px;padding:12px 24px;border-radius:12px;background:#f78021;color:white;cursor:pointer;}
+.fc-terms-link{color:#f78021;font-weight:700;}
+
+/* Premium Legal Agreement UI */
+.agreement-option {
+    padding: 18px;
+    border: 1px solid var(--fc-border);
+    border-radius: 18px;
+    background: var(--fc-surface);
+    line-height: 1.6;
+}
+.agreement-option strong { display:block; color:var(--fc-heading); font-size:14px; margin-bottom:4px; }
+.fc-terms-link { color: var(--fc-orange-dark); font-weight:700; text-decoration: underline; }
+.fc-terms-modal { backdrop-filter: blur(8px); }
+.fc-terms-card { max-width:720px !important; border-radius:28px !important; padding:28px !important; }
+.fc-terms-header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; padding-bottom:18px; border-bottom:1px solid var(--fc-border); }
+.fc-legal-badge { display:inline-flex; padding:6px 12px; border-radius:999px; background:var(--fc-orange-soft); color:var(--fc-orange-dark); font-size:11px; font-weight:800; margin-bottom:10px; }
+.fc-terms-header h2 { margin:0; color:var(--fc-heading); }
+.fc-terms-header p { color:var(--fc-muted); margin-top:4px; }
+.fc-terms-header small { text-align:right; color:var(--fc-muted); font-weight:600; }
+.fc-progress { height:5px; background:#eee; border-radius:99px; margin:18px 0; overflow:hidden; }
+.fc-progress span { display:block; width:35%; height:100%; background:var(--fc-orange); }
+.fc-terms-body { max-height:420px; overflow-y:auto; padding-right:12px; }
+.fc-terms-body h3 { color:var(--fc-heading); margin:22px 0 6px; font-size:16px; }
+.fc-terms-body p { color:var(--fc-text); font-size:14px; }
+@media(max-width:600px){ .fc-terms-header{flex-direction:column;} .fc-terms-header small{text-align:left;} .fc-terms-card{padding:20px !important;} }

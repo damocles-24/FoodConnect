@@ -97,6 +97,44 @@ if (
    RANGE
 ========================================================= */
 
+function parse_chart_date(
+    string $value,
+    DateTimeZone $timezone
+): ?DateTimeImmutable {
+    if (
+        !preg_match(
+            '/^\\d{4}-\\d{2}-\\d{2}$/',
+            $value
+        )
+    ) {
+        return null;
+    }
+
+    $date = DateTimeImmutable::createFromFormat(
+        '!Y-m-d',
+        $value,
+        $timezone
+    );
+
+    $errors = DateTimeImmutable::getLastErrors();
+
+    if (
+        !$date ||
+        (
+            is_array($errors) &&
+            (
+                ($errors['warning_count'] ?? 0) > 0 ||
+                ($errors['error_count'] ?? 0) > 0
+            )
+        ) ||
+        $date->format('Y-m-d') !== $value
+    ) {
+        return null;
+    }
+
+    return $date;
+}
+
 $range =
     strtolower(
         trim(
@@ -110,7 +148,8 @@ $range =
 $allowedRanges = [
     "daily",
     "weekly",
-    "monthly"
+    "monthly",
+    "custom"
 ];
 
 if (
@@ -123,19 +162,113 @@ if (
     $range = "weekly";
 }
 
-switch ($range) {
-    case "daily":
-        $days = 1;
-        break;
+$timezone = new DateTimeZone(
+    "Asia/Manila"
+);
 
-    case "monthly":
-        $days = 30;
-        break;
+if ($range === "custom") {
+    $fromValue = trim(
+        (string) (
+            $_GET["from"] ?? ""
+        )
+    );
 
-    case "weekly":
-    default:
-        $days = 7;
-        break;
+    $toValue = trim(
+        (string) (
+            $_GET["to"] ?? ""
+        )
+    );
+
+    $startDate = parse_chart_date(
+        $fromValue,
+        $timezone
+    );
+
+    $lastDate = parse_chart_date(
+        $toValue,
+        $timezone
+    );
+
+    if (!$startDate || !$lastDate) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Choose valid From and To dates."
+        ], 422);
+    }
+
+    if ($startDate > $lastDate) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The From date cannot be later than the To date."
+        ], 422);
+    }
+
+    $today = new DateTimeImmutable(
+        "today",
+        $timezone
+    );
+
+    if ($lastDate > $today) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The To date cannot be later than today."
+        ], 422);
+    }
+
+    $days =
+        (int) (
+            $startDate
+                ->diff($lastDate)
+                ->days
+        ) + 1;
+
+    if ($days > 366) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Custom sales reports can cover up to 366 days at a time."
+        ], 422);
+    }
+
+    $endDate =
+        $lastDate->modify(
+            "+1 day"
+        );
+
+} else {
+    switch ($range) {
+        case "daily":
+            $days = 1;
+            break;
+
+        case "monthly":
+            $days = 30;
+            break;
+
+        case "weekly":
+        default:
+            $days = 7;
+            break;
+    }
+
+    $startDate =
+        (new DateTimeImmutable(
+            "today",
+            $timezone
+        ))
+            ->modify(
+                "-" .
+                ($days - 1) .
+                " days"
+            );
+
+    $endDate =
+        $startDate->modify(
+            "+" . $days . " days"
+        );
 }
 
 /* =========================================================
@@ -144,24 +277,6 @@ switch ($range) {
    The query returns only existing sales dates.
    Missing dates are filled with zero below.
 ========================================================= */
-
-$startDate =
-    (new DateTimeImmutable(
-        "today",
-        new DateTimeZone(
-            "Asia/Manila"
-        )
-    ))
-        ->modify(
-            "-" .
-            ($days - 1) .
-            " days"
-        );
-
-$endDate =
-    $startDate->modify(
-        "+" . $days . " days"
-    );
 
 $startDateSql =
     $startDate->format(

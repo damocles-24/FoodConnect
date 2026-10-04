@@ -42,6 +42,12 @@ let salesReport = {
   }
 };
 
+let activeSalesReportFilter = {
+  range: "weekly",
+  from: "",
+  to: ""
+};
+
 
 /* =========================
    ELEMENTS
@@ -607,9 +613,19 @@ const activitySearch =
     "activitySearch"
   );
 
-const activityDateFilter =
+const activityDateFrom =
   document.getElementById(
-    "activityDateFilter"
+    "activityDateFrom"
+  );
+
+const activityDateTo =
+  document.getElementById(
+    "activityDateTo"
+  );
+
+const applyActivityDateFilter =
+  document.getElementById(
+    "applyActivityDateFilter"
   );
 
 const clearActivityFilters =
@@ -660,6 +676,21 @@ const reportTotalOrders =
 const reportSalesRange =
   document.getElementById(
     "reportSalesRange"
+  );
+
+const reportDateFrom =
+  document.getElementById(
+    "reportDateFrom"
+  );
+
+const reportDateTo =
+  document.getElementById(
+    "reportDateTo"
+  );
+
+const applyReportDateFilter =
+  document.getElementById(
+    "applyReportDateFilter"
   );
 
 const reportSalesChart =
@@ -1388,7 +1419,57 @@ function updateInventoryResultCount(
     }`;
 }
 
+function getActivityDateRangeFilter() {
+  const from = String(
+    activityDateFrom?.value || ""
+  ).trim();
+
+  const to = String(
+    activityDateTo?.value || ""
+  ).trim();
+
+  if (from && to && from > to) {
+    return {
+      valid: false,
+      message:
+        "The From date cannot be later than the To date.",
+      from,
+      to
+    };
+  }
+
+  return {
+    valid: true,
+    message: "",
+    from,
+    to
+  };
+}
+
+function setActivityDateInputLimits() {
+  const today = getManilaTodayIsoDate();
+
+  if (activityDateFrom) {
+    activityDateFrom.max = today;
+  }
+
+  if (activityDateTo) {
+    activityDateTo.max = today;
+  }
+}
+
 async function loadActivityLogs() {
+  const dateRange =
+    getActivityDateRangeFilter();
+
+  if (!dateRange.valid) {
+    showOwnerActionToast(
+      dateRange.message,
+      "error"
+    );
+    return;
+  }
+
   if (logsList) {
     logsList.innerHTML = `
       <div class="activity-loading-state">
@@ -1398,8 +1479,23 @@ async function loadActivityLogs() {
   }
 
   try {
+    const params = new URLSearchParams();
+
+    if (dateRange.from) {
+      params.set("date_from", dateRange.from);
+    }
+
+    if (dateRange.to) {
+      params.set("date_to", dateRange.to);
+    }
+
+    const queryString = params.toString();
+    const requestUrl = queryString
+      ? `${OWNER_API_BASE}/get_activity_logs.php?${queryString}`
+      : `${OWNER_API_BASE}/get_activity_logs.php`;
+
     const data = await fetchJSON(
-      `${OWNER_API_BASE}/get_activity_logs.php`
+      requestUrl
     );
 
     if (
@@ -3321,14 +3417,212 @@ async function loadDashboardSalesChart(
   renderChart();
 }
 
-async function loadReportSalesChart(
+function getManilaTodayIsoDate() {
+  const parts = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).formatToParts(new Date());
+
+  const values = {};
+
+  parts.forEach(part => {
+    if (part.type !== "literal") {
+      values[part.type] = part.value;
+    }
+  });
+
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function shiftIsoDate(isoDate, offsetDays) {
+  const match = String(isoDate || "").match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  if (!match) {
+    return "";
+  }
+
+  const date = new Date(
+    Date.UTC(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    )
+  );
+
+  date.setUTCDate(
+    date.getUTCDate() + Number(offsetDays || 0)
+  );
+
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, "0"),
+    String(date.getUTCDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function getPresetSalesReportDates(range = "weekly") {
+  const today = getManilaTodayIsoDate();
+
+  if (range === "daily") {
+    return {
+      from: today,
+      to: today
+    };
+  }
+
+  if (range === "monthly") {
+    return {
+      from: shiftIsoDate(today, -29),
+      to: today
+    };
+  }
+
+  return {
+    from: shiftIsoDate(today, -6),
+    to: today
+  };
+}
+
+function setReportDateInputLimits() {
+  const today = getManilaTodayIsoDate();
+
+  if (reportDateFrom) {
+    reportDateFrom.max = today;
+  }
+
+  if (reportDateTo) {
+    reportDateTo.max = today;
+  }
+}
+
+function syncReportDateInputsForPreset(
   range = "weekly"
 ) {
+  if (
+    !reportDateFrom ||
+    !reportDateTo ||
+    range === "custom"
+  ) {
+    return;
+  }
+
+  const dates =
+    getPresetSalesReportDates(range);
+
+  reportDateFrom.value = dates.from;
+  reportDateTo.value = dates.to;
+}
+
+function getCustomSalesReportFilter() {
+  const from = String(
+    reportDateFrom?.value || ""
+  ).trim();
+
+  const to = String(
+    reportDateTo?.value || ""
+  ).trim();
+
+  if (!from || !to) {
+    throw new Error(
+      "Choose both From and To dates."
+    );
+  }
+
+  if (from > to) {
+    throw new Error(
+      "The From date cannot be later than the To date."
+    );
+  }
+
+  const today = getManilaTodayIsoDate();
+
+  if (to > today) {
+    throw new Error(
+      "The To date cannot be later than today."
+    );
+  }
+
+  const fromDate = new Date(`${from}T00:00:00Z`);
+  const toDate = new Date(`${to}T00:00:00Z`);
+
+  const totalDays =
+    Math.floor(
+      (toDate - fromDate) /
+      86400000
+    ) + 1;
+
+  if (totalDays > 366) {
+    throw new Error(
+      "Custom sales reports can cover up to 366 days at a time."
+    );
+  }
+
+  return {
+    range: "custom",
+    from,
+    to
+  };
+}
+
+function buildSalesReportQuery(
+  range = "weekly",
+  from = "",
+  to = ""
+) {
+  const safeRange = [
+    "daily",
+    "weekly",
+    "monthly",
+    "custom"
+  ].includes(range)
+    ? range
+    : "weekly";
+
+  const params = new URLSearchParams({
+    range: safeRange
+  });
+
+  if (safeRange === "custom") {
+    params.set("from", String(from || ""));
+    params.set("to", String(to || ""));
+  }
+
+  return params.toString();
+}
+
+function setActiveSalesReportFilter(
+  range = "weekly",
+  from = "",
+  to = ""
+) {
+  activeSalesReportFilter = {
+    range,
+    from: range === "custom" ? from : "",
+    to: range === "custom" ? to : ""
+  };
+}
+
+async function loadReportSalesChart(
+  range = "weekly",
+  from = "",
+  to = ""
+) {
+  const query = buildSalesReportQuery(
+    range,
+    from,
+    to
+  );
+
   const data =
     await fetchJSON(
-      `${OWNER_API_BASE}/get_sales_chart.php?range=${encodeURIComponent(
-        range
-      )}`
+      `${OWNER_API_BASE}/get_sales_chart.php?${query}`
     );
 
   reportSalesData =
@@ -4280,13 +4574,19 @@ function renderDeliveryPerformance() {
 }
 
 async function loadSalesReport(
-  range = "weekly"
+  range = "weekly",
+  from = "",
+  to = ""
 ) {
   try {
+    const query = buildSalesReportQuery(
+      range,
+      from,
+      to
+    );
+
     const data = await fetchJSON(
-      `${OWNER_API_BASE}/get_sales_report.php?range=${encodeURIComponent(
-        range
-      )}`
+      `${OWNER_API_BASE}/get_sales_report.php?${query}`
     );
 
     if (!data.success) {
@@ -4321,9 +4621,12 @@ async function loadSalesReport(
   performanceRange:
     data.performanceRange || {
       value: range,
-      label: "Last 7 Days",
+      label:
+        range === "custom"
+          ? `${from} to ${to}`
+          : "Last 7 Days",
       previous_label:
-        "Previous 7 Days"
+        "Previous period"
     }
 };
 
@@ -4366,28 +4669,23 @@ async function loadSalesReport(
 }
 
 function exportSalesReportCSV() {
-  const range =
-    reportSalesRange?.value ||
-    "weekly";
+  const {
+    range = "weekly",
+    from = "",
+    to = ""
+  } = activeSalesReportFilter;
 
-  const allowedRanges = [
-    "daily",
-    "weekly",
-    "monthly"
-  ];
-
-  const safeRange =
-    allowedRanges.includes(range)
-      ? range
-      : "weekly";
+  const query = buildSalesReportQuery(
+    range,
+    from,
+    to
+  );
 
   const link =
     document.createElement("a");
 
   link.href =
-    `${OWNER_API_BASE}/export_sales_report_csv.php?range=${encodeURIComponent(
-      safeRange
-    )}`;
+    `${OWNER_API_BASE}/export_sales_report_csv.php?${query}`;
 
   link.setAttribute(
     "download",
@@ -4405,6 +4703,9 @@ function exportSalesReportExcel() {
   const bestCategories = salesReport.bestCategories || [];
 
   const dateGenerated = new Date().toLocaleString("en-PH");
+  const reportPeriod =
+    salesReport.performanceRange?.label ||
+    "Last 7 Days";
 
   const html = `
     <html>
@@ -4466,6 +4767,7 @@ function exportSalesReportExcel() {
     <body>
       <h1>FoodConnect Sales Report</h1>
 
+      <p><strong>Report Period:</strong> ${reportPeriod}</p>
       <p><strong>Date Generated:</strong> ${dateGenerated}</p>
 
       <h2>Sales Summary</h2>
@@ -6186,12 +6488,6 @@ function renderActivityLogs() {
       .trim()
       .toLowerCase();
 
-  const dateFilter =
-    String(
-      activityDateFilter?.value ||
-      "all"
-    );
-
   let list =
     [...activityLogs];
 
@@ -6222,16 +6518,6 @@ function renderActivityLogs() {
           searchQuery
         );
       });
-  }
-
-  if (dateFilter !== "all") {
-    list =
-      list.filter(log =>
-        isActivityWithinDateFilter(
-          log.createdAt,
-          dateFilter
-        )
-      );
   }
 
   updateActivityResultCount(
@@ -8487,19 +8773,98 @@ document
    EVENTS
 ========================= */
 
+async function refreshOwnerSalesAnalytics(
+  filter,
+  options = {}
+) {
+  const {
+    disableControls = true
+  } = options;
+
+  const range = filter?.range || "weekly";
+  const from = filter?.from || "";
+  const to = filter?.to || "";
+
+  setActiveSalesReportFilter(
+    range,
+    from,
+    to
+  );
+
+  if (reportSalesRange) {
+    reportSalesRange.value = range;
+  }
+
+  if (cashierPerformanceRange) {
+    cashierPerformanceRange.value = range;
+  }
+
+  if (deliveryPerformanceRange) {
+    deliveryPerformanceRange.value = range;
+  }
+
+  const controls = [
+    reportSalesRange,
+    reportDateFrom,
+    reportDateTo,
+    applyReportDateFilter,
+    cashierPerformanceRange,
+    deliveryPerformanceRange
+  ].filter(Boolean);
+
+  if (disableControls) {
+    controls.forEach(control => {
+      control.disabled = true;
+    });
+  }
+
+  try {
+    await Promise.all([
+      loadSalesReport(range, from, to),
+      loadReportSalesChart(range, from, to)
+    ]);
+  } finally {
+    if (disableControls) {
+      controls.forEach(control => {
+        control.disabled = false;
+      });
+    }
+  }
+}
+
+function getFilterForSelectedReportRange(
+  range
+) {
+  if (range === "custom") {
+    return getCustomSalesReportFilter();
+  }
+
+  syncReportDateInputsForPreset(range);
+
+  return {
+    range,
+    from: "",
+    to: ""
+  };
+}
+
 if (cashierPerformanceRange) {
   cashierPerformanceRange.addEventListener(
     "change",
-    () => {
-      const range =
-        cashierPerformanceRange.value;
+    async () => {
+      try {
+        const filter =
+          getFilterForSelectedReportRange(
+            cashierPerformanceRange.value
+          );
 
-      if (deliveryPerformanceRange) {
-        deliveryPerformanceRange.value =
-          range;
+        await refreshOwnerSalesAnalytics(filter);
+      } catch (error) {
+        alert(
+          error.message ||
+          "Unable to update the sales report."
+        );
       }
-
-      loadSalesReport(range);
     }
   );
 }
@@ -8507,16 +8872,20 @@ if (cashierPerformanceRange) {
 if (deliveryPerformanceRange) {
   deliveryPerformanceRange.addEventListener(
     "change",
-    () => {
-      const range =
-        deliveryPerformanceRange.value;
+    async () => {
+      try {
+        const filter =
+          getFilterForSelectedReportRange(
+            deliveryPerformanceRange.value
+          );
 
-      if (cashierPerformanceRange) {
-        cashierPerformanceRange.value =
-          range;
+        await refreshOwnerSalesAnalytics(filter);
+      } catch (error) {
+        alert(
+          error.message ||
+          "Unable to update the sales report."
+        );
       }
-
-      loadSalesReport(range);
     }
   );
 }
@@ -8756,15 +9125,30 @@ activitySearch?.addEventListener(
   }
 );
 
-activityDateFilter?.addEventListener(
-  "change",
-  renderActivityLogs
-);
+applyActivityDateFilter
+  ?.addEventListener(
+    "click",
+    loadActivityLogs
+  );
+
+[activityDateFrom, activityDateTo]
+  .filter(Boolean)
+  .forEach(input => {
+    input.addEventListener(
+      "keydown",
+      event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          loadActivityLogs();
+        }
+      }
+    );
+  });
 
 clearActivityFilters
   ?.addEventListener(
     "click",
-    () => {
+    async () => {
       if (activitySearch) {
         activitySearch.value = "";
       }
@@ -8773,14 +9157,17 @@ clearActivityFilters
         logFilter.value = "all";
       }
 
-      if (activityDateFilter) {
-        activityDateFilter.value =
-          "all";
+      if (activityDateFrom) {
+        activityDateFrom.value = "";
+      }
+
+      if (activityDateTo) {
+        activityDateTo.value = "";
       }
 
       currentLogFilter = "all";
 
-      renderActivityLogs();
+      await loadActivityLogs();
     }
   );
 
@@ -8814,35 +9201,27 @@ refreshActivityLogs
     }
   );
 
+setActivityDateInputLimits();
+setReportDateInputLimits();
+syncReportDateInputsForPreset(
+  reportSalesRange?.value || "weekly"
+);
+
 reportSalesRange?.addEventListener(
   "change",
   async () => {
-    const range =
-      reportSalesRange.value;
+    const range = reportSalesRange.value;
 
-    /*
-     * Keep the staff performance selectors synchronized
-     * until they are removed during the analytics redesign.
-     */
-    if (cashierPerformanceRange) {
-      cashierPerformanceRange.value =
-        range;
+    if (range === "custom") {
+      reportDateFrom?.focus();
+      return;
     }
-
-    if (deliveryPerformanceRange) {
-      deliveryPerformanceRange.value =
-        range;
-    }
-
-    reportSalesRange.disabled =
-      true;
 
     try {
-      await Promise.all([
-        loadSalesReport(range),
-        loadReportSalesChart(range)
-      ]);
+      const filter =
+        getFilterForSelectedReportRange(range);
 
+      await refreshOwnerSalesAnalytics(filter);
     } catch (error) {
       console.error(
         "Analytics range update failed:",
@@ -8853,10 +9232,62 @@ reportSalesRange?.addEventListener(
         error.message ||
         "Unable to update the analytics period."
       );
+    }
+  }
+);
 
-    } finally {
-      reportSalesRange.disabled =
-        false;
+reportDateFrom?.addEventListener(
+  "change",
+  () => {
+    if (reportSalesRange) {
+      reportSalesRange.value = "custom";
+    }
+
+    if (cashierPerformanceRange) {
+      cashierPerformanceRange.value = "custom";
+    }
+
+    if (deliveryPerformanceRange) {
+      deliveryPerformanceRange.value = "custom";
+    }
+  }
+);
+
+reportDateTo?.addEventListener(
+  "change",
+  () => {
+    if (reportSalesRange) {
+      reportSalesRange.value = "custom";
+    }
+
+    if (cashierPerformanceRange) {
+      cashierPerformanceRange.value = "custom";
+    }
+
+    if (deliveryPerformanceRange) {
+      deliveryPerformanceRange.value = "custom";
+    }
+  }
+);
+
+applyReportDateFilter?.addEventListener(
+  "click",
+  async () => {
+    try {
+      const filter =
+        getCustomSalesReportFilter();
+
+      await refreshOwnerSalesAnalytics(filter);
+    } catch (error) {
+      console.error(
+        "Custom sales report filter failed:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Unable to apply the custom date range."
+      );
     }
   }
 );
@@ -10356,6 +10787,9 @@ function exportSalesReportPDF() {
   const summary = salesReport.summary || {};
   const bestProducts = salesReport.bestProducts || [];
   const bestCategories = salesReport.bestCategories || [];
+  const reportPeriod =
+    salesReport.performanceRange?.label ||
+    "Last 7 Days";
 
   const reportWindow = window.open("", "_blank");
 
@@ -10474,7 +10908,7 @@ function exportSalesReportPDF() {
 
     <body>
       <h1>FoodConnect Sales Report</h1>
-      <p class="subtitle">Generated on ${new Date().toLocaleString("en-PH")}</p>
+      <p class="subtitle">${reportPeriod} · Generated on ${new Date().toLocaleString("en-PH")}</p>
 
       <div class="summary">
         <div class="card">
@@ -12980,13 +13414,43 @@ async function ensureOwnerSectionLoaded(
       ownerSectionLoadState.inventorySection = true;
       break;
 
-    case "reportsSection":
-      await Promise.all([
-        loadReportSalesChart("weekly"),
-        loadSalesReport("weekly")
-      ]);
+    case "reportsSection": {
+      const range =
+        reportSalesRange?.value ||
+        "weekly";
+
+      let filter;
+
+      if (range === "custom") {
+        try {
+          filter = getCustomSalesReportFilter();
+        } catch (_) {
+          syncReportDateInputsForPreset("weekly");
+          filter = {
+            range: "weekly",
+            from: "",
+            to: ""
+          };
+        }
+      } else {
+        syncReportDateInputsForPreset(range);
+        filter = {
+          range,
+          from: "",
+          to: ""
+        };
+      }
+
+      await refreshOwnerSalesAnalytics(
+        filter,
+        {
+          disableControls: false
+        }
+      );
+
       ownerSectionLoadState.reportsSection = true;
       break;
+    }
 
     case "usersSection":
       await Promise.all([

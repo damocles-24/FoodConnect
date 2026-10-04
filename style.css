@@ -5586,3 +5586,89 @@ html[data-theme="dark"] body[data-fc-page="customer-home"]
       #ffffff
     );
 }
+
+
+/* =========================================================
+   HOMEPAGE MY ORDERS ACCOUNT BADGE
+========================================================= */
+body[data-fc-page="customer-home"] #goMyOrders {
+  position: relative;
+  padding-right: 48px;
+}
+
+body[data-fc-page="customer-home"] #goMyOrders .account-orders-badge {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: var(--primary, #f78021);
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+
+  box-shadow: 0 4px 12px rgba(247, 128, 33, 0.24);
+  pointer-events: none;
+}
+
+body[data-fc-page="customer-home"] #goMyOrders .account-orders-badge[hidden] {
+  display: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-home"] #goMyOrders .account-orders-badge {
+  border-color: #22262c;
+}
+
+/* =========================================================
+   ACCOUNT ICON ACTIVE ORDERS BADGE
+========================================================= */
+body[data-fc-page="customer-home"] #accountBtn {
+  position: relative;
+}
+
+body[data-fc-page="customer-home"] #accountBtn .account-icon-orders-badge {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  background: var(--primary, #f78021);
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+
+  box-shadow: 0 4px 12px rgba(247, 128, 33, 0.28);
+  pointer-events: none;
+}
+
+body[data-fc-page="customer-home"] #accountBtn .account-icon-orders-badge[hidden] {
+  display: none !important;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-home"] #accountBtn .account-icon-orders-badge {
+  border-color: #181b20;
+}
+

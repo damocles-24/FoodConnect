@@ -35,7 +35,7 @@
 
     <link
         rel="stylesheet"
-        href="../css/signup.css?v=20260921-font1"
+        href="../css/signup.css?v=20260930-suffix-dropdown1"
     >
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260921-font1">
   <script src="../js/foodconnect-theme.js?v=20260817-7" defer></script>
@@ -252,6 +252,25 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="suffix">Suffix (Optional)</label>
+                    <div class="input-wrapper">
+                        <select
+                            id="suffix"
+                            name="suffix"
+                            autocomplete="honorific-suffix"
+                        >
+                            <option value="">No suffix</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
 
                     <label for="username">
                         Username
@@ -448,8 +467,8 @@
                     </span>
 
                     <span>
-                        I confirm that the information provided is correct
-                        and I agree to the FoodConnect account policies.
+                        <strong>Account Agreement</strong><br>
+                        I confirm that I have read and agree to the <a href="#" class="fc-terms-link" data-open-terms="customer">FoodConnect Terms of Service</a> and <a href="privacy_policy.html" class="fc-terms-link">Privacy Policy</a>.
                     </span>
 
                 </label>
@@ -559,6 +578,38 @@
 </footer>
 
 <script src="../js/signup.js?v=20260912-username1"></script>
+
+
+<div id="fc-terms-modal" class="fc-terms-modal" aria-hidden="true">
+  <div class="fc-terms-card" role="dialog" aria-modal="true">
+    <button type="button" class="fc-terms-close" aria-label="Close">&times;</button>
+    <div class="fc-terms-header">
+      <div><span class="fc-legal-badge">FoodConnect Legal</span><h2>Terms of Service</h2><p>Customer Account Agreement</p></div>
+      <small>Version 2026.1<br>Effective October 2026</small>
+    </div>
+    <div class="fc-progress"><span></span></div>
+    <div class="fc-terms-body">
+      <h3>1. Account Registration</h3><p>Customers must provide accurate and complete information when creating and maintaining a FoodConnect account. Customers are responsible for protecting their account credentials.</p>
+      <h3>2. Ordering and Transactions</h3><p>Submitted orders represent a request to purchase products from participating restaurants. Order changes, cancellations, and refunds follow applicable FoodConnect and restaurant policies.</p>
+      <h3>3. Payments</h3><p>Customers authorize FoodConnect and its payment partners to process valid charges related to their transactions.</p>
+      <h3>4. Restaurant Partners</h3><p>FoodConnect connects customers with independent restaurant partners. Product preparation, availability, and food quality remain the responsibility of each restaurant.</p>
+      <h3>5. User Conduct</h3><p>Users must not misuse the platform, submit fraudulent orders, or attempt unauthorized access.</p>
+      <h3>6. Privacy and Data Protection</h3><p>FoodConnect collects and processes information necessary to provide ordering, account management, communication, and service improvements.</p>
+    </div>
+    <button type="button" class="fc-terms-done">Close</button>
+  </div>
+</div></div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+ document.querySelectorAll("[data-open-terms]").forEach(link=>{
+  link.addEventListener("click",e=>{e.preventDefault(); const m=document.getElementById("fc-terms-modal"); if(m){m.classList.add("open");m.setAttribute("aria-hidden","false");}});
+ });
+ const m=document.getElementById("fc-terms-modal");
+ document.querySelectorAll(".fc-terms-close,.fc-terms-done").forEach(b=>b.addEventListener("click",()=>{if(m){m.classList.remove("open");m.setAttribute("aria-hidden","true");}}));
+});
+</script>
 
 </body>
 </html>

@@ -16,7 +16,7 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260921-search-cleanup-ui2">
+<link rel="stylesheet" href="style.css?v=20260930-orders-icon-badge1">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
@@ -150,6 +150,14 @@
           aria-expanded="false"
         >
           <i class="fa-solid fa-user"></i>
+          <span
+            id="accountOrdersBadge"
+            class="account-icon-orders-badge"
+            aria-hidden="true"
+            hidden
+          >
+            0
+          </span>
         </button>
 
         <div
@@ -183,6 +191,24 @@
             class="primary-dropdown-btn"
           >
             Sign Up
+          </button>
+
+          <button
+            type="button"
+            id="goMyOrders"
+            style="display: none;"
+          >
+            <i class="fa-solid fa-receipt"></i>
+            My Orders
+            <span
+              id="homepageOrdersBadge"
+              class="account-orders-badge"
+              aria-live="polite"
+              aria-label="Active order count"
+              hidden
+            >
+              0
+            </span>
           </button>
 
           <button
@@ -1804,6 +1830,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260921-search-navigation-ui1" defer></script>
+<script src="homepage.js?v=20260930-orders-icon-badge1" defer></script>
 </body>
 </html>

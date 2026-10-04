@@ -196,6 +196,61 @@ function calculate_percentage_change(
    It also defines the equivalent previous period.
 ========================================================= */
 
+function parse_report_date(
+    string $value,
+    DateTimeZone $timezone
+): ?DateTimeImmutable {
+    if (
+        !preg_match(
+            '/^\\d{4}-\\d{2}-\\d{2}$/',
+            $value
+        )
+    ) {
+        return null;
+    }
+
+    $date = DateTimeImmutable::createFromFormat(
+        '!Y-m-d',
+        $value,
+        $timezone
+    );
+
+    $errors = DateTimeImmutable::getLastErrors();
+
+    if (
+        !$date ||
+        (
+            is_array($errors) &&
+            (
+                ($errors['warning_count'] ?? 0) > 0 ||
+                ($errors['error_count'] ?? 0) > 0
+            )
+        ) ||
+        $date->format('Y-m-d') !== $value
+    ) {
+        return null;
+    }
+
+    return $date;
+}
+
+function format_report_period_label(
+    DateTimeImmutable $from,
+    DateTimeImmutable $to
+): string {
+    if (
+        $from->format('Y-m-d') ===
+        $to->format('Y-m-d')
+    ) {
+        return $from->format('M j, Y');
+    }
+
+    return
+        $from->format('M j, Y') .
+        ' – ' .
+        $to->format('M j, Y');
+}
+
 $range = strtolower(
     trim(
         (string) (
@@ -208,7 +263,8 @@ $range = strtolower(
 $allowedRanges = [
     "daily",
     "weekly",
-    "monthly"
+    "monthly",
+    "custom"
 ];
 
 if (
@@ -221,154 +277,282 @@ if (
     $range = "weekly";
 }
 
-switch ($range) {
-    case "daily":
-        $orderDateCondition = "
-            o.created_at >= CURDATE()
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+$reportTimezone =
+    new DateTimeZone(
+        "Asia/Manila"
+    );
 
-        $previousOrderDateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-            AND o.created_at <
-                CURDATE()
-        ";
+$customFromDate = null;
+$customToDate = null;
 
-        $deliveryDateCondition = "
-            da.assigned_at >= CURDATE()
-            AND da.assigned_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+if ($range === "custom") {
+    $fromValue = trim(
+        (string) (
+            $_GET["from"] ?? ""
+        )
+    );
 
-        $rangeLabel =
-            "Today";
+    $toValue = trim(
+        (string) (
+            $_GET["to"] ?? ""
+        )
+    );
 
-        $previousRangeLabel =
-            "Yesterday";
+    $customFromDate =
+        parse_report_date(
+            $fromValue,
+            $reportTimezone
+        );
 
-        break;
+    $customToDate =
+        parse_report_date(
+            $toValue,
+            $reportTimezone
+        );
 
-    case "monthly":
-        /*
-         * Current period:
-         * Today and the previous 29 calendar days.
-         *
-         * Previous period:
-         * The 30 calendar days immediately before that.
-         */
-        $orderDateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 29 DAY
-                )
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    if (
+        !$customFromDate ||
+        !$customToDate
+    ) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Choose valid From and To dates."
+        ], 422);
+    }
 
-        $previousOrderDateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 59 DAY
-                )
-            AND o.created_at <
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 29 DAY
-                )
-        ";
+    if (
+        $customFromDate >
+        $customToDate
+    ) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The From date cannot be later than the To date."
+        ], 422);
+    }
 
-        $deliveryDateCondition = "
-            da.assigned_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 29 DAY
-                )
-            AND da.assigned_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    $today = new DateTimeImmutable(
+        "today",
+        $reportTimezone
+    );
 
-        $rangeLabel =
-            "Last 30 Days";
+    if ($customToDate > $today) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "The To date cannot be later than today."
+        ], 422);
+    }
 
-        $previousRangeLabel =
-            "Previous 30 Days";
+    $customDays =
+        (int) (
+            $customFromDate
+                ->diff($customToDate)
+                ->days
+        ) + 1;
 
-        break;
+    if ($customDays > 366) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Custom sales reports can cover up to 366 days at a time."
+        ], 422);
+    }
 
-    case "weekly":
-    default:
-        /*
-         * Current period:
-         * Today and the previous six calendar days.
-         *
-         * Previous period:
-         * The seven calendar days immediately before that.
-         */
-        $orderDateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 6 DAY
-                )
-            AND o.created_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    $customEndExclusive =
+        $customToDate->modify(
+            "+1 day"
+        );
 
-        $previousOrderDateCondition = "
-            o.created_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 13 DAY
-                )
-            AND o.created_at <
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 6 DAY
-                )
-        ";
+    $previousFromDate =
+        $customFromDate->modify(
+            "-{$customDays} days"
+        );
 
-        $deliveryDateCondition = "
-            da.assigned_at >=
-                DATE_SUB(
-                    CURDATE(),
-                    INTERVAL 6 DAY
-                )
-            AND da.assigned_at <
-                DATE_ADD(
-                    CURDATE(),
-                    INTERVAL 1 DAY
-                )
-        ";
+    $fromSql =
+        $customFromDate->format(
+            "Y-m-d 00:00:00"
+        );
 
-        $rangeLabel =
-            "Last 7 Days";
+    $toExclusiveSql =
+        $customEndExclusive->format(
+            "Y-m-d 00:00:00"
+        );
 
-        $previousRangeLabel =
-            "Previous 7 Days";
+    $previousFromSql =
+        $previousFromDate->format(
+            "Y-m-d 00:00:00"
+        );
 
-        break;
+    $previousToExclusiveSql =
+        $customFromDate->format(
+            "Y-m-d 00:00:00"
+        );
+
+    $orderDateCondition = "
+        o.created_at >= '{$fromSql}'
+        AND o.created_at < '{$toExclusiveSql}'
+    ";
+
+    $previousOrderDateCondition = "
+        o.created_at >= '{$previousFromSql}'
+        AND o.created_at < '{$previousToExclusiveSql}'
+    ";
+
+    $deliveryDateCondition = "
+        da.assigned_at >= '{$fromSql}'
+        AND da.assigned_at < '{$toExclusiveSql}'
+    ";
+
+    $rangeLabel =
+        format_report_period_label(
+            $customFromDate,
+            $customToDate
+        );
+
+    $previousRangeLabel =
+        format_report_period_label(
+            $previousFromDate,
+            $customFromDate->modify("-1 day")
+        );
+
+} else {
+    switch ($range) {
+        case "daily":
+            $orderDateCondition = "
+                o.created_at >= CURDATE()
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $previousOrderDateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+                AND o.created_at <
+                    CURDATE()
+            ";
+
+            $deliveryDateCondition = "
+                da.assigned_at >= CURDATE()
+                AND da.assigned_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel =
+                "Today";
+
+            $previousRangeLabel =
+                "Yesterday";
+
+            break;
+
+        case "monthly":
+            $orderDateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 29 DAY
+                    )
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $previousOrderDateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 59 DAY
+                    )
+                AND o.created_at <
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 29 DAY
+                    )
+            ";
+
+            $deliveryDateCondition = "
+                da.assigned_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 29 DAY
+                    )
+                AND da.assigned_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel =
+                "Last 30 Days";
+
+            $previousRangeLabel =
+                "Previous 30 Days";
+
+            break;
+
+        case "weekly":
+        default:
+            $orderDateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 6 DAY
+                    )
+                AND o.created_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $previousOrderDateCondition = "
+                o.created_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 13 DAY
+                    )
+                AND o.created_at <
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 6 DAY
+                    )
+            ";
+
+            $deliveryDateCondition = "
+                da.assigned_at >=
+                    DATE_SUB(
+                        CURDATE(),
+                        INTERVAL 6 DAY
+                    )
+                AND da.assigned_at <
+                    DATE_ADD(
+                        CURDATE(),
+                        INTERVAL 1 DAY
+                    )
+            ";
+
+            $rangeLabel =
+                "Last 7 Days";
+
+            $previousRangeLabel =
+                "Previous 7 Days";
+
+            break;
+    }
 }
 
 /* =========================================================
@@ -1261,7 +1445,17 @@ $previousCancellationRate =
                 $rangeLabel,
 
             "previous_label" =>
-                $previousRangeLabel
+                $previousRangeLabel,
+
+            "from" =>
+                $customFromDate
+                    ? $customFromDate->format("Y-m-d")
+                    : null,
+
+            "to" =>
+                $customToDate
+                    ? $customToDate->format("Y-m-d")
+                    : null
         ],
 
         "summary" => [

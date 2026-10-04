@@ -1,3 +1,11 @@
+
+// FoodConnect Terms modal
+document.addEventListener("DOMContentLoaded", () => {
+ const modal=document.getElementById("fc-terms-modal");
+ document.querySelectorAll(".fc-terms-link").forEach(a=>a.addEventListener("click",e=>{e.preventDefault(); modal?.setAttribute("aria-hidden","false"); modal?.classList.add("open");}));
+ document.querySelectorAll(".fc-terms-close,.fc-terms-done").forEach(b=>b.addEventListener("click",()=>{modal?.classList.remove("open"); modal?.setAttribute("aria-hidden","true");}));
+});
+
 const API_BASE =
     `${window.location.origin}/api`;
 
@@ -524,6 +532,12 @@ partnerForm?.addEventListener(
                 ?.value
                 .trim() || "";
 
+        const suffix =
+            document
+                .getElementById("suffix")
+                ?.value
+                .trim() || "";
+
         const email =
             document
                 .getElementById("email")
@@ -687,6 +701,7 @@ if (
             first_name: firstName,
             middle_name: middleName,
             last_name: lastName,
+            suffix,
             email,
             contact_number:
             window.FoodConnectPhone.normalize(contactNumber),
@@ -695,7 +710,9 @@ if (
             restaurant_address: restaurantAddress,
             restaurant_contact:
             window.FoodConnectPhone.normalize(restaurantContact),
-            cuisine
+            cuisine,
+            terms_accepted: agreement,
+            terms_version: "2026.1"
         };
 
         setLoading(true);

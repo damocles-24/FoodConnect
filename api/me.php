@@ -366,6 +366,9 @@ function build_logged_in_response(
             "last_name" =>
                 (string)($user["last_name"] ?? ""),
 
+            "suffix" =>
+                (string)($user["suffix"] ?? ""),
+
             "display_name" =>
                 formatUserName($user),
 
@@ -405,6 +408,7 @@ function load_user_by_id(
             first_name,
             middle_name,
             last_name,
+            suffix,
                 email,
             status,
             is_verified
@@ -627,6 +631,7 @@ $stmt = $conn->prepare("
         first_name,
         middle_name,
         last_name,
+        suffix,
         email,
         status,
         is_verified,

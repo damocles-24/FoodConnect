@@ -372,6 +372,34 @@
 
                     <div class="form-group full-width">
 
+                        <label for="suffix">
+                            Suffix <span>(optional)</span>
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-regular fa-user"></i>
+
+                            <select
+                                id="suffix"
+                                name="suffix"
+                                autocomplete="honorific-suffix"
+                            >
+                                <option value="">No suffix</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group full-width">
+
                         <label for="email">
                             Email Address
                         </label>
@@ -686,10 +714,8 @@
                 </span>
 
                 <span>
-                    I confirm that the information provided is accurate
-                    and I agree to the
-                    <span class="brand-food">Food</span><span class="brand-connect">Connect</span>
-                    partner review process.
+                    <strong>Partner Agreement</strong><br>
+                    I confirm that I have read and agree to the <a href="#" class="fc-terms-link" data-open-terms="partner">FoodConnect Restaurant Partner Agreement</a>.
                 </span>
 
             </label>
@@ -895,5 +921,33 @@
 <script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
 <script src="../js/ph-phone.js?v=20260816"></script>
 <script src="/frontend/js/partner_apply.js?v=20260915-partner-wizard-verification2"></script>
+
+<div id="fc-terms-modal" class="fc-terms-modal" aria-hidden="true">
+  <div class="fc-terms-card" role="dialog" aria-modal="true">
+    <button type="button" class="fc-terms-close" aria-label="Close">&times;</button>
+    <div class="fc-terms-header"><div><span class="fc-legal-badge">FoodConnect Partner</span><h2>Restaurant Partner Agreement</h2><p>Business Partnership Terms</p></div><small>Version 2026.1<br>Effective October 2026</small></div>
+    <small>Last Updated: October 2026 | Version 2026.1</small>
+    <div class="fc-terms-body">
+      <h3>1. Partner Eligibility</h3><p>Partners must provide accurate restaurant and business information and comply with applicable business and food safety requirements.</p>
+      <h3>2. Menu Management Responsibility</h3><p>Partners are responsible for accurate menu information, pricing, product descriptions, and availability.</p>
+      <h3>3. Order Fulfillment Standards</h3><p>Partners agree to prepare accepted orders within reasonable operational capacity while maintaining service quality.</p>
+      <h3>4. Platform Usage</h3><p>Partners agree to use FoodConnect tools responsibly, including order management, inventory, and analytics features.</p>
+      <h3>5. Account Security</h3><p>Restaurant owners are responsible for protecting credentials and authorized staff access.</p>
+    </div>
+    <button type="button" class="fc-terms-done">Close</button>
+  </div>
+</div></div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+ document.querySelectorAll("[data-open-terms]").forEach(link=>{
+  link.addEventListener("click",e=>{e.preventDefault(); const m=document.getElementById("fc-terms-modal"); if(m){m.classList.add("open");m.setAttribute("aria-hidden","false");}});
+ });
+ const m=document.getElementById("fc-terms-modal");
+ document.querySelectorAll(".fc-terms-close,.fc-terms-done").forEach(b=>b.addEventListener("click",()=>{if(m){m.classList.remove("open");m.setAttribute("aria-hidden","true");}}));
+});
+</script>
+
 </body>
 </html>

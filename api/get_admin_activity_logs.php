@@ -24,6 +24,51 @@ function respond_json(
     exit;
 }
 
+
+function parse_admin_activity_filter_date(
+    string $value,
+    string $label
+): ?DateTimeImmutable {
+    $value = trim($value);
+
+    if ($value === "") {
+        return null;
+    }
+
+    $timezone = new DateTimeZone(
+        "Asia/Manila"
+    );
+
+    $date = DateTimeImmutable::createFromFormat(
+        "!Y-m-d",
+        $value,
+        $timezone
+    );
+
+    $errors = DateTimeImmutable::getLastErrors();
+
+    if (
+        !$date ||
+        (
+            is_array($errors) &&
+            (
+                ($errors["warning_count"] ?? 0) > 0 ||
+                ($errors["error_count"] ?? 0) > 0
+            )
+        ) ||
+        $date->format("Y-m-d") !== $value
+    ) {
+        respond_json([
+            "success" => false,
+            "message" =>
+                "Choose a valid {$label} date.",
+            "logs" => []
+        ], 422);
+    }
+
+    return $date;
+}
+
 /* =========================================================
    ADMIN AUTHORIZATION
 ========================================================= */
@@ -62,6 +107,45 @@ $actionType =
     isset($_GET["action_type"])
         ? trim((string) $_GET["action_type"])
         : "";
+
+$dateFrom =
+    parse_admin_activity_filter_date(
+        (string) ($_GET["date_from"] ?? ""),
+        "From"
+    );
+
+$dateTo =
+    parse_admin_activity_filter_date(
+        (string) ($_GET["date_to"] ?? ""),
+        "To"
+    );
+
+if (
+    $dateFrom &&
+    $dateTo &&
+    $dateFrom > $dateTo
+) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The From date cannot be later than the To date.",
+        "logs" => []
+    ], 422);
+}
+
+$today = new DateTimeImmutable(
+    "today",
+    new DateTimeZone("Asia/Manila")
+);
+
+if ($dateTo && $dateTo > $today) {
+    respond_json([
+        "success" => false,
+        "message" =>
+            "The To date cannot be later than today.",
+        "logs" => []
+    ], 422);
+}
 
 $limit =
     isset($_GET["limit"])
@@ -120,6 +204,33 @@ if ($actionType !== "") {
 
     $parameterTypes .= "s";
     $parameters[] = $actionType;
+}
+
+if ($dateFrom) {
+    $sql .= "
+        AND al.created_at >= ?
+    ";
+
+    $parameterTypes .= "s";
+    $parameters[] =
+        $dateFrom->format(
+            "Y-m-d 00:00:00"
+        );
+}
+
+if ($dateTo) {
+    $dateToExclusive =
+        $dateTo->modify("+1 day");
+
+    $sql .= "
+        AND al.created_at < ?
+    ";
+
+    $parameterTypes .= "s";
+    $parameters[] =
+        $dateToExclusive->format(
+            "Y-m-d 00:00:00"
+        );
 }
 
 if ($search !== "") {

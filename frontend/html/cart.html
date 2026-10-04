@@ -99,7 +99,8 @@
 
 <nav
     class="customer-order-navigation"
-    aria-label="Cart and order navigation"
+    aria-label="Cart navigation"
+    style="grid-template-columns: 1fr;"
 >
     <button
         type="button"
@@ -121,25 +122,6 @@
         </span>
     </button>
 
-    <button
-        type="button"
-        id="showOrdersTabBtn"
-        class="customer-order-tab"
-        data-customer-tab="orders"
-    >
-        <i class="fa-solid fa-receipt"></i>
-
-        <span>
-            My Orders
-        </span>
-
-        <span
-            id="activeOrdersTabCount"
-            class="customer-tab-count"
-        >
-            0
-        </span>
-    </button>
 </nav> 
 
 <div
@@ -197,6 +179,31 @@
             >
                 0 items
             </span>
+
+            <div class="cart-selection-toolbar">
+                <label class="select-all-control">
+                    <input
+                        id="selectAllCartItems"
+                        type="checkbox"
+                        onchange="toggleSelectAllCartItems(this.checked)"
+                        aria-label="Select all cart items"
+                    >
+                    <span></span>
+                    Select All
+                </label>
+
+                <span id="selectedCartCount" class="selected-cart-count">0 selected</span>
+
+                <button
+                    id="removeSelectedCartBtn"
+                    class="remove-selected-cart-button"
+                    type="button"
+                    onclick="removeSelectedCartItems()"
+                    disabled
+                >
+                    Remove Selected
+                </button>
+            </div>
 
         </div>
 
@@ -1236,7 +1243,7 @@
 <script src="../js/ph-phone.js?v=20260816"></script>
 <script
   type="module"
-  src="../js/cart.js?v=20260914-paymongo-qrph-multi1"
+  src="../js/cart.js?v=20260930-my-orders-menu1"
 ></script>
 
 </body>

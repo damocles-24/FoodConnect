@@ -3,6 +3,8 @@
 const API_BASE =
   "/api";
 
+let pendingOwnerStatusAction = null;
+
 /* =========================
    LOGIN AND SETUP ELEMENTS
 ========================= */
@@ -495,6 +497,21 @@ const activityLogTypeFilter =
     "activityLogTypeFilter"
   );
 
+const activityLogDateFrom =
+  document.getElementById(
+    "activityLogDateFrom"
+  );
+
+const activityLogDateTo =
+  document.getElementById(
+    "activityLogDateTo"
+  );
+
+const applyActivityLogDateFilterButton =
+  document.getElementById(
+    "applyActivityLogDateFilterButton"
+  );
+
 const searchActivityLogsButton =
   document.getElementById(
     "searchActivityLogsButton"
@@ -686,6 +703,49 @@ function bindEvents() {
     "click",
     handleAdminLogout
   );
+
+  document
+.getElementById("confirmOwnerStatusModal")
+?.addEventListener(
+  "click",
+  submitOwnerStatusModal
+);
+
+document
+.getElementById("closeOwnerStatusModal")
+?.addEventListener(
+  "click",
+  closeOwnerStatusModal
+);
+
+document
+.getElementById("cancelOwnerStatusModal")
+?.addEventListener(
+  "click",
+  closeOwnerStatusModal
+);
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (event.key === "Escape") {
+
+      closeDetailsModal();
+
+      closeOwnerStatusModal();
+
+      document
+        .getElementById("ownerHistoryModal")
+        ?.classList.add("hidden");
+
+      adminSidebar?.classList.remove(
+        "open"
+      );
+    }
+
+  }
+);
 
   /*
    * Core admin navigation bindings.
@@ -898,7 +958,20 @@ function bindEvents() {
       }
     );
 
-      refreshActivityLogsButton
+  const activityLogToday =
+    getLocalDateKey(new Date());
+
+  if (activityLogDateFrom) {
+    activityLogDateFrom.max =
+      activityLogToday;
+  }
+
+  if (activityLogDateTo) {
+    activityLogDateTo.max =
+      activityLogToday;
+  }
+
+  refreshActivityLogsButton
     ?.addEventListener(
       "click",
       loadActivityLogs
@@ -928,6 +1001,26 @@ function bindEvents() {
       loadActivityLogs
     );
 
+  applyActivityLogDateFilterButton
+    ?.addEventListener(
+      "click",
+      loadActivityLogs
+    );
+
+  [activityLogDateFrom, activityLogDateTo]
+    .filter(Boolean)
+    .forEach((input) => {
+      input.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            loadActivityLogs();
+          }
+        }
+      );
+    });
+
   clearActivityLogFiltersButton
     ?.addEventListener(
       "click",
@@ -939,6 +1032,16 @@ function bindEvents() {
 
         if (activityLogTypeFilter) {
           activityLogTypeFilter.value =
+            "";
+        }
+
+        if (activityLogDateFrom) {
+          activityLogDateFrom.value =
+            "";
+        }
+
+        if (activityLogDateTo) {
+          activityLogDateTo.value =
             "";
         }
 
@@ -3520,14 +3623,13 @@ function bindPlatformUserActions() {
             ? "activate"
             : "deactivate";
 
-        const confirmed =
-          window.confirm(
-            `${actionWord.charAt(0).toUpperCase() + actionWord.slice(1)} ${userName}?`
-          );
-
-        if (!confirmed) {
-          return;
-        }
+        openOwnerStatusModal({
+          userId,
+          userName,
+          status: newStatus,
+          button
+        });
+        return;
 
         const originalText =
           button.textContent;
@@ -3543,7 +3645,9 @@ function bindPlatformUserActions() {
           const data =
             await updatePlatformUserStatus(
               userId,
-              newStatus
+              newStatus,
+              reason,
+              note
             );
 
           await loadPlatformUsers();
@@ -3575,9 +3679,50 @@ setPlatformUsersMessage(
   });
 }
 
+function openOwnerStatusModal(data) {
+  const modal = document.getElementById("ownerStatusModal");
+  if (!modal) return;
+  pendingOwnerStatusAction = data;
+  document.getElementById("ownerStatusModalTitle").textContent = data.status === 0 ? "Deactivate Owner Account" : "Reactivate Owner Account";
+  document.getElementById("ownerStatusModalOwner").textContent = data.userName;
+  document.getElementById("ownerStatusReason").value = "";
+  document.getElementById("ownerStatusNote").value = "";
+  modal.classList.remove("hidden");
+}
+
+async function submitOwnerStatusModal() {
+  if (!pendingOwnerStatusAction) return;
+  const {userId,userName,status,button}=pendingOwnerStatusAction;
+  const reason=document.getElementById("ownerStatusReason").value.trim();
+  const note=document.getElementById("ownerStatusNote").value.trim();
+  if (status===0 && !reason) {
+    setPlatformUsersMessage("A deactivation reason is required.", "error");
+    return;
+  }
+  button.disabled=true;
+  try {
+    await updatePlatformUserStatus(userId,status,reason,note);
+    await loadPlatformUsers();
+    setPlatformUsersMessage(`${userName} was updated successfully.`,"success");
+  } catch(e){
+    setPlatformUsersMessage(e.message || "Unable to update account.","error");
+  } finally {
+    button.disabled=false;
+    closeOwnerStatusModal();
+  }
+}
+
+function closeOwnerStatusModal(){
+ const modal=document.getElementById("ownerStatusModal");
+ if(modal) modal.classList.add("hidden");
+ pendingOwnerStatusAction=null;
+}
+
 async function updatePlatformUserStatus(
   userId,
-  status
+  status,
+  reason = "",
+  note = ""
 ) {
   const response = await fetch(
     `${API_BASE}/update_platform_user_status.php`,
@@ -3598,7 +3743,9 @@ async function updatePlatformUserStatus(
         user_id:
           userId,
 
-        status
+        status,
+        reason,
+        note
       })
     }
   );
@@ -3681,6 +3828,28 @@ function setPlatformUsersMessage(
 ========================= */
 
 async function loadActivityLogs() {
+  const dateFrom =
+    String(
+      activityLogDateFrom?.value || ""
+    ).trim();
+
+  const dateTo =
+    String(
+      activityLogDateTo?.value || ""
+    ).trim();
+
+  if (
+    dateFrom &&
+    dateTo &&
+    dateFrom > dateTo
+  ) {
+    setActivityLogsMessage(
+      "The From date cannot be later than the To date.",
+      "error"
+    );
+    return;
+  }
+
   activityLogsLoading
     ?.classList.remove(
       "hidden"
@@ -3726,6 +3895,20 @@ async function loadActivityLogs() {
       params.set(
         "action_type",
         actionType
+      );
+    }
+
+    if (dateFrom !== "") {
+      params.set(
+        "date_from",
+        dateFrom
+      );
+    }
+
+    if (dateTo !== "") {
+      params.set(
+        "date_to",
+        dateTo
       );
     }
 
@@ -6079,3 +6262,35 @@ document.querySelectorAll(".toggle-password").forEach((button) => {
     button.setAttribute("aria-label", show ? "Hide password" : "Show password");
   });
 });
+
+
+document.getElementById("confirmOwnerStatusModal")?.addEventListener("click", submitOwnerStatusModal);
+document.getElementById("closeOwnerStatusModal")?.addEventListener("click", closeOwnerStatusModal);
+document.getElementById("cancelOwnerStatusModal")?.addEventListener("click", closeOwnerStatusModal);
+
+// Owner account history modal integration
+async function openOwnerHistory(userId) {
+  const modal = document.getElementById('ownerHistoryModal');
+  const content = document.getElementById('ownerHistoryContent');
+  if (!modal || !content) return;
+  content.innerHTML = '<p>Loading history...</p>';
+  modal.classList.remove('hidden');
+  try {
+    const r = await fetch(`${API_BASE}/get_account_status_history.php?user_id=${encodeURIComponent(userId)}`, {credentials:'include'});
+    const data = await r.json();
+    if (!data.success || !data.history?.length) {
+      content.innerHTML = '<p>No account status history found.</p>';
+      return;
+    }
+    content.innerHTML = data.history.map(item => `
+      <div class="owner-history-item">
+        <strong>${String(item.action || '').toUpperCase()}</strong>
+        <p>${item.reason || item.note || 'No details provided.'}</p>
+        <small>${item.performed_by || 'System'} • ${item.created_at || ''}</small>
+      </div>`).join('');
+  } catch(e) {
+    content.innerHTML = '<p>Unable to load history.</p>';
+  }
+}
+window.openOwnerHistory = openOwnerHistory;
+document.getElementById('closeOwnerHistoryModal')?.addEventListener('click',()=>document.getElementById('ownerHistoryModal').classList.add('hidden'));

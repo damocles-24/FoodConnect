@@ -4010,6 +4010,24 @@ function showToast(title, message) {
   }, 4000);
 }
 
+const FOODCONNECT_RECEIPT_LOGO_URL =
+  "https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png";
+
+function buildFoodConnectReceiptBrand() {
+  return `
+    <div class="foodconnect-receipt-brand">
+      <img
+        class="foodconnect-receipt-logo"
+        src="${FOODCONNECT_RECEIPT_LOGO_URL}"
+        alt="FoodConnect logo"
+      >
+      <div class="foodconnect-receipt-name">
+        FoodConnect
+      </div>
+    </div>
+  `;
+}
+
 function buildCustomerReceiptContent(order) {
   const items = Array.isArray(order?.items)
     ? order.items
@@ -4102,6 +4120,8 @@ function buildCustomerReceiptContent(order) {
 
   return `
     <div class="receipt customer-receipt">
+      ${buildFoodConnectReceiptBrand()}
+
       <h1 class="restaurant-name">
         ${escapeHTML(order?.restaurant_name || "FoodConnect")}
       </h1>
@@ -4709,6 +4729,8 @@ function buildKitchenTicketContent(order) {
 
   return `
     <div class="receipt kitchen-ticket">
+      ${buildFoodConnectReceiptBrand()}
+
       <h1>KITCHEN TICKET</h1>
 
       <div class="queue-number">
@@ -5050,6 +5072,31 @@ function buildPrintDocumentMarkup(title, content) {
           text-align: center;
           font-size: 11px;
           font-weight: 800;
+        }
+
+        .foodconnect-receipt-brand {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin: 0 0 1.7mm;
+          text-align: center;
+          page-break-inside: avoid;
+        }
+
+        .foodconnect-receipt-logo {
+          display: block;
+          width: 14mm;
+          height: 14mm;
+          margin: 0 auto 0.7mm;
+          object-fit: contain;
+        }
+
+        .foodconnect-receipt-name {
+          font-size: 15px;
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: -0.25px;
         }
 
         .restaurant-name {
@@ -5415,6 +5462,52 @@ function isAndroidDevice() {
   return /Android/i.test(navigator.userAgent || "");
 }
 
+function waitForReceiptImages(
+  documentRef,
+  timeoutMs = 1800
+) {
+  const images = Array.from(
+    documentRef?.images || []
+  );
+
+  const pendingImages = images.filter(
+    image => !image.complete
+  );
+
+  if (!pendingImages.length) {
+    return Promise.resolve();
+  }
+
+  const imageReadyPromise = Promise.all(
+    pendingImages.map(image =>
+      new Promise(resolve => {
+        const finish = () => resolve();
+
+        image.addEventListener(
+          "load",
+          finish,
+          { once: true }
+        );
+
+        image.addEventListener(
+          "error",
+          finish,
+          { once: true }
+        );
+      })
+    )
+  );
+
+  const timeoutPromise = new Promise(resolve => {
+    setTimeout(resolve, timeoutMs);
+  });
+
+  return Promise.race([
+    imageReadyPromise,
+    timeoutPromise
+  ]);
+}
+
 function openPrintWindow(title, content) {
   if (isAndroidDevice()) {
     if (openRawBTPrint(content)) {
@@ -5453,8 +5546,16 @@ function openPrintWindow(title, content) {
    * Give the receipt a moment to render, then open the real
    * browser print dialog directly.
    */
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
+      if (printWindow.closed) {
+        return;
+      }
+
+      await waitForReceiptImages(
+        printWindow.document
+      );
+
       if (printWindow.closed) {
         return;
       }
@@ -5467,7 +5568,7 @@ function openPrintWindow(title, content) {
         error
       );
     }
-  }, 500);
+  }, 150);
 
   /*
    * Close the temporary receipt window after Chrome finishes
@@ -5571,8 +5672,12 @@ function openAutomaticPrintFrame(
        * Do not wait for iframe.onafterprint here because Chrome can
        * delay that event for many seconds on some printer drivers.
        */
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
+          await waitForReceiptImages(
+            frameDocument
+          );
+
           frameWindow.focus();
           frameWindow.print();
 
@@ -5587,7 +5692,7 @@ function openAutomaticPrintFrame(
         } catch (error) {
           fail(error);
         }
-      }, 300);
+      }, 150);
 
     } catch (error) {
       fail(error);
