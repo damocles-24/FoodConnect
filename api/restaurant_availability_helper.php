@@ -307,12 +307,15 @@ function fc_restaurant_evaluate_availability(
     $manualStatus = trim($businessStatus);
     $manualNormalized = strtolower($manualStatus);
 
+    /*
+     * Only two manual statuses exist: Open and Temporarily Unavailable.
+     * Any other stored value (including a legacy "Closed" row that has not
+     * been migrated yet) is treated as Temporarily Unavailable.
+     */
     if ($manualNormalized !== 'open') {
         return [
             'is_accepting_orders' => false,
-            'customer_status' => $manualNormalized === 'temporarily unavailable'
-                ? 'Temporarily Unavailable'
-                : 'Closed',
+            'customer_status' => 'Temporarily Unavailable',
             'availability_reason' => 'manual_status',
             'schedule_parsed' => false
         ];
@@ -348,7 +351,7 @@ function fc_restaurant_evaluate_availability(
 
     return [
         'is_accepting_orders' => $isOpen,
-        'customer_status' => $isOpen ? 'Open' : 'Closed',
+        'customer_status' => $isOpen ? 'Open' : 'Currently Unavailable',
         'availability_reason' => $isOpen ? 'schedule_open' : 'schedule_closed',
         'schedule_parsed' => true
     ];
@@ -356,7 +359,7 @@ function fc_restaurant_evaluate_availability(
 
 function fc_restaurant_unavailable_message(array $availability): string
 {
-    $status = strtolower((string) ($availability['customer_status'] ?? 'closed'));
+    $status = strtolower((string) ($availability['customer_status'] ?? ''));
     $reason = (string) ($availability['availability_reason'] ?? '');
 
     if ($status === 'temporarily unavailable') {
@@ -364,8 +367,8 @@ function fc_restaurant_unavailable_message(array $availability): string
     }
 
     if ($reason === 'schedule_closed') {
-        return 'This restaurant is currently closed based on its operating schedule.';
+        return 'This restaurant is outside its operating hours. Please check back later.';
     }
 
-    return 'This restaurant is not currently accepting orders.';
+    return 'This restaurant is currently unavailable.';
 }

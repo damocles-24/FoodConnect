@@ -1443,7 +1443,7 @@ html[data-theme="dark"] .application-review-panel {
 
 .restaurant-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }

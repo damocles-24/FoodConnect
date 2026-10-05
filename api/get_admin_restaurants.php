@@ -287,7 +287,6 @@ $stmt->close();
 $summary = [
     "total_restaurants" => 0,
     "open_restaurants" => 0,
-    "closed_restaurants" => 0,
     "temporarily_unavailable" => 0
 ];
 
@@ -305,17 +304,6 @@ $summaryResult = $conn->query("
             ),
             0
         ) AS open_restaurants,
-
-        COALESCE(
-            SUM(
-                CASE
-                    WHEN LOWER(TRIM(business_status)) = 'closed'
-                    THEN 1
-                    ELSE 0
-                END
-            ),
-            0
-        ) AS closed_restaurants,
 
         COALESCE(
             SUM(
@@ -359,9 +347,6 @@ $summary = [
 
     "open_restaurants" =>
         (int) ($summaryRow["open_restaurants"] ?? 0),
-
-    "closed_restaurants" =>
-        (int) ($summaryRow["closed_restaurants"] ?? 0),
 
     "temporarily_unavailable" =>
         (int) ($summaryRow["temporarily_unavailable"] ?? 0)

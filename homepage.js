@@ -2927,7 +2927,7 @@ function createRestaurantCard(
   const businessStatus =
     String(
       restaurant.business_status ||
-      "Closed"
+      "Temporarily Unavailable"
     ).trim();
 
   /*
@@ -3273,7 +3273,13 @@ function renderRestaurantsPageCards() {
         card.dataset.logoPath || ""
       );
 
-      if (isRestaurantOpen(card)) {
+      /*
+       * Only restaurants set to Temporarily Unavailable belong in the
+       * unavailable section. A restaurant that is Open but outside its
+       * operating hours stays in the main list with a
+       * "Currently Unavailable" badge.
+       */
+      if (!isRestaurantManuallyUnavailable(card)) {
         restaurantsPageTrack.appendChild(
           clonedCard
         );
@@ -3421,7 +3427,7 @@ function filterRestaurantsPage(
     restaurantsPageEmptyState.textContent =
       query || category
         ? "No available restaurant matched your search or category."
-        : "All restaurants are currently closed. You can still browse menus and check opening hours.";
+        : "All restaurants are currently unavailable. You can still browse menus and check operating hours.";
 
     restaurantsPageEmptyState.style.display =
       availableCount === 0
@@ -3431,7 +3437,7 @@ function filterRestaurantsPage(
 
   if (closedRestaurantsPageResultCount) {
     closedRestaurantsPageResultCount.textContent =
-      `${closedCount} closed restaurant${
+      `${closedCount} temporarily unavailable restaurant${
         closedCount === 1
           ? ""
           : "s"
@@ -3448,8 +3454,8 @@ function filterRestaurantsPage(
   if (closedRestaurantsPageEmptyTitle) {
     closedRestaurantsPageEmptyTitle.textContent =
       query || category
-        ? "No closed restaurant matched"
-        : "No closed restaurants";
+        ? "No temporarily unavailable restaurant matched"
+        : "No temporarily unavailable restaurants";
   }
 
   if (closedRestaurantsPageEmptyText) {
@@ -3757,7 +3763,7 @@ async function loadPublicRestaurants() {
 
     if (closedRestaurantsPageResultCount) {
       closedRestaurantsPageResultCount.textContent =
-        "0 closed restaurants";
+        "0 temporarily unavailable restaurants";
     }
 
     if (closedRestaurantsPageEmptyState) {
@@ -3772,7 +3778,7 @@ async function loadPublicRestaurants() {
 
     if (closedRestaurantsPageEmptyText) {
       closedRestaurantsPageEmptyText.textContent =
-        "Closed restaurants could not be loaded right now.";
+        "Temporarily unavailable restaurants could not be loaded right now.";
     }
   }
 }
@@ -3795,7 +3801,7 @@ async function loadPublicRestaurants() {
       restaurantCards.forEach(
         (card) => {
           /*
-           * Closed restaurants stay visible on the main homepage.
+           * Unavailable restaurants stay visible on the main homepage.
            * Only administratively hidden/deactivated cards are excluded.
            */
           const matches =
@@ -3939,6 +3945,32 @@ function formatDeliveryFee(
     : `From ${formatted}`;
 }
 
+function isRestaurantManuallyUnavailable(card) {
+  const businessStatus =
+    String(
+      card.dataset.businessStatus ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const customerStatus =
+    String(
+      card.dataset.customerStatus ||
+      businessStatus
+    )
+      .trim()
+      .toLowerCase();
+
+  return (
+    customerStatus === "temporarily unavailable" ||
+    (
+      businessStatus !== "" &&
+      businessStatus !== "open"
+    )
+  );
+}
+
 function isRestaurantOpen(
   card,
   currentDate = new Date()
@@ -3967,7 +3999,7 @@ function isRestaurantOpen(
   const businessStatus =
     String(
       card.dataset.businessStatus ||
-      "Closed"
+      "Temporarily Unavailable"
     )
       .trim()
       .toLowerCase();
@@ -4107,7 +4139,7 @@ async function loadPublicRestaurantCard(
     card.dataset.businessStatus =
       String(
         restaurant.business_status ||
-        "Closed"
+        "Temporarily Unavailable"
       );
 
     if (
@@ -4126,7 +4158,7 @@ async function loadPublicRestaurantCard(
       String(
         restaurant.customer_status ||
         restaurant.business_status ||
-        "Closed"
+        "Temporarily Unavailable"
       );
 
     card.dataset.availabilityReason =
@@ -4205,21 +4237,12 @@ function updateRestaurantCard(
     isRestaurantOpen(card);
 
  if (statusBadge) {
-  const customerStatus =
-    String(
-      card.dataset.customerStatus ||
-      card.dataset.businessStatus ||
-      "Closed"
-    ).trim();
-
   statusBadge.textContent =
     open
       ? "Open Now"
-      : customerStatus
-          .toLowerCase() ===
-        "temporarily unavailable"
+      : isRestaurantManuallyUnavailable(card)
         ? "Temporarily Unavailable"
-        : "Closed";
+        : "Currently Unavailable";
 
   statusBadge.classList.toggle(
     "open",
@@ -4227,7 +4250,7 @@ function updateRestaurantCard(
   );
 
   statusBadge.classList.toggle(
-    "closed",
+    "unavailable",
     !open
   );
 
@@ -4339,7 +4362,7 @@ async function refreshHomepageRestaurantAvailability() {
         card.dataset.businessStatus =
           String(
             restaurant.business_status ||
-            "Closed"
+            "Temporarily Unavailable"
           );
 
         if (
@@ -4361,7 +4384,7 @@ async function refreshHomepageRestaurantAvailability() {
           String(
             restaurant.customer_status ||
             restaurant.business_status ||
-            "Closed"
+            "Temporarily Unavailable"
           );
 
         card.dataset.availabilityReason =

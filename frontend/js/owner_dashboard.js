@@ -11008,11 +11008,12 @@ function normalizeBusinessStatus(value) {
     .toLowerCase()
     .trim();
 
-  if (normalized === "closed") {
-    return "Closed";
-  }
-
+  /*
+   * "Closed" no longer exists. Any legacy value is shown as
+   * Temporarily Unavailable.
+   */
   if (
+    normalized === "closed" ||
     normalized === "temporarily unavailable" ||
     normalized === "temporary" ||
     normalized === "temporarily_unavailable"
@@ -12501,12 +12502,6 @@ function updateSettingsPreview() {
     );
 
     if (
-      settings.business_status === "Closed"
-    ) {
-      settingsPreviewStatus.classList.add(
-        "is-closed"
-      );
-    } else if (
       settings.business_status ===
       "Temporarily Unavailable"
     ) {

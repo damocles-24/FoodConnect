@@ -24,7 +24,7 @@ try {
     $logs = $conn->query("SELECT COUNT(*) c FROM tbl_activity_logs")->fetch_assoc()['c'];
     $restaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants")->fetch_assoc()['c'];
     $openRestaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants WHERE business_status='Open'")->fetch_assoc()['c'];
-    $closedRestaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants WHERE business_status='Closed'")->fetch_assoc()['c'];
+    $unavailableRestaurants = $conn->query("SELECT COUNT(*) c FROM tbl_restaurants WHERE business_status='Temporarily Unavailable'")->fetch_assoc()['c'];
     $owners = $conn->query("SELECT COUNT(*) c FROM tbl_users WHERE role='owner'")->fetch_assoc()['c'];
     $staff = $conn->query("SELECT COUNT(*) c FROM tbl_users WHERE role IN ('cashier','delivery_staff')")->fetch_assoc()['c'];
 
@@ -37,7 +37,7 @@ try {
             'total_logs'=>(int)$logs,
             'total_restaurants'=>(int)$restaurants,
             'open_restaurants'=>(int)$openRestaurants,
-            'closed_restaurants'=>(int)$closedRestaurants,
+            'temporarily_unavailable'=>(int)$unavailableRestaurants,
             'restaurant_owners'=>(int)$owners,
             'restaurant_staff'=>(int)$staff
         ]

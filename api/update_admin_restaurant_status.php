@@ -122,7 +122,6 @@ $businessStatus = trim(
 
 $allowedStatuses = [
     "Open",
-    "Closed",
     "Temporarily Unavailable"
 ];
 

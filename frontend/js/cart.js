@@ -53,6 +53,125 @@ let cartPricing = {
  */
 let currentCartItems = [];
 let currentCartRestaurant = null;
+
+/*
+ * True while the cart's restaurant cannot accept orders
+ * (Temporarily Unavailable, or outside its operating hours).
+ */
+let restaurantOrderingBlocked = false;
+
+const RESTAURANT_UNAVAILABLE_CART_MESSAGE =
+    "This restaurant is currently unavailable. You cannot place an order at this time.";
+
+function applyCartAvailabilityState() {
+    const checkoutButton =
+        document.getElementById("checkoutBtn");
+
+    const placeOrderButton =
+        document.getElementById("placeOrderBtn");
+
+    let warning =
+        document.getElementById("cartAvailabilityWarning");
+
+    if (!restaurantOrderingBlocked) {
+        if (warning) {
+            warning.classList.remove("error");
+            warning.textContent = "";
+        }
+
+        return;
+    }
+
+    if (!warning) {
+        const cartNotice =
+            document.getElementById("cartNotice");
+
+        if (!cartNotice) {
+            return;
+        }
+
+        warning = document.createElement("div");
+        warning.id = "cartAvailabilityWarning";
+        warning.className = "cart-notice";
+        warning.setAttribute("role", "alert");
+        warning.setAttribute("aria-live", "polite");
+
+        cartNotice.insertAdjacentElement(
+            "afterend",
+            warning
+        );
+    }
+
+    warning.textContent =
+        RESTAURANT_UNAVAILABLE_CART_MESSAGE;
+
+    warning.classList.add("error");
+
+    [checkoutButton, placeOrderButton]
+        .filter(Boolean)
+        .forEach((button) => {
+            button.disabled = true;
+            button.setAttribute("aria-disabled", "true");
+        });
+}
+
+/*
+ * Re-checks the restaurant while the cart page stays open, so the
+ * warning appears (or clears) without a manual refresh.
+ */
+async function refreshCartRestaurantAvailability() {
+    const restaurantId = Number(
+        currentCartRestaurant?.restaurant_id || 0
+    );
+
+    if (restaurantId <= 0 || isPlacingOrder) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/get_public_restaurant.php?restaurant_id=${encodeURIComponent(restaurantId)}`,
+            {
+                credentials: "include",
+                cache: "no-store"
+            }
+        );
+
+        const data = await response.json();
+
+        if (
+            !response.ok ||
+            !data.success ||
+            !data.restaurant
+        ) {
+            return;
+        }
+
+        const blocked =
+            data.restaurant.is_accepting_orders === false;
+
+        if (blocked === restaurantOrderingBlocked) {
+            return;
+        }
+
+        restaurantOrderingBlocked = blocked;
+
+        applyCartAvailabilityState();
+        updateSelectedCartSummary();
+        setPlaceOrderAvailability();
+        applyCartAvailabilityState();
+    } catch (error) {
+        console.warn(
+            "Cart restaurant availability refresh failed:",
+            error
+        );
+    }
+}
+
+window.setInterval(
+    refreshCartRestaurantAvailability,
+    60000
+);
 let currentCustomerTab = "cart";
 
 const CART_SELECTION_KEY = "foodconnect_selected_cart_items";
@@ -91,8 +210,12 @@ function updateSelectedCartSummary() {
 
     const button = document.getElementById("checkoutBtn");
     if (button) {
-        button.disabled = selectedQuantity <= 0;
-        button.setAttribute("aria-disabled", String(selectedQuantity <= 0));
+        const checkoutDisabled =
+            selectedQuantity <= 0 ||
+            restaurantOrderingBlocked;
+
+        button.disabled = checkoutDisabled;
+        button.setAttribute("aria-disabled", String(checkoutDisabled));
 
         const span = button.querySelector("span");
         if (span) {
@@ -1212,6 +1335,9 @@ async function loadCart() {
     resetCartPricing();
     updateTotals(0);
 
+    restaurantOrderingBlocked = false;
+    applyCartAvailabilityState();
+
     try {
         const response = await fetch(
             `${API}/cart_get.php`,
@@ -1339,9 +1465,14 @@ updateTotals(
     data.total_items
 );
 
+       restaurantOrderingBlocked =
+            data.is_accepting_orders === false;
+
        updateSelectedCartSummary();
 
        setCartActionState(true);
+
+       applyCartAvailabilityState();
 
 if (data.prices_updated === true) {
     showCartNotice(
@@ -2492,7 +2623,7 @@ function setPlaceOrderAvailability() {
     const type =
         orderType?.value || "";
 
-    if (isPlacingOrder) {
+    if (isPlacingOrder || restaurantOrderingBlocked) {
         placeOrderButton.disabled = true;
         return;
     }
@@ -5262,6 +5393,15 @@ async function startPayMongoPayment(orderId) {
 
 async function placeOrder() {
     if (isPlacingOrder) {
+        return;
+    }
+
+    if (restaurantOrderingBlocked) {
+        showCheckoutMessage(
+            RESTAURANT_UNAVAILABLE_CART_MESSAGE,
+            "error"
+        );
+
         return;
     }
 

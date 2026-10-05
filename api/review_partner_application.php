@@ -862,7 +862,7 @@ $publishStmt =
         UPDATE tbl_restaurants
         SET
             customer_visibility = 'Visible',
-            business_status = 'Closed'
+            business_status = 'Temporarily Unavailable'
         WHERE restaurant_id = ?
           AND owner_id = ?
         LIMIT 1
@@ -1069,7 +1069,7 @@ $approvalBody = "
 
         <p>
             For safety, your restaurant is initially set to
-            <strong>Closed</strong>. It will not accept new orders
+            <strong>Temporarily Unavailable</strong>. It will not accept new orders
             until you manually open it from the Owner Dashboard.
         </p>
 

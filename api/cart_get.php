@@ -97,6 +97,7 @@ require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/paymongo_config.php";
 require_once __DIR__ . "/product_image_helper.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/restaurant_availability_helper.php";
 
 $user_id = (int)$_SESSION["user_id"];
 
@@ -1218,6 +1219,13 @@ $order_types = [
     "delivery"
 ];
 
+/*
+ * Restaurant availability (manual status + operating hours). The cart page
+ * uses this to warn the customer and block checkout while the restaurant
+ * cannot accept orders. Null means availability could not be determined.
+ */
+$restaurant_availability = null;
+
 if (
     $cart_restaurant_id > 0 &&
     !$has_mixed_restaurants
@@ -1228,7 +1236,9 @@ if (
             name,
             logo_path,
             delivery_fee,
-            order_types_json
+            order_types_json,
+            business_status,
+            opening_hours
 
         FROM tbl_restaurants
 
@@ -1289,6 +1299,25 @@ if (
     $restaurantStmt->close();
 
     if ($restaurantRow) {
+        try {
+            $restaurant_availability =
+                fc_restaurant_evaluate_availability(
+                    (string) (
+                        $restaurantRow["business_status"] ??
+                        "Temporarily Unavailable"
+                    ),
+                    (string) (
+                        $restaurantRow["opening_hours"] ??
+                        ""
+                    )
+                );
+        } catch (Throwable $availabilityError) {
+            error_log(
+                "cart_get.php availability check failed: " .
+                $availabilityError->getMessage()
+            );
+        }
+
         $cart_restaurant = [
             "restaurant_id" =>
                 (int)(
@@ -1389,6 +1418,24 @@ respond_json([
     "restaurant_name" =>
         $cart_restaurant["name"] ??
         null,
+
+    "is_accepting_orders" =>
+        $restaurant_availability !== null
+            ? (bool) $restaurant_availability["is_accepting_orders"]
+            : true,
+
+    "restaurant_customer_status" =>
+        $restaurant_availability !== null
+            ? (string) $restaurant_availability["customer_status"]
+            : "Open",
+
+    "restaurant_unavailable_message" =>
+        $restaurant_availability !== null &&
+        empty($restaurant_availability["is_accepting_orders"])
+            ? fc_restaurant_unavailable_message(
+                $restaurant_availability
+            )
+            : "",
 
     "restaurant_logo" =>
         $cart_restaurant["logo_path"] ??

@@ -188,7 +188,6 @@ $banner_path = trim(
 
 $allowed_status = [
     "Open",
-    "Closed",
     "Temporarily Unavailable"
 ];
 

@@ -413,14 +413,14 @@ try {
     if ($action === "deactivate") {
         /*
         |--------------------------------------------------------------------------
-        | Close restaurant
+        | Make restaurant temporarily unavailable
         |--------------------------------------------------------------------------
         */
 
         $closeStmt = $conn->prepare("
             UPDATE tbl_restaurants
 
-            SET business_status = 'Closed'
+            SET business_status = 'Temporarily Unavailable'
 
             WHERE restaurant_id = ?
 
@@ -567,14 +567,14 @@ try {
 
         /*
         |--------------------------------------------------------------------------
-        | Keep restaurant closed until owner manually opens it
+        | Keep restaurant temporarily unavailable until owner manually opens it
         |--------------------------------------------------------------------------
         */
 
         $closedStmt = $conn->prepare("
             UPDATE tbl_restaurants
 
-            SET business_status = 'Closed'
+            SET business_status = 'Temporarily Unavailable'
 
             WHERE restaurant_id = ?
 

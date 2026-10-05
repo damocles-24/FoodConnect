@@ -156,8 +156,8 @@ const dashboardOwnerCount =
   document.getElementById("dashboardOwnerCount");
 const dashboardStaffCount =
   document.getElementById("dashboardStaffCount");
-const dashboardClosedRestaurants =
-  document.getElementById("dashboardClosedRestaurants");
+const dashboardUnavailableRestaurants =
+  document.getElementById("dashboardUnavailableRestaurants");
 
 const dashboardQuickActions =
   document.querySelectorAll(
@@ -291,11 +291,6 @@ const totalRestaurantsCount =
 const openRestaurantsCount =
   document.getElementById(
     "openRestaurantsCount"
-  );
-
-const closedRestaurantsCount =
-  document.getElementById(
-    "closedRestaurantsCount"
   );
 
 const unavailableRestaurantsCount =
@@ -591,7 +586,7 @@ async function loadAdminDashboardSummary() {
     setText("approvedCount", summary.approved_restaurants || 0);
     setText(dashboardRestaurantTotal, summary.total_restaurants || 0);
     setText(dashboardOpenRestaurants, summary.open_restaurants || 0);
-    setText(dashboardClosedRestaurants, summary.closed_restaurants || 0);
+    setText(dashboardUnavailableRestaurants, summary.temporarily_unavailable || 0);
     setText(dashboardOwnerCount, summary.restaurant_owners || 0);
     setText(dashboardStaffCount, summary.restaurant_staff || 0);
   } catch (error) {
@@ -2063,18 +2058,6 @@ function renderRestaurants(
               </option>
 
               <option
-                value="Closed"
-                ${
-                  restaurant.business_status ===
-                  "Closed"
-                    ? "selected"
-                    : ""
-                }
-              >
-                Closed
-              </option>
-
-              <option
                 value="Temporarily Unavailable"
                 ${
                   restaurant.business_status ===
@@ -2468,13 +2451,6 @@ function updateRestaurantSummary(
   );
 
   setText(
-    closedRestaurantsCount,
-    Number(
-      summary.closed_restaurants || 0
-    )
-  );
-
-  setText(
     unavailableRestaurantsCount,
     Number(
       summary.temporarily_unavailable || 0
@@ -2488,9 +2464,6 @@ function getRestaurantStatusClass(
   switch (status) {
     case "Open":
       return "status-approved";
-
-    case "Closed":
-      return "status-rejected";
 
     case "Temporarily Unavailable":
       return "status-draft";

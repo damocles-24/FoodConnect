@@ -33,10 +33,123 @@ function goToCart() {
 const API = "/api";
 
 let currentRestaurantStatus =
-  "Closed";
+  "Temporarily Unavailable";
 
 let restaurantAcceptingOrders =
   false;
+
+/*
+ * Why ordering is blocked, as reported by the server:
+ * "manual_status"   -> status is Temporarily Unavailable
+ * "schedule_closed" -> status is Open but outside operating hours
+ */
+let restaurantAvailabilityReason =
+  "";
+
+function getRestaurantAvailabilityNotice() {
+  if (restaurantAvailabilityReason === "schedule_closed") {
+    return {
+      title: "Currently unavailable",
+      message:
+        "This restaurant is outside its operating hours. Please check back later.",
+      shortMessage:
+        "This restaurant is outside its operating hours. Please check back later."
+    };
+  }
+
+  return {
+    title: "Temporarily Unavailable",
+    message:
+      "This restaurant is temporarily unavailable. You can still browse the menu, but ordering is currently disabled.",
+    shortMessage:
+      "This restaurant is temporarily unavailable."
+  };
+}
+
+/*
+ * Shows or hides the availability banner and locks or unlocks every
+ * ordering control. Safe to call repeatedly: when the restaurant becomes
+ * Open again, only controls locked by this function are restored.
+ */
+function applyRestaurantOrderingState() {
+  if (
+    typeof IS_PREVIEW_MODE !== "undefined" &&
+    IS_PREVIEW_MODE
+  ) {
+    return;
+  }
+
+  const ordering =
+    restaurantAcceptingOrders === true;
+
+  const notice =
+    getRestaurantAvailabilityNotice();
+
+  document.body.classList.toggle(
+    "restaurant-ordering-disabled",
+    !ordering
+  );
+
+  const banner =
+    document.getElementById(
+      "restaurantAvailabilityBanner"
+    );
+
+  if (banner) {
+    const bannerTitle =
+      document.getElementById(
+        "restaurantAvailabilityTitle"
+      );
+
+    const bannerMessage =
+      document.getElementById(
+        "restaurantAvailabilityMessage"
+      );
+
+    if (bannerTitle) {
+      bannerTitle.textContent =
+        notice.title;
+    }
+
+    if (bannerMessage) {
+      bannerMessage.textContent =
+        notice.message;
+    }
+
+    banner.hidden = ordering;
+  }
+
+  const controls = [
+    ...document.querySelectorAll(
+      ".dynamic-add-to-cart"
+    ),
+    ...document.querySelectorAll(
+      "#decreaseProductQuantity, " +
+      "#increaseProductQuantity, " +
+      "#confirmProductAddToCart"
+    )
+  ];
+
+  controls.forEach((control) => {
+    if (!ordering) {
+      control.disabled = true;
+      control.dataset.orderingLocked = "1";
+      control.title = notice.shortMessage;
+      return;
+    }
+
+    if (control.dataset.orderingLocked === "1") {
+      delete control.dataset.orderingLocked;
+      control.removeAttribute("title");
+
+      if (
+        control.dataset.productUnavailable !== "true"
+      ) {
+        control.disabled = false;
+      }
+    }
+  });
+}
 const pageParameters =
   new URLSearchParams(
     window.location.search
@@ -750,7 +863,7 @@ if (
         (
           IS_PREVIEW_MODE
             ? "Preview"
-            : "Closed"
+            : "Temporarily Unavailable"
         )
       ).trim();
 
@@ -768,6 +881,12 @@ if (
               .is_accepting_orders ===
             true
           );
+
+    restaurantAvailabilityReason =
+      String(
+        restaurant.availability_reason ||
+        ""
+      ).trim();
 
     document.title =
       IS_PREVIEW_MODE
@@ -891,7 +1010,7 @@ if (
           : (
               restaurantAcceptingOrders
                 ? `${address} • Currently accepting orders`
-                : `${address} • Currently closed`
+                : `${address} • Currently unavailable`
             );
     }
 
@@ -1030,12 +1149,18 @@ if (
         String(
           restaurant.customer_status ||
           restaurant.business_status ||
-          "Closed"
+          "Temporarily Unavailable"
         ).trim();
 
       restaurantAcceptingOrders =
         restaurant.is_accepting_orders ===
         true;
+
+      restaurantAvailabilityReason =
+        String(
+          restaurant.availability_reason ||
+          ""
+        ).trim();
 
       if (restaurantBusinessStatus) {
         restaurantBusinessStatus.textContent =
@@ -1052,7 +1177,7 @@ if (
         heroRestaurantDetails.textContent =
           restaurantAcceptingOrders
             ? `${address} • Currently accepting orders`
-            : `${address} • Currently closed`;
+            : `${address} • Currently unavailable`;
       }
 
       if (
@@ -1062,6 +1187,8 @@ if (
         restaurantOpeningHours.textContent =
           String(restaurant.opening_hours);
       }
+
+      applyRestaurantOrderingState();
     } catch (error) {
       console.warn(
         "Restaurant availability refresh failed:",
@@ -2781,7 +2908,14 @@ return `
       ? "Choose Options"
       : "Add to Cart"
   }"
-  ${isUnavailable ? "disabled" : ""}
+  ${isUnavailable
+    ? 'disabled data-product-unavailable="true"'
+    : (
+        !IS_PREVIEW_MODE &&
+        !restaurantAcceptingOrders
+          ? 'disabled data-ordering-locked="1"'
+          : ""
+      )}
 >
   ${
     group.variants.length > 1
@@ -2989,11 +3123,14 @@ const isFallback =
           data-original-text="${
             buttonText
           }"
-          ${
-            isUnavailable
-              ? "disabled"
-              : ""
-          }
+          ${isUnavailable
+    ? 'disabled data-product-unavailable="true"'
+    : (
+        !IS_PREVIEW_MODE &&
+        !restaurantAcceptingOrders
+          ? 'disabled data-ordering-locked="1"'
+          : ""
+      )}
         >
           ${buttonText}
         </button>
@@ -3846,11 +3983,17 @@ currentRestaurantStatus =
   String(
     restaurant.customer_status ||
     restaurant.business_status ||
-    "Closed"
+    "Temporarily Unavailable"
   );
 
 restaurantAcceptingOrders =
   restaurant.is_accepting_orders === true;
+
+restaurantAvailabilityReason =
+  String(
+    restaurant.availability_reason ||
+    ""
+  ).trim();
 
         
 
@@ -4508,22 +4651,25 @@ function matchesCurrentFilters(
     return false;
   }
 
+  /*
+   * Ordering is blocked while the restaurant is Temporarily Unavailable
+   * or outside its operating hours. Check before touching the button so
+   * it never gets stuck on "Adding...".
+   */
+  if (!restaurantAcceptingOrders) {
+    alert(
+      getRestaurantAvailabilityNotice().shortMessage
+    );
+
+    return false;
+  }
+
   try {
     if (button) {
       button.disabled = true;
       button.textContent = "Adding...";
     }
-if (!restaurantAcceptingOrders) {
 
-    alert(
-        currentRestaurantStatus ===
-        "Temporarily Unavailable"
-            ? "This restaurant is temporarily unavailable."
-            : "This restaurant is currently closed."
-    );
-
-    return;
-}
     const response = await fetch(
       `${API}/cart_add.php`,
       {
@@ -4685,6 +4831,14 @@ async function handleProductGridClick(
     !button ||
     button.disabled
   ) {
+    return;
+  }
+
+  if (!restaurantAcceptingOrders) {
+    alert(
+      getRestaurantAvailabilityNotice().shortMessage
+    );
+
     return;
   }
 
@@ -4941,6 +5095,8 @@ if (!restaurantLoaded) {
   return;
 }
 
+applyRestaurantOrderingState();
+
 if (IS_PREVIEW_MODE) {
   if (popularSection) {
     popularSection.hidden =
@@ -4967,6 +5123,8 @@ if (IS_PREVIEW_MODE) {
 
 await loadDatabaseProducts();
 
+applyRestaurantOrderingState();
+
 /*
  * Keep the customer-facing status synchronized with the owner's
  * weekly schedule. The API evaluates the schedule in Asia/Manila.
@@ -4987,7 +5145,9 @@ applyFilters();
  * Popular Products requires databaseProductGroups, so it
  * starts after the main menu but does not block the page.
  */
-void loadPopularProducts();
+void loadPopularProducts().then(
+  applyRestaurantOrderingState
+);
 
 /*
  * Cart badge is secondary UI and may update independently.

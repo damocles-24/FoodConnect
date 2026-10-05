@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 04, 2026 at 02:11 AM
+-- Generation Time: Oct 05, 2026 at 01:30 AM
 -- Server version: 11.4.13-MariaDB-cll-lve-log
 -- PHP Version: 8.4.25
 
@@ -20,6 +20,22 @@ SET time_zone = "+00:00";
 --
 -- Database: `foodbbfd_foodconnect`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_account_status_history`
+--
+
+CREATE TABLE `tbl_account_status_history` (
+  `history_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `action` varchar(30) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `performed_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -1782,7 +1798,8 @@ INSERT INTO `tbl_activity_logs` (`log_id`, `restaurant_id`, `user_id`, `user_rol
 (1968, 8, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Alon\'s Cafe Alaminos from Closed to Open.', '2026-09-30 14:55:43'),
 (1969, 8, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Alon\'s Cafe Alaminos from Open to Temporarily Unavailable.', '2026-09-30 14:55:49'),
 (1970, 8, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed Alon\'s Cafe Alaminos from Temporarily Unavailable to Open.', '2026-09-30 15:02:26'),
-(1971, 0, 17, 'admin', 'account_status', 'Platform User Activated', 'Carlos Jay Miguel T. Porto changed Cj Tamayo Porto (molinakairos@gmail.com, Owner) from Inactive to Active.', '2026-10-04 06:07:08');
+(1971, 0, 17, 'admin', 'account_status', 'Platform User Activated', 'Carlos Jay Miguel T. Porto changed Cj Tamayo Porto (molinakairos@gmail.com, Owner) from Inactive to Active.', '2026-10-04 06:07:08'),
+(1972, 9, 17, 'admin', 'restaurant_status', 'Restaurant Status Updated', 'Carlos Jay Miguel T. Porto changed The Galley Pizza Alaminos Branch from Closed to Open.', '2026-10-04 07:21:46');
 
 -- --------------------------------------------------------
 
@@ -1871,6 +1888,10 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (139, '0a16f1878a10c74fd7ce995ea2912091f4f1e781e6828654a40365b9acf68cee', '110.54.214.138', 'access_code', 1, '2026-09-21 01:51:41'),
 (120, '0af39001c6916dda7c5d5f1fd906b2b414721562bbafc936aec693723c0af177', '175.176.15.167', 'access_code', 0, '2026-09-11 23:43:17'),
 (121, '0af39001c6916dda7c5d5f1fd906b2b414721562bbafc936aec693723c0af177', '175.176.15.167', 'access_code', 1, '2026-09-11 23:43:24'),
+(165, '2663e6757bff6f4796bd434251ff21969c79cb02d0ce5bd9a88b701047d94dae', '110.54.153.2', 'access_code', 0, '2026-10-05 03:54:29'),
+(166, '2663e6757bff6f4796bd434251ff21969c79cb02d0ce5bd9a88b701047d94dae', '110.54.153.2', 'access_code', 1, '2026-10-05 03:54:39'),
+(170, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.198', 'credentials', 1, '2026-10-05 04:53:59'),
+(167, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.2', 'credentials', 1, '2026-10-05 03:54:43'),
 (135, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.65', 'credentials', 0, '2026-09-18 08:34:49'),
 (136, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.65', 'credentials', 1, '2026-09-18 08:36:08'),
 (107, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.199.200', 'credentials', 1, '2026-09-10 02:55:42'),
@@ -2029,7 +2050,9 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (147, 'c81ace467d30f51c9caa97390f01fa04ba77a281f2e5c15c1877c427533a4f7c', '111.90.233.143', 'access_code', 1, '2026-09-23 02:52:35'),
 (105, 'e0b7b8787af640f3eb2e413c70a0b0ae30bf78cc8454649fd4bd78b661fece87', '110.54.199.200', 'access_code', 0, '2026-09-10 02:52:58'),
 (106, 'e0b7b8787af640f3eb2e413c70a0b0ae30bf78cc8454649fd4bd78b661fece87', '110.54.199.200', 'access_code', 1, '2026-09-10 02:54:16'),
-(163, 'e7e49a6bf5dc8f35c29d3b4dd3994e302b3765c4310a72a6dde18718dd286d97', '175.176.15.175', 'access_code', 1, '2026-10-04 06:06:43');
+(163, 'e7e49a6bf5dc8f35c29d3b4dd3994e302b3765c4310a72a6dde18718dd286d97', '175.176.15.175', 'access_code', 1, '2026-10-04 06:06:43'),
+(168, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 0, '2026-10-05 04:53:51'),
+(169, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 1, '2026-10-05 04:53:57');
 
 -- --------------------------------------------------------
 
@@ -3806,7 +3829,7 @@ CREATE TABLE `tbl_restaurants` (
   `opening_hours` varchar(100) DEFAULT NULL,
   `delivery_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
   `order_types_json` longtext DEFAULT NULL,
-  `business_status` enum('Open','Closed','Temporarily Unavailable') NOT NULL DEFAULT 'Open',
+  `business_status` enum('Open','Temporarily Unavailable') NOT NULL DEFAULT 'Open',
   `owner_id` int(11) NOT NULL,
   `staff_access_code` varchar(100) NOT NULL,
   `setup_completed` tinyint(1) NOT NULL DEFAULT 0,
@@ -3821,7 +3844,7 @@ INSERT INTO `tbl_restaurants` (`restaurant_id`, `name`, `description`, `logo_pat
 (6, 'Drop By Cafe', '?? All Day Breakfast & Pasta\n?? Coffee & Non-Coffee Drinks\n? Snacks and Pastries\n?? Air-Conditioned Area\n? Pet-Friendly Cafe\n? PS4 and Board Games\n?Books Collections\n? Free Wi-Fi\n?? Free Parking\n? Dine In / Take Out / Delivery/ Pick-Up', 'uploads/restaurant_logos/owner_27/restaurant_logo_20260921_231318_36f66fad165b317e.png', '', 'Sabaro, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639617879757', 'Mon-Sun 9:00 AM-11:59 PM', 70.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 27, '$2y$10$eAfPxJyXKQrXpw93MS3hLOW8CB0D.gIQldCErLnAORAjlFzDr8vs.', 1, 'Visible'),
 (7, 'Jai\'s Grill and Resto', 'We are open for Dine-in, Take-out, Deliveries and Reservations.', 'uploads/restaurant_logos/owner_29/restaurant_logo_20260921_232034_d68f2914ccdac348.png', '', 'EJR Building, Marcos Avenue, Palamis, City of Alaminos, Pangasinan, Philippines', '+639273980481', 'Mon 8:00 AM-11:26 PM; Tue-Sun 8:00 AM-8:00 PM', 30.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 29, '$2y$10$CgfpaZyM1RszbqZVA6vJPeYGYR4mCzyDn78Lgc4MRd3eo8tVtGHyK', 1, 'Visible'),
 (8, 'Alon\'s Cafe Alaminos', 'Japanese-Korean Cafe & Restaurant', 'uploads/restaurant_logos/owner_30/restaurant_logo_20260921_232940_68c3578a029a7700.png', '', 'Ground floor, Davros Complex, M. Rabago St., San Jose Drive, Poblacion, City of Alaminos, Pangasinan, Philippines', '+639165843190', 'Mon-Fri 8:00 AM-11:59 PM; Sat 12:15 AM-8:59 PM; Sun 8:00 AM-11:59 PM', 0.95, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 30, '$2y$10$TDAlEE1nu4F50olKOzwHPu61QkQ2U4h57zg2wreEc9IKcKBN6Y36m', 1, 'Visible'),
-(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260921_232457_fa94daad8ef06bdb.png', 'uploads/restaurant_banners/owner_31/restaurant_banner_20260927_112515_f9a3bb43549dfe49.jpg', 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Closed', 31, '$2y$10$la3seAQyuIF/MN3XCYbZ7OYKONFwdgyPrc96rsoqNEAYrpwy2HAf6', 1, 'Visible');
+(9, 'The Galley Pizza Alaminos Branch', '', 'uploads/restaurant_logos/owner_31/restaurant_logo_20260921_232457_fa94daad8ef06bdb.png', 'uploads/restaurant_banners/owner_31/restaurant_banner_20260927_112515_f9a3bb43549dfe49.jpg', 'C.P. Gracia St., Poblacion, City of Alaminos, Pangasinan, Philippines', '+639956327964', 'Mon-Sun 8:00 AM-8:00 PM', 50.00, '[\"delivery\",\"dine-in\",\"takeout\"]', 'Open', 31, '$2y$10$la3seAQyuIF/MN3XCYbZ7OYKONFwdgyPrc96rsoqNEAYrpwy2HAf6', 1, 'Visible');
 
 -- --------------------------------------------------------
 
@@ -3916,37 +3939,49 @@ CREATE TABLE `tbl_users` (
   `verification_expires_at` datetime DEFAULT NULL,
   `terms_accepted` tinyint(1) NOT NULL DEFAULT 0,
   `terms_accepted_at` datetime DEFAULT NULL,
-  `terms_version` varchar(20) DEFAULT NULL
+  `terms_version` varchar(20) DEFAULT NULL,
+  `deactivation_reason` text DEFAULT NULL,
+  `deactivated_at` datetime DEFAULT NULL,
+  `deactivated_by` int(11) DEFAULT NULL,
+  `reactivated_at` datetime DEFAULT NULL,
+  `reactivated_by` int(11) DEFAULT NULL,
+  `reactivation_note` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_users`
 --
 
-INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `first_name`, `middle_name`, `last_name`, `suffix`, `username`, `email`, `contact_number`, `address`, `password_hash`, `must_change_password`, `status`, `created_at`, `remember_token_hash`, `remember_token_expires`, `reset_token_hash`, `reset_token_expires`, `is_verified`, `verification_token`, `verification_expires_at`, `terms_accepted`, `terms_accepted_at`, `terms_version`) VALUES
-(17, NULL, 'admin', 'Carlos Jay Miguel T. Porto', NULL, NULL, NULL, NULL, 'foodconnectv1@gmail.com', '+639457309228', NULL, '$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq', 0, 1, '2026-07-16 06:02:12', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(27, 6, 'owner', 'Jemillene ', NULL, 'Laurente', NULL, NULL, 'gelracho07@gmail.com', '+639295096884', NULL, '$2y$10$/iRsgy9Txea.Qjnc55PHd.G0o8WegRV3MIIIUviSubye8MgY8G9OC', 0, 1, '2026-08-14 18:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(29, 7, 'owner', 'Mary Joy Peralta', NULL, NULL, NULL, NULL, 'jaisfc2026@gmail.com', '+639273980481', NULL, '$2y$10$fc6cWhi8Iwgw7dFbi8Fy0O.SYjUnC4zjedPITeolCiDbx82to9oSe', 0, 1, '2026-08-16 16:33:17', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(30, 8, 'owner', 'Rizza D. Ranoy', NULL, NULL, NULL, NULL, 'alonsfc67@gmail.com', '+639165843190', NULL, '$2y$10$WLsZSXZsNfMFEqLuRxyLEuy./Or1MOZfA40HtQgrFZKLAxmhJdIiq', 0, 1, '2026-08-17 06:43:03', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(31, 9, 'owner', 'Dary Apolinario Castro', NULL, NULL, NULL, NULL, 'galleyfc8@gmail.com', '+639956327964', NULL, '$2y$10$2dY7d8qpfSzCGRlUiMoewO5HAWgoxs74g5vcdLCZ.1ATGpk1CVRlC', 0, 1, '2026-08-17 11:10:39', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(33, 6, 'delivery_staff', 'Ian Reigh', 'P', 'Dela Cruz', NULL, NULL, 'iandelacruz@gmail.com', '+639123456788', 'Ene, Bolaney, City of Alaminos, Pangasinan, Philippines', '$2y$10$8BF3qGKZgWuCTYX9xoYd8O4iNRnPh62dnzg9xgXq1rn6XF5gi4.ZS', 0, 1, '2026-08-25 13:27:10', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(34, 6, 'cashier', 'Angel', '', 'Recepcion', NULL, NULL, 'angelrecep123@gmail.com', '+639112233443', 'Basta, San Roque, City of Alaminos, Pangasinan, Philippines', '$2y$10$A.ks7wrNOmb41cLE13pXueHJqYWC/3XFlXxAJfAcob4tURzZy0Yya', 0, 1, '2026-08-25 13:29:58', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(35, 6, 'delivery_staff', 'Andoy', 'Humilde', 'Bangal', NULL, NULL, 'andoykuhonta@gmail.com', '+639123456666', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$B44qOP6TQfyK5Eg7ANQDqu9qmy5w.F5z5CYvY8B6nrnJ08NTKe8nC', 0, 1, '2026-09-04 11:04:51', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(52, 8, 'cashier', 'test', '', 'Cashier', NULL, NULL, 'testcashier@gmail.com', '+639418773819', 'Poblacion, Bayaoas, Aguilar, Pangasinan, Philippines', '$2y$10$YG1dfCkb93SUVIPf9QzZZ.fcT24HoNe6L9IZkcAdUvnEkS7bYVq5m', 0, 1, '2026-09-14 15:08:38', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(53, 8, 'delivery_staff', 'test', '', 'Driver', NULL, NULL, 'testdriver@gmail.com', '+639654487646', 'Banao, Bacacay, Albay, Philippines', '$2y$10$7rASFR/9CJ8cOhCNbt37t.KR4wO9PMIe39TCrGTb06G4YtrUvcVqG', 0, 1, '2026-09-14 15:09:29', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(55, NULL, 'delivery_staff', 'Jarc', '', 'Criss', NULL, NULL, 'jarc@gmail.com', '+639123456789', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$RWOvxDOhZZKrd5DWvUPsleLGsLvhsuLRKILzMLWXYPZibPLrzE0ty', 1, 1, '2026-09-15 04:26:26', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(61, 7, 'cashier', 'text', 'cashier', '1234', NULL, NULL, 'ofeliavaldez@gmail.com', '+639464469494', '123, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$uo0y07AhTH61N1df0UCWkeRFGOxV7gFi37pUM4w4uWiFW13DJUimK', 0, 1, '2026-09-18 08:06:29', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(75, NULL, 'customer', 'Cj', '', 'Porto', NULL, 'james', 'jameslee050505051@gmail.com', '+639090421394', 'Bao-yan, Boliney, Abra, Philippines', '$2y$10$BBCoXtadZvUCdr0qEfi/0ejVK3RXQsX5OauMuAeh0HR18zo/tqeaq', 0, 1, '2026-09-23 14:58:43', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(77, NULL, 'customer', 'FATIMA', '', 'GATCHALIAN', NULL, 'amitaf', 'gwc.faculty.gatchalian@gmail.com', '+639073634200', NULL, '$2y$10$DS8sqVdqojDuzVZ9StGsFO6e3sMfNqXwhtcjzuj9HIQ.Ke4yzCJbi', 0, 1, '2026-09-24 10:14:48', '$2y$10$rPoXE5wrWpvqLj/mbt3n3uND6YtP7iFSuGYl9cenSq5hhcEB5ACOa', '2026-10-24 20:55:35', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(81, NULL, 'customer', 'Russ', '', 'Bangal', NULL, 'russpogi', 'rjareylebangal@gmail.com', '+639995188492', NULL, '$2y$10$3oED9oiYc03ys1wvzdtVAuRTX.lqhn/AsOREVm3KxRQc7UvtgrE2W', 0, 1, '2026-09-26 11:46:20', '$2y$10$FoVY/OsBb7Coe1.ExZPB2eUYSTMUbHQ5WbTbUu2bH4FKH.R27NsEG', '2026-11-02 02:07:45', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(82, NULL, 'customer', 'Ke Ann', 'Ann', 'Recepcion', NULL, 'keann', 'recepcionkeann@gmail.com', '+639123456789', NULL, '$2y$10$U2fZZXQQ7DeWUCFtupZ9Au9h6mnkFhhlDTNaI74Nh4rfdDKCHBuTO', 0, 1, '2026-09-26 14:24:33', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(83, NULL, 'customer', 'Jarc', 'kriss', 'Criss', NULL, 'jc13', 'jarccriss@gmail.com', '+639000000000', 'San Jose Drive, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$mnBeXt4zagpmUgMsjOK5U.tBlu/wvaJYhra2ugimoQ5vlvZbVS0im', 0, 1, '2026-09-26 14:33:36', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(85, NULL, 'customer', 'Kairos Jil', 'Ibarra', 'Molina', NULL, 'kairosjil', 'molinakairosjil@gmail.com', '+639234567893', NULL, '$2y$10$4xCv4baURRbFpq8mp1wLXOoXwVmm8XERHS0INcCa1xVdyRK2Uq8pO', 0, 1, '2026-09-29 07:42:20', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL),
-(86, NULL, 'owner', 'Cj', 'Tamayo', 'Porto', NULL, NULL, 'molinakairos@gmail.com', '+639457309228', NULL, '$2y$10$bz/z/WFC3ZvLevzPvrR7..VkWa8k0YoPQYvFNIHFQ7HU0eIHV.guC', 0, 1, '2026-09-29 08:22:31', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL);
+INSERT INTO `tbl_users` (`user_id`, `restaurant_id`, `role`, `first_name`, `middle_name`, `last_name`, `suffix`, `username`, `email`, `contact_number`, `address`, `password_hash`, `must_change_password`, `status`, `created_at`, `remember_token_hash`, `remember_token_expires`, `reset_token_hash`, `reset_token_expires`, `is_verified`, `verification_token`, `verification_expires_at`, `terms_accepted`, `terms_accepted_at`, `terms_version`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `reactivated_at`, `reactivated_by`, `reactivation_note`) VALUES
+(17, NULL, 'admin', 'Carlos Jay Miguel T. Porto', NULL, NULL, NULL, NULL, 'foodconnectv1@gmail.com', '+639457309228', NULL, '$2y$10$HExF9FmCKV0GMnEDRHWJT.T.e4BrRlL.ywOLwBm7dc43c6R1m0Xvq', 0, 1, '2026-07-16 06:02:12', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(27, 6, 'owner', 'Jemillene ', NULL, 'Laurente', NULL, NULL, 'gelracho07@gmail.com', '+639295096884', NULL, '$2y$10$/iRsgy9Txea.Qjnc55PHd.G0o8WegRV3MIIIUviSubye8MgY8G9OC', 0, 1, '2026-08-14 18:29:16', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(29, 7, 'owner', 'Mary Joy Peralta', NULL, NULL, NULL, NULL, 'jaisfc2026@gmail.com', '+639273980481', NULL, '$2y$10$fc6cWhi8Iwgw7dFbi8Fy0O.SYjUnC4zjedPITeolCiDbx82to9oSe', 0, 1, '2026-08-16 16:33:17', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(30, 8, 'owner', 'Rizza D. Ranoy', NULL, NULL, NULL, NULL, 'alonsfc67@gmail.com', '+639165843190', NULL, '$2y$10$WLsZSXZsNfMFEqLuRxyLEuy./Or1MOZfA40HtQgrFZKLAxmhJdIiq', 0, 1, '2026-08-17 06:43:03', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(31, 9, 'owner', 'Dary Apolinario Castro', NULL, NULL, NULL, NULL, 'galleyfc8@gmail.com', '+639956327964', NULL, '$2y$10$2dY7d8qpfSzCGRlUiMoewO5HAWgoxs74g5vcdLCZ.1ATGpk1CVRlC', 0, 1, '2026-08-17 11:10:39', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(33, 6, 'delivery_staff', 'Ian Reigh', 'P', 'Dela Cruz', NULL, NULL, 'iandelacruz@gmail.com', '+639123456788', 'Ene, Bolaney, City of Alaminos, Pangasinan, Philippines', '$2y$10$8BF3qGKZgWuCTYX9xoYd8O4iNRnPh62dnzg9xgXq1rn6XF5gi4.ZS', 0, 1, '2026-08-25 13:27:10', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(34, 6, 'cashier', 'Angel', '', 'Recepcion', NULL, NULL, 'angelrecep123@gmail.com', '+639112233443', 'Basta, San Roque, City of Alaminos, Pangasinan, Philippines', '$2y$10$A.ks7wrNOmb41cLE13pXueHJqYWC/3XFlXxAJfAcob4tURzZy0Yya', 0, 1, '2026-08-25 13:29:58', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(35, 6, 'delivery_staff', 'Andoy', 'Humilde', 'Bangal', NULL, NULL, 'andoykuhonta@gmail.com', '+639123456666', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$B44qOP6TQfyK5Eg7ANQDqu9qmy5w.F5z5CYvY8B6nrnJ08NTKe8nC', 0, 1, '2026-09-04 11:04:51', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(52, 8, 'cashier', 'test', '', 'Cashier', NULL, NULL, 'testcashier@gmail.com', '+639418773819', 'Poblacion, Bayaoas, Aguilar, Pangasinan, Philippines', '$2y$10$YG1dfCkb93SUVIPf9QzZZ.fcT24HoNe6L9IZkcAdUvnEkS7bYVq5m', 0, 1, '2026-09-14 15:08:38', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(53, 8, 'delivery_staff', 'test', '', 'Driver', NULL, NULL, 'testdriver@gmail.com', '+639654487646', 'Banao, Bacacay, Albay, Philippines', '$2y$10$7rASFR/9CJ8cOhCNbt37t.KR4wO9PMIe39TCrGTb06G4YtrUvcVqG', 0, 1, '2026-09-14 15:09:29', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(55, NULL, 'delivery_staff', 'Jarc', '', 'Criss', NULL, NULL, 'jarc@gmail.com', '+639123456789', 'Eme lang, Poblacion, City of Alaminos, Pangasinan, Philippines', '$2y$10$RWOvxDOhZZKrd5DWvUPsleLGsLvhsuLRKILzMLWXYPZibPLrzE0ty', 1, 1, '2026-09-15 04:26:26', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(61, 7, 'cashier', 'text', 'cashier', '1234', NULL, NULL, 'ofeliavaldez@gmail.com', '+639464469494', '123, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$uo0y07AhTH61N1df0UCWkeRFGOxV7gFi37pUM4w4uWiFW13DJUimK', 0, 1, '2026-09-18 08:06:29', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(75, NULL, 'customer', 'Cj', '', 'Porto', NULL, 'james', 'jameslee050505051@gmail.com', '+639090421394', 'Bao-yan, Boliney, Abra, Philippines', '$2y$10$BBCoXtadZvUCdr0qEfi/0ejVK3RXQsX5OauMuAeh0HR18zo/tqeaq', 0, 1, '2026-09-23 14:58:43', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(77, NULL, 'customer', 'FATIMA', '', 'GATCHALIAN', NULL, 'amitaf', 'gwc.faculty.gatchalian@gmail.com', '+639073634200', NULL, '$2y$10$DS8sqVdqojDuzVZ9StGsFO6e3sMfNqXwhtcjzuj9HIQ.Ke4yzCJbi', 0, 1, '2026-09-24 10:14:48', '$2y$10$rPoXE5wrWpvqLj/mbt3n3uND6YtP7iFSuGYl9cenSq5hhcEB5ACOa', '2026-10-24 20:55:35', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(81, NULL, 'customer', 'Russ', '', 'Bangal', NULL, 'russpogi', 'rjareylebangal@gmail.com', '+639995188492', NULL, '$2y$10$3oED9oiYc03ys1wvzdtVAuRTX.lqhn/AsOREVm3KxRQc7UvtgrE2W', 0, 1, '2026-09-26 11:46:20', '$2y$10$FoVY/OsBb7Coe1.ExZPB2eUYSTMUbHQ5WbTbUu2bH4FKH.R27NsEG', '2026-11-02 02:07:45', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(82, NULL, 'customer', 'Ke Ann', 'Ann', 'Recepcion', NULL, 'keann', 'recepcionkeann@gmail.com', '+639123456789', NULL, '$2y$10$U2fZZXQQ7DeWUCFtupZ9Au9h6mnkFhhlDTNaI74Nh4rfdDKCHBuTO', 0, 1, '2026-09-26 14:24:33', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(83, NULL, 'customer', 'Jarc', 'kriss', 'Criss', NULL, 'jc13', 'jarccriss@gmail.com', '+639000000000', 'San Jose Drive, Bued, City of Alaminos, Pangasinan, Philippines', '$2y$10$mnBeXt4zagpmUgMsjOK5U.tBlu/wvaJYhra2ugimoQ5vlvZbVS0im', 0, 1, '2026-09-26 14:33:36', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(85, NULL, 'customer', 'Kairos Jil', 'Ibarra', 'Molina', NULL, 'kairosjil', 'molinakairosjil@gmail.com', '+639234567893', NULL, '$2y$10$4xCv4baURRbFpq8mp1wLXOoXwVmm8XERHS0INcCa1xVdyRK2Uq8pO', 0, 1, '2026-09-29 07:42:20', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(86, NULL, 'owner', 'Cj', 'Tamayo', 'Porto', NULL, NULL, 'molinakairos@gmail.com', '+639457309228', NULL, '$2y$10$bz/z/WFC3ZvLevzPvrR7..VkWa8k0YoPQYvFNIHFQ7HU0eIHV.guC', 0, 1, '2026-09-29 08:22:31', NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `tbl_account_status_history`
+--
+ALTER TABLE `tbl_account_status_history`
+  ADD PRIMARY KEY (`history_id`);
 
 --
 -- Indexes for table `tbl_activity_logs`
@@ -4181,10 +4216,16 @@ ALTER TABLE `tbl_users`
 --
 
 --
+-- AUTO_INCREMENT for table `tbl_account_status_history`
+--
+ALTER TABLE `tbl_account_status_history`
+  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `tbl_activity_logs`
 --
 ALTER TABLE `tbl_activity_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1972;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1973;
 
 --
 -- AUTO_INCREMENT for table `tbl_address_cache`
@@ -4196,7 +4237,7 @@ ALTER TABLE `tbl_address_cache`
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=165;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=171;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`

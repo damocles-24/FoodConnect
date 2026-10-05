@@ -1014,6 +1014,16 @@ img {
   color: var(--danger);
 }
 
+.status-badge.unavailable {
+  background: #fff4e8;
+  color: #c2570c;
+}
+
+html[data-theme="dark"] body[data-fc-page="customer-home"] .status-badge.unavailable {
+  background: rgba(255, 136, 68, 0.16);
+  color: #ffb785;
+}
+
 
 /* ===========================
    RESTAURANT BODY

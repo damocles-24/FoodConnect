@@ -139,7 +139,7 @@ while ($row = $result->fetch_assoc()) {
     $businessStatus = trim(
         (string) (
             $row["business_status"] ??
-            "Closed"
+            "Temporarily Unavailable"
         )
     );
 
@@ -160,11 +160,7 @@ while ($row = $result->fetch_assoc()) {
         "customer_status" =>
             strtolower($businessStatus) === "open"
                 ? "Open"
-                : (
-                    strtolower($businessStatus) === "temporarily unavailable"
-                        ? "Temporarily Unavailable"
-                        : "Closed"
-                ),
+                : "Temporarily Unavailable",
         "availability_reason" => "manual_fallback",
         "schedule_parsed" => false
     ];

@@ -1275,7 +1275,7 @@ try {
             $openingHoursSummary;
 
         $businessStatus =
-            "Closed";
+            "Temporarily Unavailable";
 
         $customerVisibility =
             "Hidden";
