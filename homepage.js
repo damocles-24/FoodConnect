@@ -632,13 +632,13 @@ const backToOwnerLoginBtn =
     const OWNER_RESET_TRACKING_STORAGE_KEY =
       "foodconnect_owner_reset_tracking_token";
 
-    let ownerPasswordResetTrackingToken = "";
+    let ownerPasswordResetTrackingToken_removed = "";
     let ownerPasswordResetStatusTimer = null;
     let ownerPasswordResetStatusNotice = null;
     let ownerPasswordResetStatusFailures = 0;
 
     try {
-      ownerPasswordResetTrackingToken =
+      ownerPasswordResetTrackingToken_removed =
         window.sessionStorage.getItem(
           OWNER_RESET_TRACKING_STORAGE_KEY
         ) || "";
@@ -1114,7 +1114,7 @@ let restaurantCategoryHydrationPromise =
           ownerEmail.value.trim();
       }
 
-      if (ownerPasswordResetTrackingToken) {
+      if (ownerPasswordResetTrackingToken_removed) {
         if (!ownerPasswordResetStatusNotice) {
           ownerPasswordResetStatusNotice = {
             status: "pending",
@@ -1322,7 +1322,7 @@ let restaurantCategoryHydrationPromise =
 
       renderOwnerPasswordResetStatusNotice();
 
-      if (ownerPasswordResetTrackingToken) {
+      if (ownerPasswordResetTrackingToken_removed) {
         startOwnerPasswordResetStatusPolling();
       }
 
@@ -1890,7 +1890,7 @@ let restaurantCategoryHydrationPromise =
         return;
       }
 
-      ownerPasswordResetTrackingToken =
+      ownerPasswordResetTrackingToken_removed =
         normalizedToken;
 
       try {
@@ -1909,7 +1909,7 @@ let restaurantCategoryHydrationPromise =
     function clearOwnerPasswordResetTracking() {
       stopOwnerPasswordResetStatusPolling();
 
-      ownerPasswordResetTrackingToken = "";
+      ownerPasswordResetTrackingToken_removed = "";
       ownerPasswordResetStatusNotice = null;
       ownerPasswordResetStatusFailures = 0;
 
@@ -2012,7 +2012,7 @@ let restaurantCategoryHydrationPromise =
     ) {
       stopOwnerPasswordResetStatusPolling();
 
-      if (!ownerPasswordResetTrackingToken) {
+      if (!ownerPasswordResetTrackingToken_removed) {
         return;
       }
 
@@ -2024,7 +2024,7 @@ let restaurantCategoryHydrationPromise =
     }
 
     async function checkOwnerPasswordResetStatus() {
-      if (!ownerPasswordResetTrackingToken) {
+      if (!ownerPasswordResetTrackingToken_removed) {
         return;
       }
 
@@ -2043,7 +2043,7 @@ let restaurantCategoryHydrationPromise =
               },
               body: JSON.stringify({
                 tracking_token:
-                  ownerPasswordResetTrackingToken
+                  ownerPasswordResetTrackingToken_removed
               })
             }
           );
@@ -2145,7 +2145,7 @@ let restaurantCategoryHydrationPromise =
     ) {
       stopOwnerPasswordResetStatusPolling();
 
-      if (!ownerPasswordResetTrackingToken) {
+      if (!ownerPasswordResetTrackingToken_removed) {
         return;
       }
 

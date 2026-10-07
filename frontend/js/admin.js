@@ -156,8 +156,8 @@ const dashboardOwnerCount =
   document.getElementById("dashboardOwnerCount");
 const dashboardStaffCount =
   document.getElementById("dashboardStaffCount");
-const dashboardUnavailableRestaurants =
-  document.getElementById("dashboardUnavailableRestaurants");
+const dashboardClosedRestaurants =
+  document.getElementById("dashboardClosedRestaurants");
 
 const dashboardQuickActions =
   document.querySelectorAll(
@@ -291,6 +291,11 @@ const totalRestaurantsCount =
 const openRestaurantsCount =
   document.getElementById(
     "openRestaurantsCount"
+  );
+
+const closedRestaurantsCount =
+  document.getElementById(
+    "closedRestaurantsCount"
   );
 
 const unavailableRestaurantsCount =
@@ -586,7 +591,7 @@ async function loadAdminDashboardSummary() {
     setText("approvedCount", summary.approved_restaurants || 0);
     setText(dashboardRestaurantTotal, summary.total_restaurants || 0);
     setText(dashboardOpenRestaurants, summary.open_restaurants || 0);
-    setText(dashboardUnavailableRestaurants, summary.temporarily_unavailable || 0);
+    setText(dashboardClosedRestaurants, summary.closed_restaurants || 0);
     setText(dashboardOwnerCount, summary.restaurant_owners || 0);
     setText(dashboardStaffCount, summary.restaurant_staff || 0);
   } catch (error) {
@@ -660,7 +665,6 @@ async function initializeAdmin() {
 
     await loadAdminDashboardSummary();
     await loadApplications();
-    await loadOwnerPasswordResetRequests();
     return;
   }
 
@@ -698,49 +702,6 @@ function bindEvents() {
     "click",
     handleAdminLogout
   );
-
-  document
-.getElementById("confirmOwnerStatusModal")
-?.addEventListener(
-  "click",
-  submitOwnerStatusModal
-);
-
-document
-.getElementById("closeOwnerStatusModal")
-?.addEventListener(
-  "click",
-  closeOwnerStatusModal
-);
-
-document
-.getElementById("cancelOwnerStatusModal")
-?.addEventListener(
-  "click",
-  closeOwnerStatusModal
-);
-
-document.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (event.key === "Escape") {
-
-      closeDetailsModal();
-
-      closeOwnerStatusModal();
-
-      document
-        .getElementById("ownerHistoryModal")
-        ?.classList.add("hidden");
-
-      adminSidebar?.classList.remove(
-        "open"
-      );
-    }
-
-  }
-);
 
   /*
    * Core admin navigation bindings.
@@ -1560,7 +1521,6 @@ async function handleAdminLogin(event) {
 
     await loadAdminDashboardSummary();
     await loadApplications();
-    await loadOwnerPasswordResetRequests();
   } catch (error) {
     console.error(
       "Admin login failed:",
@@ -1748,7 +1708,6 @@ function openDashboardSection(navItem) {
   ) {
     loadAdminDashboardSummary();
     loadApplications();
-    loadOwnerPasswordResetRequests();
   }
 if (
     sectionId ===
@@ -1768,7 +1727,6 @@ if (
     sectionId ===
     "ownerPasswordResetsSection"
   ) {
-    loadOwnerPasswordResetRequests();
   }
 
     if (
@@ -2055,6 +2013,18 @@ function renderRestaurants(
                 }
               >
                 Open
+              </option>
+
+              <option
+                value="Closed"
+                ${
+                  restaurant.business_status ===
+                  "Closed"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Closed
               </option>
 
               <option
@@ -2451,6 +2421,13 @@ function updateRestaurantSummary(
   );
 
   setText(
+    closedRestaurantsCount,
+    Number(
+      summary.closed_restaurants || 0
+    )
+  );
+
+  setText(
     unavailableRestaurantsCount,
     Number(
       summary.temporarily_unavailable || 0
@@ -2464,6 +2441,9 @@ function getRestaurantStatusClass(
   switch (status) {
     case "Open":
       return "status-approved";
+
+    case "Closed":
+      return "status-rejected";
 
     case "Temporarily Unavailable":
       return "status-draft";
@@ -2498,109 +2478,6 @@ function setRestaurantsMessage(
    OWNER PASSWORD RESETS
 ========================= */
 
-async function loadOwnerPasswordResetRequests() {
-  ownerPasswordResetsLoading
-    ?.classList.remove(
-      "hidden"
-    );
-
-  ownerPasswordResetsEmpty
-    ?.classList.add(
-      "hidden"
-    );
-
-  ownerPasswordResetsTableWrapper
-    ?.classList.add(
-      "hidden"
-    );
-
-  setOwnerPasswordResetsMessage(
-    "",
-    ""
-  );
-
-  try {
-    const response = await fetch(
-      `${API_BASE}/get_owner_password_reset_requests.php`,
-      {
-        credentials: "include",
-        headers: {
-          "Accept":
-            "application/json"
-        }
-      }
-    );
-
-    const data =
-      await readJson(response);
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      showAdminAccess();
-      return;
-    }
-
-    if (
-      !response.ok ||
-      !data.success
-    ) {
-      throw new Error(
-        data.message ||
-        "Unable to load owner password reset requests."
-      );
-    }
-
-    loadedOwnerPasswordResetRequests =
-      Array.isArray(data.requests)
-        ? data.requests
-        : [];
-
-    updateOwnerPasswordResetSummary(
-      data.summary || {}
-    );
-
-    renderOwnerPasswordResetRequests();
-  } catch (error) {
-    console.error(
-      "Load owner password reset requests error:",
-      error
-    );
-
-    ownerPasswordResetsTableWrapper
-      ?.classList.add(
-        "hidden"
-      );
-
-    ownerPasswordResetsEmpty
-      ?.classList.remove(
-        "hidden"
-      );
-
-    if (ownerPasswordResetsEmpty) {
-      ownerPasswordResetsEmpty.innerHTML = `
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <h3>Unable to load password reset requests</h3>
-        <p>${escapeHtml(
-          error.message ||
-          "Please try again."
-        )}</p>
-      `;
-    }
-
-    setOwnerPasswordResetsMessage(
-      error.message ||
-      "Unable to load password reset requests.",
-      "error"
-    );
-  } finally {
-    ownerPasswordResetsLoading
-      ?.classList.add(
-        "hidden"
-      );
-  }
-}
 
 function updateOwnerPasswordResetSummary(
   summary
@@ -2704,403 +2581,7 @@ function getFilteredOwnerPasswordResetRequests() {
     });
 }
 
-function renderOwnerPasswordResetRequests() {
-  if (!ownerPasswordResetsTableBody) {
-    return;
-  }
 
-  const requests =
-    getFilteredOwnerPasswordResetRequests();
-
-  ownerPasswordResetsTableBody.innerHTML =
-    "";
-
-  if (requests.length === 0) {
-    ownerPasswordResetsEmpty
-      ?.classList.remove(
-        "hidden"
-      );
-
-    ownerPasswordResetsTableWrapper
-      ?.classList.add(
-        "hidden"
-      );
-
-    if (ownerPasswordResetsEmpty) {
-      ownerPasswordResetsEmpty.innerHTML = `
-        <i class="fa-solid fa-key"></i>
-        <h3>No password reset requests found</h3>
-        <p>Try another filter or wait for an owner recovery request.</p>
-      `;
-    }
-
-    return;
-  }
-
-  ownerPasswordResetsEmpty
-    ?.classList.add(
-      "hidden"
-    );
-
-  ownerPasswordResetsTableWrapper
-    ?.classList.remove(
-      "hidden"
-    );
-
-  requests.forEach((request) => {
-    const row =
-      document.createElement("tr");
-
-    const requestId = Number(
-      request.request_id || 0
-    );
-
-    const status = String(
-      request.request_status ||
-      "pending"
-    ).toLowerCase();
-
-    const ownerName =
-      String(
-        request.owner_name ||
-        "Unnamed Owner"
-      );
-
-    const actualRestaurantName =
-      String(
-        request.actual_restaurant_name ||
-        request.submitted_restaurant_name ||
-        "Restaurant not linked"
-      );
-
-    const submittedRestaurantName =
-      String(
-        request.submitted_restaurant_name ||
-        "—"
-      );
-
-    const ownerContact =
-      window.FoodConnectPhone?.format
-        ? window.FoodConnectPhone.format(
-            request.owner_contact_number,
-            ""
-          )
-        : String(
-            request.owner_contact_number ||
-            ""
-          );
-
-    const submittedContact =
-      window.FoodConnectPhone?.format
-        ? window.FoodConnectPhone.format(
-            request.submitted_contact_number,
-            ""
-          )
-        : String(
-            request.submitted_contact_number ||
-            ""
-          );
-
-    const reviewedMarkup =
-      status === "pending"
-        ? `
-          <span class="table-secondary">
-            Not reviewed
-          </span>
-        `
-        : `
-          <span class="owner-reset-review-meta">
-            <strong>${escapeHtml(
-              request.reviewer_name ||
-              "Administrator"
-            )}</strong>
-            <br>
-            ${escapeHtml(
-              formatDate(
-                request.reviewed_at
-              )
-            )}
-            ${
-              request.review_note
-                ? `<br>${escapeHtml(
-                    request.review_note
-                  )}`
-                : ""
-            }
-          </span>
-        `;
-
-    const actionMarkup =
-      status === "pending"
-        ? `
-          <div class="owner-reset-action-group">
-            <button
-              type="button"
-              class="owner-reset-action-button approve"
-              data-owner-reset-action="approve"
-              data-request-id="${requestId}"
-              data-owner-name="${escapeHtml(ownerName)}"
-              data-restaurant-name="${escapeHtml(actualRestaurantName)}"
-            >
-              Approve
-            </button>
-
-            <button
-              type="button"
-              class="owner-reset-action-button reject"
-              data-owner-reset-action="reject"
-              data-request-id="${requestId}"
-              data-owner-name="${escapeHtml(ownerName)}"
-              data-restaurant-name="${escapeHtml(actualRestaurantName)}"
-            >
-              Reject
-            </button>
-          </div>
-        `
-        : `
-          <span class="table-secondary">
-            Completed
-          </span>
-        `;
-
-    row.innerHTML = `
-      <td data-label="Owner / Restaurant">
-        <span class="owner-reset-owner-name">
-          ${escapeHtml(ownerName)}
-        </span>
-        <span class="owner-reset-restaurant-name">
-          ${escapeHtml(actualRestaurantName)}
-        </span>
-      </td>
-
-      <td data-label="Submitted Details">
-        <span class="owner-reset-submitted-detail">
-          <strong>Restaurant:</strong>
-          ${escapeHtml(submittedRestaurantName)}
-        </span>
-        <span class="owner-reset-submitted-detail">
-          <strong>Email:</strong>
-          ${escapeHtml(
-            request.submitted_email ||
-            "—"
-          )}
-        </span>
-        <span class="owner-reset-submitted-detail">
-          <strong>Mobile:</strong>
-          ${escapeHtml(
-            submittedContact || "—"
-          )}
-        </span>
-        <span class="owner-reset-submitted-detail table-secondary">
-          Registered: ${escapeHtml(
-            request.owner_email || "—"
-          )}${
-            ownerContact
-              ? ` • ${escapeHtml(ownerContact)}`
-              : ""
-          }
-        </span>
-      </td>
-
-      <td data-label="Reason">
-        <span class="owner-reset-reason">
-          ${escapeHtml(
-            request.reason || "—"
-          )}
-        </span>
-      </td>
-
-      <td data-label="Requested">
-        ${escapeHtml(
-          formatDate(
-            request.created_at
-          )
-        )}
-      </td>
-
-      <td data-label="Status">
-        <span class="owner-reset-status-badge ${escapeHtml(status)}">
-          ${escapeHtml(status)}
-        </span>
-      </td>
-
-      <td data-label="Reviewed">
-        ${reviewedMarkup}
-      </td>
-
-      <td data-label="Action">
-        ${actionMarkup}
-      </td>
-    `;
-
-    ownerPasswordResetsTableBody
-      .appendChild(row);
-  });
-}
-
-async function handleOwnerPasswordResetAction(
-  event
-) {
-  const button =
-    event.target.closest(
-      "[data-owner-reset-action]"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  const requestId = Number(
-    button.dataset.requestId || 0
-  );
-
-  const action = String(
-    button.dataset.ownerResetAction ||
-    ""
-  ).toLowerCase();
-
-  const ownerName =
-    button.dataset.ownerName ||
-    "this owner";
-
-  const restaurantName =
-    button.dataset.restaurantName ||
-    "this restaurant";
-
-  if (!requestId || !["approve", "reject"].includes(action)) {
-    return;
-  }
-
-  let reviewNote = "";
-
-  if (action === "approve") {
-    const confirmed = window.confirm(
-      `Approve password recovery for ${ownerName} (${restaurantName})?\n\nFoodConnect will replace the current owner password with a temporary password, revoke trusted owner devices, and automatically email the temporary password to the registered owner email.`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-  } else {
-    const rejectionReason = window.prompt(
-      `Why are you rejecting the password recovery request for ${ownerName}?`,
-      "Account details require further verification."
-    );
-
-    if (rejectionReason === null) {
-      return;
-    }
-
-    reviewNote = rejectionReason.trim();
-
-    if (reviewNote.length < 3) {
-      setOwnerPasswordResetsMessage(
-        "Enter a short reason before rejecting the request.",
-        "error"
-      );
-      return;
-    }
-  }
-
-  const row = button.closest("tr");
-  const rowButtons =
-    row?.querySelectorAll(
-      ".owner-reset-action-button"
-    ) || [];
-
-  rowButtons.forEach((rowButton) => {
-    rowButton.disabled = true;
-  });
-
-  const originalText =
-    button.textContent;
-
-  button.textContent =
-    action === "approve"
-      ? "Approving..."
-      : "Rejecting...";
-
-  setOwnerPasswordResetsMessage(
-    "",
-    ""
-  );
-
-  try {
-    const response = await fetch(
-      `${API_BASE}/review_owner_password_reset_request.php`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type":
-            "application/json",
-          "Accept":
-            "application/json"
-        },
-        body: JSON.stringify({
-          request_id: requestId,
-          action,
-          review_note: reviewNote
-        })
-      }
-    );
-
-    const data =
-      await readJson(response);
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      showAdminAccess();
-      return;
-    }
-
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message ||
-        "Unable to review this password recovery request."
-      );
-    }
-
-    if (action === "approve") {
-      if (!data.email_sent) {
-        throw new Error(
-          "The password reset was approved, but email delivery was not confirmed."
-        );
-      }
-
-      showOwnerTemporaryPasswordModal(
-        data
-      );
-    }
-
-    await loadOwnerPasswordResetRequests();
-
-    setOwnerPasswordResetsMessage(
-      data.message ||
-      `Password recovery request ${action === "approve" ? "approved" : "rejected"}.`,
-      "success"
-    );
-  } catch (error) {
-    console.error(
-      "Owner password reset review error:",
-      error
-    );
-
-    setOwnerPasswordResetsMessage(
-      error.message ||
-      "Unable to review this password recovery request.",
-      "error"
-    );
-  } finally {
-    rowButtons.forEach((rowButton) => {
-      rowButton.disabled = false;
-    });
-
-    button.textContent = originalText;
-  }
-}
 
 function showOwnerTemporaryPasswordModal(
   data

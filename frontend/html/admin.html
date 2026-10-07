@@ -382,20 +382,7 @@
           <span>Approved Restaurants</span>
         </button>
 
-        <button
-          class="nav-item"
-          data-section="ownerPasswordResetsSection"
-        >
-          <i class="fa-solid fa-key"></i>
-          <span>Owner Password Resets</span>
-
-          <span
-            id="pendingOwnerPasswordResetsBadge"
-            class="nav-badge hidden"
-          >
-            0
-          </span>
-        </button>
+     
 
         <button
           class="nav-item"
@@ -570,10 +557,10 @@
                   <i class="fa-solid fa-store-slash"></i>
                 </span>
                 <div>
-                  <span>Temporarily Unavailable</span>
-                  <small>Visible but not accepting orders</small>
+                  <span>Closed Restaurants</span>
+                  <small>Not currently accepting orders</small>
                 </div>
-                <strong id="dashboardUnavailableRestaurants">0</strong>
+                <strong id="dashboardClosedRestaurants">0</strong>
               </div>
 
               <div class="dashboard-status-row">
@@ -628,155 +615,6 @@
                 <span id="dashboardPendingApplicationsAttention" class="dashboard-attention-count">0</span>
                 <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
               </button>
-
-              <button
-                type="button"
-                id="dashboardPasswordResetsAttentionItem"
-                class="dashboard-attention-item dashboard-quick-action hidden"
-                data-dashboard-target="ownerPasswordResetsSection"
-              >
-                <span class="dashboard-attention-icon purple">
-                  <i class="fa-solid fa-key"></i>
-                </span>
-                <span class="dashboard-attention-copy">
-                  <strong>Owner password resets</strong>
-                  <small>Pending account recovery requests</small>
-                </span>
-                <span id="dashboardPendingPasswordResetsAttention" class="dashboard-attention-count">0</span>
-                <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
-              </button>
-            </div>
-          </article>
-        </div>
-
-      </section>
-
-
-      <!-- RESTAURANT APPLICATIONS -->
-
-      <section
-        id="applicationsSection"
-        class="dashboard-section"
-      >
-        <div class="content-card">
-
-          <div class="card-heading applications-heading">
-            <div>
-              <h2>Restaurant applications</h2>
-
-              <p>
-                Review restaurants applying to join FoodConnect.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              id="refreshApplicationsButton"
-              class="secondary-button"
-            >
-              <i class="fa-solid fa-rotate"></i>
-              Refresh
-            </button>
-          </div>
-
-          <div class="filter-bar">
-            <button
-              type="button"
-              class="status-filter active"
-              data-status="all"
-            >
-              All
-              <span id="allApplicationsCount">0</span>
-            </button>
-
-            <button
-              type="button"
-              class="status-filter"
-              data-status="submitted"
-            >
-              Submitted
-              <span id="submittedApplicationsCount">0</span>
-            </button>
-
-            <button
-            type="button"
-            class="status-filter"
-            data-status="needs_changes"
-          >
-            Needs Changes
-            <span id="needsChangesApplicationsCount">0</span>
-          </button>
-
-            <button
-              type="button"
-              class="status-filter"
-              data-status="draft"
-            >
-              Draft
-              <span id="draftApplicationsCount">0</span>
-            </button>
-
-            <button
-              type="button"
-              class="status-filter"
-              data-status="approved"
-            >
-              Approved
-              <span id="approvedApplicationsCount">0</span>
-            </button>
-
-            <button
-              type="button"
-              class="status-filter"
-              data-status="rejected"
-            >
-              Rejected
-              <span id="rejectedApplicationsCount">0</span>
-            </button>
-          </div>
-
-          <div
-            id="applicationsLoading"
-            class="table-loading"
-          >
-            Loading applications...
-          </div>
-
-          <div
-            id="applicationsEmpty"
-            class="empty-placeholder hidden"
-          >
-            <i class="fa-solid fa-folder-open"></i>
-
-            <h3>No applications found</h3>
-
-            <p>
-              Applications matching the selected status will
-              appear here.
-            </p>
-          </div>
-
-          <div
-            id="applicationsTableWrapper"
-            class="table-wrapper hidden"
-          >
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Restaurant</th>
-                  <th>Owner</th>
-                  <th>Cuisine</th>
-                  <th>Status</th>
-                  <th>Submitted</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody id="applicationsTableBody"></tbody>
-            </table>
-          </div>
-
-        </div>
       </section>
 
       <!-- PLACEHOLDER MODULES -->
@@ -818,9 +656,13 @@
         <strong id="openRestaurantsCount">0</strong>
       </div>
 
+      <div class="restaurant-summary-card">
+        <span>Closed</span>
+        <strong id="closedRestaurantsCount">0</strong>
+      </div>
 
       <div class="restaurant-summary-card">
-        <span>Temporarily Unavailable</span>
+        <span>Unavailable</span>
         <strong id="unavailableRestaurantsCount">0</strong>
       </div>
 
@@ -901,150 +743,6 @@
       </table>
     </div>
 
-  </div>
-</section>
-
-      <section
-  id="ownerPasswordResetsSection"
-  class="dashboard-section"
->
-  <div class="owner-reset-summary-grid">
-
-    <article class="owner-reset-summary-card">
-      <div class="owner-reset-summary-icon pending">
-        <i class="fa-solid fa-clock"></i>
-      </div>
-      <div>
-        <span>Pending</span>
-        <strong id="pendingOwnerPasswordResetsCount">0</strong>
-      </div>
-    </article>
-
-    <article class="owner-reset-summary-card">
-      <div class="owner-reset-summary-icon approved">
-        <i class="fa-solid fa-circle-check"></i>
-      </div>
-      <div>
-        <span>Approved</span>
-        <strong id="approvedOwnerPasswordResetsCount">0</strong>
-      </div>
-    </article>
-
-    <article class="owner-reset-summary-card">
-      <div class="owner-reset-summary-icon rejected">
-        <i class="fa-solid fa-circle-xmark"></i>
-      </div>
-      <div>
-        <span>Rejected</span>
-        <strong id="rejectedOwnerPasswordResetsCount">0</strong>
-      </div>
-    </article>
-
-    <article class="owner-reset-summary-card">
-      <div class="owner-reset-summary-icon total">
-        <i class="fa-solid fa-key"></i>
-      </div>
-      <div>
-        <span>Total Requests</span>
-        <strong id="totalOwnerPasswordResetsCount">0</strong>
-      </div>
-    </article>
-
-  </div>
-
-  <div class="content-card">
-    <div class="card-heading applications-heading">
-      <div>
-        <h2>Owner Password Reset Requests</h2>
-        <p>
-          Review owner-submitted recovery requests. When approved, FoodConnect automatically emails a one-time temporary password to the registered owner email. The owner must replace it at the next login.
-        </p>
-      </div>
-
-      <button
-        type="button"
-        id="refreshOwnerPasswordResetsButton"
-        class="secondary-button"
-      >
-        <i class="fa-solid fa-rotate"></i>
-        Refresh
-      </button>
-    </div>
-
-    <div class="owner-reset-toolbar">
-      <div class="owner-reset-search-group">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input
-          type="search"
-          id="ownerPasswordResetSearchInput"
-          placeholder="Search owner, restaurant, email, or reason..."
-          autocomplete="off"
-          maxlength="100"
-        >
-      </div>
-
-      <select
-        id="ownerPasswordResetStatusFilter"
-        class="owner-reset-filter"
-        aria-label="Filter owner password reset requests"
-      >
-        <option value="all">All Statuses</option>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-      </select>
-
-      <button
-        type="button"
-        id="clearOwnerPasswordResetFiltersButton"
-        class="secondary-button"
-      >
-        Clear
-      </button>
-    </div>
-
-    <p
-      id="ownerPasswordResetsMessage"
-      class="owner-password-resets-message"
-      role="status"
-      aria-live="polite"
-    ></p>
-
-    <div
-      id="ownerPasswordResetsLoading"
-      class="table-loading hidden"
-    >
-      Loading password reset requests...
-    </div>
-
-    <div
-      id="ownerPasswordResetsEmpty"
-      class="empty-placeholder hidden"
-    >
-      <i class="fa-solid fa-key"></i>
-      <h3>No password reset requests found</h3>
-      <p>Owner recovery requests will appear here.</p>
-    </div>
-
-    <div
-      id="ownerPasswordResetsTableWrapper"
-      class="table-wrapper hidden"
-    >
-      <table class="admin-table owner-password-resets-table">
-        <thead>
-          <tr>
-            <th>Owner / Restaurant</th>
-            <th>Submitted Details</th>
-            <th>Reason</th>
-            <th>Requested</th>
-            <th>Status</th>
-            <th>Reviewed</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="ownerPasswordResetsTableBody"></tbody>
-      </table>
-    </div>
   </div>
 </section>
 

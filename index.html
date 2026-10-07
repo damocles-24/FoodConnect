@@ -16,7 +16,7 @@
     rel="stylesheet"
   >
 
-<link rel="stylesheet" href="style.css?v=20260930-orders-icon-badge1">
+<link rel="stylesheet" href="style.css?v=20261005-owner-reset1">
 
   <title>FoodConnect | Multi-Restaurant Online Ordering</title>
   
@@ -1448,7 +1448,7 @@
         id="ownerForgotPasswordBtn"
         class="owner-recovery-link"
       >
-        Forgot your password? Request admin assistance
+        Forgot Password?
       </button>
 
       <button
@@ -1462,296 +1462,49 @@
       </button>
     </div>
 
-    <!-- OWNER PASSWORD RECOVERY REQUEST -->
-
+    <!-- OWNER FORGOT PASSWORD (EMAIL RESET LINK) -->
     <div
       id="ownerPasswordResetRequestBox"
       style="display: none;"
     >
-      <div id="ownerPasswordResetFormView">
-        <div class="owner-login-description owner-recovery-intro">
-          <p>
-            Enter the details registered to your owner account. The FoodConnect administrator will verify the request first. If approved, a temporary password will be emailed automatically to the registered owner email.
-          </p>
-        </div>
 
-        <div class="staff-input-group">
-          <label for="ownerResetRestaurantName">
-            Restaurant Name
-          </label>
-
-          <input
-            type="text"
-            id="ownerResetRestaurantName"
-            placeholder="Enter your restaurant name"
-            autocomplete="organization"
-            maxlength="180"
-          >
-        </div>
-
-        <div class="staff-input-group">
-          <label for="ownerResetEmail">
-            Owner Email Address
-          </label>
-
-          <input
-            type="email"
-            id="ownerResetEmail"
-            placeholder="Enter the registered owner email"
-            autocomplete="email"
-            maxlength="190"
-          >
-        </div>
-
-        <div class="staff-input-group">
-          <label for="ownerResetContactNumber">
-            Registered Mobile Number
-          </label>
-
-          <input
-            type="tel"
-            id="ownerResetContactNumber"
-            placeholder="e.g. 09171234567"
-            autocomplete="tel"
-            inputmode="numeric"
-            maxlength="11"
-            pattern="09[0-9]{9}"
-            aria-describedby="ownerResetContactHelp ownerResetContactError"
-          >
-
-          <small
-            id="ownerResetContactHelp"
-            class="owner-recovery-help"
-          >
-            Use 11 digits starting with 09. Example: 09171234567.
-          </small>
-
-          <small
-            id="ownerResetContactError"
-            class="owner-recovery-field-error"
-            role="alert"
-            aria-live="polite"
-          ></small>
-        </div>
-
-        <div class="staff-input-group">
-          <label for="ownerResetReason">
-            Reason for Recovery
-          </label>
-
-          <textarea
-            id="ownerResetReason"
-            rows="4"
-            maxlength="500"
-            placeholder="Briefly explain why you cannot access the owner account."
-          ></textarea>
-
-          <small class="owner-recovery-help">
-            10–500 characters. Never include your old password.
-          </small>
-        </div>
-
-        <button
-          type="button"
-          id="submitOwnerPasswordResetRequestBtn"
-          class="staff-login-btn"
-        >
-          Send Request to Admin
-        </button>
-
-        <button
-          type="button"
-          id="backToOwnerLoginFromResetRequestBtn"
-          class="portal-secondary-btn"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-          Back to Owner Login
-        </button>
-      </div>
-
-      <div
-        id="ownerPasswordResetStatusView"
-        class="owner-recovery-status-view"
-        style="display: none;"
-        aria-live="polite"
-      >
-        <div
-          id="ownerRecoveryStatusIcon"
-          class="owner-recovery-status-icon"
-          aria-hidden="true"
-        >
-          <i class="fa-solid fa-clock"></i>
-        </div>
-
-        <span
-          id="ownerRecoveryStatusBadge"
-          class="owner-recovery-status-badge"
-        >
-          Waiting for review
-        </span>
-
-        <h3
-          id="ownerRecoveryStatusTitle"
-          class="owner-recovery-status-title"
-          tabindex="-1"
-        >
-          Recovery Request Submitted
-        </h3>
-
-        <p
-          id="ownerRecoveryStatusText"
-          class="owner-recovery-status-text"
-        >
-          Your request is waiting for administrator review.
-        </p>
-
-        <div
-          id="ownerRecoveryEmailCard"
-          class="owner-recovery-email-card"
-          style="display: none;"
-        >
-          <span>Temporary password sent to</span>
-          <strong id="ownerRecoveryMaskedEmail">your registered owner email</strong>
-        </div>
-
-        <ol
-          id="ownerRecoveryProgress"
-          class="owner-recovery-progress"
-          aria-label="Password recovery progress"
-        >
-          <li id="ownerRecoveryStepRequest" class="is-complete">
-            <span class="owner-recovery-step-icon">
-              <i class="fa-solid fa-check"></i>
-            </span>
-            <span class="owner-recovery-step-copy">
-              <strong>Request submitted</strong>
-              <small>Your recovery request was received.</small>
-            </span>
-          </li>
-
-          <li id="ownerRecoveryStepReview" class="is-current">
-            <span class="owner-recovery-step-icon">2</span>
-            <span class="owner-recovery-step-copy">
-              <strong>Administrator review</strong>
-              <small>Waiting for account verification.</small>
-            </span>
-          </li>
-
-          <li id="ownerRecoveryStepEmail">
-            <span class="owner-recovery-step-icon">3</span>
-            <span class="owner-recovery-step-copy">
-              <strong>Email delivery</strong>
-              <small>Temporary password will be sent after approval.</small>
-            </span>
-          </li>
-        </ol>
-
-        <div
-          id="ownerRecoveryNextStep"
-          class="owner-recovery-next-step"
-        >
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-          <p id="ownerRecoveryNextStepText">
-            You do not need to submit another request. This window will update automatically.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          id="ownerRecoveryPrimaryActionBtn"
-          class="staff-login-btn owner-recovery-primary-action"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Back to Owner Login</span>
-        </button>
-
-        <button
-          type="button"
-          id="ownerRecoverySecondaryActionBtn"
-          class="portal-secondary-btn"
-          style="display: none;"
-        >
-          <i class="fa-solid fa-rotate-right"></i>
-          <span>Submit Another Request</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- OWNER FORCED PASSWORD CHANGE -->
-
-    <div
-      id="ownerPasswordChangeBox"
-      style="display: none;"
-    >
-      <div class="owner-login-description owner-password-change-note">
+      <div class="owner-login-description owner-recovery-intro">
         <p>
-          Your administrator-issued password is temporary. Create a new private password before continuing to owner verification.
+          Enter your registered owner email. If it matches an owner account, we will send a link to create a new password.
         </p>
       </div>
 
       <div class="staff-input-group">
-        <label for="ownerNewPassword">
-          New Password
+        <label for="ownerResetEmail">
+          Registered Owner Email
         </label>
 
-        <div class="password-input-wrapper"><input
-          type="password"
-          id="ownerNewPassword"
-          minlength="8"
-          autocomplete="new-password"
-          placeholder="At least 8 characters"
+        <input
+          type="email"
+          id="ownerResetEmail"
+          placeholder="Enter owner email"
+          autocomplete="email"
+          maxlength="150"
         >
-        <button
-            type="button"
-            class="toggle-password"
-            data-target="ownerNewPassword"
-            aria-label="Show password"
-        >
-            <i class="fa-regular fa-eye"></i>
-        </button></div>
       </div>
-
-      <div class="staff-input-group">
-        <label for="ownerConfirmNewPassword">
-          Confirm New Password
-        </label>
-
-        <div class="password-input-wrapper"><input
-          type="password"
-          id="ownerConfirmNewPassword"
-          minlength="8"
-          autocomplete="new-password"
-          placeholder="Re-enter your new password"
-        >
-        <button
-            type="button"
-            class="toggle-password"
-            data-target="ownerConfirmNewPassword"
-            aria-label="Show password"
-        >
-            <i class="fa-regular fa-eye"></i>
-        </button></div>
-      </div>
-
-      <small class="owner-recovery-help owner-password-requirements">
-        Use at least 8 characters with uppercase, lowercase, and a number.
-      </small>
 
       <button
         type="button"
-        id="saveOwnerNewPasswordBtn"
+        id="submitOwnerPasswordResetRequestBtn"
         class="staff-login-btn"
       >
-        Save New Password
+        Send Reset Link
       </button>
 
       <button
         type="button"
-        id="backToOwnerLoginFromPasswordChangeBtn"
+        id="backToOwnerLoginFromResetRequestBtn"
         class="portal-secondary-btn"
       >
+        <i class="fa-solid fa-arrow-left"></i>
         Back to Owner Login
       </button>
+
     </div>
 
     <!-- OWNER EMAIL CODE VERIFICATION -->
@@ -1830,6 +1583,6 @@
   </div>
 </div>
 
-<script src="homepage.js?v=20260930-orders-icon-badge1" defer></script>
+<script src="homepage.js?v=20261005-owner-reset1" defer></script>
 </body>
 </html>

@@ -565,65 +565,24 @@ $restaurant =
     null;
 
 /* =========================================================
-   ADMIN-ASSISTED OWNER PASSWORD RECOVERY
+   LEGACY TEMPORARY-PASSWORD ACCOUNTS
+
+   The administrator-issued temporary password workflow has been
+   removed. An owner row that is still flagged from that workflow
+   must create a new password with the self-service
+   "Forgot Password?" email link before logging in. No owner
+   session is created here.
    ========================================================= */
 
 if ((int)($user["must_change_password"] ?? 0) === 1) {
-    /*
-     * A temporary password has been issued by a FoodConnect
-     * administrator. Do not create a normal owner session yet.
-     * The owner must replace the temporary password first.
-     */
-    unset(
-        $_SESSION["pending_owner_login"],
-        $_SESSION["user_id"],
-        $_SESSION["role"],
-        $_SESSION["restaurant_id"],
-        $_SESSION["display_name"],
-        $_SESSION["logged_in"],
-        $_SESSION["authenticated_at"],
-        $_SESSION["owner_email_verified_at"],
-        $_SESSION["owner_trusted_device"]
-    );
-
-    session_regenerate_id(true);
-
-    $_SESSION["owner_password_change_user_id"] =
-        $userId;
-
-    $_SESSION["owner_password_change_restaurant_id"] =
-        $restaurantId ?? 0;
-
-    $_SESSION["owner_password_change_display_name"] =
-        $displayName;
-
-    $_SESSION["owner_password_change_email"] =
-        (string)$user["email"];
-
-    $_SESSION["owner_password_change_started_at"] =
-        time();
-
-    clear_owner_trusted_cookie();
-    session_write_close();
-
     respond_json(
         [
-            "success" => true,
-            "password_change_required" => true,
-            "verification_required" => false,
+            "success" => false,
+            "password_reset_required" => true,
             "message" =>
-                "Temporary password accepted. Create a new private password before continuing.",
-            "user" => [
-                "user_id" => $userId,
-                "restaurant_id" => $restaurantId,
-                "role" => "owner",
-                "first_name" => (string)($user["first_name"] ?? ""),
-                "middle_name" => (string)($user["middle_name"] ?? ""),
-                "last_name" => (string)($user["last_name"] ?? ""),
-                "display_name" => $displayName,
-                "email" => (string)$user["email"]
-            ]
-        ]
+                "Your password must be reset before you can log in. Use \"Forgot Password?\" to create a new password."
+        ],
+        403
     );
 }
 

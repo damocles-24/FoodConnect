@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 06, 2026 at 10:08 PM
+-- Generation Time: Oct 05, 2026 at 01:30 AM
 -- Server version: 11.4.13-MariaDB-cll-lve-log
 -- PHP Version: 8.4.25
 
@@ -1891,7 +1891,6 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (165, '2663e6757bff6f4796bd434251ff21969c79cb02d0ce5bd9a88b701047d94dae', '110.54.153.2', 'access_code', 0, '2026-10-05 03:54:29'),
 (166, '2663e6757bff6f4796bd434251ff21969c79cb02d0ce5bd9a88b701047d94dae', '110.54.153.2', 'access_code', 1, '2026-10-05 03:54:39'),
 (170, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.198', 'credentials', 1, '2026-10-05 04:53:59'),
-(172, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.198', 'credentials', 1, '2026-10-05 05:51:40'),
 (167, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.2', 'credentials', 1, '2026-10-05 03:54:43'),
 (135, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.65', 'credentials', 0, '2026-09-18 08:34:49'),
 (136, '2e7819e8f16e6a588ef745d1229cac6ac92d459be3a0cf1166f5c3c9297b8803', '110.54.153.65', 'credentials', 1, '2026-09-18 08:36:08'),
@@ -2053,8 +2052,7 @@ INSERT INTO `tbl_admin_login_attempts` (`attempt_id`, `identifier_hash`, `ip_add
 (106, 'e0b7b8787af640f3eb2e413c70a0b0ae30bf78cc8454649fd4bd78b661fece87', '110.54.199.200', 'access_code', 1, '2026-09-10 02:54:16'),
 (163, 'e7e49a6bf5dc8f35c29d3b4dd3994e302b3765c4310a72a6dde18718dd286d97', '175.176.15.175', 'access_code', 1, '2026-10-04 06:06:43'),
 (168, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 0, '2026-10-05 04:53:51'),
-(169, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 1, '2026-10-05 04:53:57'),
-(171, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 1, '2026-10-05 05:51:38');
+(169, 'ebdf14a5194cd4cde1c2587a58096ca21b4a2685955e672e9ba7a51453f9e6fa', '110.54.153.198', 'access_code', 1, '2026-10-05 04:53:57');
 
 -- --------------------------------------------------------
 
@@ -2395,23 +2393,6 @@ CREATE TABLE `tbl_owner_password_reset_requests` (
   `reviewed_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `tbl_owner_password_reset_tokens`
---
-
-CREATE TABLE `tbl_owner_password_reset_tokens` (
-  `token_id` bigint(20) UNSIGNED NOT NULL,
-  `owner_id` int(11) NOT NULL,
-  `selector` char(32) NOT NULL,
-  `token_hash` char(64) NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `used_at` datetime DEFAULT NULL,
-  `requested_ip` varchar(45) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4116,15 +4097,6 @@ ALTER TABLE `tbl_owner_password_reset_requests`
   ADD KEY `idx_owner_password_reset_reviewer` (`reviewed_by`);
 
 --
--- Indexes for table `tbl_owner_password_reset_tokens`
---
-ALTER TABLE `tbl_owner_password_reset_tokens`
-  ADD PRIMARY KEY (`token_id`),
-  ADD UNIQUE KEY `uq_owner_reset_selector` (`selector`),
-  ADD KEY `idx_owner_reset_owner` (`owner_id`,`used_at`,`expires_at`),
-  ADD KEY `idx_owner_reset_expiry` (`expires_at`);
-
---
 -- Indexes for table `tbl_owner_trusted_devices`
 --
 ALTER TABLE `tbl_owner_trusted_devices`
@@ -4265,7 +4237,7 @@ ALTER TABLE `tbl_address_cache`
 -- AUTO_INCREMENT for table `tbl_admin_login_attempts`
 --
 ALTER TABLE `tbl_admin_login_attempts`
-  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=173;
+  MODIFY `attempt_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=171;
 
 --
 -- AUTO_INCREMENT for table `tbl_cart`
@@ -4326,12 +4298,6 @@ ALTER TABLE `tbl_order_items`
 --
 ALTER TABLE `tbl_owner_password_reset_requests`
   MODIFY `request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `tbl_owner_password_reset_tokens`
---
-ALTER TABLE `tbl_owner_password_reset_tokens`
-  MODIFY `token_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `tbl_owner_trusted_devices`
@@ -4455,12 +4421,6 @@ ALTER TABLE `tbl_owner_password_reset_requests`
   ADD CONSTRAINT `fk_owner_password_reset_owner` FOREIGN KEY (`owner_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_owner_password_reset_restaurant` FOREIGN KEY (`restaurant_id`) REFERENCES `tbl_restaurants` (`restaurant_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_owner_password_reset_reviewer` FOREIGN KEY (`reviewed_by`) REFERENCES `tbl_users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `tbl_owner_password_reset_tokens`
---
-ALTER TABLE `tbl_owner_password_reset_tokens`
-  ADD CONSTRAINT `fk_owner_reset_token_owner` FOREIGN KEY (`owner_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `tbl_owner_trusted_devices`

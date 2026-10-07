@@ -422,9 +422,9 @@ if ((int)$ownerState["must_change_password"] === 1) {
         [
             "success" => false,
             "message" =>
-                "A temporary owner password has been issued. Log in again using the temporary password and create a new private password first.",
+                "Your password must be reset before you can log in. Use \"Forgot Password?\" to create a new password.",
             "login_required" => true,
-            "password_change_required" => true
+            "password_reset_required" => true
         ],
         409
     );
