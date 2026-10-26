@@ -6,6 +6,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
+require_once __DIR__ . "/account_status_helper.php";
 
 function update_user_respond(array $data, int $statusCode = 200): void
 {
@@ -85,7 +86,21 @@ $contactRaw = trim((string)($data["contact_number"] ?? ""));
 $contactNumber = $contactRaw === "" ? "" : normalize_ph_mobile($contactRaw);
 $address = trim((string)($data["address"] ?? ""));
 $role = strtolower(trim((string)($data["role"] ?? "")));
-$status = isset($data["status"]) ? (int)$data["status"] : 1;
+/*
+ * Account status is NOT editable here. Deactivating or reactivating staff needs a
+ * recorded reason and goes through update_staff_status.php only. A status value in
+ * this request is accepted only if it equals the staff member's current status
+ * (older cached forms still send it back unchanged).
+ */
+$requestedStatus = null;
+
+if (array_key_exists("status", $data) && $data["status"] !== null && $data["status"] !== "") {
+    $requestedStatus = filter_var($data["status"], FILTER_VALIDATE_INT);
+
+    if ($requestedStatus === false || !in_array($requestedStatus, [0, 1], true)) {
+        update_user_respond(["success" => false, "message" => "Please provide valid staff details."], 422);
+    }
+}
 
 $allowedRoles = ["cashier", "delivery_staff"];
 
@@ -118,13 +133,13 @@ if (mb_strlen($address) > 1000) {
     update_user_respond(["success" => false, "message" => "Address is too long."], 422);
 }
 
-if (!in_array($role, $allowedRoles, true) || !in_array($status, [0, 1], true)) {
+if (!in_array($role, $allowedRoles, true)) {
     update_user_respond(["success" => false, "message" => "Please provide valid staff details."], 422);
 }
 
 // Confirm the target belongs to this owner before doing any update.
 $targetStmt = $conn->prepare("
-    SELECT user_id
+    SELECT user_id, status, role, restaurant_id
     FROM tbl_users
     WHERE user_id = ?
       AND restaurant_id = ?
@@ -152,6 +167,15 @@ if (!$target) {
         "success" => false,
         "message" => "The staff account was not found in this restaurant."
     ], 404);
+}
+
+$currentStatus = (int)$target["status"];
+
+if ($requestedStatus !== null && $requestedStatus !== $currentStatus) {
+    update_user_respond([
+        "success" => false,
+        "message" => "Account status cannot be changed from the edit form. Use the Deactivate or Reactivate action and provide a reason."
+    ], 422);
 }
 
 // Email is globally unique because staff_login.php authenticates by email alone.
@@ -185,6 +209,75 @@ if ($duplicate) {
     ], 409);
 }
 
+/*
+ * Moving a cashier or rider to another role takes them out of their current duties
+ * exactly like deactivating them would, so it must not strand live work either.
+ * The row is locked and the check runs in the same transaction as the update.
+ */
+$roleChangeTx = false;
+
+if (strtolower((string)$target["role"]) !== $role) {
+    try {
+        $conn->begin_transaction();
+        $roleChangeTx = true;
+
+        $lockStmt = $conn->prepare("
+            SELECT user_id, restaurant_id, role, status
+            FROM tbl_users
+            WHERE user_id = ?
+              AND restaurant_id = ?
+              AND role IN ('cashier', 'delivery_staff')
+            LIMIT 1
+            FOR UPDATE
+        ");
+
+        if (!$lockStmt) {
+            throw new RuntimeException("lock prepare: " . $conn->error);
+        }
+
+        $lockStmt->bind_param("ii", $userId, $restaurantId);
+
+        if (!$lockStmt->execute()) {
+            throw new RuntimeException("lock execute: " . $lockStmt->error);
+        }
+
+        $lockedTarget = $lockStmt->get_result()->fetch_assoc();
+        $lockStmt->close();
+
+        if (!$lockedTarget) {
+            $conn->rollback();
+            update_user_respond([
+                "success" => false,
+                "message" => "The staff account was not found in this restaurant."
+            ], 404);
+        }
+
+        if (strtolower((string)$lockedTarget["role"]) !== $role) {
+            $blockers = fc_status_operation_blockers($conn, $lockedTarget, "moved to another role");
+
+            if ($blockers !== null) {
+                $conn->rollback();
+                update_user_respond([
+                    "success" => false,
+                    "message" => $blockers["message"],
+                    "code" => $blockers["code"],
+                    "blockers" => $blockers["blockers"]
+                ], (int)$blockers["http"]);
+            }
+        }
+    } catch (Throwable $roleGuardError) {
+        if ($roleChangeTx) {
+            try {
+                $conn->rollback();
+            } catch (Throwable $ignored) {
+            }
+        }
+
+        error_log("update_user.php role change guard error: " . $roleGuardError->getMessage());
+        update_user_respond(["success" => false, "message" => "Unable to update the staff account."], 500);
+    }
+}
+
 $stmt = $conn->prepare("
     UPDATE tbl_users
     SET
@@ -195,8 +288,7 @@ $stmt = $conn->prepare("
         email = ?,
         contact_number = ?,
         address = ?,
-        role = ?,
-        status = ?
+        role = ?
     WHERE user_id = ?
       AND restaurant_id = ?
       AND role IN ('cashier', 'delivery_staff')
@@ -205,11 +297,14 @@ $stmt = $conn->prepare("
 
 if (!$stmt) {
     error_log("update_user.php update prepare error: " . $conn->error);
+    if ($roleChangeTx) {
+        $conn->rollback();
+    }
     update_user_respond(["success" => false, "message" => "Unable to update the staff account."], 500);
 }
 
 $stmt->bind_param(
-    "ssssssssiii",
+    "ssssssssii",
     $firstName,
     $middleName,
     $lastName,
@@ -218,7 +313,6 @@ $stmt->bind_param(
     $contactNumber,
     $address,
     $role,
-    $status,
     $userId,
     $restaurantId
 );
@@ -227,6 +321,10 @@ if (!$stmt->execute()) {
     $errno = (int)$stmt->errno;
     error_log("update_user.php update execute error: " . $stmt->error);
     $stmt->close();
+
+    if ($roleChangeTx) {
+        $conn->rollback();
+    }
 
     if ($errno === 1062) {
         update_user_respond([
@@ -240,6 +338,11 @@ if (!$stmt->execute()) {
 
 $changed = $stmt->affected_rows > 0;
 $stmt->close();
+
+if ($roleChangeTx) {
+    $conn->commit();
+}
+
 $conn->close();
 
 update_user_respond([
@@ -257,6 +360,6 @@ update_user_respond([
         "contact_number" => $contactNumber,
         "address" => $address,
         "role" => $role,
-        "status" => $status
+        "status" => $currentStatus
     ]
 ]);

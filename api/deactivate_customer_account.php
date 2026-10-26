@@ -2,6 +2,7 @@
 header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/account_status_helper.php";
 
 function respond(array $data, int $status = 200): void
 {
@@ -79,6 +80,22 @@ if (!is_array($data)) {
 
 $password = (string) ($data["password"] ?? "");
 
+/* A recorded reason is mandatory. */
+$reasonCheck = fc_status_validate_reason(
+    "customer",
+    "deactivate",
+    $data["reason"] ?? "",
+    $data["note"] ?? ""
+);
+
+if (!$reasonCheck["ok"]) {
+    respond([
+        "success" => false,
+        "message" => $reasonCheck["message"],
+        "field" => "reason"
+    ], 422);
+}
+
 if ($password === "") {
     respond([
         "success" => false,
@@ -122,38 +139,28 @@ if (!password_verify($password, $user["password_hash"])) {
     ], 403);
 }
 
-$update = $conn->prepare("
-    UPDATE tbl_users
-    SET
-        status = 0,
-        remember_token_hash = NULL,
-        remember_token_expires = NULL
-    WHERE user_id = ?
-      AND role = 'customer'
-      AND status = 1
-    LIMIT 1
-");
+/* Status, reason columns, history row and remember-me cleanup commit together. */
+$result = fc_change_account_status(
+    $conn,
+    $userId,
+    0,
+    [
+        "actor" => [
+            "user_id" => $userId,
+            "role" => "customer",
+            "restaurant_id" => null
+        ],
+        "reason" => $reasonCheck["reason"],
+        "note" => $reasonCheck["note"]
+    ]
+);
 
-if (!$update) {
-    respond(
-        ["success" => false, "message" => "Unable to deactivate your account."],
-        500
-    );
+if (!$result["success"]) {
+    respond([
+        "success" => false,
+        "message" => $result["message"]
+    ], (int) $result["http"]);
 }
-
-$update->bind_param("i", $userId);
-$update->execute();
-
-if ($update->affected_rows !== 1) {
-    $update->close();
-
-    respond(
-        ["success" => false, "message" => "Unable to deactivate your account."],
-        500
-    );
-}
-
-$update->close();
 
 clearCustomerSession();
 

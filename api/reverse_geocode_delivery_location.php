@@ -11,6 +11,7 @@ header(
 );
 
 require_once __DIR__ . "/session_config.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -153,6 +154,50 @@ if (
         "message" =>
             "The selected coordinates are invalid."
     ], 400);
+}
+
+/* =========================================================
+   SERVICE AREA: CITY OF ALAMINOS, PANGASINAN ONLY
+   Rejects outside coordinates before any address lookup.
+========================================================= */
+
+$locationSource = strtolower(
+    trim((string)($input["location_source"] ?? "area"))
+);
+
+$serviceAreaContext = in_array($locationSource, ["gps", "address"], true)
+    ? $locationSource
+    : "area";
+
+try {
+    // Strict (0 m); location_source only selects the message wording.
+    $serviceAreaCheck = fc_service_area_check_point(
+        $latitude,
+        $longitude
+    );
+} catch (RuntimeException $serviceAreaError) {
+    error_log(
+        "reverse_geocode_delivery_location.php service area error: " .
+        $serviceAreaError->getMessage()
+    );
+
+    respond_json([
+        "success" => false,
+        "message" =>
+            "FoodConnect could not verify this location right now. Please try again."
+    ], 503);
+}
+
+if ($serviceAreaCheck["allowed"] !== true) {
+    respond_json(
+        fc_service_area_error_payload(
+            $serviceAreaContext,
+            [
+                "in_service_area" => false
+            ]
+        ),
+        422
+    );
 }
 
 /* =========================================================
@@ -323,12 +368,24 @@ if (
         "address_found" =>
             false,
 
+        "in_service_area" =>
+            true,
+
         "location" => [
             "latitude" =>
                 $latitude,
 
             "longitude" =>
-                $longitude
+                $longitude,
+
+            "barangay" =>
+                "",
+
+            "city" =>
+                fc_service_area_city(),
+
+            "province" =>
+                fc_service_area_province()
         ]
     ]);
 }
@@ -437,8 +494,24 @@ if (
         $provinceCounty;
 }
 
+/*
+ * The coordinates already passed the City of Alaminos boundary check, so
+ * the city / province are fixed by FoodConnect. Only official Alaminos
+ * barangay names are returned; anything else is left blank for the
+ * customer to choose.
+ */
+$matchedBarangay =
+    fc_service_area_match_barangay($barangay) ??
+    fc_service_area_match_barangay(
+        (string)($result["quarter"] ?? $result["neighbourhood"] ?? "")
+    ) ??
+    "";
+
 respond_json([
     "success" =>
+        true,
+
+    "in_service_area" =>
         true,
 
     "message" =>
@@ -471,13 +544,19 @@ respond_json([
             $streetDetails,
 
         "barangay" =>
+            $matchedBarangay,
+
+        "barangay_raw" =>
             $barangay,
 
         "city" =>
-            $city,
+            fc_service_area_city(),
 
         "province" =>
-            $province,
+            fc_service_area_province(),
+
+        "city_raw" =>
+            $city,
 
         /*
          * Non-secret administrative hints for defensive frontend matching.

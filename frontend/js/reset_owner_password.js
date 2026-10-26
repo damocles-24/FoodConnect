@@ -1,5 +1,9 @@
 const API = "/api";
 
+/* login.css hides the body until it has the "loaded" class. Add it right away
+   (not on window "load", which can be delayed by slow fonts/CDNs on mobile). */
+document.body.classList.add("loaded");
+
 const OWNER_LOGIN_URL = "/?open=partner-portal";
 
 const resetTitle = document.getElementById("resetTitle");

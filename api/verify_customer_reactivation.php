@@ -6,6 +6,7 @@ ini_set("display_errors", "0");
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/account_status_helper.php";
 
 function respond_json(array $data, int $statusCode = 200): void
 {
@@ -82,59 +83,46 @@ if ($userId <= 0) {
     );
 }
 
-$stmt = $conn->prepare("
-    UPDATE tbl_users
-    SET
-        status = 1,
-        remember_token_hash = NULL,
-        remember_token_expires = NULL
-    WHERE user_id = ?
-      AND role = 'customer'
-      AND status = 0
-    LIMIT 1
-");
+/* The reason was captured with the code request and bound to this user_id. A
+   request started before reasons became mandatory has none and must restart. */
+$reasonCheck = fc_status_validate_reason(
+    "customer",
+    "reactivate",
+    $pending["reason"] ?? "",
+    $pending["note"] ?? ""
+);
 
-if (!$stmt) {
+if (!$reasonCheck["ok"]) {
+    unset($_SESSION["customer_reactivation"]);
+
     respond_json(
-        ["error" => "Unable to reactivate your account."],
-        500
+        ["error" => "Start account reactivation again and select a reason."],
+        400
     );
 }
 
-$stmt->bind_param("i", $userId);
-$stmt->execute();
+/* Status, reason columns and the history row commit together, only now that the
+   emailed code has been verified. */
+$result = fc_change_account_status(
+    $conn,
+    $userId,
+    1,
+    [
+        "actor" => [
+            "user_id" => $userId,
+            "role" => "customer",
+            "restaurant_id" => null
+        ],
+        "reason" => $reasonCheck["reason"],
+        "note" => $reasonCheck["note"]
+    ]
+);
 
-$affectedRows = $stmt->affected_rows;
-$stmt->close();
-
-if ($affectedRows !== 1) {
-    $check = $conn->prepare("
-        SELECT status
-        FROM tbl_users
-        WHERE user_id = ?
-          AND role = 'customer'
-        LIMIT 1
-    ");
-
-    if (!$check) {
-        respond_json(
-            ["error" => "Unable to confirm account status."],
-            500
-        );
-    }
-
-    $check->bind_param("i", $userId);
-    $check->execute();
-
-    $row = $check->get_result()->fetch_assoc();
-    $check->close();
-
-    if (!$row || (int) $row["status"] !== 1) {
-        respond_json(
-            ["error" => "Unable to reactivate your account."],
-            500
-        );
-    }
+if (!$result["success"]) {
+    respond_json(
+        ["error" => $result["message"]],
+        (int) $result["http"]
+    );
 }
 
 unset($_SESSION["customer_reactivation"]);

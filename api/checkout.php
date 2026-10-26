@@ -25,6 +25,7 @@ require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/addon_helper.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
 require_once __DIR__ . "/restaurant_availability_helper.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -215,6 +216,22 @@ $landmark = trim(
     )
 );
 
+/*
+ * Structured delivery address. Province and city are never taken from the
+ * client: the server always stores City of Alaminos, Pangasinan.
+ */
+$delivery_barangay = trim(
+    (string)(
+        $data["delivery_barangay"] ?? ""
+    )
+);
+
+$delivery_street = trim(
+    (string)(
+        $data["delivery_street"] ?? ""
+    )
+);
+
 $customer_latitude =
     $data["customer_latitude"] ?? null;
 
@@ -394,6 +411,63 @@ if ($order_type === "delivery") {
         ], 400);
     }
 
+    /*
+     * FoodConnect service area: City of Alaminos, Pangasinan only.
+     * 1) The pinned coordinates must be inside the official boundary.
+     * 2) The written address must be an Alaminos barangay; province and
+     *    city are supplied by the server, never by the client.
+     */
+    $deliveryLocationSource = strtolower(trim((string)(
+        $data["location_source"] ?? "area"
+    )));
+
+    try {
+        /*
+         * Final order validation is STRICT (0 m) for every source.
+         * location_source only chooses the message wording; it can never
+         * widen the service area.
+         */
+        $deliveryAreaCheck = fc_service_area_check_point(
+            $customer_latitude,
+            $customer_longitude
+        );
+
+        if ($deliveryAreaCheck["allowed"] !== true) {
+            respond_json(
+                fc_service_area_error_payload(
+                    $deliveryLocationSource === "gps" ? "gps" : "area"
+                ),
+                422
+            );
+        }
+
+        $resolvedDeliveryAddress = fc_service_area_resolve_address(
+            $delivery_barangay,
+            $delivery_street,
+            $address
+        );
+    } catch (RuntimeException $serviceAreaError) {
+        error_log(
+            "checkout.php service area error: " .
+            $serviceAreaError->getMessage()
+        );
+
+        respond_json([
+            "success" => false,
+            "message" =>
+                "FoodConnect could not verify the delivery location right now. Please try again."
+        ], 503);
+    }
+
+    if ($resolvedDeliveryAddress === null) {
+        respond_json(
+            fc_service_area_error_payload("address"),
+            422
+        );
+    }
+
+    $address = $resolvedDeliveryAddress["address"];
+
     $table_number = "";
 
 } elseif ($order_type === "takeout") {
@@ -444,6 +518,63 @@ if ($order_type === "delivery") {
 $conn->begin_transaction();
 
 try {
+
+    /* =====================================================
+       CUSTOMER ACCOUNT MUST STILL BE ACTIVE
+
+       Locking the customer row first serialises checkout with
+       self-deactivation (deactivate_customer_account.php), which
+       counts the customer's active orders under the same lock.
+       An order therefore cannot be created for an account that is
+       being deactivated at the same moment.
+    ===================================================== */
+
+    $customerLockStmt = $conn->prepare("
+        SELECT status
+
+        FROM tbl_users
+
+        WHERE user_id = ?
+
+        LIMIT 1
+
+        FOR UPDATE
+    ");
+
+    if (!$customerLockStmt) {
+        throw new RuntimeException(
+            "Unable to verify the customer account."
+        );
+    }
+
+    $customerLockStmt->bind_param(
+        "i",
+        $user_id
+    );
+
+    if (!$customerLockStmt->execute()) {
+        $customerLockStmt->close();
+
+        throw new RuntimeException(
+            "Unable to verify the customer account."
+        );
+    }
+
+    $customerLockRow =
+        $customerLockStmt
+            ->get_result()
+            ->fetch_assoc();
+
+    $customerLockStmt->close();
+
+    if (
+        !$customerLockRow ||
+        (int)$customerLockRow["status"] !== 1
+    ) {
+        throw new RuntimeException(
+            "Your account is not active. Please log in again."
+        );
+    }
 
     /* =====================================================
        LOAD AND LOCK CUSTOMER CART
@@ -2868,7 +2999,8 @@ $addonIdsJson = encode_id_array(
         "This combo does not accept selectable options.",
         "This product does not accept combo selections.",
         "A selected add-on no longer exists.",
-        "The selected restaurant no longer exists."
+        "The selected restaurant no longer exists.",
+        "Your account is not active. Please log in again."
     ];
 
     $isSafeMessage =

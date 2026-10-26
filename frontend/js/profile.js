@@ -171,6 +171,28 @@ profileForm?.addEventListener("submit", async (event) => {
     address: address.value.trim()
   };
 
+  /*
+   * FoodConnect serves City of Alaminos, Pangasinan only. Province / city
+   * are fixed; send the selected barangay + street so the server can
+   * rebuild and verify the address.
+   */
+  const structuredAddress = window.PHAddressDropdown?.getStructured
+    ? window.PHAddressDropdown.getStructured(address)
+    : { street: "", barangay: "" };
+
+  payload.address_barangay = structuredAddress.barangay || "";
+  payload.address_street = structuredAddress.street || "";
+
+  if (payload.address && !payload.address_barangay) {
+    showStatus(
+      profileStatus,
+      "Address Not Supported: please select your barangay in City of Alaminos, Pangasinan, or clear the address.",
+      "error"
+    );
+    window.PHAddressDropdown?.validate?.(address);
+    return;
+  }
+
   if (!payload.first_name || !payload.last_name) {
     showStatus(profileStatus, "First name and last name are required.", "error");
     firstName.focus();
@@ -219,7 +241,11 @@ profileForm?.addEventListener("submit", async (event) => {
     }
 
     if (!response.ok || !data.success) {
-      throw new Error(data.message || "Changes could not be saved account settings.");
+      throw new Error(
+        data.code === "OUTSIDE_SERVICE_AREA" && data.title
+          ? `${data.title}: ${data.message}`
+          : data.message || "Changes could not be saved account settings."
+      );
     }
 
     showStatus(
@@ -420,8 +446,41 @@ function closeDeactivateModal() {
   deactivateModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
   deactivatePassword.value = "";
+
+  const reasonField = document.getElementById("deactivateReason");
+  const noteField = document.getElementById("deactivateNote");
+
+  if (reasonField) reasonField.value = "";
+  if (noteField) noteField.value = "";
+
+  updateDeactivateNoteRequirement();
   clearStatus(deactivateStatus);
 }
+
+function updateDeactivateNoteRequirement() {
+  const isOther =
+    document.getElementById("deactivateReason")?.value === "Other";
+
+  const noteField = document.getElementById("deactivateNote");
+  const noteLabel = document.getElementById("deactivateNoteLabel");
+
+  if (noteField) {
+    noteField.placeholder = isOther
+      ? "Explain the reason (required)"
+      : "Additional notes (optional)";
+  }
+
+  if (noteLabel) {
+    noteLabel.textContent = isOther
+      ? "Explanation (required)"
+      : "Additional notes (optional)";
+  }
+}
+
+document.getElementById("deactivateReason")?.addEventListener("change", () => {
+  clearStatus(deactivateStatus);
+  updateDeactivateNoteRequirement();
+});
 
 openDeactivateBtn?.addEventListener("click", openDeactivateModal);
 closeDeactivateBtn?.addEventListener("click", closeDeactivateModal);
@@ -448,6 +507,28 @@ confirmDeactivateBtn?.addEventListener("click", async () => {
   clearStatus(deactivateStatus);
 
   const password = deactivatePassword.value;
+  const reason = String(document.getElementById("deactivateReason")?.value || "").trim();
+  const note = String(document.getElementById("deactivateNote")?.value || "").trim();
+
+  if (!reason) {
+    showStatus(
+      deactivateStatus,
+      "Select a reason for deactivating your account.",
+      "error"
+    );
+    document.getElementById("deactivateReason")?.focus();
+    return;
+  }
+
+  if (reason === "Other" && note.length < 5) {
+    showStatus(
+      deactivateStatus,
+      'Please explain your reason when you select "Other" (at least 5 characters).',
+      "error"
+    );
+    document.getElementById("deactivateNote")?.focus();
+    return;
+  }
 
   if (!password) {
     showStatus(
@@ -471,7 +552,7 @@ confirmDeactivateBtn?.addEventListener("click", async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ password })
+      body: JSON.stringify({ password, reason, note })
     });
 
     const data = await readJson(response);

@@ -10,7 +10,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/damocles-24/IMAGES/refs/heads/main/logofoodconnect-Photoroom.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Owner Dashboard | FoodConnect</title>
-<link rel="stylesheet" href="../css/owner_dashboard.css?v=20260921-banner1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
+<link rel="stylesheet" href="../css/owner_dashboard.css?v=20261026-staff-status1" />  <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260812ux3">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
 <link
   rel="stylesheet"
@@ -2111,11 +2111,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
             id="settingsAddress"
             data-ph-address="1"
             data-ph-address-required="1"
+            data-ph-service-area="alaminos"
             rows="3"
             minlength="10"
             maxlength="255"
             autocomplete="street-address"
-            placeholder="Example: 123 Quezon Avenue, Alaminos City, Pangasinan"
+            placeholder="Example: 123 Quezon Avenue, Poblacion, City of Alaminos, Pangasinan"
             aria-describedby="settingsAddressHelp"
             required
           ></textarea>
@@ -4093,11 +4094,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       </div>
 
       <div class="form-group">
-        <label>Status</label>
-        <select id="editUserStatus">
+        <label for="editUserStatus">Status</label>
+        <select id="editUserStatus" disabled aria-describedby="editUserStatusHelp">
           <option value="1">Active</option>
           <option value="0">Inactive</option>
         </select>
+        <small id="editUserStatusHelp" class="field-help">
+          Status cannot be changed here. Use Deactivate or Reactivate in the staff table so a reason is recorded.
+        </small>
       </div>
 
  <div class="user-modal-actions">
@@ -4230,14 +4234,104 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   </div>
 </div>
 
+
+<!-- Staff account status (deactivate / reactivate) - reason required -->
+<div
+  class="modal-overlay"
+  id="staffStatusModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="staffStatusTitle"
+>
+  <div class="modal reset-staff-password-modal staff-status-modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="staffStatusTitle">Deactivate Staff Account</h3>
+        <p class="modal-description" id="staffStatusHelp">
+          The staff member will no longer be able to sign in. The reason is recorded.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeStaffStatusModal"
+        aria-label="Close staff status modal"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="staff-reset-account-card">
+        <span>Staff Account</span>
+        <strong id="staffStatusUserName">—</strong>
+      </div>
+
+      <div class="form-group">
+        <label for="staffStatusReason">Reason *</label>
+        <select id="staffStatusReason">
+          <option value="">Select reason</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="staffStatusNote" id="staffStatusNoteLabel">Additional notes (optional)</label>
+        <textarea
+          id="staffStatusNote"
+          rows="3"
+          maxlength="500"
+          placeholder="Additional notes (optional)"
+        ></textarea>
+      </div>
+
+      <p id="staffStatusError" class="staff-status-error" role="alert" aria-live="assertive" hidden></p>
+
+      <div class="user-modal-actions">
+        <button type="button" class="secondary-btn" id="cancelStaffStatusBtn">Cancel</button>
+        <button type="button" class="primary-btn" id="confirmStaffStatusBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Staff account status history -->
+<div
+  class="modal-overlay"
+  id="staffHistoryModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="staffHistoryTitle"
+>
+  <div class="modal reset-staff-password-modal staff-status-modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="staffHistoryTitle">Account History</h3>
+      </div>
+
+      <button
+        type="button"
+        id="closeStaffHistoryModal"
+        aria-label="Close account history"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="staffHistoryContent"></div>
+    </div>
+  </div>
+</div>
+
   <script src="../js/auth_guard.js"></script>
 <script>
   requireRole("owner");
 </script>
 
-<script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
+<script src="../js/fc-service-area.js?v=20261007-alaminos1"></script>
+<script src="../js/ph-address-dropdown.js?v=20261007-alaminos1"></script>
   <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/owner_dashboard.js?v=20260921-banner1"></script>
+<script src="../js/owner_dashboard.js?v=20261026-staff-status2"></script>
   <script src="../js/product_variants.js?v=20260815"></script>
 </body>
 </html>

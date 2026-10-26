@@ -16,7 +16,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../css/profile.css?v=20260915-profiledata1">
+  <link rel="stylesheet" href="../css/profile.css?v=20261026-reason1">
   <title>Account Settings | FoodConnect</title>
   <link rel="stylesheet" href="../css/ph-address-dropdown.css?v=20260828-ui2">
   <link rel="stylesheet" href="../css/ph-phone.css?v=20260816">
@@ -229,6 +229,7 @@
                     id="address"
                     name="address"
                     data-ph-address="1"
+                    data-ph-service-area="alaminos"
                     rows="4"
                     maxlength="1000"
                     autocomplete="street-address"
@@ -413,8 +414,8 @@
 
           <div class="danger-action-row">
             <div>
-              <strong>This action requires your password.</strong>
-              <span>You can ask an administrator to reactivate the account later if needed.</span>
+              <strong>This action requires a reason and your password.</strong>
+              <span>You can reactivate the account yourself later: choose "Reactivate my account" on the login page and verify the code sent to your email.</span>
             </div>
 
             <button type="button" id="openDeactivateBtn" class="btn danger-btn">
@@ -445,6 +446,28 @@
     </p>
 
     <label class="field modal-field">
+      <span class="field-label">Why are you deactivating? <strong>*</strong></span>
+      <div class="input-wrap">
+        <select id="deactivateReason" required>
+          <option value="">Select a reason</option>
+          <option>Taking a break from FoodConnect</option>
+          <option>Privacy concerns</option>
+          <option>Too many emails or notifications</option>
+          <option>I have another account</option>
+          <option>Not satisfied with the service</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </label>
+
+    <label class="field modal-field">
+      <span class="field-label" id="deactivateNoteLabel">Additional notes (optional)</span>
+      <div class="input-wrap">
+        <textarea id="deactivateNote" rows="3" maxlength="500" placeholder="Additional notes (optional)"></textarea>
+      </div>
+    </label>
+
+    <label class="field modal-field">
       <span class="field-label">Enter your password to confirm <strong>*</strong></span>
       <div class="input-wrap password-wrap">
         <i class="fa-solid fa-key"></i>
@@ -471,8 +494,9 @@
   </div>
 </div>
 
-<script src="../js/ph-address-dropdown.js?v=20260812ux3"></script>
+<script src="../js/fc-service-area.js?v=20261007-alaminos1"></script>
+<script src="../js/ph-address-dropdown.js?v=20261007-alaminos1"></script>
 <script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/profile.js?v=20260915-profiledata1"></script>
+<script src="../js/profile.js?v=20261026-reason1"></script>
 </body>
 </html>

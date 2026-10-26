@@ -1307,6 +1307,21 @@ img {
     overflow-wrap: anywhere;
 }
 
+/* Location outside the FoodConnect service area (City of Alaminos) */
+.delivery-location-status.location-invalid {
+    color: var(--fc-danger);
+    background: var(--fc-danger-soft);
+    border-color: var(--fc-danger-border);
+}
+
+.delivery-location-status.location-invalid > i {
+    color: var(--fc-danger);
+}
+
+.checkout-message strong {
+    font-weight: 700;
+}
+
 @media (max-width: 640px) {
     .delivery-location-heading {
         flex-direction: column;

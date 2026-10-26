@@ -8,6 +8,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 function respond_json(array $data, int $statusCode = 200): void
 {
@@ -67,6 +68,29 @@ if (
         "success" => false,
         "message" => "Please select a valid delivery location on the map."
     ], 422);
+}
+
+/*
+ * FoodConnect only delivers within City of Alaminos, Pangasinan.
+ * Strict boundary (0 m) for every source; "source" only selects the
+ * message wording and never widens the service area.
+ */
+$locationSource = strtolower(trim((string)($input["location_source"] ?? "area")));
+$messageContext = in_array($locationSource, ["gps", "address"], true)
+    ? $locationSource
+    : "area";
+
+try {
+    if (!fc_service_area_point_allowed((float)$latitude, (float)$longitude)) {
+        respond_json(fc_service_area_error_payload($messageContext), 422);
+    }
+} catch (RuntimeException $serviceAreaError) {
+    error_log("quote_delivery_fee.php service area error: " . $serviceAreaError->getMessage());
+
+    respond_json([
+        "success" => false,
+        "message" => "FoodConnect could not verify the delivery location right now. Please try again."
+    ], 503);
 }
 
 try {

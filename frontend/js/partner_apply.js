@@ -708,6 +708,11 @@ if (
             password,
             restaurant_name: restaurantName,
             restaurant_address: restaurantAddress,
+            // FoodConnect service area: City of Alaminos, Pangasinan only.
+            restaurant_address_barangay:
+                window.PHAddressDropdown?.getStructured?.("restaurant_address")?.barangay || "",
+            restaurant_address_street:
+                window.PHAddressDropdown?.getStructured?.("restaurant_address")?.street || "",
             restaurant_contact:
             window.FoodConnectPhone.normalize(restaurantContact),
             cuisine,

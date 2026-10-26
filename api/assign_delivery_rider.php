@@ -6,6 +6,10 @@ session_set_cookie_params(0, "/", "", false, true);
 require_once __DIR__ . "/session_config.php";
 
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/service_area_helper.php";
+
+const FC_ASSIGN_OUTSIDE_SERVICE_AREA_MESSAGE =
+    "This order's delivery location is outside the FoodConnect service area (City of Alaminos, Pangasinan), so it cannot be assigned to a rider.";
 
 function respond_json(array $data, int $statusCode = 200): void
 {
@@ -109,7 +113,9 @@ try {
             order_id,
             order_type,
             order_status,
-            delivery_fee
+            delivery_fee,
+            customer_latitude,
+            customer_longitude
         FROM tbl_orders
         WHERE order_id = ?
           AND restaurant_id = ?
@@ -154,6 +160,22 @@ try {
     if ($order_type !== "delivery") {
         throw new Exception(
             "Only delivery orders can be assigned to a rider."
+        );
+    }
+
+    /*
+     * Riders must never receive a delivery outside FoodConnect's service
+     * area (City of Alaminos, Pangasinan). New orders are already validated
+     * at checkout; this protects against legacy or tampered records.
+     */
+    if (
+        !fc_service_area_point_allowed(
+            $order["customer_latitude"] ?? null,
+            $order["customer_longitude"] ?? null
+        )
+    ) {
+        throw new Exception(
+            FC_ASSIGN_OUTSIDE_SERVICE_AREA_MESSAGE
         );
     }
 
@@ -489,7 +511,8 @@ $logStmt->close();
         "The order must be preparing before assigning a rider." => 409,
         "This order already has a delivery assignment." => 409,
         "The selected rider is invalid, inactive, or belongs to another restaurant." => 422,
-        "The selected rider already has an active delivery." => 409
+        "The selected rider already has an active delivery." => 409,
+        FC_ASSIGN_OUTSIDE_SERVICE_AREA_MESSAGE => 422
     ];
 
     $conn->close();

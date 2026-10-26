@@ -6275,6 +6275,20 @@ function renderUsers(list = users) {
                   !isOwner
                     ? `
                       <button
+                        class="action-btn staff-status-btn ${u.status == 1 ? "deactivate-staff" : "reactivate-staff"}"
+                        onclick="openStaffStatusModal(${Number(u.id)})"
+                      >
+                        ${u.status == 1 ? "Deactivate" : "Reactivate"}
+                      </button>
+
+                      <button
+                        class="action-btn"
+                        onclick="openStaffHistory(${Number(u.id)})"
+                      >
+                        History
+                      </button>
+
+                      <button
                         class="action-btn reset-password-btn ${resetRequested ? "reset-request-pending" : ""}"
                         onclick="openResetStaffPasswordModal(${Number(u.id)})"
                       >
@@ -9603,11 +9617,6 @@ const lastNameInput =
         "editUserRole"
       );
 
-    const statusInput =
-      document.getElementById(
-        "editUserStatus"
-      );
-
     const userId =
       Number(userIdInput?.value || 0);
 
@@ -9633,9 +9642,6 @@ const lastName =
 
     const role =
       roleInput?.value || "";
-
-    const status =
-      Number(statusInput?.value ?? 1);
 
     if (!userId) {
       alert("Invalid user account.");
@@ -9721,8 +9727,7 @@ const lastName =
                 ? window.FoodConnectPhone.normalize(contactNumber)
                 : "",
             address,
-            role,
-            status
+            role
           })
         }
       );
@@ -10433,12 +10438,21 @@ window.deleteUser = async function(id) {
   const confirmDelete = confirm("Are you sure you want to delete this user?");
   if (!confirmDelete) return;
 
-  const result = await fetchJSON(`${OWNER_API_BASE}/delete_user.php`, {
-    method: "POST",
-    body: JSON.stringify({
-      user_id: id
-    })
-  });
+  let result;
+
+  try {
+    result = await fetchJSON(`${OWNER_API_BASE}/delete_user.php`, {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: id
+      })
+    });
+  } catch (error) {
+    /* Includes the "finish the active delivery / orders first" refusal. */
+    console.error("Delete user failed:", error);
+    alert(error.message || "Failed to delete user.");
+    return;
+  }
 
   if (!result.success) {
     alert(result.message || "Failed to delete user.");
@@ -13099,13 +13113,27 @@ const loadedSettings = {
       .split(",")
       .map(item => item.trim());
 
+ /*
+  * Stored format: [street,] barangay, City of Alaminos, Pangasinan[, postal], Philippines.
+  * Province / city are fixed for the FoodConnect service area.
+  */
+ const addressParts = parts.filter(Boolean);
+
+ if (/^philippines$/i.test(addressParts[addressParts.length - 1] || "")) {
+   addressParts.pop();
+ }
+
+ if (/^\d{4}$/.test(addressParts[addressParts.length - 1] || "")) {
+   addressParts.pop();
+ }
+
  window.PHAddressDropdown.setEnhancedValues(
   "settingsAddress",
   {
-    barangayName: parts[0] || "",
-    localityName: parts[1] || "",
-    provinceName: parts[2] || "",
-    streetDetails: ""
+    barangayName: addressParts[addressParts.length - 3] || "",
+    localityName: addressParts[addressParts.length - 2] || "",
+    provinceName: addressParts[addressParts.length - 1] || "",
+    streetDetails: addressParts.slice(0, Math.max(0, addressParts.length - 3)).join(", ")
   }
 );
 }    
@@ -13662,3 +13690,368 @@ initDashboard().then(
     }
   }
 );
+
+/* =========================================================
+   STAFF ACCOUNT STATUS (cashier / delivery staff)
+
+   The restaurant owner deactivates or reactivates staff of their own
+   restaurant here, always with a recorded reason. The reason list must
+   match account_status_helper.php; the server re-validates everything and
+   enforces that the staff member belongs to this owner's restaurant.
+========================================================= */
+
+const STAFF_STATUS_OTHER_REASON = "Other";
+
+const STAFF_STATUS_REASONS = {
+  deactivate: [
+    "Employee resigned or left the restaurant",
+    "Schedule or role change",
+    "Policy violation",
+    "Security concern",
+    "Temporary suspension",
+    STAFF_STATUS_OTHER_REASON
+  ],
+  reactivate: [
+    "Employee returned to work",
+    "Issue resolved",
+    "Deactivated by mistake",
+    STAFF_STATUS_OTHER_REASON
+  ]
+};
+
+let pendingStaffStatusAction = null;
+let staffStatusSubmitting = false;
+
+function staffStatusElements() {
+  return {
+    modal: document.getElementById("staffStatusModal"),
+    title: document.getElementById("staffStatusTitle"),
+    help: document.getElementById("staffStatusHelp"),
+    name: document.getElementById("staffStatusUserName"),
+    reason: document.getElementById("staffStatusReason"),
+    note: document.getElementById("staffStatusNote"),
+    noteLabel: document.getElementById("staffStatusNoteLabel"),
+    error: document.getElementById("staffStatusError"),
+    confirm: document.getElementById("confirmStaffStatusBtn"),
+    cancel: document.getElementById("cancelStaffStatusBtn"),
+    close: document.getElementById("closeStaffStatusModal")
+  };
+}
+
+function showStaffStatusError(message) {
+  const { error } = staffStatusElements();
+
+  if (!error) {
+    return;
+  }
+
+  error.textContent = message || "";
+  error.hidden = !message;
+}
+
+function updateStaffStatusNoteRequirement() {
+  const { reason, note, noteLabel } = staffStatusElements();
+
+  if (!reason || !note) {
+    return;
+  }
+
+  const isOther = reason.value === STAFF_STATUS_OTHER_REASON;
+
+  note.placeholder = isOther
+    ? "Explain the reason (required)"
+    : "Additional notes (optional)";
+
+  if (noteLabel) {
+    noteLabel.textContent = isOther
+      ? "Explanation (required)"
+      : "Additional notes (optional)";
+  }
+}
+
+function setStaffStatusSubmitting(isSubmitting) {
+  staffStatusSubmitting = isSubmitting;
+
+  const els = staffStatusElements();
+
+  if (els.confirm) {
+    els.confirm.disabled = isSubmitting;
+    els.confirm.textContent = isSubmitting ? "Saving..." : "Confirm";
+  }
+
+  [els.cancel, els.close, els.reason, els.note].forEach((element) => {
+    if (element) {
+      element.disabled = isSubmitting;
+    }
+  });
+}
+
+window.openStaffStatusModal = function (userId) {
+  const els = staffStatusElements();
+  const user = users.find((item) => Number(item.id) === Number(userId));
+
+  if (!els.modal || !user) {
+    showOwnerActionToast(
+      "Unable to open the account status form. Please refresh the page.",
+      "error"
+    );
+    return;
+  }
+
+  if (staffStatusSubmitting) {
+    return;
+  }
+
+  const action = Number(user.status) === 1 ? "deactivate" : "reactivate";
+
+  pendingStaffStatusAction = {
+    userId: Number(user.id),
+    action,
+    name: formatUserName(user)
+  };
+
+  els.title.textContent =
+    action === "deactivate"
+      ? "Deactivate Staff Account"
+      : "Reactivate Staff Account";
+
+  els.help.textContent =
+    action === "deactivate"
+      ? "The staff member will no longer be able to sign in. Their role, password and details are kept. The reason is recorded."
+      : "The staff member will be able to sign in again with their existing password. The reason is recorded.";
+
+  els.name.textContent =
+    `${formatUserName(user)} (${String(user.role || "").replaceAll("_", " ")})`;
+
+  els.reason.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select reason";
+  els.reason.appendChild(placeholder);
+
+  STAFF_STATUS_REASONS[action].forEach((reasonText) => {
+    const option = document.createElement("option");
+    option.value = reasonText;
+    option.textContent = reasonText;
+    els.reason.appendChild(option);
+  });
+
+  els.reason.value = "";
+  els.note.value = "";
+
+  showStaffStatusError("");
+  updateStaffStatusNoteRequirement();
+  setStaffStatusSubmitting(false);
+
+  els.modal.classList.add("show");
+  document.body.classList.add("modal-scroll-locked");
+  els.reason.focus();
+};
+
+function closeStaffStatusModal(force = false) {
+  if (staffStatusSubmitting && force !== true) {
+    return;
+  }
+
+  staffStatusElements().modal?.classList.remove("show");
+  document.body.classList.remove("modal-scroll-locked");
+  showStaffStatusError("");
+  pendingStaffStatusAction = null;
+}
+
+async function submitStaffStatusModal() {
+  if (staffStatusSubmitting || !pendingStaffStatusAction) {
+    return;
+  }
+
+  const els = staffStatusElements();
+  const pending = pendingStaffStatusAction;
+  const reason = String(els.reason?.value || "").trim();
+  const note = String(els.note?.value || "").trim();
+
+  if (!reason) {
+    showStaffStatusError(
+      pending.action === "deactivate"
+        ? "Select a reason for deactivating this account."
+        : "Select a reason for reactivating this account."
+    );
+    els.reason?.focus();
+    return;
+  }
+
+  if (!STAFF_STATUS_REASONS[pending.action].includes(reason)) {
+    showStaffStatusError("Select one of the listed reasons.");
+    els.reason?.focus();
+    return;
+  }
+
+  if (reason === STAFF_STATUS_OTHER_REASON && note.length < 5) {
+    showStaffStatusError(
+      'Please explain the reason when you select "Other" (at least 5 characters).'
+    );
+    els.note?.focus();
+    return;
+  }
+
+  if (note.length > 500) {
+    showStaffStatusError("Notes must not exceed 500 characters.");
+    els.note?.focus();
+    return;
+  }
+
+  showStaffStatusError("");
+  setStaffStatusSubmitting(true);
+
+  let result;
+
+  try {
+    result = await fetchJSON(`${OWNER_API_BASE}/update_staff_status.php`, {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: pending.userId,
+        status: pending.action === "deactivate" ? 0 : 1,
+        reason,
+        note
+      })
+    });
+
+    if (!result.success) {
+      throw new Error(result.message || "Unable to update this account.");
+    }
+  } catch (error) {
+    console.error("Staff status update failed:", error);
+
+    /* Keep the modal open: nothing was saved. */
+    showStaffStatusError(
+      error.message || "Unable to update this account. Please try again."
+    );
+    setStaffStatusSubmitting(false);
+    return;
+  }
+
+  setStaffStatusSubmitting(false);
+  closeStaffStatusModal(true);
+
+  showOwnerActionToast(
+    result.message || `${pending.name} was updated successfully.`,
+    "success"
+  );
+
+  try {
+    await Promise.all([loadUsers(), loadDashboardSummary()]);
+  } catch (refreshError) {
+    console.error("Refresh after staff status update failed:", refreshError);
+  }
+}
+
+window.openStaffHistory = async function (userId) {
+  const modal = document.getElementById("staffHistoryModal");
+  const content = document.getElementById("staffHistoryContent");
+  const title = document.getElementById("staffHistoryTitle");
+  const user = users.find((item) => Number(item.id) === Number(userId));
+
+  if (!modal || !content) {
+    return;
+  }
+
+  if (title) {
+    title.textContent = user
+      ? `Account History - ${formatUserName(user)}`
+      : "Account History";
+  }
+
+  content.textContent = "Loading history...";
+  modal.classList.add("show");
+  document.body.classList.add("modal-scroll-locked");
+
+  try {
+    const data = await fetchJSON(
+      `${OWNER_API_BASE}/get_account_status_history.php?user_id=${encodeURIComponent(userId)}`
+    );
+
+    if (!data.success) {
+      content.textContent = data.message || "Unable to load the account history.";
+      return;
+    }
+
+    if (!Array.isArray(data.history) || data.history.length === 0) {
+      content.textContent = "No account status changes have been recorded yet.";
+      return;
+    }
+
+    /* Reasons and notes are user-entered text: always escape. */
+    content.innerHTML = data.history
+      .map((item) => {
+        const label =
+          String(item.action || "") === "reactivated"
+            ? "Reactivated"
+            : "Deactivated";
+
+        const details = [item.reason, item.note]
+          .filter(Boolean)
+          .map((text) => escapeHtml(text))
+          .join("<br>");
+
+        return `
+          <div class="staff-history-item">
+            <strong>${escapeHtml(label)}</strong>
+            <p>${details || "No details provided."}</p>
+            <small>${escapeHtml(item.performed_by || "System")} &bull; ${escapeHtml(item.created_at || "")}</small>
+          </div>
+        `;
+      })
+      .join("");
+  } catch (error) {
+    console.error("Staff history failed:", error);
+    content.textContent = error.message || "Unable to load the account history.";
+  }
+};
+
+function closeStaffHistoryModal() {
+  document.getElementById("staffHistoryModal")?.classList.remove("show");
+  document.body.classList.remove("modal-scroll-locked");
+}
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  if (target.closest("#confirmStaffStatusBtn")) {
+    submitStaffStatusModal();
+    return;
+  }
+
+  if (
+    target.closest("#cancelStaffStatusBtn") ||
+    target.closest("#closeStaffStatusModal") ||
+    target.id === "staffStatusModal"
+  ) {
+    closeStaffStatusModal();
+    return;
+  }
+
+  if (
+    target.closest("#closeStaffHistoryModal") ||
+    target.id === "staffHistoryModal"
+  ) {
+    closeStaffHistoryModal();
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target instanceof Element && event.target.id === "staffStatusReason") {
+    showStaffStatusError("");
+    updateStaffStatusNoteRequirement();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeStaffStatusModal();
+    closeStaffHistoryModal();
+  }
+});

@@ -8,6 +8,7 @@ require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -238,6 +239,25 @@ if (
     );
 }
 
+/*
+ * FoodConnect service area: the restaurant must be in an official
+ * City of Alaminos barangay. Province / city are rewritten by the server.
+ */
+$resolvedRestaurantAddress = fc_service_area_resolve_address(
+    (string) ($data["address_barangay"] ?? ""),
+    (string) ($data["address_street"] ?? ""),
+    $address
+);
+
+if ($resolvedRestaurantAddress === null) {
+    respond_json(
+        fc_service_area_error_payload("restaurant"),
+        422
+    );
+}
+
+$address = $resolvedRestaurantAddress["address"];
+
 if (
     $opening_hours === "" ||
     mb_strlen($opening_hours) < 5 ||
@@ -374,7 +394,7 @@ if ($logo_path !== "") {
 try {
     /* Verify ownership before geocoding or writing anything. */
     $ownershipStmt = $conn->prepare("
-        SELECT restaurant_id
+        SELECT restaurant_id, address
         FROM tbl_restaurants
         WHERE restaurant_id = ?
           AND owner_id = ?
@@ -424,14 +444,55 @@ try {
 
             $restaurantPricingLongitude =
                 (float) $pricingCoordinates["longitude"];
+
+            if (
+                !fc_service_area_point_allowed(
+                    $restaurantPricingLatitude,
+                    $restaurantPricingLongitude
+                )
+            ) {
+                respond_json(
+                    fc_service_area_error_payload("restaurant"),
+                    422
+                );
+            }
         } catch (RuntimeException $geocodeError) {
+            // Fail closed: distance pricing needs a verified location.
+            error_log("update_restaurant_settings.php geocode error: " . $geocodeError->getMessage());
+
             respond_json(
-                [
-                    "success" => false,
-                    "message" =>
-                        $geocodeError->getMessage()
-                ],
+                fc_service_area_error_payload("restaurant_unverified"),
+                503
+            );
+        }
+    } else {
+        /*
+         * Fixed pricing: the restaurant must still be physically inside
+         * City of Alaminos. A CHANGED address fails closed when it cannot
+         * be verified; an unchanged, already-saved address does not block
+         * other settings (hours, contact...) while the geocoder is down.
+         */
+        $addressChanged =
+            fc_service_area_key((string)($ownership["address"] ?? "")) !==
+            fc_service_area_key($address);
+
+        $restaurantLocationCheck =
+            fc_service_area_verify_restaurant_address($address);
+
+        if ($restaurantLocationCheck["status"] === "outside") {
+            respond_json(
+                fc_service_area_error_payload("restaurant"),
                 422
+            );
+        }
+
+        if (
+            $restaurantLocationCheck["status"] !== "inside" &&
+            $addressChanged
+        ) {
+            respond_json(
+                fc_service_area_error_payload("restaurant_unverified"),
+                503
             );
         }
     }

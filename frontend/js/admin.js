@@ -2230,60 +2230,12 @@ function bindRestaurantStatusControls() {
             return;
           }
 
-          const confirmationMessage =
-            action === "deactivate"
-              ? `Deactivate ${restaurantName} from FoodConnect?\n\nThe restaurant will disappear from the customer website. The Owner, Cashiers, and Delivery Staff will no longer be able to log in. Existing records will be preserved.`
-              : `Reactivate ${restaurantName}?\n\nThe owner account will regain access. Staff accounts will remain inactive until reviewed.`;
-
-          const confirmed =
-            window.confirm(
-              confirmationMessage
-            );
-
-          if (!confirmed) {
-            return;
-          }
-
-          const originalHtml =
-            button.innerHTML;
-
-          button.disabled = true;
-
-          button.textContent =
-            action === "deactivate"
-              ? "Deactivating..."
-              : "Reactivating...";
-
-          try {
-            const data =
-              await updateRestaurantAccess(
-                restaurantId,
-                action
-              );
-
-            await loadRestaurants();
-
-            setRestaurantsMessage(
-              data.message ||
-              `${restaurantName} was updated successfully.`,
-              "success"
-            );
-          } catch (error) {
-            console.error(
-              "Update restaurant access error:",
-              error
-            );
-
-            setRestaurantsMessage(
-              error.message ||
-              "Unable to update restaurant access. Please try again.",
-              "error"
-            );
-
-            button.disabled = false;
-            button.innerHTML =
-              originalHtml;
-          }
+          openOwnerStatusModal({
+            mode: "restaurant",
+            restaurantId,
+            subject: restaurantName,
+            action
+          });
         }
       );
     }
@@ -2348,7 +2300,9 @@ async function updateRestaurantStatus(
 
 async function updateRestaurantAccess(
   restaurantId,
-  action
+  action,
+  reason = "",
+  note = ""
 ) {
   const response = await fetch(
     `${API_BASE}/update_admin_restaurant_access.php`,
@@ -2370,7 +2324,10 @@ async function updateRestaurantAccess(
           restaurantId,
 
         action:
-          action
+          action,
+
+        reason,
+        note
       })
     }
   );
@@ -2378,10 +2335,7 @@ async function updateRestaurantAccess(
   const data =
     await readJson(response);
 
-  if (
-    response.status === 401 ||
-    response.status === 403
-  ) {
+  if (response.status === 401) {
     showAdminAccess();
 
     throw new Error(
@@ -2893,6 +2847,19 @@ function renderPlatformUsers(users) {
         user.is_verified || 0
       ) === 1;
 
+    /*
+     * Administrators manage OWNER accounts only. Cashier and delivery staff
+     * are managed by their restaurant owner and customers manage themselves,
+     * so those rows are read-only here (the server rejects them as well).
+     */
+    const readOnlyLabel =
+      role === "cashier" ||
+      role === "delivery_staff"
+        ? "Managed by the restaurant owner"
+        : role === "customer"
+          ? "Managed by the customer"
+          : "Read only";
+
     const actionMarkup =
       isCurrentAdmin
         ? `
@@ -2901,30 +2868,53 @@ function renderPlatformUsers(users) {
             Current Admin
           </span>
         `
-        : `
-          <button
-            type="button"
-            class="
-              platform-user-action-button
-              ${
-                userStatus === 1
-                  ? "deactivate"
-                  : "activate"
-              }
-            "
-            data-user-id="${userId}"
-            data-user-name="${escapeHtml(
-  formatUserName(user)
-)}"
-            data-current-status="${userStatus}"
-          >
-            ${
-              userStatus === 1
-                ? "Deactivate"
-                : "Activate"
-            }
-          </button>
-        `;
+        : role !== "owner"
+          ? `
+            <span class="table-secondary">
+              ${escapeHtml(readOnlyLabel)}
+            </span>
+          `
+          : !isVerified
+            ? `
+              <span class="table-secondary">
+                Awaiting verification
+              </span>
+            `
+            : `
+              <button
+                type="button"
+                class="
+                  platform-user-action-button
+                  ${
+                    userStatus === 1
+                      ? "deactivate"
+                      : "activate"
+                  }
+                "
+                data-user-id="${userId}"
+                data-user-name="${escapeHtml(
+                  formatUserName(user)
+                )}"
+                data-current-status="${userStatus}"
+              >
+                ${
+                  userStatus === 1
+                    ? "Deactivate"
+                    : "Reactivate"
+                }
+              </button>
+
+              <button
+                type="button"
+                class="platform-user-history-button"
+                data-user-id="${userId}"
+                data-user-name="${escapeHtml(
+                  formatUserName(user)
+                )}"
+              >
+                History
+              </button>
+            `;
 
     row.innerHTML = `
       <td data-label="Name">
@@ -3042,135 +3032,386 @@ function renderPlatformUsers(users) {
 }
 
 function bindPlatformUserActions() {
-  const actionButtons =
-    platformUsersTableBody
-      ?.querySelectorAll(
-        ".platform-user-action-button"
-      ) || [];
-
-  actionButtons.forEach((button) => {
-    button.addEventListener(
-      "click",
-      async () => {
-        const userId =
-          Number(
-            button.dataset.userId || 0
-          );
-
-        const userName =
-          button.dataset.userName ||
-          "this user";
-
+  platformUsersTableBody
+    ?.querySelectorAll(
+      ".platform-user-action-button"
+    )
+    .forEach((button) => {
+      button.addEventListener("click", () => {
         const currentStatus =
           Number(
-            button.dataset
-              .currentStatus || 0
+            button.dataset.currentStatus || 0
           );
-
-        const newStatus =
-          currentStatus === 1
-            ? 0
-            : 1;
-
-        const actionWord =
-          newStatus === 1
-            ? "activate"
-            : "deactivate";
 
         openOwnerStatusModal({
-          userId,
-          userName,
-          status: newStatus,
-          button
+          mode: "user",
+          userId: Number(button.dataset.userId || 0),
+          subject: button.dataset.userName || "this owner",
+          action: currentStatus === 1 ? "deactivate" : "reactivate"
         });
-        return;
+      });
+    });
 
-        const originalText =
-          button.textContent;
+  platformUsersTableBody
+    ?.querySelectorAll(
+      ".platform-user-history-button"
+    )
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        openOwnerHistory(
+          Number(button.dataset.userId || 0),
+          button.dataset.userName || ""
+        );
+      });
+    });
+}
 
-        button.disabled = true;
+/* =========================================================
+   OWNER ACCOUNT STATUS MODAL (administrator)
 
-        button.textContent =
-          newStatus === 1
-            ? "Activating..."
-            : "Deactivating...";
+   One modal is used for Platform Users (owner accounts) and for
+   Restaurant Access, because both change the OWNER account status
+   and both need a recorded reason. The reason list must match
+   account_status_helper.php (the server re-validates everything).
 
-        try {
-          const data =
-            await updatePlatformUserStatus(
-              userId,
-              newStatus,
-              reason,
-              note
-            );
+   Events are delegated from the document, so the buttons work no
+   matter whether the modal markup is parsed before or after this
+   script (admin.html used to load this file first, which left the
+   Confirm / Cancel / X buttons unbound).
+========================================================= */
 
-          await loadPlatformUsers();
+const OWNER_STATUS_OTHER_REASON = "Other";
 
-setPlatformUsersMessage(
-  data.message ||
-  `${userName} was updated successfully.`,
-  "success"
-);
-        } catch (error) {
-          console.error(
-            "Platform user status update error:",
-            error
-          );
+const OWNER_STATUS_REASONS = {
+  deactivate: [
+    "Violation of FoodConnect Terms",
+    "Suspicious account activity",
+    "Incorrect restaurant information",
+    "Restaurant permanently closed",
+    "Owner requested account closure",
+    OWNER_STATUS_OTHER_REASON
+  ],
+  reactivate: [
+    "Issue resolved",
+    "Restaurant information corrected",
+    "Owner appeal approved",
+    "Deactivated by mistake",
+    OWNER_STATUS_OTHER_REASON
+  ]
+};
 
-          setPlatformUsersMessage(
-            error.message ||
-            "Unable to update this account. Please try again.",
-            "error"
-          );
-        } finally {
-          button.disabled = false;
+let ownerStatusSubmitting = false;
 
-          button.textContent =
-            originalText;
-        }
-      }
-    );
-  });
+function ownerStatusElements() {
+  return {
+    modal: document.getElementById("ownerStatusModal"),
+    title: document.getElementById("ownerStatusModalTitle"),
+    subject: document.getElementById("ownerStatusModalOwner"),
+    help: document.getElementById("ownerStatusHelp"),
+    reason: document.getElementById("ownerStatusReason"),
+    note: document.getElementById("ownerStatusNote"),
+    noteLabel: document.getElementById("ownerStatusNoteLabel"),
+    error: document.getElementById("ownerStatusError"),
+    confirm: document.getElementById("confirmOwnerStatusModal"),
+    cancel: document.getElementById("cancelOwnerStatusModal"),
+    close: document.getElementById("closeOwnerStatusModal")
+  };
+}
+
+function showOwnerStatusError(message) {
+  const { error } = ownerStatusElements();
+
+  if (!error) {
+    return;
+  }
+
+  error.textContent = message || "";
+  error.classList.toggle("hidden", !message);
+}
+
+function updateOwnerStatusNoteRequirement() {
+  const { reason, note, noteLabel } = ownerStatusElements();
+
+  if (!reason || !note) {
+    return;
+  }
+
+  const isOther = reason.value === OWNER_STATUS_OTHER_REASON;
+
+  note.placeholder = isOther
+    ? "Explain the reason (required)"
+    : "Additional notes (optional)";
+
+  note.required = isOther;
+
+  if (noteLabel) {
+    noteLabel.textContent = isOther
+      ? "Explanation (required)"
+      : "Additional notes (optional)";
+  }
+}
+
+function setOwnerStatusSubmitting(isSubmitting) {
+  ownerStatusSubmitting = isSubmitting;
+
+  const els = ownerStatusElements();
+  const pending = pendingOwnerStatusAction;
+
+  if (els.confirm) {
+    els.confirm.disabled = isSubmitting;
+    els.confirm.textContent = isSubmitting
+      ? "Saving..."
+      : "Confirm";
+  }
+
+  if (els.cancel) {
+    els.cancel.disabled = isSubmitting;
+  }
+
+  if (els.close) {
+    els.close.disabled = isSubmitting;
+  }
+
+  if (els.reason) {
+    els.reason.disabled = isSubmitting;
+  }
+
+  if (els.note) {
+    els.note.disabled = isSubmitting;
+  }
+
+  void pending;
 }
 
 function openOwnerStatusModal(data) {
-  const modal = document.getElementById("ownerStatusModal");
-  if (!modal) return;
+  const els = ownerStatusElements();
+
+  if (!els.modal || !els.reason) {
+    /* Never fail silently if the markup is missing. */
+    const message =
+      "The account status form could not be opened. Please refresh the page.";
+
+    if (data?.mode === "restaurant") {
+      setRestaurantsMessage(message, "error");
+    } else {
+      setPlatformUsersMessage(message, "error");
+    }
+
+    return;
+  }
+
+  if (ownerStatusSubmitting) {
+    return;
+  }
+
   pendingOwnerStatusAction = data;
-  document.getElementById("ownerStatusModalTitle").textContent = data.status === 0 ? "Deactivate Owner Account" : "Reactivate Owner Account";
-  document.getElementById("ownerStatusModalOwner").textContent = data.userName;
-  document.getElementById("ownerStatusReason").value = "";
-  document.getElementById("ownerStatusNote").value = "";
-  modal.classList.remove("hidden");
+
+  const isDeactivate = data.action === "deactivate";
+  const isRestaurant = data.mode === "restaurant";
+
+  els.title.textContent = isRestaurant
+    ? (isDeactivate ? "Deactivate Restaurant Access" : "Reactivate Restaurant Access")
+    : (isDeactivate ? "Deactivate Owner Account" : "Reactivate Owner Account");
+
+  els.subject.textContent = data.subject || "";
+
+  if (els.help) {
+    els.help.textContent = isRestaurant
+      ? (isDeactivate
+          ? "The restaurant will be hidden from customers and the owner account will be deactivated. Cashier and delivery staff accounts are not changed; they cannot sign in while the restaurant is suspended."
+          : "The owner account will be reactivated. The restaurant stays temporarily unavailable until the owner reopens it.")
+      : (isDeactivate
+          ? "The owner will no longer be able to sign in. The reason is recorded in the account history."
+          : "The owner will be able to sign in again. The reason is recorded in the account history.");
+  }
+
+  els.reason.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select reason";
+  els.reason.appendChild(placeholder);
+
+  (OWNER_STATUS_REASONS[data.action] || []).forEach((reasonText) => {
+    const option = document.createElement("option");
+    option.value = reasonText;
+    option.textContent = reasonText;
+    els.reason.appendChild(option);
+  });
+
+  els.reason.value = "";
+  els.note.value = "";
+
+  showOwnerStatusError("");
+  updateOwnerStatusNoteRequirement();
+  setOwnerStatusSubmitting(false);
+
+  els.modal.classList.remove("hidden");
+  els.reason.focus();
+}
+
+function closeOwnerStatusModal(force = false) {
+  if (ownerStatusSubmitting && force !== true) {
+    return;
+  }
+
+  const { modal } = ownerStatusElements();
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  showOwnerStatusError("");
+  pendingOwnerStatusAction = null;
 }
 
 async function submitOwnerStatusModal() {
-  if (!pendingOwnerStatusAction) return;
-  const {userId,userName,status,button}=pendingOwnerStatusAction;
-  const reason=document.getElementById("ownerStatusReason").value.trim();
-  const note=document.getElementById("ownerStatusNote").value.trim();
-  if (status===0 && !reason) {
-    setPlatformUsersMessage("A deactivation reason is required.", "error");
+  if (ownerStatusSubmitting || !pendingOwnerStatusAction) {
     return;
   }
-  button.disabled=true;
+
+  const els = ownerStatusElements();
+  const pending = pendingOwnerStatusAction;
+  const reason = String(els.reason?.value || "").trim();
+  const note = String(els.note?.value || "").trim();
+
+  if (!reason) {
+    showOwnerStatusError(
+      pending.action === "deactivate"
+        ? "Select a reason for deactivating this account."
+        : "Select a reason for reactivating this account."
+    );
+    els.reason?.focus();
+    return;
+  }
+
+  if (!(OWNER_STATUS_REASONS[pending.action] || []).includes(reason)) {
+    showOwnerStatusError("Select one of the listed reasons.");
+    els.reason?.focus();
+    return;
+  }
+
+  if (reason === OWNER_STATUS_OTHER_REASON && note.length < 5) {
+    showOwnerStatusError(
+      'Please explain the reason when you select "Other" (at least 5 characters).'
+    );
+    els.note?.focus();
+    return;
+  }
+
+  if (note.length > 500) {
+    showOwnerStatusError("Notes must not exceed 500 characters.");
+    els.note?.focus();
+    return;
+  }
+
+  showOwnerStatusError("");
+  setOwnerStatusSubmitting(true);
+
+  let data;
+
   try {
-    await updatePlatformUserStatus(userId,status,reason,note);
-    await loadPlatformUsers();
-    setPlatformUsersMessage(`${userName} was updated successfully.`,"success");
-  } catch(e){
-    setPlatformUsersMessage(e.message || "Unable to update account.","error");
-  } finally {
-    button.disabled=false;
-    closeOwnerStatusModal();
+    data =
+      pending.mode === "restaurant"
+        ? await updateRestaurantAccess(
+            pending.restaurantId,
+            pending.action,
+            reason,
+            note
+          )
+        : await updatePlatformUserStatus(
+            pending.userId,
+            pending.action === "deactivate" ? 0 : 1,
+            reason,
+            note
+          );
+  } catch (error) {
+    console.error("Owner status update error:", error);
+
+    /* Keep the modal open: nothing was saved. */
+    showOwnerStatusError(
+      error.message ||
+      "Unable to update this account. Please try again."
+    );
+
+    setOwnerStatusSubmitting(false);
+    return;
+  }
+
+  setOwnerStatusSubmitting(false);
+  closeOwnerStatusModal(true);
+
+  const successMessage =
+    data.message ||
+    `${pending.subject} was updated successfully.`;
+
+  try {
+    if (pending.mode === "restaurant") {
+      await loadRestaurants();
+      setRestaurantsMessage(successMessage, "success");
+    } else {
+      await loadPlatformUsers();
+      setPlatformUsersMessage(successMessage, "success");
+    }
+  } catch (refreshError) {
+    console.error("Refresh after status update failed:", refreshError);
+
+    const setMessage =
+      pending.mode === "restaurant"
+        ? setRestaurantsMessage
+        : setPlatformUsersMessage;
+
+    setMessage(
+      `${successMessage} Refresh the list to see the latest status.`,
+      "success"
+    );
   }
 }
 
-function closeOwnerStatusModal(){
- const modal=document.getElementById("ownerStatusModal");
- if(modal) modal.classList.add("hidden");
- pendingOwnerStatusAction=null;
-}
+document.addEventListener("click", (event) => {
+  const target = event.target;
+
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  if (target.closest("#confirmOwnerStatusModal")) {
+    submitOwnerStatusModal();
+    return;
+  }
+
+  if (
+    target.closest("#cancelOwnerStatusModal") ||
+    target.closest("#closeOwnerStatusModal") ||
+    target.id === "ownerStatusModal"
+  ) {
+    closeOwnerStatusModal();
+    return;
+  }
+
+  if (
+    target.closest("#closeOwnerHistoryModal") ||
+    target.id === "ownerHistoryModal"
+  ) {
+    document.getElementById("ownerHistoryModal")?.classList.add("hidden");
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target instanceof Element && event.target.id === "ownerStatusReason") {
+    showOwnerStatusError("");
+    updateOwnerStatusNoteRequirement();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  closeOwnerStatusModal();
+  document.getElementById("ownerHistoryModal")?.classList.add("hidden");
+});
 
 async function updatePlatformUserStatus(
   userId,
@@ -3207,10 +3448,7 @@ async function updatePlatformUserStatus(
   const data =
     await readJson(response);
 
-  if (
-    response.status === 401 ||
-    response.status === 403
-  ) {
+  if (response.status === 401) {
     showAdminAccess();
 
     throw new Error(
@@ -5718,33 +5956,64 @@ document.querySelectorAll(".toggle-password").forEach((button) => {
 });
 
 
-document.getElementById("confirmOwnerStatusModal")?.addEventListener("click", submitOwnerStatusModal);
-document.getElementById("closeOwnerStatusModal")?.addEventListener("click", closeOwnerStatusModal);
-document.getElementById("cancelOwnerStatusModal")?.addEventListener("click", closeOwnerStatusModal);
+// Owner account status history (administrator). Every stored value is
+// escaped: reasons and notes are user-entered text.
+async function openOwnerHistory(userId, ownerName = "") {
+  const modal = document.getElementById("ownerHistoryModal");
+  const content = document.getElementById("ownerHistoryContent");
 
-// Owner account history modal integration
-async function openOwnerHistory(userId) {
-  const modal = document.getElementById('ownerHistoryModal');
-  const content = document.getElementById('ownerHistoryContent');
   if (!modal || !content) return;
-  content.innerHTML = '<p>Loading history...</p>';
-  modal.classList.remove('hidden');
+
+  const title = document.getElementById("ownerHistoryTitle");
+
+  if (title) {
+    title.textContent = ownerName
+      ? `Account History - ${ownerName}`
+      : "Owner Account History";
+  }
+
+  content.textContent = "Loading history...";
+  modal.classList.remove("hidden");
+
   try {
-    const r = await fetch(`${API_BASE}/get_account_status_history.php?user_id=${encodeURIComponent(userId)}`, {credentials:'include'});
-    const data = await r.json();
-    if (!data.success || !data.history?.length) {
-      content.innerHTML = '<p>No account status history found.</p>';
+    const response = await fetch(
+      `${API_BASE}/get_account_status_history.php?user_id=${encodeURIComponent(userId)}`,
+      { credentials: "include", headers: { Accept: "application/json" } }
+    );
+
+    const data = await readJson(response);
+
+    if (!response.ok || !data.success) {
+      content.textContent =
+        data.message || "Unable to load the account history.";
       return;
     }
-    content.innerHTML = data.history.map(item => `
-      <div class="owner-history-item">
-        <strong>${String(item.action || '').toUpperCase()}</strong>
-        <p>${item.reason || item.note || 'No details provided.'}</p>
-        <small>${item.performed_by || 'System'} • ${item.created_at || ''}</small>
-      </div>`).join('');
-  } catch(e) {
-    content.innerHTML = '<p>Unable to load history.</p>';
+
+    if (!data.history?.length) {
+      content.textContent = "No account status changes have been recorded yet.";
+      return;
+    }
+
+    content.innerHTML = data.history
+      .map((item) => {
+        const isReactivation = String(item.action || "") === "reactivated";
+        const details = [item.reason, item.note]
+          .filter(Boolean)
+          .map((text) => escapeHtml(text))
+          .join("<br>");
+
+        return `
+          <div class="owner-history-item">
+            <strong>${isReactivation ? "Reactivated" : "Deactivated"}</strong>
+            <p>${details || "No details provided."}</p>
+            <small>${escapeHtml(item.performed_by || "System")} &bull; ${escapeHtml(formatDate(item.created_at))}</small>
+          </div>`;
+      })
+      .join("");
+  } catch (error) {
+    console.error("Owner history error:", error);
+    content.textContent = "Unable to load the account history.";
   }
 }
+
 window.openOwnerHistory = openOwnerHistory;
-document.getElementById('closeOwnerHistoryModal')?.addEventListener('click',()=>document.getElementById('ownerHistoryModal').classList.add('hidden'));

@@ -20,7 +20,7 @@
 
   <link
     rel="stylesheet"
-    href="../css/admin.css?v=20260921-font1"
+    href="../css/admin.css?v=20261026-owner-status1"
   >
 
   <link
@@ -615,9 +615,61 @@
                 <span id="dashboardPendingApplicationsAttention" class="dashboard-attention-count">0</span>
                 <i class="fa-solid fa-chevron-right dashboard-attention-arrow"></i>
               </button>
+            </div><!-- /.dashboard-attention-list -->
+          </article><!-- /#dashboardAttentionPanel -->
+        </div><!-- /.dashboard-main-grid -->
+      </section><!-- /#overviewSection -->
+
+      <!-- RESTAURANT APPLICATIONS -->
+      <section id="applicationsSection" class="dashboard-section">
+        <div class="content-card">
+          <div class="card-heading applications-heading">
+            <div>
+              <h2>Restaurant Applications</h2>
+              <p>Review restaurant partner applications, verification status, and submitted details.</p>
+            </div>
+            <button type="button" id="refreshApplicationsButton" class="secondary-button">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+
+          <div class="filter-bar" role="group" aria-label="Filter restaurant applications by status">
+            <button type="button" class="status-filter active" data-status="all">All <span id="allApplicationsCount">0</span></button>
+            <button type="button" class="status-filter" data-status="submitted">Submitted <span id="submittedApplicationsCount">0</span></button>
+            <button type="button" class="status-filter" data-status="needs_changes">Needs Changes <span id="needsChangesApplicationsCount">0</span></button>
+            <button type="button" class="status-filter" data-status="draft">Draft <span id="draftApplicationsCount">0</span></button>
+            <button type="button" class="status-filter" data-status="email_pending">Email Pending</button>
+            <button type="button" class="status-filter" data-status="approved">Approved <span id="approvedApplicationsCount">0</span></button>
+            <button type="button" class="status-filter" data-status="rejected">Rejected <span id="rejectedApplicationsCount">0</span></button>
+          </div>
+
+          <div id="applicationsLoading" class="table-loading hidden" role="status">Loading restaurant applications...</div>
+
+          <div id="applicationsEmpty" class="empty-placeholder hidden">
+            <i class="fa-solid fa-file-circle-question"></i>
+            <h3>No restaurant applications found</h3>
+            <p>Applications matching your selected status will appear here.</p>
+          </div>
+
+          <div id="applicationsTableWrapper" class="table-wrapper hidden">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Restaurant</th>
+                  <th>Owner</th>
+                  <th>Cuisine</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
-      <!-- PLACEHOLDER MODULES -->
+      <!-- EXISTING ADMIN MODULES -->
 
      <section
   id="restaurantsSection"
@@ -1232,26 +1284,21 @@
 </div>
 
 
-<script src="../js/ph-phone.js?v=20260816"></script>
-<script src="../js/admin.js?v=20260915-partner-resend-request1"></script>
-
-<!-- Owner account status modal -->
-<div id="ownerStatusModal" class="modal-overlay hidden">
+<!-- Owner account status modal.
+     Keep this markup BEFORE the scripts below. -->
+<div id="ownerStatusModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ownerStatusModalTitle">
   <div class="application-modal owner-status-modal">
-    <button type="button" id="closeOwnerStatusModal" class="modal-close">&times;</button>
+    <button type="button" id="closeOwnerStatusModal" class="modal-close" aria-label="Close">&times;</button>
     <h2 id="ownerStatusModalTitle">Deactivate Owner Account</h2>
     <p id="ownerStatusModalOwner" class="owner-status-owner"></p>
-    <label>Reason</label>
-    <select id="ownerStatusReason">
+    <p id="ownerStatusHelp" class="owner-status-help"></p>
+    <label for="ownerStatusReason">Reason <span class="owner-status-required">*</span></label>
+    <select id="ownerStatusReason" required>
       <option value="">Select reason</option>
-      <option>Violation of FoodConnect Terms</option>
-      <option>Suspicious account activity</option>
-      <option>Incorrect restaurant information</option>
-      <option>Restaurant permanently closed</option>
-      <option>Owner requested account closure</option>
-      <option>Other</option>
     </select>
-    <textarea id="ownerStatusNote" rows="4" placeholder="Additional notes (optional)"></textarea>
+    <label id="ownerStatusNoteLabel" for="ownerStatusNote">Additional notes (optional)</label>
+    <textarea id="ownerStatusNote" rows="4" maxlength="500" placeholder="Additional notes (optional)"></textarea>
+    <p id="ownerStatusError" class="owner-status-error hidden" role="alert" aria-live="assertive"></p>
     <div class="owner-status-actions">
       <button type="button" id="cancelOwnerStatusModal" class="secondary-button">Cancel</button>
       <button type="button" id="confirmOwnerStatusModal" class="primary-button">Confirm</button>
@@ -1259,13 +1306,16 @@
   </div>
 </div>
 
-<div id="ownerHistoryModal" class="modal-overlay hidden">
+<div id="ownerHistoryModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ownerHistoryTitle">
   <div class="application-modal owner-status-modal">
-    <button type="button" id="closeOwnerHistoryModal" class="modal-close">&times;</button>
-    <h2>Owner Account History</h2>
+    <button type="button" id="closeOwnerHistoryModal" class="modal-close" aria-label="Close">&times;</button>
+    <h2 id="ownerHistoryTitle">Owner Account History</h2>
     <div id="ownerHistoryContent"></div>
   </div>
 </div>
+
+<script src="../js/ph-phone.js?v=20260816"></script>
+<script src="../js/admin.js?v=20261026-owner-status1"></script>
 
 </body>
 </html>

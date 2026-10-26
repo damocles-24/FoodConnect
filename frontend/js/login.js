@@ -435,6 +435,8 @@ loginForm?.addEventListener(
                         reactivationCode.value = "";
                     }
 
+                    resetReactivationReason();
+
                     showPanel("reactivation");
 
                     setMessage(
@@ -513,8 +515,75 @@ loginForm?.addEventListener(
    CUSTOMER SELF-REACTIVATION
    ========================================================= */
 
+const reactivationReason =
+    document.getElementById("reactivationReason");
+
+const reactivationNote =
+    document.getElementById("reactivationNote");
+
+const reactivationNoteLabel =
+    document.getElementById("reactivationNoteLabel");
+
+function updateReactivationNoteRequirement() {
+    const isOther = reactivationReason?.value === "Other";
+
+    if (reactivationNote) {
+        reactivationNote.placeholder = isOther
+            ? "Explain the reason (required)"
+            : "Additional notes (optional)";
+    }
+
+    if (reactivationNoteLabel) {
+        reactivationNoteLabel.textContent = isOther
+            ? "Explanation (required)"
+            : "Additional notes (optional)";
+    }
+}
+
+/* The reason is saved on the server with the code request, so it cannot be
+   changed after the code is sent (go back and start again to change it). */
+function setReactivationReasonLocked(isLocked) {
+    if (reactivationReason) reactivationReason.disabled = isLocked;
+    if (reactivationNote) reactivationNote.disabled = isLocked;
+}
+
+function resetReactivationReason() {
+    if (reactivationReason) reactivationReason.value = "";
+    if (reactivationNote) reactivationNote.value = "";
+    setReactivationReasonLocked(false);
+    updateReactivationNoteRequirement();
+}
+
+reactivationReason?.addEventListener("change", () => {
+    setMessage(reactivationMsg);
+    updateReactivationNoteRequirement();
+});
+
 async function sendReactivationCode() {
     setMessage(reactivationMsg);
+
+    const reasonValue = String(reactivationReason?.value || "").trim();
+    const noteValue = String(reactivationNote?.value || "").trim();
+
+    if (!reasonValue) {
+        setMessage(
+            reactivationMsg,
+            "Select a reason for reactivating your account.",
+            "error"
+        );
+        reactivationReason?.focus();
+        return false;
+    }
+
+    if (reasonValue === "Other" && noteValue.length < 5) {
+        setMessage(
+            reactivationMsg,
+            'Please explain your reason when you select "Other" (at least 5 characters).',
+            "error"
+        );
+        reactivationNote?.focus();
+        return false;
+    }
 
     if (
         !pendingReactivation?.identifier ||
@@ -551,7 +620,9 @@ async function sendReactivationCode() {
                 },
                 body: JSON.stringify({
                     email: pendingReactivation.email,
-                    password: pendingReactivation.password
+                    password: pendingReactivation.password,
+                    reason: reasonValue,
+                    note: noteValue
                 })
             }
         );
@@ -566,6 +637,7 @@ async function sendReactivationCode() {
         }
 
         reactivationCodeArea?.classList.remove("hidden");
+        setReactivationReasonLocked(true);
 
         setMessage(
             reactivationMsg,
@@ -736,6 +808,7 @@ document
     .getElementById("backToLoginReactivation")
     ?.addEventListener("click", () => {
         pendingReactivation = null;
+        resetReactivationReason();
 
         if (reactivationCodeArea) {
             reactivationCodeArea.classList.add("hidden");

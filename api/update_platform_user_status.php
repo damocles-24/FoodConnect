@@ -21,14 +21,6 @@ ini_set(
     "0"
 );
 
-session_set_cookie_params(
-    0,
-    "/FoodConnect",
-    "",
-    false,
-    true
-);
-
 require_once __DIR__ .
     "/session_config.php";
 
@@ -37,6 +29,9 @@ require_once __DIR__ .
 
 require_once __DIR__ .
     "/mailer.php";
+
+require_once __DIR__ .
+    "/account_status_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -259,378 +254,197 @@ if (
 }
 
 /* =========================================================
-   PROTECT CURRENT ADMIN
+   CHANGE STATUS (owners only; reason required)
+
+   Permission rules, reason validation, locking, history and
+   the activity log all live in account_status_helper.php so
+   no endpoint can bypass them.
 ========================================================= */
 
-if (
-    $userId === $adminId &&
-    $status === 0
-) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "You cannot deactivate your currently logged-in administrator account."
-    ], 403);
-}
+/*
+ * Reactivating an owner must never reopen their restaurant by itself: reopening is
+ * the owner's own decision (same rule as Restaurant Access). A restaurant that was
+ * left "Open" when the owner was deactivated is therefore set to "Temporarily
+ * Unavailable" in the same transaction. Restaurants that are already unavailable
+ * are not touched; orders and payments are never touched. While the owner is
+ * inactive the restaurant is hidden from customers anyway, so deactivation needs
+ * no change here.
+ */
+$keepRestaurantsClosedOnReactivation = function (
+    mysqli $db,
+    array $ownerRow,
+    int $statusAfter
+) use ($adminId): void {
+    if ($statusAfter !== 1) {
+        return;
+    }
 
-/* =========================================================
-   VERIFY TARGET USER
-========================================================= */
+    $ownerUserId = (int) $ownerRow["user_id"];
 
-$userStmt = $conn->prepare("
-    SELECT
-        user_id,
-        restaurant_id,
-        role,
-        TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''), NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), ''))) AS display_name,
-        email,
-        status,
-        is_verified
+    $find = $db->prepare("
+        SELECT restaurant_id, name
+        FROM tbl_restaurants
+        WHERE owner_id = ?
+          AND business_status <> 'Temporarily Unavailable'
+    ");
 
-    FROM tbl_users
+    if (!$find) {
+        throw new RuntimeException("prepare restaurants: " . $db->error);
+    }
 
-    WHERE user_id = ?
+    $find->bind_param("i", $ownerUserId);
 
-    LIMIT 1
-");
+    if (!$find->execute()) {
+        throw new RuntimeException("execute failed: " . $find->error);
+    }
 
-if (!$userStmt) {
-    error_log(
-        "update_platform_user_status user prepare error: " .
-        $conn->error
-    );
+    $open = [];
+    $rows = $find->get_result();
 
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unable to verify the platform user."
-    ], 500);
-}
+    while ($rows && ($row = $rows->fetch_assoc())) {
+        $open[] = $row;
+    }
 
-$userStmt->bind_param(
-    "i",
-    $userId
+    $find->close();
+
+    foreach ($open as $restaurant) {
+        $restaurantId = (int) $restaurant["restaurant_id"];
+
+        $close = $db->prepare("
+            UPDATE tbl_restaurants
+            SET business_status = 'Temporarily Unavailable'
+            WHERE restaurant_id = ?
+              AND business_status <> 'Temporarily Unavailable'
+            LIMIT 1
+        ");
+
+        if (!$close) {
+            throw new RuntimeException("prepare close: " . $db->error);
+        }
+
+        $close->bind_param("i", $restaurantId);
+
+        if (!$close->execute()) {
+            throw new RuntimeException("execute failed: " . $close->error);
+        }
+
+        $close->close();
+
+        $title = "Restaurant Kept Closed";
+        $description = "The owner account was reactivated by an administrator. "
+            . (string) $restaurant["name"]
+            . " stays temporarily unavailable until the owner reopens it.";
+
+        $log = $db->prepare("
+            INSERT INTO tbl_activity_logs (restaurant_id, user_id, user_role, action_type, action_title, action_description)
+            VALUES (?, ?, 'admin', 'restaurant_access', ?, ?)
+        ");
+
+        if (!$log) {
+            throw new RuntimeException("prepare log: " . $db->error);
+        }
+
+        $log->bind_param("iiss", $restaurantId, $adminId, $title, $description);
+
+        if (!$log->execute()) {
+            throw new RuntimeException("execute failed: " . $log->error);
+        }
+
+        $log->close();
+    }
+};
+
+$result = fc_change_account_status(
+    $conn,
+    (int) $userId,
+    (int) $status,
+    [
+        "actor" => [
+            "user_id" => $adminId,
+            "role" => "admin",
+            "restaurant_id" => null
+        ],
+        "actor_name" => (string) $admin["display_name"],
+        "reason" => $input["reason"] ?? "",
+        "note" => $input["note"] ?? "",
+        "activity_log" => true,
+        "extra_in_transaction" => $keepRestaurantsClosedOnReactivation
+    ]
 );
 
-if (!$userStmt->execute()) {
-    error_log(
-        "update_platform_user_status user execute error: " .
-        $userStmt->error
-    );
-
-    $userStmt->close();
-
+if (!$result["success"]) {
     respond_json([
         "success" => false,
-        "message" =>
-            "Unable to verify the platform user."
-    ], 500);
+        "message" => $result["message"],
+        "field" => $result["field"] ?? null,
+        "code" => $result["code"] ?? null,
+        "blockers" => $result["blockers"] ?? null
+    ], (int) $result["http"]);
 }
 
-$targetUser =
-    $userStmt
-        ->get_result()
-        ->fetch_assoc();
+$targetUser = $result["target"];
 
-$userStmt->close();
-
-if (!$targetUser) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Platform user not found."
-    ], 404);
-}
-
-$targetRole = strtolower(
-    trim(
-        (string) $targetUser["role"]
-    )
-);
-
-
-$allowedTargetRoles = [
-    "owner",
-    "cashier",
-    "delivery_staff"
-];
-
-if (
-    !in_array(
-        $targetRole,
-        $allowedTargetRoles,
-        true
-    )
-) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Only restaurant owners and restaurant staff can be managed from Platform Users."
-    ], 403);
-}
-
-if (
-    (int) $targetUser["is_verified"] !== 1
-) {
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unverified accounts cannot be managed from Platform Users."
-    ], 403);
-}
-
-$oldStatus =
-    (int) $targetUser["status"];
-
-if ($oldStatus === $status) {
+if (empty($result["changed"])) {
     respond_json([
         "success" => true,
-        "message" =>
-            $status === 1
-                ? "The user account is already active."
-                : "The user account is already inactive.",
-
-        "user_id" =>
-            $userId,
-
-        "status" =>
-            $status
+        "changed" => false,
+        "message" => $result["message"],
+        "user_id" => (int) $userId,
+        "status" => (int) $status
     ]);
 }
 
 /* =========================================================
-   UPDATE USER AND CREATE LOG
-
-   Both actions use one transaction so the status update
-   is rolled back if the activity log cannot be saved.
+   OWNER EMAIL NOTIFICATION (after the change is committed)
 ========================================================= */
 
-$conn->begin_transaction();
-
-try {
-    $updateStmt = $conn->prepare("
-        UPDATE tbl_users
-
-        SET status = ?
-
-        WHERE user_id = ?
-
-        LIMIT 1
-    ");
-
-    if (!$updateStmt) {
-        throw new RuntimeException(
-            "Unable to prepare user status update: " .
-            $conn->error
-        );
-    }
-
-    $updateStmt->bind_param(
-        "ii",
-        $status,
-        $userId
-    );
-
-    if (!$updateStmt->execute()) {
-        $updateError =
-            $updateStmt->error;
-
-        $updateStmt->close();
-
-        throw new RuntimeException(
-            "Unable to update user status: " .
-            $updateError
-        );
-    }
-
-    if (
-        $updateStmt->affected_rows !== 1
-    ) {
-        $updateStmt->close();
-
-        throw new RuntimeException(
-            "The user account was not updated."
-        );
-    }
-
-    $updateStmt->close();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activity log
-    |--------------------------------------------------------------------------
-    |
-    | The uploaded database uses:
-    | user_id and user_role
-    |
-    | It does not use:
-    | created_by and actor_role
-    |
-    | restaurant_id is required by the current table. Platform-level accounts
-    | without a restaurant use 0.
-    |
-    */
-
-    $logRestaurantId =
-        $targetUser["restaurant_id"] !== null
-            ? (int) $targetUser["restaurant_id"]
-            : 0;
-
-    $oldStatusLabel =
-        $oldStatus === 1
-            ? "Active"
-            : "Inactive";
-
-    $newStatusLabel =
+if (!empty($targetUser["email"])) {
+    $emailSubject =
         $status === 1
-            ? "Active"
-            : "Inactive";
+            ? "FoodConnect Owner Account Reactivated"
+            : "FoodConnect Owner Account Deactivated";
 
-    $actionTitle =
+    $safeName = htmlspecialchars(
+        (string) $targetUser["display_name"],
+        ENT_QUOTES,
+        "UTF-8"
+    );
+
+    $statusMessage =
         $status === 1
-            ? "Platform User Activated"
-            : "Platform User Deactivated";
+            ? "Your FoodConnect restaurant owner account has been reactivated. You may now access your owner portal again."
+            : "Your FoodConnect restaurant owner account has been deactivated.";
 
-    $description =
-        $admin["display_name"] .
-        " changed " .
-        $targetUser["display_name"] .
-        " (" .
-        $targetUser["email"] .
-        ", " .
-        ucwords(
-            str_replace(
-                "_",
-                " ",
-                $targetRole
-            )
-        ) .
-        ") from " .
-        $oldStatusLabel .
-        " to " .
-        $newStatusLabel .
-        ".";
+    $reasonText = (string) ($result["reason"] ?? "");
 
-    $logStmt = $conn->prepare("
-        INSERT INTO tbl_activity_logs (
-            restaurant_id,
-            user_id,
-            user_role,
-            action_type,
-            action_title,
-            action_description
-        )
-        VALUES (?, ?, 'admin', 'account_status', ?, ?)
-    ");
-
-    if (!$logStmt) {
-        throw new RuntimeException(
-            "Unable to prepare activity log: " .
-            $conn->error
-        );
+    if (($result["note"] ?? "") !== "") {
+        $reasonText .= " - " . $result["note"];
     }
 
-    $logStmt->bind_param(
-        "iiss",
-        $logRestaurantId,
-        $adminId,
-        $actionTitle,
-        $description
-    );
+    $emailBody = ""
+        . "<div style=\"font-family:Arial,sans-serif;color:#1c2434;\">"
+        . "<h2>FoodConnect Account Update</h2>"
+        . "<p>Hello {$safeName},</p>"
+        . "<p>{$statusMessage}</p>"
+        . "<p><strong>Reason:</strong><br>"
+        . nl2br(htmlspecialchars($reasonText, ENT_QUOTES, "UTF-8"))
+        . "</p>"
+        . "<p>FoodConnect Administration Team</p></div>";
 
-    if (!$logStmt->execute()) {
-        $logError =
-            $logStmt->error;
-
-        $logStmt->close();
-
-        throw new RuntimeException(
-            "Unable to save activity log: " .
-            $logError
+    if (!sendBrevoSMTP((string) $targetUser["email"], $emailSubject, $emailBody)) {
+        error_log(
+            "Owner status email failed for user_id: " . (int) $userId
         );
     }
-
-    $logStmt->close();
-
-    $conn->commit();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Owner email notification
-    |--------------------------------------------------------------------------
-    */
-    if (
-        strtolower($targetRole) === "owner" &&
-        !empty($targetUser["email"])
-    ) {
-        $emailSubject =
-            $status === 1
-                ? "FoodConnect Owner Account Reactivated"
-                : "FoodConnect Owner Account Deactivated";
-
-        $safeName = htmlspecialchars(
-            (string) $targetUser["display_name"],
-            ENT_QUOTES,
-            "UTF-8"
-        );
-
-        $statusMessage =
-            $status === 1
-                ? "Your FoodConnect restaurant owner account has been reactivated. You may now access your owner portal again."
-                : "Your FoodConnect restaurant owner account has been deactivated.";
-
-        $emailBody = ""
-            . "<div style=\"font-family:Arial,sans-serif;color:#1c2434;\">"
-            . "<h2>FoodConnect Account Update</h2>"
-            . "<p>Hello {$safeName},</p>"
-            . "<p>{$statusMessage}</p>";
-
-        if ($status !== 1) {
-            $emailBody .= "<p><strong>Reason:</strong><br>"
-                . nl2br(htmlspecialchars((string)($input["reason"] ?? ""), ENT_QUOTES, "UTF-8"))
-                . "</p>";
-        }
-
-        $emailBody .= "<p>FoodConnect Administration Team</p></div>";
-
-        if (!sendBrevoSMTP((string)$targetUser["email"], $emailSubject, $emailBody)) {
-            error_log(
-                "Owner status email failed for user_id: " . $userId
-            );
-        }
-    }
-} catch (Throwable $error) {
-    $conn->rollback();
-
-    error_log(
-        "update_platform_user_status transaction error: " .
-        $error->getMessage()
-    );
-
-    respond_json([
-        "success" => false,
-        "message" =>
-            "Unable to update the platform user account."
-    ], 500);
 }
-
-/* =========================================================
-   SUCCESS RESPONSE
-========================================================= */
 
 respond_json([
     "success" => true,
-
+    "changed" => true,
     "message" =>
         $status === 1
-            ? $targetUser["display_name"] .
-              " was activated successfully."
-            : $targetUser["display_name"] .
-              " was deactivated successfully.",
-
-    "user_id" =>
-        $userId,
-
-    "status" =>
-        $status
+            ? $targetUser["display_name"] . " was reactivated successfully. Their restaurant stays temporarily unavailable until the owner reopens it."
+            : $targetUser["display_name"] . " was deactivated successfully.",
+    "user_id" => (int) $userId,
+    "status" => (int) $status
 ]);

@@ -1966,3 +1966,34 @@ img[src*="logofoodconnect-Photoroom.png"] {
     width: 45px;
     height: 45px;
 }
+
+/* Deactivation reason fields (no leading icon) */
+.confirm-modal .input-wrap select,
+.confirm-modal .input-wrap textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dfe3e8;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.confirm-modal .input-wrap select {
+  height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.confirm-modal .input-wrap textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.confirm-modal .input-wrap select:focus,
+.confirm-modal .input-wrap textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(247,128,33,.1);
+}

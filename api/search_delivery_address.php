@@ -12,6 +12,7 @@ header(
 
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 $geoapifyConfigFile =
     __DIR__ .
@@ -165,9 +166,11 @@ $normalizedQuery =
     );
 
 $cachedLocations =
-    load_cached_addresses(
-        $conn,
-        $normalizedQuery
+    fc_filter_service_area_locations(
+        load_cached_addresses(
+            $conn,
+            $normalizedQuery
+        )
     );
 
 if (!empty($cachedLocations)) {
@@ -1034,6 +1037,35 @@ foreach ($results as $result) {
 }
 
 /* =========================================================
+   SERVICE AREA FILTER: CITY OF ALAMINOS, PANGASINAN ONLY
+========================================================= */
+
+$resultsBeforeServiceAreaFilter =
+    count($locations);
+
+$locations =
+    fc_filter_service_area_locations(
+        $locations
+    );
+
+if (
+    $resultsBeforeServiceAreaFilter > 0 &&
+    empty($locations)
+) {
+    respond_json(
+        fc_service_area_error_payload(
+            "address",
+            [
+                "success" => true,
+                "outside_service_area" => true,
+                "searched_query" => $query,
+                "locations" => []
+            ]
+        )
+    );
+}
+
+/* =========================================================
    SAVE SUCCESSFUL RESULTS TO CACHE
 ========================================================= */
 
@@ -1066,3 +1098,43 @@ respond_json([
 "locations" =>
     $locations
 ]);
+
+/* =========================================================
+   SERVICE AREA RESULT FILTER
+
+   Keeps only results whose coordinates are inside the City of
+   Alaminos boundary, and normalizes city / province / barangay.
+========================================================= */
+
+function fc_filter_service_area_locations(
+    array $locations
+): array {
+    $filtered = [];
+
+    foreach ($locations as $location) {
+        if (
+            !is_array($location) ||
+            !fc_service_area_point_allowed(
+                $location["latitude"] ?? null,
+                $location["longitude"] ?? null
+            )
+        ) {
+            continue;
+        }
+
+        $location["barangay"] =
+            fc_service_area_match_barangay(
+                (string)($location["barangay"] ?? "")
+            ) ?? "";
+
+        $location["city"] =
+            fc_service_area_city();
+
+        $location["province"] =
+            fc_service_area_province();
+
+        $filtered[] = $location;
+    }
+
+    return $filtered;
+}

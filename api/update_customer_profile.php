@@ -3,6 +3,7 @@ header("Content-Type: application/json; charset=utf-8");
 require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 function respond(array $data, int $status = 200): void
 {
@@ -77,6 +78,36 @@ if (mb_strlen($address) > 1000) {
         ["success" => false, "message" => "Address is too long."],
         400
     );
+}
+
+/*
+ * Saved customer addresses must be inside FoodConnect's service area:
+ * an official City of Alaminos barangay. Province and city are always
+ * written by the server (City of Alaminos, Pangasinan).
+ */
+$addressBarangay = trim((string) ($data["address_barangay"] ?? ""));
+$addressStreet = trim((string) ($data["address_street"] ?? ""));
+
+if ($address !== "" || $addressBarangay !== "") {
+    try {
+        $resolvedAddress = fc_service_area_resolve_address(
+            $addressBarangay,
+            $addressStreet,
+            $address
+        );
+    } catch (RuntimeException $serviceAreaError) {
+        error_log("update_customer_profile.php service area error: " . $serviceAreaError->getMessage());
+        respond(
+            ["success" => false, "message" => "FoodConnect could not verify the address right now. Please try again."],
+            503
+        );
+    }
+
+    if ($resolvedAddress === null) {
+        respond(fc_service_area_error_payload("address"), 422);
+    }
+
+    $address = $resolvedAddress["address"];
 }
 
 $check = $conn->prepare("

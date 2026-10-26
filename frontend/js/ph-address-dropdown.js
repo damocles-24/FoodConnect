@@ -7,6 +7,68 @@
   const instances = new Map();
   let provincesPromise = null;
 
+  /*
+   * FoodConnect service area lock.
+   * Targets marked data-ph-service-area="alaminos" always use
+   * Province: Pangasinan / City: City of Alaminos (not editable) and only
+   * list City of Alaminos barangays.
+   */
+  const SERVICE_AREA_PROVINCE = { code: "0105500000", name: "Pangasinan" };
+  const SERVICE_AREA_CITY = { code: "0105503000", name: "City of Alaminos" };
+  let serviceAreaBarangaysPromise = null;
+
+  function isServiceAreaLocked(target) {
+    return String(target?.dataset?.phServiceArea || "").toLowerCase() === "alaminos";
+  }
+
+  function serviceAreaKey(value) {
+    return window.FCServiceArea?.normalizeKey
+      ? window.FCServiceArea.normalizeKey(value)
+      : String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+
+  async function getServiceAreaBarangays() {
+    if (!serviceAreaBarangaysPromise) {
+      serviceAreaBarangaysPromise = (async () => {
+        let official = [];
+        try {
+          official = (await window.FCServiceArea?.load?.())?.barangays || [];
+        } catch (error) {
+          official = [];
+        }
+
+        let psgcItems = [];
+        try {
+          psgcItems = await getBarangays(SERVICE_AREA_CITY.code, SERVICE_AREA_CITY.name);
+        } catch (error) {
+          psgcItems = [];
+        }
+
+        if (psgcItems.length && official.length) {
+          // Keep only official City of Alaminos barangays; use official spelling.
+          const officialByKey = new Map(official.map(name => [serviceAreaKey(name), name]));
+          psgcItems = psgcItems
+            .filter(item => officialByKey.has(serviceAreaKey(item.name)))
+            .map(item => ({ ...item, name: officialByKey.get(serviceAreaKey(item.name)) }));
+        }
+
+        const items = psgcItems.length
+          ? psgcItems
+          : official.map(name => ({ code: `alaminos-${serviceAreaKey(name)}`, name, raw: null }));
+
+        if (!items.length) {
+          throw new Error("City of Alaminos barangays could not be loaded.");
+        }
+
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+      })().catch(error => {
+        serviceAreaBarangaysPromise = null;
+        throw error;
+      });
+    }
+    return serviceAreaBarangaysPromise;
+  }
+
   function injectStyles() {
     if (document.getElementById("phAddressDropdownStyles")) return;
     const style = document.createElement("style");
@@ -294,10 +356,10 @@
     }
 
     input.addEventListener("focus", () => {
-      if (!input.disabled) renderMenu(input.value);
+      if (!input.disabled && !input.readOnly) renderMenu(input.value);
     });
     input.addEventListener("click", () => {
-      if (!input.disabled) renderMenu(input.value);
+      if (!input.disabled && !input.readOnly) renderMenu(input.value);
     });
     input.addEventListener("input", () => {
       const current = select.options[select.selectedIndex];
@@ -350,6 +412,20 @@
     return state;
   }
 
+  /* Fixed (system-controlled) value: shown, but never editable. */
+  function lockSearchableSelect(select) {
+    const state = makeSearchableSelect(select);
+    select.disabled = true;
+    select.dataset.phLocked = "1";
+    if (state) {
+      state.input.readOnly = true;
+      state.input.disabled = true;
+      state.input.setAttribute("aria-readonly", "true");
+      state.input.title = "Set automatically: FoodConnect serves City of Alaminos, Pangasinan only";
+    }
+    refreshSearchableSelect(select);
+  }
+
   function refreshSearchableSelect(select) {
     const state = makeSearchableSelect(select);
     if (!state) return;
@@ -365,6 +441,12 @@
   }
 
   function composeAddress(instance) {
+    if (instance.locked) {
+      const lockedBarangay = selectedName(instance.barangaySelect);
+      const lockedStreet = instance.streetInput.value.trim();
+      if (!lockedBarangay) return "";
+      return [lockedStreet, lockedBarangay, SERVICE_AREA_CITY.name, SERVICE_AREA_PROVINCE.name, "Philippines"].filter(Boolean).join(", ");
+    }
     const area = selectedName(instance.areaSelect);
     const locality = selectedName(instance.localitySelect);
     const barangay = selectedName(instance.barangaySelect);
@@ -415,9 +497,13 @@
     wrap.className = "ph-address-dropdown";
     wrap.dataset.phAddressUi = target.id || "address";
 
+    const locked = isServiceAreaLocked(target);
+
     const country = document.createElement("div");
     country.className = "ph-address-country ph-address-field-full";
-    country.innerHTML = "<strong>Philippines</strong><span>Country is fixed</span>";
+    country.innerHTML = locked
+      ? "<strong>City of Alaminos, Pangasinan</strong><span>FoodConnect service area &mdash; province and city are set automatically</span>"
+      : "<strong>Philippines</strong><span>Country is fixed</span>";
 
     const areaSelect = document.createElement("select");
     areaSelect.id = `${target.id || "phAddress"}ProvinceArea`;
@@ -473,7 +559,7 @@
 
     insertionAnchor.insertAdjacentElement("afterend", wrap);
 
-    const instance = { target, wrap, areaSelect, localitySelect, barangaySelect, streetInput, status, savedBox, required: wasRequired, lastObservedValue: cleanSavedAddress(target.value) };
+    const instance = { target, wrap, areaSelect, localitySelect, barangaySelect, streetInput, status, savedBox, required: wasRequired, locked, lastObservedValue: cleanSavedAddress(target.value) };
     instances.set(target, instance);
 
     fillSelect(areaSelect, [], "Loading provinces / areas...");
@@ -486,17 +572,27 @@
       savedBox.hidden = false;
     }
 
-    try {
-      const provinces = await getProvinces();
-      fillSelect(areaSelect, provinces, "Select province / area");
-      areaSelect.disabled = false;
-      setStatus(instance, "Select your Philippine location from the dropdowns.", false);
-    } catch (error) {
-      areaSelect.disabled = true;
-      setStatus(instance, "Philippine address list could not be loaded. Check the internet connection and reload the page.", true);
+    if (locked) {
+      fillSelect(areaSelect, [SERVICE_AREA_PROVINCE], "Pangasinan", SERVICE_AREA_PROVINCE.name);
+      fillSelect(localitySelect, [SERVICE_AREA_CITY], "City of Alaminos", SERVICE_AREA_CITY.name);
+      lockSearchableSelect(areaSelect);
+      lockSearchableSelect(localitySelect);
+      fillSelect(barangaySelect, [], "Loading barangays...");
+      instance.ready = loadServiceAreaBarangays(instance);
+    } else {
+      try {
+        const provinces = await getProvinces();
+        fillSelect(areaSelect, provinces, "Select province / area");
+        areaSelect.disabled = false;
+        setStatus(instance, "Select your Philippine location from the dropdowns.", false);
+      } catch (error) {
+        areaSelect.disabled = true;
+        setStatus(instance, "Philippine address list could not be loaded. Check the internet connection and reload the page.", true);
+      }
     }
 
     areaSelect.addEventListener("change", async () => {
+      if (instance.locked) return;
       fillSelect(localitySelect, [], areaSelect.value ? "Loading cities / municipalities..." : "Select province / area first");
       fillSelect(barangaySelect, [], "Select city / municipality first");
       localitySelect.disabled = true;
@@ -517,6 +613,7 @@
     });
 
     localitySelect.addEventListener("change", async () => {
+      if (instance.locked) return;
       fillSelect(barangaySelect, [], localitySelect.value ? "Loading barangays..." : "Select city / municipality first");
       barangaySelect.disabled = true;
       if (!localitySelect.value) return;
@@ -534,7 +631,18 @@
       }
     });
 
-    barangaySelect.addEventListener("change", () => updateTarget(instance));
+    barangaySelect.addEventListener("change", () => {
+      if (instance.locked && !barangaySelect.value) {
+        // Clearing the barangay must also clear the composed address.
+        target.value = "";
+        target.dataset.phAddressGenerated = "1";
+        instance.lastObservedValue = "";
+        target.dispatchEvent(new Event("input", { bubbles: true }));
+        target.dispatchEvent(new Event("change", { bubbles: true }));
+        return;
+      }
+      updateTarget(instance);
+    });
     streetInput.addEventListener("input", () => updateTarget(instance));
 
     // Keep the current saved value visible when existing page logic loads it after this helper.
@@ -551,10 +659,48 @@
     return instance;
   }
 
+  async function loadServiceAreaBarangays(instance) {
+    const { barangaySelect } = instance;
+    barangaySelect.disabled = true;
+    setStatus(instance, "Loading City of Alaminos barangays...", false);
+    try {
+      const items = await getServiceAreaBarangays();
+      const current = selectedName(barangaySelect);
+      fillSelect(barangaySelect, items, "Select barangay", current);
+      barangaySelect.disabled = false;
+      setStatus(instance, "Select your barangay in City of Alaminos.", false);
+      return true;
+    } catch (error) {
+      fillSelect(barangaySelect, [], "Unable to load barangays");
+      setStatus(instance, "City of Alaminos barangays could not be loaded. Check your internet connection and reload the page.", true);
+      return false;
+    }
+  }
+
+  /* Structured value for FoodConnect APIs: { street, barangay, city, province }. */
+  function getStructured(targetOrId) {
+    const target = typeof targetOrId === "string" ? document.getElementById(targetOrId) : targetOrId;
+    const instance = instances.get(target);
+    if (!instance) return { street: "", barangay: "", city: "", province: "" };
+    return {
+      street: instance.streetInput.value.trim(),
+      barangay: selectedName(instance.barangaySelect),
+      city: instance.locked ? SERVICE_AREA_CITY.name : selectedName(instance.localitySelect),
+      province: instance.locked ? SERVICE_AREA_PROVINCE.name : selectedName(instance.areaSelect)
+    };
+  }
+
   function validate(targetOrId) {
     const target = typeof targetOrId === "string" ? document.getElementById(targetOrId) : targetOrId;
     const instance = instances.get(target);
     if (!instance) return !!cleanSavedAddress(target?.value);
+    if (instance.locked) {
+      if (selectedName(instance.barangaySelect)) return true;
+      if (!instance.required && !cleanSavedAddress(target.value)) return true;
+      setStatus(instance, "Please select your barangay in City of Alaminos.", true);
+      makeSearchableSelect(instance.barangaySelect)?.input?.focus();
+      return false;
+    }
     const generated = composeAddress(instance);
     const existing = cleanSavedAddress(target.value);
     if (!instance.required) return true;
@@ -592,6 +738,25 @@
       });
       refreshSearchableSelect(select);
     };
+
+    if (isServiceAreaLocked(areaSelect) || config.serviceArea === "alaminos") {
+      areaSelect.dataset.phServiceArea = "alaminos";
+      setNameOptions(areaSelect, [SERVICE_AREA_PROVINCE], "Pangasinan", SERVICE_AREA_PROVINCE.name);
+      setNameOptions(localitySelect, [SERVICE_AREA_CITY], "City of Alaminos", SERVICE_AREA_CITY.name);
+      lockSearchableSelect(areaSelect);
+      lockSearchableSelect(localitySelect);
+      barangaySelect.disabled = true;
+      setNameOptions(barangaySelect, [], "Loading barangays...");
+      try {
+        const items = await getServiceAreaBarangays();
+        setNameOptions(barangaySelect, items, "Select barangay");
+        barangaySelect.disabled = false;
+      } catch (e) {
+        setNameOptions(barangaySelect, [], "Unable to load barangays");
+        return { areaSelect, localitySelect, barangaySelect, locked: true, error: e };
+      }
+      return { areaSelect, localitySelect, barangaySelect, locked: true };
+    }
 
     areaSelect.disabled = true;
     localitySelect.disabled = true;
@@ -655,6 +820,19 @@
     const areaName = String(config.areaName || "").trim();
     const localityName = String(config.localityName || "").trim();
     const barangayName = String(config.barangayName || "").trim();
+
+    if (isServiceAreaLocked(areaSelect)) {
+      // Province / city are fixed; only restore an Alaminos barangay.
+      areaSelect.value = SERVICE_AREA_PROVINCE.name;
+      localitySelect.value = SERVICE_AREA_CITY.name;
+      refreshSearchableSelect(areaSelect);
+      refreshSearchableSelect(localitySelect);
+      const match = findLocationOption(barangaySelect, barangayName);
+      barangaySelect.value = match ? match.value : "";
+      refreshSearchableSelect(barangaySelect);
+      return;
+    }
+
     if (!areaName) return;
 
     const areaOption = Array.from(areaSelect.options).find(o => o.value.toLowerCase() === areaName.toLowerCase() || (/metro manila|national capital region/i.test(areaName) && /metro manila/i.test(o.value)));
@@ -846,6 +1024,37 @@ function normalizeLocationName(value) {
     if (streetDetails) {
       instance.streetInput.value =
         streetDetails;
+    }
+
+    if (instance.locked) {
+      /*
+       * Province / city are fixed by FoodConnect. Whether the location is
+       * inside the service area is decided by the caller (coordinates or
+       * address check), never by these text values.
+       */
+      if (instance.ready) {
+        await instance.ready;
+      }
+
+      if (instance.barangaySelect.options.length <= 1) {
+        await loadServiceAreaBarangays(instance);
+      }
+
+      const barangayOption =
+        findLocationOption(instance.barangaySelect, barangayName);
+
+      if (barangayOption) {
+        instance.barangaySelect.value = barangayOption.value;
+        refreshSearchableSelect(instance.barangaySelect);
+        updateTarget(instance);
+        setStatus(instance, "Address fields were filled from your location.", false);
+        return { success: true, areaMatched: true, localityMatched: true, barangayMatched: true };
+      }
+
+      instance.barangaySelect.value = "";
+      refreshSearchableSelect(instance.barangaySelect);
+      setStatus(instance, "Please select your barangay in City of Alaminos to complete the address.", false);
+      return { success: false, areaMatched: true, localityMatched: true, barangayMatched: false };
     }
 
     if (!areaName) {
@@ -1090,6 +1299,9 @@ function normalizeLocationName(value) {
     bindCascadingSelects,
     setCascadingValues,
     setEnhancedValues,
-    makeSearchableSelect
+    makeSearchableSelect,
+    getStructured,
+    SERVICE_AREA_PROVINCE: SERVICE_AREA_PROVINCE.name,
+    SERVICE_AREA_CITY: SERVICE_AREA_CITY.name
   };
 })();

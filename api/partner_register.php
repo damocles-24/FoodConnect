@@ -28,6 +28,7 @@ require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/mailer.php";
 require_once __DIR__ . "/url_helper.php";
 require_once __DIR__ . "/name_helper.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -190,15 +191,63 @@ if (
     $restaurantName === "" ||
     $restaurantAddress === "" ||
     $restaurantContact === "" ||
-    $termsAccepted = !empty($data["terms_accepted"]);
-$termsVersion = trim((string)($data["terms_version"] ?? "2026.1"));
-
-$cuisine === ""
+    $cuisine === ""
 ) {
     respond_json(
         false,
         "Please complete all required fields.",
         422
+    );
+}
+
+/*
+ * FoodConnect service area: the restaurant must be located in an official
+ * City of Alaminos, Pangasinan barangay. Province / city are written by
+ * the server.
+ */
+$resolvedRestaurantAddress = fc_service_area_resolve_address(
+    (string)($data["restaurant_address_barangay"] ?? ""),
+    (string)($data["restaurant_address_street"] ?? ""),
+    $restaurantAddress
+);
+
+if ($resolvedRestaurantAddress === null) {
+    respond_json(
+        false,
+        fc_service_area_messages("restaurant")["message"],
+        422,
+        [
+            "code" => FC_SERVICE_AREA_CODE,
+            "title" => fc_service_area_messages("restaurant")["title"]
+        ]
+    );
+}
+
+$restaurantAddress = $resolvedRestaurantAddress["address"];
+
+/*
+ * Physical check (fail closed): the geocoded restaurant address must be
+ * strictly inside City of Alaminos. If geocoding is unavailable, times out
+ * or returns no usable result, registration is not accepted.
+ */
+$restaurantLocationCheck =
+    fc_service_area_verify_restaurant_address($restaurantAddress);
+
+if ($restaurantLocationCheck["status"] !== "inside") {
+    $restaurantLocationPayload = fc_service_area_error_payload(
+        $restaurantLocationCheck["status"] === "outside"
+            ? "restaurant"
+            : "restaurant_unverified"
+    );
+
+    respond_json(
+        false,
+        $restaurantLocationPayload["message"],
+        $restaurantLocationCheck["status"] === "outside" ? 422 : 503,
+        [
+            "code" => $restaurantLocationPayload["code"],
+            "title" => $restaurantLocationPayload["title"]
+        ]
     );
 }
 

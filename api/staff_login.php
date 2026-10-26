@@ -140,6 +140,38 @@ if ((int)$user["status"] !== 1) {
     ], 403);
 }
 
+/*
+ * Restaurant suspension: while the restaurant's owner account is inactive,
+ * staff cannot sign in. Their own account status is left untouched, so they
+ * can sign in again as soon as the owner is reactivated.
+ */
+$ownerGateStmt = $conn->prepare("
+    SELECT o.status
+    FROM tbl_restaurants r
+    INNER JOIN tbl_users o ON o.user_id = r.owner_id
+    WHERE r.restaurant_id = ?
+    LIMIT 1
+");
+
+if ($ownerGateStmt) {
+    $ownerGateRestaurantId = (int)$user["restaurant_id"];
+    $ownerGateStmt->bind_param("i", $ownerGateRestaurantId);
+
+    if ($ownerGateStmt->execute()) {
+        $ownerGate = $ownerGateStmt->get_result()->fetch_assoc();
+
+        if ($ownerGate && (int)$ownerGate["status"] !== 1) {
+            $ownerGateStmt->close();
+            staff_login_respond([
+                "success" => false,
+                "message" => "This restaurant's FoodConnect access is currently suspended. Please contact your restaurant owner."
+            ], 403);
+        }
+    }
+
+    $ownerGateStmt->close();
+}
+
 $role = strtolower(trim((string)$user["role"]));
 $allowedRoles = ["cashier", "delivery_staff", "delivery_coordinator"];
 

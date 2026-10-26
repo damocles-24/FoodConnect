@@ -27,6 +27,7 @@ require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/ph_phone.php";
 require_once __DIR__ . "/delivery_pricing_helper.php";
+require_once __DIR__ . "/service_area_helper.php";
 
 /* =========================================================
    RESPONSE HELPERS
@@ -258,6 +259,57 @@ $postalCode =
     );
 
 /*
+ * FoodConnect service area: restaurants must be located in
+ * City of Alaminos, Pangasinan. Province and city are system-controlled;
+ * the barangay must be an official City of Alaminos barangay.
+ */
+$serviceAreaErrors = [];
+
+if (
+    $province !== "" &&
+    !fc_service_area_is_supported_province($province)
+) {
+    $serviceAreaErrors["province"] =
+        fc_service_area_messages("restaurant")["message"];
+}
+
+if (
+    $cityMunicipality !== "" &&
+    !fc_service_area_is_supported_city($cityMunicipality)
+) {
+    $serviceAreaErrors["city_municipality"] =
+        fc_service_area_messages("restaurant")["message"];
+}
+
+if ($barangay !== "") {
+    $matchedRestaurantBarangay =
+        fc_service_area_match_barangay($barangay);
+
+    if ($matchedRestaurantBarangay === null) {
+        $serviceAreaErrors["barangay"] =
+            "Select a barangay within " .
+            fc_service_area_label() . ".";
+    } else {
+        $barangay = $matchedRestaurantBarangay;
+    }
+}
+
+if (!empty($serviceAreaErrors)) {
+    validation_response(
+        $serviceAreaErrors,
+        fc_service_area_messages("restaurant")["message"]
+    );
+}
+
+if ($province !== "") {
+    $province = fc_service_area_province();
+}
+
+if ($cityMunicipality !== "") {
+    $cityMunicipality = fc_service_area_city();
+}
+
+/*
  * Keep the partner application street field unchanged so the wizard can
  * repopulate it correctly, but build one complete address for the live
  * restaurant and location calculations.
@@ -413,13 +465,72 @@ if (
 
         $restaurantPricingLongitude =
             (float) $pricingCoordinates["longitude"];
+
+        if (
+            !fc_service_area_point_allowed(
+                $restaurantPricingLatitude,
+                $restaurantPricingLongitude
+            )
+        ) {
+            validation_response(
+                [
+                    "restaurant_address" =>
+                        fc_service_area_messages("restaurant")["message"]
+                ],
+                fc_service_area_messages("restaurant")["message"]
+            );
+        }
     } catch (RuntimeException $error) {
-        validation_response(
-            [
-                "restaurant_address" =>
-                    $error->getMessage()
-            ],
-            $error->getMessage()
+        // Fail closed: the location could not be verified.
+        error_log("save_restaurant_application.php geocode error: " . $error->getMessage());
+
+        respond_json(
+            array_merge(
+                fc_service_area_error_payload("restaurant_unverified"),
+                [
+                    "errors" => [
+                        "restaurant_address" =>
+                            fc_service_area_messages("restaurant_unverified")["message"]
+                    ]
+                ]
+            ),
+            503
+        );
+    }
+}
+
+/*
+ * Final submission (fail closed): the restaurant must be physically inside
+ * City of Alaminos for every pricing type. Distance pricing was already
+ * geocoded + checked above (and fails closed on geocoder errors).
+ * Drafts are still saved without physical verification.
+ */
+if (
+    $action === "submit" &&
+    $restaurantPricingLatitude === null
+) {
+    $restaurantLocationCheck =
+        fc_service_area_verify_restaurant_address(
+            $restaurantFullAddress
+        );
+
+    if ($restaurantLocationCheck["status"] !== "inside") {
+        $restaurantLocationContext =
+            $restaurantLocationCheck["status"] === "outside"
+                ? "restaurant"
+                : "restaurant_unverified";
+
+        respond_json(
+            array_merge(
+                fc_service_area_error_payload($restaurantLocationContext),
+                [
+                    "errors" => [
+                        "restaurant_address" =>
+                            fc_service_area_messages($restaurantLocationContext)["message"]
+                    ]
+                ]
+            ),
+            $restaurantLocationContext === "restaurant" ? 422 : 503
         );
     }
 }

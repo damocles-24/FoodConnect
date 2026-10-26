@@ -21,19 +21,14 @@ ini_set(
     "0"
 );
 
-session_set_cookie_params(
-    0,
-    "/FoodConnect",
-    "",
-    false,
-    true
-);
-
 require_once __DIR__ .
     "/session_config.php";
 
 require_once __DIR__ .
     "/db.php";
+
+require_once __DIR__ .
+    "/account_status_helper.php";
 
 /* =========================================================
    JSON RESPONSE
@@ -253,6 +248,24 @@ if (
     ], 422);
 }
 
+/* The owner account status changes with restaurant access, so a recorded
+   administrator reason is mandatory (same rules as Platform Users). */
+
+$reasonCheck = fc_status_validate_reason(
+    "owner",
+    $action,
+    $input["reason"] ?? "",
+    $input["note"] ?? ""
+);
+
+if (!$reasonCheck["ok"]) {
+    respond_json([
+        "success" => false,
+        "message" => $reasonCheck["message"],
+        "field" => "reason"
+    ], 422);
+}
+
 /* =========================================================
    VERIFY RESTAURANT
 ========================================================= */
@@ -334,357 +347,158 @@ $ownerStatus =
     (int) $restaurant["owner_status"];
 
 /* =========================================================
-   CHECK ACTIVE ORDERS BEFORE DEACTIVATION
+   ACTIVE ORDERS / DELIVERIES
+
+   The check that blocks deactivation while the restaurant still has
+   active orders or unfinished deliveries now lives in
+   fc_change_account_status() (account_status_helper.php). It runs
+   inside the same locked transaction as the status change, so an
+   order created at the same moment cannot slip through, and it is
+   shared with every other endpoint that can deactivate an owner.
 ========================================================= */
-
-if ($action === "deactivate") {
-    $activeOrderStmt = $conn->prepare("
-        SELECT
-            COUNT(*) AS active_orders
-
-        FROM tbl_orders
-
-        WHERE restaurant_id = ?
-
-        AND order_status NOT IN (
-            'completed',
-            'cancelled'
-        )
-    ");
-
-    if (!$activeOrderStmt) {
-        respond_json([
-            "success" => false,
-            "message" =>
-                "Unable to check active orders."
-        ], 500);
-    }
-
-    $activeOrderStmt->bind_param(
-        "i",
-        $restaurantId
-    );
-
-    if (!$activeOrderStmt->execute()) {
-        $activeOrderStmt->close();
-
-        respond_json([
-            "success" => false,
-            "message" =>
-                "Unable to check active orders."
-        ], 500);
-    }
-
-    $activeOrderRow =
-        $activeOrderStmt
-            ->get_result()
-            ->fetch_assoc();
-
-    $activeOrderStmt->close();
-
-    $activeOrders =
-        (int) (
-            $activeOrderRow["active_orders"]
-            ?? 0
-        );
-
-    if ($activeOrders > 0) {
-        respond_json([
-            "success" => false,
-
-            "message" =>
-                "This restaurant still has active orders. Complete or cancel them before deactivating the restaurant.",
-
-            "active_orders" =>
-                $activeOrders
-        ], 409);
-    }
-}
-
-
 
 /* =========================================================
    UPDATE RESTAURANT ACCESS
+
+   Only the OWNER account status changes (through the shared
+   helper: locked, validated, recorded in the history table).
+   Cashier and delivery staff accounts are NEVER modified here;
+   while the owner is inactive the restaurant is suspended and
+   staff are blocked by the session guard without any change to
+   their own status. The restaurant is kept Temporarily
+   Unavailable in both directions (the owner reopens it).
 ========================================================= */
 
-$conn->begin_transaction();
+$newOwnerStatus = $action === "deactivate" ? 0 : 1;
 
-try {
-    if ($action === "deactivate") {
-        /*
-        |--------------------------------------------------------------------------
-        | Make restaurant temporarily unavailable
-        |--------------------------------------------------------------------------
-        */
+$restaurantName = (string) $restaurant["name"];
+$adminName = (string) $admin["display_name"];
 
-        $closeStmt = $conn->prepare("
-            UPDATE tbl_restaurants
+$setRestaurantUnavailable = function (
+    mysqli $db,
+    array $ownerRow,
+    int $statusAfter
+) use (
+    $restaurantId,
+    $adminId,
+    $action,
+    $restaurantName,
+    $adminName,
+    $reasonCheck
+): void {
+    $closeStmt = $db->prepare("
+        UPDATE tbl_restaurants
+        SET business_status = 'Temporarily Unavailable'
+        WHERE restaurant_id = ?
+          AND business_status <> 'Temporarily Unavailable'
+        LIMIT 1
+    ");
 
-            SET business_status = 'Temporarily Unavailable'
-
-            WHERE restaurant_id = ?
-
-            LIMIT 1
-        ");
-
-        if (!$closeStmt) {
-            throw new RuntimeException(
-                "Unable to prepare restaurant closure: " .
-                $conn->error
-            );
-        }
-
-        $closeStmt->bind_param(
-            "i",
-            $restaurantId
-        );
-
-        if (!$closeStmt->execute()) {
-            $closeError =
-                $closeStmt->error;
-
-            $closeStmt->close();
-
-            throw new RuntimeException(
-                "Unable to close restaurant: " .
-                $closeError
-            );
-        }
-
-        $closeStmt->close();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Deactivate owner, cashiers and delivery staff
-        |--------------------------------------------------------------------------
-        */
-
-        $usersStmt = $conn->prepare("
-            UPDATE tbl_users
-
-            SET status = 0
-
-            WHERE (
-                user_id = ?
-
-                OR restaurant_id = ?
-            )
-
-            AND role IN (
-                'owner',
-                'cashier',
-                'delivery_staff'
-            )
-        ");
-
-        if (!$usersStmt) {
-            throw new RuntimeException(
-                "Unable to prepare restaurant user deactivation: " .
-                $conn->error
-            );
-        }
-
-        $usersStmt->bind_param(
-            "ii",
-            $ownerId,
-            $restaurantId
-        );
-
-        if (!$usersStmt->execute()) {
-            $usersError =
-                $usersStmt->error;
-
-            $usersStmt->close();
-
-            throw new RuntimeException(
-                "Unable to deactivate restaurant users: " .
-                $usersError
-            );
-        }
-
-        $affectedUsers =
-            $usersStmt->affected_rows;
-
-        $usersStmt->close();
-
-        $actionTitle =
-            "Restaurant Deactivated";
-
-        $description =
-            $admin["display_name"] .
-            " deactivated " .
-            $restaurant["name"] .
-            " from FoodConnect. The restaurant was hidden from customers and " .
-            $affectedUsers .
-            " owner or staff account(s) were deactivated.";
-    } else {
-        /*
-        |--------------------------------------------------------------------------
-        | Reactivate owner only
-        |--------------------------------------------------------------------------
-        |
-        | Staff remain inactive until the owner reviews them.
-        |--------------------------------------------------------------------------
-        */
-
-        $ownerStmt = $conn->prepare("
-            UPDATE tbl_users
-
-            SET status = 1
-
-            WHERE user_id = ?
-
-            AND role = 'owner'
-
-            LIMIT 1
-        ");
-
-        if (!$ownerStmt) {
-            throw new RuntimeException(
-                "Unable to prepare owner reactivation: " .
-                $conn->error
-            );
-        }
-
-        $ownerStmt->bind_param(
-            "i",
-            $ownerId
-        );
-
-        if (!$ownerStmt->execute()) {
-            $ownerError =
-                $ownerStmt->error;
-
-            $ownerStmt->close();
-
-            throw new RuntimeException(
-                "Unable to reactivate owner: " .
-                $ownerError
-            );
-        }
-
-        $ownerStmt->close();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Keep restaurant temporarily unavailable until owner manually opens it
-        |--------------------------------------------------------------------------
-        */
-
-        $closedStmt = $conn->prepare("
-            UPDATE tbl_restaurants
-
-            SET business_status = 'Temporarily Unavailable'
-
-            WHERE restaurant_id = ?
-
-            LIMIT 1
-        ");
-
-        if (!$closedStmt) {
-            throw new RuntimeException(
-                "Unable to prepare restaurant status reset: " .
-                $conn->error
-            );
-        }
-
-        $closedStmt->bind_param(
-            "i",
-            $restaurantId
-        );
-
-        if (!$closedStmt->execute()) {
-            $closedError =
-                $closedStmt->error;
-
-            $closedStmt->close();
-
-            throw new RuntimeException(
-                "Unable to reset restaurant status: " .
-                $closedError
-            );
-        }
-
-        $closedStmt->close();
-
-        $actionTitle =
-            "Restaurant Reactivated";
-
-        $description =
-            $admin["display_name"] .
-            " restored FoodConnect access for " .
-            $restaurant["name"] .
-            ". The owner account was reactivated. Staff remain inactive until reviewed.";
+    if (!$closeStmt) {
+        throw new RuntimeException("Unable to prepare restaurant closure: " . $db->error);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Save activity log
-    |--------------------------------------------------------------------------
-    */
+    $closeStmt->bind_param("i", $restaurantId);
 
-    $logStmt = $conn->prepare("
+    if (!$closeStmt->execute()) {
+        $closeError = $closeStmt->error;
+        $closeStmt->close();
+        throw new RuntimeException("Unable to close restaurant: " . $closeError);
+    }
+
+    $closeStmt->close();
+
+    $actionTitle = $action === "deactivate"
+        ? "Restaurant Deactivated"
+        : "Restaurant Reactivated";
+
+    $reasonText = $reasonCheck["reason"]
+        . ($reasonCheck["note"] !== "" ? " - " . $reasonCheck["note"] : "");
+
+    $description = $action === "deactivate"
+        ? $adminName . " deactivated " . $restaurantName
+            . " from FoodConnect. The restaurant was hidden from customers and the owner account was deactivated."
+            . " Staff account statuses were not changed. Reason: " . $reasonText
+        : $adminName . " restored FoodConnect access for " . $restaurantName
+            . ". The owner account was reactivated and the restaurant stays temporarily unavailable until the owner reopens it."
+            . " Staff account statuses were not changed. Reason: " . $reasonText;
+
+    $logStmt = $db->prepare("
         INSERT INTO tbl_activity_logs (
-            restaurant_id,
-            user_id,
-            user_role,
-            action_type,
-            action_title,
-            action_description
-        )
-        VALUES (
-            ?,
-            ?,
-            'admin',
-            'restaurant_access',
-            ?,
-            ?
-        )
+            restaurant_id, user_id, user_role, action_type, action_title, action_description
+        ) VALUES (?, ?, 'admin', 'restaurant_access', ?, ?)
     ");
 
     if (!$logStmt) {
-        throw new RuntimeException(
-            "Unable to prepare activity log: " .
-            $conn->error
-        );
+        throw new RuntimeException("Unable to prepare activity log: " . $db->error);
     }
 
-    $logStmt->bind_param(
-        "iiss",
-        $restaurantId,
-        $adminId,
-        $actionTitle,
-        $description
-    );
+    $logStmt->bind_param("iiss", $restaurantId, $adminId, $actionTitle, $description);
 
     if (!$logStmt->execute()) {
-        $logError =
-            $logStmt->error;
-
+        $logError = $logStmt->error;
         $logStmt->close();
-
-        throw new RuntimeException(
-            "Unable to save activity log: " .
-            $logError
-        );
+        throw new RuntimeException("Unable to save activity log: " . $logError);
     }
 
     $logStmt->close();
+};
 
-    $conn->commit();
-} catch (Throwable $error) {
-    $conn->rollback();
+$result = fc_change_account_status(
+    $conn,
+    $ownerId,
+    $newOwnerStatus,
+    [
+        "actor" => [
+            "user_id" => $adminId,
+            "role" => "admin",
+            "restaurant_id" => null
+        ],
+        "actor_name" => $adminName,
+        "reason" => $reasonCheck["reason"],
+        "note" => $reasonCheck["note"],
+        "activity_log" => false,
+        "extra_in_transaction" => $setRestaurantUnavailable
+    ]
+);
 
-    error_log(
-        "update_admin_restaurant_access transaction error: " .
-        $error->getMessage()
-    );
-
+if (!$result["success"]) {
     respond_json([
         "success" => false,
-        "message" =>
-            "Unable to update restaurant access."
-    ], 500);
+        "message" => $result["message"],
+        "field" => $result["field"] ?? null,
+        "code" => $result["code"] ?? null,
+        "blockers" => $result["blockers"] ?? null,
+        "active_orders" => isset($result["blockers"]["active_orders"])
+            ? (int) $result["blockers"]["active_orders"]
+            : null
+    ], (int) $result["http"]);
+}
+
+$alreadyInRequestedState = empty($result["changed"]);
+
+if ($alreadyInRequestedState && $action === "deactivate") {
+    /* Owner was already inactive (for example deactivated from Platform
+       Users). No new status history is written, but the restaurant must
+       still be hidden from customers. */
+    $conn->begin_transaction();
+
+    try {
+        $setRestaurantUnavailable($conn, [], 0);
+        $conn->commit();
+    } catch (Throwable $error) {
+        $conn->rollback();
+
+        error_log(
+            "update_admin_restaurant_access closure error: " .
+            $error->getMessage()
+        );
+
+        respond_json([
+            "success" => false,
+            "message" => "Unable to update restaurant access."
+        ], 500);
+    }
 }
 
 /* =========================================================
@@ -694,12 +508,14 @@ try {
 respond_json([
     "success" => true,
 
+    "changed" => !$alreadyInRequestedState,
+
     "message" =>
         $action === "deactivate"
-            ? $restaurant["name"] .
+            ? $restaurantName .
               " was deactivated successfully."
-            : $restaurant["name"] .
-              " was reactivated successfully. The owner must review staff accounts and reopen the restaurant.",
+            : $restaurantName .
+              " was reactivated successfully. The owner must reopen the restaurant.",
 
     "restaurant_id" =>
         $restaurantId,

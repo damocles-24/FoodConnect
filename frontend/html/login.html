@@ -35,7 +35,7 @@
 
     <link
         rel="stylesheet"
-        href="../css/login.css?v=20260921-forgot-center1"
+        href="../css/login.css?v=20261026-reason1"
     >
   <link rel="stylesheet" href="../css/foodconnect-theme.css?v=20260921-font1">
   <script src="../js/foodconnect-theme.js?v=20260903-theme-root1" defer></script>
@@ -381,6 +381,43 @@
                     aria-live="polite"
                 ></div>
 
+                <div id="reactivationReasonArea">
+                    <div class="form-group">
+                        <label for="reactivationReason">
+                            Why are you reactivating? *
+                        </label>
+
+                        <select
+                            id="reactivationReason"
+                            class="reactivation-select"
+                            required
+                        >
+                            <option value="">Select a reason</option>
+                            <option>I want to order again</option>
+                            <option>I deactivated my account by mistake</option>
+                            <option>My concern was resolved</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label
+                            for="reactivationNote"
+                            id="reactivationNoteLabel"
+                        >
+                            Additional notes (optional)
+                        </label>
+
+                        <textarea
+                            id="reactivationNote"
+                            class="reactivation-select"
+                            rows="2"
+                            maxlength="500"
+                            placeholder="Additional notes (optional)"
+                        ></textarea>
+                    </div>
+                </div>
+
                 <button
                     type="button"
                     id="sendReactivationCodeBtn"
@@ -652,7 +689,7 @@
 
 </footer>
 
-<script src="../js/login.js?v=20260915-username-only1"></script>
+<script src="../js/login.js?v=20261026-reason1"></script>
 
 </body>
 </html>

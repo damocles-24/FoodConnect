@@ -37,6 +37,17 @@ let selectedDeliveryLocation = {
 
 let deliveryFeeQuoteSequence = 0;
 
+/*
+ * FoodConnect service-area validation state for the pinned delivery point.
+ * status: none | checking | valid | invalid | error
+ */
+let deliveryLocationCheck = {
+    status: "none",
+    source: ""
+};
+
+let deliveryLocationCheckSequence = 0;
+
 let cartPricing = {
     subtotal: 0,
     promotionSavings: 0,
@@ -2633,10 +2644,12 @@ function setPlaceOrderAvailability() {
         return;
     }
 
+    // Delivery: enabled only after the pinned location passed validation.
     placeOrderButton.disabled =
         deliveryAvailability.checking ||
         !deliveryAvailability.checked ||
-        !deliveryAvailability.available;
+        !deliveryAvailability.available ||
+        deliveryLocationCheck.status !== "valid";
 }
 
 async function checkDeliveryAvailability() {
@@ -2746,6 +2759,13 @@ function resetSelectedDeliveryLocation() {
         longitude: null
     };
 
+    deliveryLocationCheckSequence++;
+
+    deliveryLocationCheck = {
+        status: "none",
+        source: ""
+    };
+
     cartPricing.deliveryFeeQuoted = false;
 
     if (deliveryLocationMap) {
@@ -2754,6 +2774,189 @@ function resetSelectedDeliveryLocation() {
     }
 
     deliveryLocationMarker = null;
+}
+
+/* =========================================================
+   SERVICE AREA (CITY OF ALAMINOS, PANGASINAN) FEEDBACK
+   ========================================================= */
+
+function getServiceAreaMessage(
+    context = "area"
+) {
+    return window.FCServiceArea?.getMessage
+        ? window.FCServiceArea.getMessage(context)
+        : {
+            title: "Location Outside Service Area",
+            message:
+                "FoodConnect currently accepts delivery locations within City of Alaminos, Pangasinan only. Please select a location within City of Alaminos to continue."
+        };
+}
+
+function showCheckoutTitledMessage(
+    title,
+    message,
+    type = "error"
+) {
+    const messageElement =
+        document.getElementById("checkoutMessage");
+
+    if (!messageElement) {
+        return;
+    }
+
+    messageElement.innerHTML = `
+        <strong>${escapeHtml(title)}</strong><br>
+        ${escapeHtml(message)}
+    `;
+
+    messageElement.classList.remove(
+        "error",
+        "success",
+        "info"
+    );
+
+    messageElement.classList.add(type);
+}
+
+function setDeliveryLocationStatusMessage(
+    state,
+    title = "",
+    message = ""
+) {
+    const locationStatus =
+        document.getElementById(
+            "deliveryLocationStatus"
+        );
+
+    if (!locationStatus) {
+        return;
+    }
+
+    locationStatus.classList.remove(
+        "location-selected",
+        "location-invalid"
+    );
+
+    if (state === "checking") {
+        locationStatus.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Checking that this location is within City of Alaminos, Pangasinan...</span>
+        `;
+        return;
+    }
+
+    if (state === "invalid") {
+        locationStatus.classList.add(
+            "location-invalid"
+        );
+
+        locationStatus.innerHTML = `
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>
+                <strong>${escapeHtml(title)}</strong><br>
+                ${escapeHtml(message)}
+            </span>
+        `;
+        return;
+    }
+
+    locationStatus.innerHTML = `
+        <i class="fa-solid fa-location-dot"></i>
+        <span>No delivery location selected yet.</span>
+    `;
+}
+
+function clearDeliveryMarker() {
+    if (
+        deliveryLocationMarker &&
+        deliveryLocationMap
+    ) {
+        deliveryLocationMarker.remove();
+    }
+
+    deliveryLocationMarker = null;
+}
+
+/*
+ * Rejects the current delivery point. The order cannot continue until a
+ * location inside City of Alaminos is selected.
+ */
+function rejectDeliveryLocation(
+    context = "area",
+    serverMessage = null
+) {
+    const content =
+        serverMessage &&
+        serverMessage.title &&
+        serverMessage.message
+            ? serverMessage
+            : getServiceAreaMessage(context);
+
+    selectedDeliveryLocation = {
+        latitude: null,
+        longitude: null
+    };
+
+    cartPricing.deliveryFeeQuoted = false;
+
+    deliveryLocationCheck = {
+        status: "invalid",
+        source: context
+    };
+
+    clearDeliveryMarker();
+
+    setDeliveryLocationStatusMessage(
+        "invalid",
+        content.title,
+        content.message
+    );
+
+    showCheckoutTitledMessage(
+        content.title,
+        content.message,
+        "error"
+    );
+
+    setPlaceOrderAvailability();
+}
+
+function markDeliveryLocationCheckUnavailable() {
+    const content =
+        getServiceAreaMessage("unavailable");
+
+    selectedDeliveryLocation = {
+        latitude: null,
+        longitude: null
+    };
+
+    cartPricing.deliveryFeeQuoted = false;
+
+    deliveryLocationCheck = {
+        status: "error",
+        source: ""
+    };
+
+    clearDeliveryMarker();
+
+    setDeliveryLocationStatusMessage(
+        "invalid",
+        content.title,
+        content.message
+    );
+
+    showCheckoutTitledMessage(
+        content.title,
+        content.message,
+        "error"
+    );
+
+    setPlaceOrderAvailability();
+}
+
+function isServiceAreaError(data) {
+    return String(data?.code || "") ===
+        "OUTSIDE_SERVICE_AREA";
 }
 
 function updateDeliveryCoordinateDisplay(
@@ -2768,6 +2971,10 @@ function updateDeliveryCoordinateDisplay(
     if (!locationStatus) {
         return;
     }
+
+    locationStatus.classList.remove(
+        "location-invalid"
+    );
 
     locationStatus.innerHTML = `
         <i class="fa-solid fa-circle-check"></i>
@@ -2835,7 +3042,10 @@ async function quoteSelectedDeliveryFee(
                     customer_latitude:
                         latitude,
                     customer_longitude:
-                        longitude
+                        longitude,
+                    location_source:
+                        deliveryLocationCheck.source ||
+                        "area"
                 })
             }
         );
@@ -2849,6 +3059,19 @@ async function quoteSelectedDeliveryFee(
             quoteSequence !==
             deliveryFeeQuoteSequence
         ) {
+            return false;
+        }
+
+        if (
+            !response.ok &&
+            isServiceAreaError(data)
+        ) {
+            rejectDeliveryLocation(
+                deliveryLocationCheck.source ||
+                    "area",
+                data
+            );
+
             return false;
         }
 
@@ -2963,9 +3186,16 @@ async function quoteSelectedDeliveryFee(
     }
 }
 
-function setDeliveryLocation(
+/*
+ * Validates a delivery point against the City of Alaminos boundary before
+ * accepting it. Resolves true only when the point was accepted.
+ * source: "gps" (Use My Current Location), "area" (map), "address" (search).
+ */
+async function setDeliveryLocation(
     latitude,
-    longitude
+    longitude,
+    source = "area",
+    accuracyMeters = null
 ) {
     const parsedLatitude =
         Number(latitude);
@@ -2975,10 +3205,102 @@ function setDeliveryLocation(
 
     if (
         !Number.isFinite(parsedLatitude) ||
-        !Number.isFinite(parsedLongitude)
+        !Number.isFinite(parsedLongitude) ||
+        !deliveryLocationMap
     ) {
-        return;
+        return false;
     }
+
+    const checkSequence =
+        ++deliveryLocationCheckSequence;
+
+    deliveryLocationCheck = {
+        status: "checking",
+        source
+    };
+
+    cartPricing.deliveryFeeQuoted = false;
+
+    setDeliveryLocationStatusMessage(
+        "checking"
+    );
+
+    setPlaceOrderAvailability();
+
+    let areaResult = null;
+
+    try {
+        if (!window.FCServiceArea) {
+            throw new Error(
+                "Service-area checker is not loaded."
+            );
+        }
+
+        areaResult =
+            await window.FCServiceArea.check(
+                parsedLatitude,
+                parsedLongitude,
+                {
+                    source,
+                    accuracy: accuracyMeters
+                }
+            );
+    } catch (error) {
+        console.error(
+            "Service-area check error:",
+            error
+        );
+
+        if (
+            checkSequence ===
+            deliveryLocationCheckSequence
+        ) {
+            markDeliveryLocationCheckUnavailable();
+        }
+
+        return false;
+    }
+
+    if (
+        checkSequence !==
+            deliveryLocationCheckSequence ||
+        !deliveryLocationMap
+    ) {
+        return false;
+    }
+
+    if (!areaResult.allowed) {
+        /*
+         * Every source must be strictly inside City of Alaminos (the server
+         * enforces 0 m). A GPS fix just outside the edge, within its own
+         * accuracy, gets a friendlier "tap your exact spot" message.
+         */
+        const gpsNearBoundary =
+            source === "gps" &&
+            areaResult.nearBoundary === true;
+
+        rejectDeliveryLocation(
+            gpsNearBoundary ? "gps_near" : source
+        );
+
+        if (gpsNearBoundary) {
+            deliveryLocationMap.setView(
+                [parsedLatitude, parsedLongitude],
+                17
+            );
+        }
+        return false;
+    }
+
+    deliveryLocationCheck = {
+        status: "valid",
+        source,
+        accuracy:
+            source === "gps" &&
+            Number.isFinite(Number(accuracyMeters))
+                ? Number(accuracyMeters)
+                : null
+    };
 
     selectedDeliveryLocation = {
         latitude: parsedLatitude,
@@ -3009,19 +3331,11 @@ function setDeliveryLocation(
             const newPosition =
                 event.target.getLatLng();
 
-            selectedDeliveryLocation = {
-                latitude: newPosition.lat,
-                longitude: newPosition.lng
-            };
-
-            cartPricing.deliveryFeeQuoted = false;
-
-            updateDeliveryCoordinateDisplay(
+            setDeliveryLocation(
                 newPosition.lat,
-                newPosition.lng
+                newPosition.lng,
+                "area"
             );
-
-            quoteSelectedDeliveryFee();
         }
     );
 } else {
@@ -3040,12 +3354,19 @@ function setDeliveryLocation(
         parsedLongitude
     );
 
+    setPlaceOrderAvailability();
+
+    showCheckoutMessage();
+
     quoteSelectedDeliveryFee();
+
+    return true;
 }
 
 async function reverseGeocodeDeliveryLocation(
     latitude,
-    longitude
+    longitude,
+    source = "area"
 ) {
     const response = await fetch(
         `${API}/reverse_geocode_delivery_location.php`,
@@ -3059,7 +3380,8 @@ async function reverseGeocodeDeliveryLocation(
             },
             body: JSON.stringify({
                 latitude,
-                longitude
+                longitude,
+                location_source: source
             })
         }
     );
@@ -3073,10 +3395,18 @@ async function reverseGeocodeDeliveryLocation(
         !response.ok ||
         !data.success
     ) {
-        throw new Error(
-            data.message ||
-            "Unable to identify your current address."
-        );
+        const lookupError =
+            new Error(
+                data.message ||
+                "Unable to identify your current address."
+            );
+
+        lookupError.serviceArea =
+            isServiceAreaError(data)
+                ? data
+                : null;
+
+        throw lookupError;
     }
 
     return data;
@@ -3084,13 +3414,43 @@ async function reverseGeocodeDeliveryLocation(
 
 function useCustomerCurrentLocation() {
     if (!navigator.geolocation) {
-        showCheckoutMessage(
-            "Your browser does not support location services.",
+        showCheckoutTitledMessage(
+            "Location Not Available",
+            "Your browser does not support location services. Please tap your delivery location inside City of Alaminos on the map.",
             "error"
         );
 
         return;
     }
+
+    if (deliveryLocationCheck.status === "checking") {
+        return;
+    }
+
+    /*
+     * Block Place Order while the device location is being detected and
+     * validated, so nothing can be submitted with a stale location.
+     */
+    const checkBeforeDetection = {
+        ...deliveryLocationCheck
+    };
+
+    const statusBeforeDetection =
+        checkBeforeDetection.status;
+
+    const detectionSequence =
+        ++deliveryLocationCheckSequence;
+
+    deliveryLocationCheck = {
+        status: "checking",
+        source: "gps"
+    };
+
+    setDeliveryLocationStatusMessage(
+        "checking"
+    );
+
+    setPlaceOrderAvailability();
 
     const locationButton =
         document.getElementById(
@@ -3141,14 +3501,33 @@ function useCustomerCurrentLocation() {
                     position.coords.longitude
                 );
 
+            if (
+                detectionSequence !==
+                deliveryLocationCheckSequence
+            ) {
+                // The customer picked another point meanwhile.
+                restoreLocationButton();
+                return;
+            }
+
             /*
-             * Place the marker immediately using the
-             * phone's actual GPS coordinates.
+             * Accept the GPS point only when it is inside the
+             * City of Alaminos service area. Getting coordinates
+             * is not enough on its own.
              */
-            setDeliveryLocation(
-                latitude,
-                longitude
-            );
+            const locationAccepted =
+                await setDeliveryLocation(
+                    latitude,
+                    longitude,
+                    "gps",
+                    Number(position.coords.accuracy)
+                );
+
+            if (!locationAccepted) {
+                setDeliveryAddressSearchMessage();
+                restoreLocationButton();
+                return;
+            }
 
             if (locationButton) {
                 locationButton.innerHTML = `
@@ -3166,7 +3545,8 @@ function useCustomerCurrentLocation() {
                 const data =
                     await reverseGeocodeDeliveryLocation(
                         latitude,
-                        longitude
+                        longitude,
+                        "gps"
                     );
 
                 const location =
@@ -3329,17 +3709,27 @@ function useCustomerCurrentLocation() {
                     error
                 );
 
+                if (error?.serviceArea) {
+                    rejectDeliveryLocation(
+                        "gps",
+                        error.serviceArea
+                    );
+
+                    return;
+                }
+
                 /*
                  * Do not remove the GPS marker.
-                 * The exact coordinates are still valid.
+                 * The exact coordinates already passed the
+                 * City of Alaminos boundary check.
                  */
                 setDeliveryAddressSearchMessage(
-                    "Your location was selected, but the written address could not be loaded. Please type the address manually.",
+                    "Your location is within City of Alaminos, but the written address could not be loaded. Please select your barangay and enter your street details.",
                     "error"
                 );
 
                 showCheckoutMessage(
-                    "Your current location was placed on the map. Please type the written address manually.",
+                    "Your current location was placed on the map. Please select your barangay to complete the address.",
                     "success"
                 );
             } finally {
@@ -3354,26 +3744,26 @@ function useCustomerCurrentLocation() {
             );
 
             let message =
-                "Unable to detect your location. Please tap the correct destination on the map.";
+                "Unable to detect your location. Please tap your delivery location inside City of Alaminos on the map.";
 
             if (
                 error.code ===
                 error.PERMISSION_DENIED
             ) {
                 message =
-                    "Location permission was denied. Please allow location access or tap the destination manually on the map.";
+                    "Location permission was denied. Please allow location access, or tap your delivery location inside City of Alaminos on the map.";
             } else if (
                 error.code ===
                 error.POSITION_UNAVAILABLE
             ) {
                 message =
-                    "Your location is currently unavailable. Turn on GPS or select the destination manually.";
+                    "Your location is currently unavailable. Turn on GPS, or tap your delivery location inside City of Alaminos on the map.";
             } else if (
                 error.code ===
                 error.TIMEOUT
             ) {
                 message =
-                    "Location detection took too long. Try again outdoors or select the destination manually.";
+                    "Location detection took too long. Try again, or tap your delivery location inside City of Alaminos on the map.";
             }
 
             setDeliveryAddressSearchMessage(
@@ -3381,7 +3771,33 @@ function useCustomerCurrentLocation() {
                 "error"
             );
 
-            showCheckoutMessage(
+            if (
+                detectionSequence ===
+                deliveryLocationCheckSequence
+            ) {
+                // Restore the previous state (e.g. an earlier valid pin).
+                deliveryLocationCheck =
+                    statusBeforeDetection === "checking"
+                        ? { status: "none", source: "" }
+                        : checkBeforeDetection;
+
+                if (
+                    deliveryLocationCheck.status === "valid" &&
+                    Number.isFinite(selectedDeliveryLocation.latitude)
+                ) {
+                    updateDeliveryCoordinateDisplay(
+                        selectedDeliveryLocation.latitude,
+                        selectedDeliveryLocation.longitude
+                    );
+                } else {
+                    setDeliveryLocationStatusMessage("none");
+                }
+
+                setPlaceOrderAvailability();
+            }
+
+            showCheckoutTitledMessage(
+                "Location Not Available",
                 message,
                 "error"
             );
@@ -3462,7 +3878,7 @@ function buildDeliveryAddressResultSubtitle(
     return [...new Set(parts)].join(", ");
 }
 
-function selectDeliveryAddressResult(
+async function selectDeliveryAddressResult(
     location
 ) {
     const addressInput =
@@ -3486,28 +3902,34 @@ function selectDeliveryAddressResult(
         return;
     }
 
-    if (addressInput) {
-        addressInput.value =
-            String(
-                location.display_name || ""
-            ).trim();
+    clearDeliveryAddressResults();
 
-        addressInput.dispatchEvent(
-            new Event(
-                "input",
-                {
-                    bubbles: true
-                }
-            )
+    const locationAccepted =
+        await setDeliveryLocation(
+            latitude,
+            longitude,
+            "address"
         );
+
+    if (!locationAccepted) {
+        setDeliveryAddressSearchMessage();
+        return;
     }
 
-    setDeliveryLocation(
-        latitude,
-        longitude
-    );
-
-    clearDeliveryAddressResults();
+    if (
+        addressInput &&
+        window.PHAddressDropdown?.setEnhancedValues
+    ) {
+        await window.PHAddressDropdown.setEnhancedValues(
+            addressInput,
+            {
+                barangayName:
+                    location.barangay || "",
+                streetDetails:
+                    location.road || ""
+            }
+        );
+    }
 
     setDeliveryAddressSearchMessage(
         "Address selected. Drag the map marker if you need to adjust the exact delivery point.",
@@ -3707,6 +4129,25 @@ async function searchDeliveryAddress() {
             );
         }
 
+        if (data.outside_service_area === true) {
+            clearDeliveryAddressResults();
+
+            setDeliveryAddressSearchMessage(
+                `${data.title || "Address Not Supported"}: ${data.message || ""}`,
+                "error"
+            );
+
+            showCheckoutTitledMessage(
+                data.title ||
+                    "Address Not Supported",
+                data.message ||
+                    getServiceAreaMessage("address").message,
+                "error"
+            );
+
+            return;
+        }
+
         renderDeliveryAddressResults(
             data.locations
         );
@@ -3792,6 +4233,13 @@ const addressInput =
         }
     ).addTo(deliveryLocationMap);
 
+    /*
+     * Show the FoodConnect service area (City of Alaminos) on the map.
+     */
+    window.FCServiceArea?.addBoundaryLayer(
+        deliveryLocationMap
+    );
+
     deliveryLocationMap.on(
     "click",
     async (event) => {
@@ -3799,17 +4247,24 @@ const addressInput =
         const latitude = event.latlng.lat;
         const longitude = event.latlng.lng;
 
-        setDeliveryLocation(
-            latitude,
-            longitude
-        );
+        const locationAccepted =
+            await setDeliveryLocation(
+                latitude,
+                longitude,
+                "area"
+            );
+
+        if (!locationAccepted) {
+            return;
+        }
 
         try {
 
             const data =
                 await reverseGeocodeDeliveryLocation(
                     latitude,
-                    longitude
+                    longitude,
+                    "area"
                 );
 
             const location =
@@ -3818,31 +4273,28 @@ const addressInput =
                     ? data.location
                     : {};
 
-            const formattedAddress =
-                String(
-                    location.display_name || ""
-                ).trim();
-
             const addressInput =
                 document.getElementById("address");
 
+            /*
+             * Province and city are fixed (City of Alaminos,
+             * Pangasinan); only fill the barangay / street.
+             */
             if (
                 addressInput &&
-                formattedAddress
+                window.PHAddressDropdown?.setEnhancedValues &&
+                (location.barangay || location.street_details || location.road)
             ) {
-                addressInput.value =
-                    formattedAddress;
-
-                addressInput.dispatchEvent(
-                    new Event("input", {
-                        bubbles: true
-                    })
-                );
-
-                addressInput.dispatchEvent(
-                    new Event("change", {
-                        bubbles: true
-                    })
+                await window.PHAddressDropdown.setEnhancedValues(
+                    addressInput,
+                    {
+                        barangayName:
+                            location.barangay || "",
+                        streetDetails:
+                            location.street_details ||
+                            location.road ||
+                            ""
+                    }
                 );
             }
 
@@ -3851,6 +4303,13 @@ const addressInput =
                 "Manual pin reverse geocode error:",
                 error
             );
+
+            if (error?.serviceArea) {
+                rejectDeliveryLocation(
+                    "area",
+                    error.serviceArea
+                );
+            }
         }
     }
 );
@@ -4010,6 +4469,7 @@ const payMongoQrPhOption =
     rows="3"
     data-ph-address="1"
     data-ph-address-required="1"
+    data-ph-service-area="alaminos"
     required
 ></textarea>
 
@@ -4033,6 +4493,8 @@ const payMongoQrPhOption =
                     <p>
                         Use your current location or tap the
                         exact delivery destination on the map.
+                        FoodConnect delivers within
+                        <strong>City of Alaminos, Pangasinan</strong> only.
                     </p>
                 </div>
 
@@ -5531,9 +5993,14 @@ async function placeOrder() {
                 ?.value
                 .trim() || "";
 
-       if (!address) {
+        const structuredAddress =
+            window.PHAddressDropdown?.getStructured
+                ? window.PHAddressDropdown.getStructured("address")
+                : { street: "", barangay: "" };
+
+       if (!address || !structuredAddress.barangay) {
     showCheckoutMessage(
-        "Enter your complete delivery address.",
+        "Select your barangay in City of Alaminos to complete the delivery address.",
         "error"
     );
 
@@ -5544,7 +6011,32 @@ async function placeOrder() {
     return;
 }
 
+if (deliveryLocationCheck.status === "checking") {
+    showCheckoutMessage(
+        "Please wait while FoodConnect verifies your delivery location.",
+        "info"
+    );
+
+    return;
+}
+
+if (deliveryLocationCheck.status === "invalid") {
+    const blockedMessage =
+        getServiceAreaMessage(
+            deliveryLocationCheck.source || "area"
+        );
+
+    showCheckoutTitledMessage(
+        blockedMessage.title,
+        blockedMessage.message,
+        "error"
+    );
+
+    return;
+}
+
 if (
+    deliveryLocationCheck.status !== "valid" ||
     !Number.isFinite(
         selectedDeliveryLocation.latitude
     ) ||
@@ -5572,11 +6064,21 @@ if (
 payload.address =
     address;
 
+payload.delivery_barangay =
+    structuredAddress.barangay;
+
+payload.delivery_street =
+    structuredAddress.street || "";
+
 payload.customer_latitude =
     selectedDeliveryLocation.latitude;
 
 payload.customer_longitude =
     selectedDeliveryLocation.longitude;
+
+// Message wording only; the server validates every source strictly (0 m).
+payload.location_source =
+    deliveryLocationCheck.source || "area";
 
 const deliveryFeeConfirmed =
     await quoteSelectedDeliveryFee(
@@ -5640,6 +6142,21 @@ if (!deliveryFeeConfirmed) {
 
         const data =
             await readJsonResponse(response);
+
+        if (
+            !response.ok &&
+            isServiceAreaError(data)
+        ) {
+            const serviceAreaError =
+                new Error(
+                    data.message
+                );
+
+            serviceAreaError.serviceArea =
+                data;
+
+            throw serviceAreaError;
+        }
 
         if (!response.ok || !data.success) {
             throw new Error(
@@ -5763,22 +6280,51 @@ window.setTimeout(() => {
             error
         );
 
+        isPlacingOrder = false;
+
+        if (buttonLabel) {
+            buttonLabel.textContent =
+                "Place Order";
+        }
+
+        if (error?.serviceArea) {
+            /*
+             * The server rejected the location (outside City of
+             * Alaminos). Clear it; Place Order stays disabled until
+             * a supported location is selected.
+             */
+            const rejectedByAddress =
+                error.serviceArea.context === "address";
+
+            if (rejectedByAddress) {
+                showCheckoutTitledMessage(
+                    error.serviceArea.title,
+                    error.serviceArea.message,
+                    "error"
+                );
+
+                setPlaceOrderAvailability();
+            } else {
+                rejectDeliveryLocation(
+                    "area",
+                    error.serviceArea
+                );
+            }
+
+            return;
+        }
+
         showCheckoutMessage(
             error.message ||
             "Unable to place your order right now. Please try again.",
             "error"
         );
 
-        isPlacingOrder = false;
-
         if (placeOrderButton) {
             placeOrderButton.disabled = false;
         }
 
-        if (buttonLabel) {
-            buttonLabel.textContent =
-                "Place Order";
-        }
+        setPlaceOrderAvailability();
     }
 }
 

@@ -8,6 +8,7 @@ require_once __DIR__ . "/session_config.php";
 require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/rate_limit.php";
 require_once __DIR__ . "/mailer.php";
+require_once __DIR__ . "/account_status_helper.php";
 
 function respond_json(array $data, int $statusCode = 200): void
 {
@@ -29,6 +30,23 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === "") {
     respond_json(
         ["error" => "Enter your email and password again."],
         400
+    );
+}
+
+/* A recorded reason is mandatory. It is kept only in this visitor's server-side
+   session, tied to this user_id, and written to the history table only after
+   the emailed code is verified. */
+$reasonCheck = fc_status_validate_reason(
+    "customer",
+    "reactivate",
+    $input["reason"] ?? "",
+    $input["note"] ?? ""
+);
+
+if (!$reasonCheck["ok"]) {
+    respond_json(
+        ["error" => $reasonCheck["message"], "field" => "reason"],
+        422
     );
 }
 
@@ -111,7 +129,9 @@ $_SESSION["customer_reactivation"] = [
     "code_hash" => password_hash($code, PASSWORD_DEFAULT),
     "expires_at" => time() + 600,
     "attempts" => 0,
-    "last_sent_at" => time()
+    "last_sent_at" => time(),
+    "reason" => $reasonCheck["reason"],
+    "note" => $reasonCheck["note"]
 ];
 
 $escapedName = htmlspecialchars(
